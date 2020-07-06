@@ -817,81 +817,6 @@ let main_plots_dash = function(opt_in) {
                     },
                 },
                 axis: [
-                    {
-                        id: 'bottom',
-                        showAxis: true,
-                        main: {
-                            g: undefined,
-                            box: {
-                                x: 0,
-                                y: 0,
-                                w: 0,
-                                h: opt_in.box.h,
-                                marg: 0,
-                            },
-                            type: 'bottom',
-                            attr: {
-                                text: {
-                                    enabled: false,
-                                    size: 11,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
-                                path: {
-                                    enabled: true,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
-                                tickSize: -opt_in.box.h,
-                            },
-                        },
-                        axis: undefined,
-                        scale: undefined,
-                        domain: [ 0, 1000 ],
-                        range: [ 0, 0 ],
-                        brush: {
-                            zoom: true,
-                            brush: true,
-                        },
-                    },
-                    {
-                        id: 'left',
-                        showAxis: true,
-                        main: {
-                            g: undefined,
-                            box: {
-                                x: 0,
-                                y: 0,
-                                w: 0,
-                                h: 0,
-                                marg: 0,
-                            },
-                            type: 'left',
-                            mode: 'linear',
-                            attr: {
-                                text: {
-                                    enabled: false,
-                                    size: 11,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
-                                path: {
-                                    enabled: true,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
-                                tickSize: -opt_in.box.w,
-                            },
-                        },
-                        axis: undefined,
-                        scale: undefined,
-                        domain: [ 0, 1000 ],
-                        range: [ 0, 0 ],
-                        brush: {
-                            zoom: true,
-                            brush: true,
-                        },
-                    },
                     // {
                     //   id: 'right',
                     //   showAxis: true,
@@ -942,6 +867,81 @@ let main_plots_dash = function(opt_in) {
         }
         opt_in.g = opt_in.g.append('g') // .style('opacity', 0.8)
         let plotObject = createPlot(opt_in)
+        plotObject.add_axis({
+            id: 'bottom',
+            showAxis: true,
+            main: {
+                g: undefined,
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: opt_in.box.h,
+                    marg: 0,
+                },
+                type: 'bottom',
+                attr: {
+                    text: {
+                        enabled: false,
+                        size: 11,
+                        stroke: colorPalette.medium.stroke,
+                        fill: colorPalette.medium.stroke,
+                    },
+                    path: {
+                        enabled: true,
+                        stroke: colorPalette.medium.stroke,
+                        fill: colorPalette.medium.stroke,
+                    },
+                    tickSize: -opt_in.box.h,
+                },
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [ 0, 1000 ],
+            range: [ 0, 0 ],
+            brush: {
+                zoom: true,
+                brush: true,
+            },
+        })
+        plotObject.add_axis({
+            id: 'left',
+            showAxis: true,
+            main: {
+                g: undefined,
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: 0,
+                    marg: 0,
+                },
+                type: 'left',
+                mode: 'linear',
+                attr: {
+                    text: {
+                        enabled: false,
+                        size: 11,
+                        stroke: colorPalette.medium.stroke,
+                        fill: colorPalette.medium.stroke,
+                    },
+                    path: {
+                        enabled: true,
+                        stroke: colorPalette.medium.stroke,
+                        fill: colorPalette.medium.stroke,
+                    },
+                    tickSize: -opt_in.box.w,
+                },
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [ 0, 1000 ],
+            range: [ 0, 0 ],
+            brush: {
+                zoom: true,
+                brush: true,
+            },
+        })
         let start_time_sec = {
             date: new Date(shared.time.from),
             time: Number(shared.time.from.getTime()),
@@ -1004,9 +1004,11 @@ let main_plots_dash = function(opt_in) {
             focusedPlot = null
         }
         function focusOnPlot(plotData) {
+            let currentDate = new Date(shared.server.time_of_night.date_now)
+            let previousDate = new Date(new Date(shared.server.time_of_night.date_now).setHours(currentDate.getHours() - 1))
             let scrollBoxPlot = {
                 x: scrollBoxBoard.x + scrollBoxBoard.w * 0.1,
-                y: scrollBoxBoard.y,
+                y: scrollBoxBoard.y + 50,
                 w: scrollBoxBoard.w * 0.8,
                 h: scrollBoxBoard.h * 0.5,
             }
@@ -1041,133 +1043,111 @@ let main_plots_dash = function(opt_in) {
                         },
                     },
                 },
-                axis: [
-                    {
-                        id: 'bottom',
-                        scale_location: 'bottom',
-                        scale_type: 'time',
-                        box: {
-                            x: 0,
-                            y: 0,
-                            w: 0,
-                            h: opt_in.box.h,
-                            marg: 0,
-                        },
-                        style: {
-                            text: {
-                                visible: true,
-                                size: 11,
-                                stroke: colorPalette.medium.stroke,
-                                fill: colorPalette.medium.stroke,
-                            },
-                            path: {
-                                visible: true,
-                                stroke: colorPalette.medium.stroke,
-                                fill: colorPalette.medium.stroke,
-                            },
-                            axis: {
-                                visible: true,
-                                tickSize: -opt_in.box.h,
-                            },
-                        },
-                        domain: [ 0, 1000 ],
-                        range: [ 0, 0 ],
-                        brush: {
-                            zoom: true,
-                            brush: true,
-                        },
-                    },
-                    {
-                        id: 'left',
-                        box: {
-                            x: 0,
-                            y: 0,
-                            w: 0,
-                            h: 0,
-                            marg: 0,
-                        },
-                        scale_location: 'left',
-                        scale_type: 'linear',
-                        style: {
-                            text: {
-                                visible: true,
-                                size: 11,
-                                stroke: colorPalette.medium.stroke,
-                                fill: colorPalette.medium.stroke,
-                            },
-                            path: {
-                                visible: true,
-                                stroke: colorPalette.medium.stroke,
-                                fill: colorPalette.medium.stroke,
-                            },
-                            axis: {
-                                visible: true,
-                                tickSize: -opt_in.box.w,
-                            },
-                        },
-                        domain: [ 0, 1000 ],
-                        range: [ 0, 0 ],
-                        brush: {
-                            zoom: true,
-                            brush: true,
-                        },
-                    },
-                    {
-                        id: 'right',
-                        box: {
-                            x: scrollBoxPlot.w,
-                            y: 0,
-                            w: 0,
-                            h: 0,
-                            marg: 0,
-                        },
-                        scale_location: 'right',
-                        scale_type: 'linear',
-                        style: {
-                            text: {
-                                enabled: true,
-                                size: 11,
-                                stroke: colorPalette.medium.stroke,
-                                fill: colorPalette.medium.stroke,
-                            },
-                            path: {
-                                enabled: true,
-                                stroke: colorPalette.medium.stroke,
-                                fill: colorPalette.medium.stroke,
-                            },
-                            axis: {
-                                visible: true,
-                                tickSize: -opt_in.box.w,
-                            },
-                        },
-                        domain: [ 0, 1000 ],
-                        range: [ 0, 0 ],
-                        brush: {
-                            zoom: true,
-                            brush: true,
-                        },
-                    },
-                ],
+                axis: [],
                 content: [],
             })
-
-            let currentDate = new Date(shared.server.time_of_night.date_now)
-            let previousDate = new Date(shared.server.time_of_night.date_now).setHours(currentDate.getHours() - 1)
-            focusedPlot.updateAxis({
+            // focusedPlot.add_axis({
+            //     id: 'top',
+            //     scale_location: 'top',
+            //     scale_type: 'time',
+            //     domain: [ previousDate.getTime(), currentDate.getTime() ],
+            //     range: [ 0, scrollBoxPlot.w ],
+            // })
+            focusedPlot.add_axis({
                 id: 'bottom',
-                domain: [ previousDate, currentDate ],
+                scale_location: 'bottom',
+                scale_type: 'time',
+                domain: [ previousDate.getTime(), currentDate.getTime() ],
                 range: [ 0, scrollBoxPlot.w ],
+                // style: {
+                //     text: {
+                //         visible: true,
+                //         size: 13,
+                //         stroke: colorPalette.medium.stroke,
+                //         fill: colorPalette.medium.stroke,
+                //     },
+                //     path: {
+                //         visible: true,
+                //         stroke: colorPalette.medium.stroke,
+                //         fill: colorPalette.medium.stroke,
+                //     },
+                //     axis: {
+                //         visible: true,
+                //     },
+                // },
             })
-            focusedPlot.updateAxis({
-                id: 'right',
-                domain: [ 0, 100 ],
-                range: [ scrollBoxPlot.h, 0 ],
-            })
-            focusedPlot.updateAxis({
+            focusedPlot.add_axis({
                 id: 'left',
+                scale_location: 'left',
+                scale_type: 'linear',
                 domain: [ 0, 100 ],
                 range: [ scrollBoxPlot.h, 0 ],
             })
+            focusedPlot.add_axis({
+                id: 'right',
+                scale_location: 'right',
+                scale_type: 'linear',
+                domain: [ 0, 100 ],
+                range: [ scrollBoxPlot.h, 0 ],
+            })
+
+            // let temp_batch = []
+            // for (let i = 0; i < 100; i++) {
+            //     temp_batch.push(
+            //         {
+            //             x: previousDate.getTime() + (((currentDate.getTime() - previousDate.getTime()) / 100) * i),
+            //             y: Math.floor(Math.random() * Math.floor(60)),
+            //         }
+            //     )
+            // }
+            // focusedPlot.add_data(
+            //     'temp',
+            //     {
+            //         data: temp_batch,
+            //         drawing_method: 'plotline',
+            //     },
+            //     'bottom',
+            //     'left'
+            // )
+
+            let scatter_batch = []
+            for (let i = 0; i < 800; i++) {
+                scatter_batch.push(
+                    {
+                        x: previousDate.getTime() + Math.floor(Math.random() * Math.floor((currentDate.getTime() - previousDate.getTime()))),
+                        y: Math.floor(Math.random() * Math.floor(100)),
+                    }
+                )
+            }
+            focusedPlot.add_data(
+                'scatter',
+                {
+                    data: scatter_batch,
+                    drawing_method: 'scatterplot',
+                    heatmap: {
+                        y_range: 10,
+                        x_range: 60 * 10 * 1000,
+                    },
+                },
+                'bottom',
+                'left'
+            )
+
+            // focusedPlot.updateAxis({
+            //     id: 'bottom',
+            //     domain: [ previousDate, currentDate ],
+            //     range: [ 0, scrollBoxPlot.w ],
+            // })
+            // focusedPlot.updateAxis({
+            //     id: 'right',
+            //     domain: [ 0, 100 ],
+            //     range: [ scrollBoxPlot.h, 0 ],
+            // })
+            // focusedPlot.updateAxis({
+            //     id: 'left',
+            //     domain: [ 0, 100 ],
+            //     range: [ scrollBoxPlot.h, 0 ],
+            // })
         }
 
         function initOptions() {
