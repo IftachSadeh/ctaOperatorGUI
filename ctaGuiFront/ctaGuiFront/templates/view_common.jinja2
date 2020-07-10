@@ -103,16 +103,38 @@
         // var ws = new WebSocket("ws://localhost:8090/ws");
         // const socket = new WebSocket('ws://localhost:8090');
         // var ws = new WebSocket("ws://0.0.0.0:8090/ws")
-        var ws = new WebSocket("ws://127.0.0.1:8090/ws")
-        setTimeout(function() {
-            let mes = ' ++++++++++++++ qwqwewaeweqwewqeqweqqewewqweqwe'
-            console.log(mes)
-            ws.send(mes)
-            ws.send(mes)
-            console.log(mes)
-            ws.send(mes)
-            ws.send(mes)
-        }, 100);
+        var ws = new WebSocket("ws://127.0.0.1:8090/my_ws")
+
+        ws.onopen = function(event) {
+            let mes = 'opened .........'
+            console.log(mes, event)
+
+            // ws.send('here i am')
+            data = {xxx:'here i am', yyy:4}
+            data = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww '
+            ws.send(JSON.stringify(data))
+
+        }
+
+        // ws.onclose = function(event) {
+        //     let mes = 'closed .........'
+        //     console.log(mes, event)
+        // }
+        ws.onmessage = function(event) {
+            let mes = 'message .........'
+            console.log(mes, event)
+
+            let data = JSON.parse(event.data)
+            console.log(data)
+
+
+        }
+
+
+
+
+        // setTimeout(function() {
+        // }, 100);
         
 
         // var ws = new WebSocket("ws://0.0.0.0:8090/socket_io");

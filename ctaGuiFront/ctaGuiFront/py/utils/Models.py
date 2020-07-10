@@ -5,7 +5,6 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 import transaction
 
 
-
 try:
     from zope.sqlalchemy import ZopeTransactionExtension
     db_session = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
