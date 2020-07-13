@@ -1,10 +1,8 @@
-from asgiref.wsgi import WsgiToAsgi
-
 from pyramid.config import Configurator
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.exceptions import NotFound
-from sqlalchemy import engine_from_config
+from ctaGuiFront.py.utils.security import groupfinder, RootFactory
 
 from ctaGuiUtils.py.BaseConfig import BaseConfig
 from ctaGuiUtils.py.InstData import InstData
@@ -13,9 +11,9 @@ from ctaGuiUtils.py.utils import has_acs
 
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiFront.py.utils.ViewManager import ViewManager
-from ctaGuiFront.py.utils.Models import RootFactory, db_session, sql_base, get_groups
 
 from ctaGuiFront.py.utils.server_args import parse_args
+from ctaGuiFront.py.utils.AsyncSocketManager import AsyncSocketManager, extend_app_to_asgi
 
 
 # ------------------------------------------------------------------
@@ -23,29 +21,20 @@ def setup_app():
     try:
         view_manager = ViewManager(base_config=base_config)
 
-        # database and authentication
-        engine = engine_from_config(settings, 'sqlalchemy.')
-        # engine = create_engine('sqlite:///ctaGuiFront.db') # if not set in the .ini file
-
-        db_session.configure(bind=engine)
-        sql_base.metadata.bind = engine
-
-        authn_policy = AuthTktAuthenticationPolicy(
-            'sosecret', callback=get_groups, hashalg='sha512'
-        )
-        authz_policy = ACLAuthorizationPolicy()
-
         config = Configurator(
             settings=settings,
-            # root_factory=RootFactory
-            # settings=settings, root_factory=app_name + '.py.utils.Models.RootFactory'
+            root_factory=RootFactory
         )
+
+        authn_policy = AuthTktAuthenticationPolicy(
+            'sosecret', callback=groupfinder, hashalg='sha512',
+        )
+        authz_policy = ACLAuthorizationPolicy()
         config.set_authentication_policy(authn_policy)
         config.set_authorization_policy(authz_policy)
 
-        config.include('pyramid_jinja2')
-
-        renderer = app_name + ':templates/view_common.jinja2'
+        config.include('pyramid_mako')
+        renderer = app_name + ':templates/view_common.mak'
 
         # ------------------------------------------------------------------
         # forbidden view, which simply redirects to the login
@@ -152,120 +141,6 @@ def setup_app():
     return wsgi_app
 
 
-# ------------------------------------------------------------------
-class ExtendedWsgiToAsgi(WsgiToAsgi):
-    """Extends the WsgiToAsgi wrapper to include an ASGI consumer protocol router"""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.protocol_router = {"http": {}, "websocket": {}}
-
-    async def __call__(self, scope, *args, **kwargs):
-        protocol = scope["type"]
-        path = scope["path"]
-        try:
-            consumer = self.protocol_router[protocol][path]
-        except KeyError:
-            consumer = None
-        if consumer is not None:
-            await consumer(scope, *args, **kwargs)
-        try:
-            if scope['type'] == 'http':
-                await super().__call__(scope, *args, **kwargs)
-        except Exception as e:
-            raise e
-
-    def route(self, rule, *args, **kwargs):
-        try:
-            protocol = kwargs["protocol"]
-        except KeyError:
-            raise Exception("You must define a protocol type for an ASGI handler")
-
-        def _route(func):
-            self.protocol_router[protocol][rule] = func
-
-        return _route
-
-
-
-
-from random import Random
-import json
-from ctaGuiUtils.py.utils import get_rnd_seed, get_time
-rnd_seed = get_rnd_seed()
-rnd_gen = Random(rnd_seed)
-
-
-# ------------------------------------------------------------------
-def extend_app_to_asgi(wsgi_app):
-    app = ExtendedWsgiToAsgi(wsgi_app)
-
-    class AsyncSocketManager:
-        server_name = None
-
-        def __init__(self, *args, **kwargs):
-            # super(SocketManager, self).__init__(*args, **kwargs)
-
-            self.sess_id = get_time('msec') + rnd_gen.randint(1000000, (1000000 * 10) -1)
-            self.user_id = ''
-            self.user_group = ''
-            self.user_group_id = ''
-            self.sess_name = ''
-            self.log_send_packet = False
-            self.sess_expire = 10
-            self.cleanup_sleep = 60
-
-        def websocket_send(self, data):
-            data = json.dumps(data)
-            return {"type": "websocket.send", "text": data}
-
-        async def send(self, send, data):
-            data['sess_id'] = self.sess_id
-            data = json.dumps(data)
-            await send(self.websocket_send(data))
-            return
-
-
-    # see: https://asgi.readthedocs.io/en/latest/specs/www.html
-    @app.route("/my_ws", protocol="websocket")
-    async def hello_websocket(scope, receive, send):
-        ss = AsyncSocketManager()
-        
-        while True:
-            message = await receive()
-            if message["type"] == "websocket.connect":
-                await send({"type": "websocket.accept"})
-                log.info([['b', ' - websocket.connect '], ['p', ss.sess_id, message]])
-
-                data = {'xxx':'ssssssssssss', 'sess_id':ss.sess_id}
-                data = json.dumps(data)
-                await send({"type": "websocket.send", "text": data})
-
-
-                data = {'qqq': 298798723493287, 'gggg':'dddddddddddddddddddddddddddddd'}
-                await ss.send(send, data)
-            
-            elif message["type"] == "websocket.receive":
-                text = message.get("text")
-                # print(' - websocket.receive', message)
-
-                # print('qqqqqqqqqqqqqqqqqq',message)
-                if text:
-                    # text = ['got mes:', text]
-                    text = json.dumps(text)
-                    await send({"type": "websocket.send", "text": text})
-                else:
-                    await send({"type": "websocket.send", "bytes": message.get("bytes")})
-            
-            elif message["type"] == "websocket.disconnect":
-                # print('-------------------- websocket.disconnect', message )
-                break
-            # else:
-            #     print('ddddddddddddddd',message["type"])
-
-    # return wsgi_app
-    return app
-
-
 
 
 
@@ -309,6 +184,10 @@ try:
 
     # set the list of telescopes for this particular site
     InstData(base_config=base_config)
+
+    # 
+    setattr(AsyncSocketManager, 'base_config', base_config)
+
 
     # ------------------------------------------------------------------
     wsgi_app = setup_app()

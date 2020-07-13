@@ -8,10 +8,10 @@
 
     <!-- set a global variable (must come before anything else) -->
     <script>
-        window.APP_PREFIX = '{{app_prefix}}'
-        window.SITE_TYPE = '{{ns_type}}'
-        window.WIDGET_NAME = '{{widget_name}}'
-        window.DISPLAY_USERID = '{{display_userid}}'
+        window.APP_PREFIX = '${app_prefix}'
+        window.SITE_TYPE = '${ns_type}'
+        window.WIDGET_NAME = '${widget_name}'
+        window.DISPLAY_USERID = '${display_userid}'
     </script>
 
     <meta charset="UTF-8" />
@@ -24,32 +24,10 @@
     <link rel="icon" type="image/x-icon" href="/static/icon-batman.png"/>
 
     <!-- executed sed 's/d3/d3_3_5_17/g' bower_components/d3/d3.min.js -->
-    <!-- <script type="text/javascript" src="/js/dc_d3_3_5_17/d3_3_5_17.min.js"></script> -->
     <script type="text/javascript" src="/bower_components/d3/d3.js"></script>
     <script type="text/javascript" src="/js/d3_hexbin/d3-hexbin.v0.2.min.js"></script>
-    <!-- <script type="text/javascript" src="/bower_components/crossfilter/crossfilter.min.js"></script> -->
-
-    <!-- executed: sed 's/d3/d3_3_5_17/g' bower_components/dcjs/dc.js -->
-    <!-- <link rel="stylesheet" type="text/css" href="/js/dc_d3_3_5_17/dc.min.css"> -->
-
     <script type="text/javascript" src="/bower_components/textures/dist/textures.js"></script>
     <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
-    <!-- <script type="text/javascript" src="/bower_components/jquery-ui/jquery-ui.min.js"></script> -->
-    <!-- <script type="text/javascript" src="/bower_components/jszip/dist/jszip.min.js"></script> -->
-    <!-- <script type="text/javascript" src="/bower_components/moment/min/moment.min.js"></script> -->
-    <!-- <script type="text/javascript" src="/bower_components/sprintf/dist/sprintf.min.js"></script> -->
-
-    <!-- socket.io -->
-    <!-- <script type="text/javascript" src="/bower_components/gevent-socketio/examples/simple_pyramid_chat/chatter2/static/socket.io.js"></script> -->
-    <!-- <script type="text/javascript" src="/bower_components/gevent-socketio-py3/examples/simple_pyramid_chat/chatter2/static/socket.io.js"></script> -->
-
-
-    <!-- ========================================================================= -->
-    <!-- themes and styles -->
-    <!-- ========================================================================= -->
-    <!-- <link rel="import" href="/bower_components/font-roboto/roboto.html"> -->
-    <!-- <link rel="import" href="/styles/app-theme.html"> -->
-
     <link rel="stylesheet" type="text/css" href="/styles/fonts.css"/>
     <link rel="stylesheet" type="text/css" href="/styles/general_style.css"/>
     <link href="/static/fontawesome-free-5.12.0-web/css/all.css" rel="stylesheet">
@@ -75,7 +53,7 @@
 
         <div class="flex_ele"></div>
 
-        <div class="menu_header" id="userName_div" style="opacity:0.8; pointer-events:none">{{display_userid}}</div>
+        <div class="menu_header" id="userName_div" style="opacity:0.8; pointer-events:none">${display_userid}</div>
         <div style="margin-right: 3px;"></div>
 
 
@@ -100,14 +78,15 @@
 
 
     <script>
+
         // var ws = new WebSocket("ws://localhost:8090/ws");
         // const socket = new WebSocket('ws://localhost:8090');
         // var ws = new WebSocket("ws://0.0.0.0:8090/ws")
         var ws = new WebSocket("ws://127.0.0.1:8090/my_ws")
 
         ws.onopen = function(event) {
-            let mes = 'opened .........'
-            console.log(mes, event)
+            // let mes = 'opened .........'
+            // console.log(mes, event)
 
             // ws.send('here i am')
             data = {xxx:'here i am', yyy:4}
@@ -116,22 +95,28 @@
 
         }
 
-        // ws.onclose = function(event) {
-        //     let mes = 'closed .........'
-        //     console.log(mes, event)
-        // }
+
         ws.onmessage = function(event) {
-            let mes = 'message .........'
-            console.log(mes, event)
+            // let mes = 'message .........'
+            // console.log(mes, event)
 
             let data = JSON.parse(event.data)
-            console.log(data)
+            console.log(data.event_name)
+            console.log(data.data)
 
 
         }
 
 
+        // temporary reload....
+        ws.onclose = function(event) {
+            // let mes = 'closed .........'
+            // console.log(mes, event)
 
+            setTimeout(function() {
+                window.location.reload() 
+            }, 10) 
+        }
 
         // setTimeout(function() {
         // }, 100);
@@ -162,7 +147,7 @@
 
 
     <script type="text/javascript">
-      // $.getScript('/js/utils/BaseApp.js')
+      $.getScript('/js/utils/BaseApp.js')
     </script>
 
     <!-- <paper-toast opened class='it-bottom' duration='0' text="Log-in is implemented for development purposes... Please use username = 'guest' and a password '123' or 'user0' with 'xxx'"></paper-toast> -->

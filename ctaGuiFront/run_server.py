@@ -44,12 +44,8 @@ if is_dev:
 # see: https://www.uvicorn.org/
 # ------------------------------------------------------------------
 if __name__ == "__main__":
+    uvicorn.run(
+        app, **conf
+    )
 
-    try:
-        uvicorn.run(
-            app, **conf
-        )
-    except Exception as e:
-        print('--'*40)
-        print(e)
 

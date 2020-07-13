@@ -8,9 +8,13 @@ from socketio import socketio_manage
 
 # import the utils module to allow access to self.app_prefix
 from ctaGuiUtils.py.LogParser import LogParser
-from ctaGuiFront.py.utils.Models import db_session, MyModel
 # base-class for all widgets which use sockets
 from ctaGuiFront.py.utils.SocketManager import SocketManager
+# 
+from ctaGuiFront.py.utils.security import USERS, check_password
+
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -73,6 +77,8 @@ class ViewManager():
     def view_login(self, request):
         view_name = "login"
 
+        # forget(request)
+
         # if already logged in, go to the index
         if request.authenticated_userid is not None:
             return HTTPFound(location=request.route_url("index"))
@@ -81,15 +87,11 @@ class ViewManager():
         if 'username' in request.params and 'password' in request.params:
             login = request.params['username']
             password = request.params['password']
-            db_lookup = db_session.query(MyModel).filter(MyModel.userId == login).first()
+            hashed_pw = USERS.get(login)
 
-            # check if succesfull login
-            if db_lookup is not None:
-                is_login = (str(db_lookup.userId) == login)
-                is_pass = (str(db_lookup.passwd) == password)
-                if is_login and is_pass:
-                    headers = remember(request, login)
-                    return HTTPFound(location=request.route_url("index"), headers=headers)
+            if hashed_pw and check_password(password, hashed_pw):
+                headers = remember(request, login)
+                return HTTPFound(location=request.route_url("index"), headers=headers)
 
         return dict(
             location=request.route_url(view_name),
