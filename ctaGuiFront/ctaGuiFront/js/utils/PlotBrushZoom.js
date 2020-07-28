@@ -187,6 +187,22 @@ window.PlotBrushZoom = function() {
                     zoom: false,
                 })
             break
+        case 'hybrid':
+            reserved.azerty = window.merge_obj(
+                reserved.azerty,
+                {
+                    visibility: true,
+                    zoom: true,
+                })
+            reserved.axis = window.merge_obj(
+                reserved.axis,
+                {
+                    visibility: true,
+                    track: 'a1',
+                    orientation: 'out',
+                    zoom: true,
+                })
+            break
         default:
 
         }
@@ -944,6 +960,7 @@ window.PlotBrushZoom = function() {
     }
     this.get_axis = get_axis
     function update_axis(opt_in) {
+        reserved = window.merge_obj(reserved, opt_in)
         applyZoomBrush()
         core_axis(reserved.axis)
         updateAzerty()
