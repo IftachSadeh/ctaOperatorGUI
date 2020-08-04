@@ -11,7 +11,8 @@
         window.APP_PREFIX = '${app_prefix}'
         window.SITE_TYPE = '${ns_type}'
         window.WIDGET_NAME = '${widget_name}'
-        window.DISPLAY_USERID = '${display_userid}'
+        window.DISPLAY_USER_ID = '${display_user_id}'
+        window.DISPLAY_USER_GROUP = '${display_user_group}'
     </script>
 
     <meta charset="UTF-8" />
@@ -53,7 +54,7 @@
 
         <div class="flex_ele"></div>
 
-        <div class="menu_header" id="userName_div" style="opacity:0.8; pointer-events:none">${display_userid}</div>
+        <div class="menu_header" id="userName_div" style="opacity:0.8; pointer-events:none">${display_user_id}</div>
         <div style="margin-right: 3px;"></div>
 
 

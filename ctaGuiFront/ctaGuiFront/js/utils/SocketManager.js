@@ -232,10 +232,16 @@ function SocketManager() {
             window.SOCKET_INFO = tel_info
 
             validate_server(data_in.server_name)
-            this_top.sess_id = unique({prefix: ''})
+            this_top.sess_id = String(unique({prefix: ''}))
 
             this_top.is_reload = false
-            this_top.socket.emit('set_sess_id')
+
+            let data_out = {
+                display_user_id: window.DISPLAY_USER_ID,
+                display_user_group: window.DISPLAY_USER_GROUP,
+            }
+
+            this_top.socket.emit('replay_initial_connect', data_out)
 
             this_top.con_stat = new connection_state()
             this_top.con_stat.set_server_con_state(true)
@@ -256,7 +262,7 @@ function SocketManager() {
 
         let is_init = true
         this_top.socket.on('initial_connect', function(data_in) {
-            // console.log('xxxxxxx initial_connect', is_init)
+            // console.log('xxxxxxx initial_connect', is_init, data_in)
             if (is_init) {
                 is_init = false
                 initial_connect(data_in)

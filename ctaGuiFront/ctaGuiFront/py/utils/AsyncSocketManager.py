@@ -14,6 +14,7 @@ from socketio.mixins import BroadcastMixin
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.utils import get_rnd_seed, get_time, get_rnd
 from ctaGuiUtils.py.RedisManager import RedisManager
+from ctaGuiFront.py.utils.security import USERS
 
 import asyncio
 from asgiref.wsgi import WsgiToAsgi
@@ -22,17 +23,40 @@ import json
 rnd_seed = get_rnd_seed()
 rnd_gen = Random(rnd_seed)
 
+asyncio_lock = asyncio.Lock()
 
 # ------------------------------------------------------------------
 class ExtendedWsgiToAsgi(WsgiToAsgi):
     """Extends the WsgiToAsgi wrapper to include an ASGI consumer protocol router"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.protocol_router = {"http": {}, "websocket": {}}
+        self.protocol_router = {'http': {}, 'websocket': {},}
+
+        # # print(args[0].__dict__.keys())
+        # self.request = args[0]
+        # # print(self.request.authenticated_userid)
+        return
 
     async def __call__(self, scope, *args, **kwargs):
-        protocol = scope["type"]
-        path = scope["path"]
+        protocol = scope['type']
+        path = scope['path']
+
+        # # # print(protocol, ' \t ', scope['path'])
+        # # if path == '/cta/index':
+        # #     # print(self.initial_response)
+        # #     print(kwargs)
+        # #     import inspect
+        # #     lines = inspect.getsource(args[1])
+        # #     print(lines)
+        # #     for k,v in scope.items():
+        # #         print(k, ' \t ', v)
+        # #     for v in scope['headers']:
+        # #         print(' - ', v[0], ' \t ', v[1])
+        # if path == '/cta/index':
+        #     # print(self.request.__dict__)
+        #     print(self.request.registry.__dict__.keys())
+        #     # print(self.request.request_factory.response.__dict__)
+
         try:
             consumer = self.protocol_router[protocol][path]
         except KeyError:
@@ -46,10 +70,11 @@ class ExtendedWsgiToAsgi(WsgiToAsgi):
             raise e
 
     def route(self, rule, *args, **kwargs):
+        # print(kwargs, rule)
         try:
-            protocol = kwargs["protocol"]
+            protocol = kwargs['protocol']
         except KeyError:
-            raise Exception("You must define a protocol type for an ASGI handler")
+            raise Exception('You must define a protocol type for an ASGI handler')
 
         def _route(func):
             self.protocol_router[protocol][rule] = func
@@ -66,6 +91,8 @@ def extend_app_to_asgi(wsgi_app):
     # see: https://asgi.readthedocs.io/en/latest/specs/www.html
     @app.route("/my_ws", protocol="websocket")
     async def hello_websocket(scope, receive, send):
+
+
         try:
             async_manager = AsyncSocketManager(sync_send=send)
             
@@ -79,7 +106,7 @@ def extend_app_to_asgi(wsgi_app):
                     
                     try:
                         await send({"type": "websocket.accept"})
-                        await async_manager.websocket_connect()
+                        await async_manager.send_initial_connect()
                     except Exception as e:
                         traceback.print_tb(e.__traceback__)
                     
@@ -110,6 +137,7 @@ def extend_app_to_asgi(wsgi_app):
                             await async_manager.receive(data=text)
                         except Exception as e:
                             traceback.print_tb(e.__traceback__)
+                            print(e)
 
                         # await send({"type": "websocket.send", "text": text})
                     # else:
@@ -137,7 +165,7 @@ class AsyncSocketManager:
 
     # common dictionaries for all instances of
     # the class (keeping track of all sessions etc.)
-    sess_endpoints = dict()
+    # sess_endpoints = dict()
     thread_sigs = dict()
     widget_inits = dict()
 
@@ -225,10 +253,74 @@ class AsyncSocketManager:
         return
 
 
+
+
+
+
+
     # ------------------------------------------------------------------
-    async def websocket_connect(self):
-        # '''upon any new connection'''
-        # self.log.info([['b', ' - websocket.connect '], ['p', self.sess_id]])
+    async def receive(self, data):
+        # data = {
+        #     'event_name': event_name,
+        #     'sess_id': self.sess_id,
+        #     'data': data_in,
+        # }
+
+        # await self.sync_send(self.websocket_data_dump(data))
+        # print('rec',data)
+
+        # async with asyncio_lock:
+        #     print('ssssssssssssssssssssss 0000000000000000')
+        #     await asyncio.sleep(2.5)
+        #     print('ssssssssssssssssssssss 11111111 ')
+        #     await asyncio.sleep(1.005)
+
+        try:
+            # print('----------------------', data['event_name'])
+            event_func = getattr(self, data['event_name'])
+        except Exception as e:
+            self.log.error([['p', '\n'],['r', '-'*20, 'event name undefined:'], ['p', '', data['event_name'], ''], ['r', '-'*20], ['p', '\n', self.sess_id, ''], ['y', data, '\n'], ['r', '-'*100]])
+            raise e
+
+        try:
+            await event_func(data)
+        except Exception as e:
+            self.log.error([['r', e]])
+            raise e
+
+        return
+
+
+    # ------------------------------------------------------------------
+    async def client_log(self, data):
+        """interface for client logs to be processed by the server
+        
+            Parameters
+            ----------
+            data : dict
+                client data and metadata related to the logging event
+        """
+
+        if data['log_level'] == 'ERROR':
+            self.log.error([['wr', ' - client_log:'], ['p', '', self.sess_id, ''], ['y', data]])
+
+        elif data['log_level'] == 'INFO':
+            self.log.info([['b', ' - client_log:'], ['p', '', self.sess_id, '' ], ['y', data]])
+
+        else:
+            raise Exception('unrecognised logging level from client', self.sess_id, data)
+
+        return
+
+    # ------------------------------------------------------------------
+    async def send_initial_connect(self):
+        """upon any new connection, sed the client initialisation data
+        """
+
+        # temporary hack - make sure the lifecycle is understood - this should only happen once...
+        if self.sess_id is not None:
+            self.log.error([['wr', ' - already connected ?!?!?!?!', self.sess_id]])
+            raise Exception('already connected ?!?!?', self.sess_id)
 
         server_name = self.server_name
         tel_ids = self.inst_data.get_inst_ids()
@@ -245,53 +337,212 @@ class AsyncSocketManager:
 
         return
 
-
-
-
     # ------------------------------------------------------------------
-    async def receive(self, data):
-        # data = {
-        #     'event_name': event_name,
-        #     'sess_id': self.sess_id,
-        #     'data': data_in,
-        # }
+    async def replay_initial_connect(self, data):
+        """the replay of the client to the initial_connect event
 
-        # await self.sync_send(self.websocket_data_dump(data))
-        # print('rec',data)
+            set the session-id which is derived by the client upon connecting the socket
+        
+            Parameters
+            ----------
+            data : dict
+                client data and metadata related to the event
+        """
 
-
-        try:
-            event_func = getattr(self, data['event_name'])
-            event_func(data)
-        except Exception as e:
-            print('-'*20, 'event name undefined:', data['event_name'], '-'*20)
-            print(data)
-            print('-'*60)
-            raise e
-
-        return
-
-
-    def client_log(self, data):
-        if data['log_level'] == 'ERROR':
-            self.log.error([['wr', ' - client_log:'], ['p', '', self.sess_id, ''], ['y', data]])
-        elif data['log_level'] == 'INFO':
-            self.log.info([['b', ' - client_log:'], ['p', '', self.sess_id, '' ], ['y', data]])
-        else:
-            raise Exception('unrecognised logging level from client', self.sess_id, data)
-
-        return
-
-    def set_sess_id(self, data):
         self.sess_id = data['sess_id']
-        self.log.info([['b', ' - websocket.connected '], ['p', self.sess_id]])
+
+        self.user_id = str(data['data']['display_user_id'])
+        if self.user_id == 'None':
+            self.user_id = ''
+
+        self.user_group = str(data['data']['display_user_group'])
+
+        self.user_group_id = self.user_group + '_' + self.user_id
+        self.sess_name = self.user_group_id + '_' + self.sess_id
+
+        self.log.info([['b', ' - websocket.connected '], ['p', self.sess_id], ['y', '', self.user_id, '/', self.user_group],])
+
+        # sanity check
+        hashed_pw = USERS.get(self.user_id)
+        if not hashed_pw:
+            raise Exception('got unidentified user_name in replay_initial_connect...', data)
+
+        # override the global logging variable with a
+        # name corresponding to the current session ids
+        self.log = LogParser(
+            base_config=self.base_config,
+            title=(str(self.user_id) + '/' + str(self.sess_id) + '/' + __name__),
+        )
+
+
+        async with asyncio_lock:
+            # await asyncio.sleep(2.5)
+
+            # register the user_name if needed
+            user_ids = self.redis.l_get('user_ids', packed=False)
+
+            if self.user_id not in user_ids:
+                self.redis.r_push(name='user_ids', data=self.user_id, packed=False)
+
+            # ------------------------------------------------------------------
+            # all session ids in one list (heartbeat should be first to
+            # avoid cleanup racing conditions!)
+            # ------------------------------------------------------------------
+            self.redis.set(
+                name='sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 2), packed=False,
+            )
+            self.redis.r_push(name='all_sess_ids', data=self.sess_id, packed=False)
+
+
+            all_sess_ids = self.redis.l_get('all_sess_ids', packed=False)
+            print('all_sess_ids', all_sess_ids)
+
+            for s in all_sess_ids:
+                print(s, self.redis.exists('sess_heartbeat;' + s))
+
+
+
+        # async with asyncio_lock:
+        #     print('ssssssssssssssssssssss')
+
+        if 0:
+            # if not self.user_id:
+            #     self.user_id = ''
+            # for princ in self.request.effective_principals:
+            #     if princ.startswith('group:'):
+            #         self.user_group = princ[len('group:'):]
+
+            # self.sess_id = str(ses_id_now)
+            # self.user_group_id = self.user_group + '_' + self.user_id
+            # self.sess_name = self.user_group_id + '_' + self.sess_id
+
+            # # override the global logging variable with a
+            # # name corresponding to the current session ids
+            # self.log = LogParser(
+            #     base_config=self.base_config,
+            #     title=(str(self.user_id) + '/' + str(self.sess_id) + '/' + __name__),
+            # )
+
+            # self.log.info([
+            #     ['b', ' -- new session: '],
+            #     ['g', self.sess_id, '', self.ns_name],
+            #     ['b', ' --'],
+            # ])
+            # self.log.debug([
+            #     ['b', ' - session details: '],
+            #     ['y', __old_SocketManager__.server_name, ''],
+            #     ['p', self.user_group_id, ''],
+            #     ['y', self.user_id, ''],
+            #     ['p', self.user_group_id, ''],
+            #     ['y', self.sess_id, ''],
+            #     ['p', self.sess_name, ''],
+            #     ['y', self.ns_name, ''],
+            # ])
+
+            with __old_SocketManager__.lock:
+                # user_ids = self.redis.l_get('user_ids')
+                # if self.user_id not in user_ids:
+                #     self.redis.r_push(name='user_ids', data=self.user_id)
+
+                # ------------------------------------------------------------------
+                # all session ids in one list (heartbeat should be first to
+                # avoid cleanup racing conditions!)
+                # ------------------------------------------------------------------
+                self.redis.set(
+                    name='sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 2)
+                )
+                self.redis.r_push(name='all_sess_ids', data=self.sess_id)
+
+                # ------------------------------------------------------------------
+                # the socket endpoint type registry for this session
+                # ------------------------------------------------------------------
+                __old_SocketManager__.sess_endpoints[self.sess_id] = self.ns_name
+
+                # ------------------------------------------------------------------
+                #
+                # ------------------------------------------------------------------
+                if not self.redis.h_exists(name='sync_groups', key=self.user_id):
+                    self.redis.h_set(
+                        name='sync_groups', key=self.user_id, data=[], packed=True
+                    )
+
+                # ------------------------------------------------------------------
+                # list of all sessions for this user
+                # ------------------------------------------------------------------
+                self.redis.r_push(name='user_sess_ids;' + self.user_id, data=self.sess_id)
+
+            # ------------------------------------------------------------------
+            # initiate the threads which does periodic cleanup, heartbeat managment etc.
+            # ------------------------------------------------------------------
+            with __old_SocketManager__.lock:
+                threads = [
+                    {
+                        'id': -1,
+                        'group': 'shared_thread',
+                        'tag': 'sess_heartbeat',
+                        'func': self.sess_heartbeat,
+                    },
+                    {
+                        'id': -1,
+                        'group': 'shared_thread',
+                        'tag': 'cleanup',
+                        'func': self.cleanup,
+                    },
+                    {
+                        'id': -1,
+                        'group': 'shared_thread',
+                        'tag': 'pubsub_socket_evt_widgets',
+                        'func': self.pubsub_socket_evt_widgets,
+                    },
+                ]
+
+                for thread_info in threads:
+                    if self.check_thread(thread_info):
+                        thread_info['id'] = self.set_thread_state(
+                            thread_info['group'], thread_info['tag'], True
+                        )
+                        gevent.spawn(thread_info['func'], thread_info)
+
+            # ------------------------------------------------------------------
+            # transmit the initial data to the client
+            # ------------------------------------------------------------------
+            join_session_data = {
+                'session_props': {
+                    'sess_id': str(self.sess_id),
+                    'user_id': str(self.user_id),
+                    'is_simulation': self.is_simulation,
+                },
+            }
+
+            self.socket_evt_session(event_name='join_session_data', data=join_session_data)
+
+            # ------------------------------------------------------------------
+            # function which may be overloaded, setting up individual
+            # properties for a given session-type
+            # ------------------------------------------------------------------
+            self.on_join_session_()
+
+            # ------------------------------------------------------------------
+            #
+            # ------------------------------------------------------------------
+            self.init_user_sync_loops()
+
+
+
+
+
+
+
+
+        
         return
 
 
 
-
-
-
+# ------------------------------------------------------------------
+# ------------------------------------------------------------------
+# ------------------------------------------------------------------
+# ------------------------------------------------------------------
 class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # server_name = None
 
@@ -402,133 +653,133 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def on_join_session(self, ses_id_now):
-        self.user_id = self.request.authenticated_userid
-        if not self.user_id:
-            self.user_id = ''
-        for princ in self.request.effective_principals:
-            if princ.startswith('group:'):
-                self.user_group = princ[len('group:'):]
+    # # ------------------------------------------------------------------
+    # #
+    # # ------------------------------------------------------------------
+    # def on_join_session(self, ses_id_now):
+    #     self.user_id = self.request.authenticated_userid
+    #     if not self.user_id:
+    #         self.user_id = ''
+    #     for princ in self.request.effective_principals:
+    #         if princ.startswith('group:'):
+    #             self.user_group = princ[len('group:'):]
 
-        self.sess_id = str(ses_id_now)
-        self.user_group_id = self.user_group + '_' + self.user_id
-        self.sess_name = self.user_group_id + '_' + self.sess_id
+    #     self.sess_id = str(ses_id_now)
+    #     self.user_group_id = self.user_group + '_' + self.user_id
+    #     self.sess_name = self.user_group_id + '_' + self.sess_id
 
-        # override the global logging variable with a
-        # name corresponding to the current session ids
-        self.log = LogParser(
-            base_config=self.base_config,
-            title=(str(self.user_id) + '/' + str(self.sess_id) + '/' + __name__),
-        )
+    #     # override the global logging variable with a
+    #     # name corresponding to the current session ids
+    #     self.log = LogParser(
+    #         base_config=self.base_config,
+    #         title=(str(self.user_id) + '/' + str(self.sess_id) + '/' + __name__),
+    #     )
 
-        self.log.info([
-            ['b', ' -- new session: '],
-            ['g', self.sess_id, '', self.ns_name],
-            ['b', ' --'],
-        ])
-        self.log.debug([
-            ['b', ' - session details: '],
-            ['y', __old_SocketManager__.server_name, ''],
-            ['p', self.user_group_id, ''],
-            ['y', self.user_id, ''],
-            ['p', self.user_group_id, ''],
-            ['y', self.sess_id, ''],
-            ['p', self.sess_name, ''],
-            ['y', self.ns_name, ''],
-        ])
+    #     self.log.info([
+    #         ['b', ' -- new session: '],
+    #         ['g', self.sess_id, '', self.ns_name],
+    #         ['b', ' --'],
+    #     ])
+    #     self.log.debug([
+    #         ['b', ' - session details: '],
+    #         ['y', __old_SocketManager__.server_name, ''],
+    #         ['p', self.user_group_id, ''],
+    #         ['y', self.user_id, ''],
+    #         ['p', self.user_group_id, ''],
+    #         ['y', self.sess_id, ''],
+    #         ['p', self.sess_name, ''],
+    #         ['y', self.ns_name, ''],
+    #     ])
 
-        with __old_SocketManager__.lock:
-            user_ids = self.redis.l_get('user_ids')
-            if self.user_id not in user_ids:
-                self.redis.r_push(name='user_ids', data=self.user_id)
+    #     with __old_SocketManager__.lock:
+    #         user_ids = self.redis.l_get('user_ids')
+    #         if self.user_id not in user_ids:
+    #             self.redis.r_push(name='user_ids', data=self.user_id)
 
-            # ------------------------------------------------------------------
-            # all session ids in one list (heartbeat should be first to
-            # avoid cleanup racing conditions!)
-            # ------------------------------------------------------------------
-            self.redis.set(
-                name='sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 2)
-            )
-            self.redis.r_push(name='all_sess_ids', data=self.sess_id)
+    #         # ------------------------------------------------------------------
+    #         # all session ids in one list (heartbeat should be first to
+    #         # avoid cleanup racing conditions!)
+    #         # ------------------------------------------------------------------
+    #         self.redis.set(
+    #             name='sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 2)
+    #         )
+    #         self.redis.r_push(name='all_sess_ids', data=self.sess_id)
 
-            # ------------------------------------------------------------------
-            # the socket endpoint type registry for this session
-            # ------------------------------------------------------------------
-            __old_SocketManager__.sess_endpoints[self.sess_id] = self.ns_name
+    #         # ------------------------------------------------------------------
+    #         # the socket endpoint type registry for this session
+    #         # ------------------------------------------------------------------
+    #         __old_SocketManager__.sess_endpoints[self.sess_id] = self.ns_name
 
-            # ------------------------------------------------------------------
-            #
-            # ------------------------------------------------------------------
-            if not self.redis.h_exists(name='sync_groups', key=self.user_id):
-                self.redis.h_set(
-                    name='sync_groups', key=self.user_id, data=[], packed=True
-                )
+    #         # ------------------------------------------------------------------
+    #         #
+    #         # ------------------------------------------------------------------
+    #         if not self.redis.h_exists(name='sync_groups', key=self.user_id):
+    #             self.redis.h_set(
+    #                 name='sync_groups', key=self.user_id, data=[], packed=True
+    #             )
 
-            # ------------------------------------------------------------------
-            # list of all sessions for this user
-            # ------------------------------------------------------------------
-            self.redis.r_push(name='user_sess_ids;' + self.user_id, data=self.sess_id)
+    #         # ------------------------------------------------------------------
+    #         # list of all sessions for this user
+    #         # ------------------------------------------------------------------
+    #         self.redis.r_push(name='user_sess_ids;' + self.user_id, data=self.sess_id)
 
-        # ------------------------------------------------------------------
-        # initiate the threads which does periodic cleanup, heartbeat managment etc.
-        # ------------------------------------------------------------------
-        with __old_SocketManager__.lock:
-            threads = [
-                {
-                    'id': -1,
-                    'group': 'shared_thread',
-                    'tag': 'sess_heartbeat',
-                    'func': self.sess_heartbeat,
-                },
-                {
-                    'id': -1,
-                    'group': 'shared_thread',
-                    'tag': 'cleanup',
-                    'func': self.cleanup,
-                },
-                {
-                    'id': -1,
-                    'group': 'shared_thread',
-                    'tag': 'pubsub_socket_evt_widgets',
-                    'func': self.pubsub_socket_evt_widgets,
-                },
-            ]
+    #     # ------------------------------------------------------------------
+    #     # initiate the threads which does periodic cleanup, heartbeat managment etc.
+    #     # ------------------------------------------------------------------
+    #     with __old_SocketManager__.lock:
+    #         threads = [
+    #             {
+    #                 'id': -1,
+    #                 'group': 'shared_thread',
+    #                 'tag': 'sess_heartbeat',
+    #                 'func': self.sess_heartbeat,
+    #             },
+    #             {
+    #                 'id': -1,
+    #                 'group': 'shared_thread',
+    #                 'tag': 'cleanup',
+    #                 'func': self.cleanup,
+    #             },
+    #             {
+    #                 'id': -1,
+    #                 'group': 'shared_thread',
+    #                 'tag': 'pubsub_socket_evt_widgets',
+    #                 'func': self.pubsub_socket_evt_widgets,
+    #             },
+    #         ]
 
-            for thread_info in threads:
-                if self.check_thread(thread_info):
-                    thread_info['id'] = self.set_thread_state(
-                        thread_info['group'], thread_info['tag'], True
-                    )
-                    gevent.spawn(thread_info['func'], thread_info)
+    #         for thread_info in threads:
+    #             if self.check_thread(thread_info):
+    #                 thread_info['id'] = self.set_thread_state(
+    #                     thread_info['group'], thread_info['tag'], True
+    #                 )
+    #                 gevent.spawn(thread_info['func'], thread_info)
 
-        # ------------------------------------------------------------------
-        # transmit the initial data to the client
-        # ------------------------------------------------------------------
-        join_session_data = {
-            'session_props': {
-                'sess_id': str(self.sess_id),
-                'user_id': str(self.user_id),
-                'is_simulation': self.is_simulation,
-            },
-        }
+    #     # ------------------------------------------------------------------
+    #     # transmit the initial data to the client
+    #     # ------------------------------------------------------------------
+    #     join_session_data = {
+    #         'session_props': {
+    #             'sess_id': str(self.sess_id),
+    #             'user_id': str(self.user_id),
+    #             'is_simulation': self.is_simulation,
+    #         },
+    #     }
 
-        self.socket_evt_session(event_name='join_session_data', data=join_session_data)
+    #     self.socket_evt_session(event_name='join_session_data', data=join_session_data)
 
-        # ------------------------------------------------------------------
-        # function which may be overloaded, setting up individual
-        # properties for a given session-type
-        # ------------------------------------------------------------------
-        self.on_join_session_()
+    #     # ------------------------------------------------------------------
+    #     # function which may be overloaded, setting up individual
+    #     # properties for a given session-type
+    #     # ------------------------------------------------------------------
+    #     self.on_join_session_()
 
-        # ------------------------------------------------------------------
-        #
-        # ------------------------------------------------------------------
-        self.init_user_sync_loops()
+    #     # ------------------------------------------------------------------
+    #     #
+    #     # ------------------------------------------------------------------
+    #     self.init_user_sync_loops()
 
-        return
+    #    return
 
     # ------------------------------------------------------------------
     # general communication with a widget (will import and instantiate a class if needed)

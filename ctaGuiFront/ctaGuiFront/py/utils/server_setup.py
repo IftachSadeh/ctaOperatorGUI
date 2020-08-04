@@ -182,6 +182,18 @@ try:
     log.info([['wg', ' - Starting pyramid app - ctaGuiFront ...']])
     log.info([['p', ' - has_acs = '], [('g' if has_acs else 'r'), has_acs]])
 
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    do_flush_redis = 1
+    if do_flush_redis:
+        from ctaGuiUtils.py.RedisManager import RedisManager
+        log.warn([['wr', ' ---- flusing redis ... ----']])
+        _redis = RedisManager(name='_init_', port=redis_port, log=log)
+        _redis.redis.flushall()
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
     # set the list of telescopes for this particular site
     InstData(base_config=base_config)
 

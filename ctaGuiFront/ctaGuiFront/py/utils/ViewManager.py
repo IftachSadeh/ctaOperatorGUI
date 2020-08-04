@@ -66,9 +66,19 @@ class ViewManager():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_display_userid(self, request):
-        userid = request.authenticated_userid
-        return ('' if userid is None else userid)
+    def get_display_user_id(self, request):
+        user_id = request.authenticated_userid
+        return ('' if user_id is None else user_id)
+
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
+    def get_display_user_group(self, request):
+        user_group = ''
+        for princ in request.effective_principals:
+            if princ.startswith('group:'):
+                user_group = princ[len('group:'):]
+        return str(user_group)
 
     # ------------------------------------------------------------------
     # login page with authentication - check the DB for
@@ -84,13 +94,15 @@ class ViewManager():
             return HTTPFound(location=request.route_url("index"))
 
         # preform the authentication check against the DB
-        if 'username' in request.params and 'password' in request.params:
-            login = request.params['username']
+        if 'user_name' in request.params and 'password' in request.params:
+            user_name = request.params['user_name']
             password = request.params['password']
-            hashed_pw = USERS.get(login)
+            hashed_pw = USERS.get(user_name)
+
+            print('xxxxxxxx', user_name, password, hashed_pw)
 
             if hashed_pw and check_password(password, hashed_pw):
-                headers = remember(request, login)
+                headers = remember(request, user_name)
                 return HTTPFound(location=request.route_url("index"), headers=headers)
 
         return dict(
@@ -99,7 +111,8 @@ class ViewManager():
             app_prefix=self.app_prefix,
             ns_type=self.site_type,
             widget_name=view_name,
-            display_userid=self.get_display_userid(request),
+            display_user_id=self.get_display_user_id(request),
+            display_user_group=self.get_display_user_group(request),
         )
 
     # ------------------------------------------------------------------
@@ -130,7 +143,8 @@ class ViewManager():
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
             came_from=request.route_url(view_name),
-            display_userid=self.get_display_userid(request),
+            display_user_id=self.get_display_user_id(request),
+            display_user_group=self.get_display_user_group(request),
         )
 
     # ------------------------------------------------------------------
@@ -148,7 +162,8 @@ class ViewManager():
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
             location=request.route_url(view_name),
-            display_userid=self.get_display_userid(request),
+            display_user_id=self.get_display_user_id(request),
+            display_user_group=self.get_display_user_group(request),
         )
 
     # ------------------------------------------------------------------
@@ -163,5 +178,6 @@ class ViewManager():
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
             came_from=request.route_url(view_name),
-            display_userid=self.get_display_userid(request),
+            display_user_id=self.get_display_user_id(request),
+            display_user_group=self.get_display_user_group(request),
         )

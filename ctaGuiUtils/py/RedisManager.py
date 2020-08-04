@@ -33,7 +33,9 @@ class RedisBase(object):
             if (name is None):
                 raise
 
-            if packed and (data is not None):
+            if data is None:
+                data = ''
+            if packed:
                 data = packb(data)
 
             out = self.base.set(name, data)
@@ -405,8 +407,11 @@ class RedisManager(RedisBase):
 
             data = self.base.lrange(name=name, start=0, end=-1)
 
-            if packed and not is_empty(data):
-                data = unpack_object(data)
+            if not is_empty(data):
+                if packed:
+                    data = unpack_object(data)
+                else:
+                    data = [ d.decode("utf-8") for d in data ]
 
         except GreenletExit:
             pass
@@ -719,4 +724,7 @@ def unpack_object(data_in, log=None):
 #
 # ------------------------------------------------------------------
 def is_empty(data):
-    return (data is None or data == '')
+    if isinstance(data, list):
+        return (len(data) == 0)
+    else:
+        return (data is None or data == '')

@@ -22,39 +22,6 @@ $.getScript('/js/utils/common.js', function() {
     let output = base_app.init()
     let is_socket_view = output.is_socket_view
 
-
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    // is_socket_view = false
-    is_socket_view = true
-
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
@@ -162,8 +129,8 @@ function BaseApp() {
 
             th = row.appendChild(document.createElement('th'))
             entry = th.appendChild(document.createElement('input'))
-            entry.id = 'username'
-            entry.name = 'username'
+            entry.id = 'user_name'
+            entry.name = 'user_name'
             entry.label = 'Username'
             entry.value = 'user0'
             entry.classList.add('form-input')
@@ -194,7 +161,7 @@ function BaseApp() {
             let msg_div = main_div.appendChild(document.createElement('div'))
             msg_div.innerHTML = (
                 'Log-in is implemented for development purposes...<br>'
-                + ' Please use username = \'guest\' '
+                + ' Please use user_name = \'guest\' '
                 + 'and a password \'123\' or \'user0\' with \'xxx\''
             )
             msg_div.classList.add('menu_header')
