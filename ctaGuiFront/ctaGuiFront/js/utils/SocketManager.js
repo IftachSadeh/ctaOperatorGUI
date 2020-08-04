@@ -50,17 +50,99 @@ function SocketManager() {
 
     this_top.state_change_funcs = []
 
+
+    function SocketInterface() {
+        let this_sock_int = this
+        this_sock_int.connected = false
+
+        let events = {
+        }
+        function on(event_name, func) {
+            events[event_name] = func
+            return
+        }
+        this_sock_int.on = on
+
+        function emit(event_name, data_in) {
+            if (!is_def(data_in)) {
+                data_in = {}
+            }
+            let data = {
+                event_name: event_name,
+                sess_id: this_top.sess_id,
+                data: data_in,
+            }
+            // console.log(data)
+            data = JSON.stringify(data)
+            this_sock_int.ws.send(data)
+            return
+        }
+        this_sock_int.emit = emit
+
+        function sutup_websocket() {
+            let ws = new WebSocket('ws://127.0.0.1:8090/my_ws')
+            this_sock_int.ws = ws
+
+            this_sock_int.ws.onopen = function(event) {
+                this_sock_int.connected = true
+                console.log('opened',this_sock_int.ws)
+                // // this_sock_int.ws.send('here i am')
+                // let data = {xxx:'here i am', yyy:4}
+                // data = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww '
+                // this_sock_int.ws.send(JSON.stringify(data))
+            }
+
+            this_sock_int.ws.onmessage = function(event) {
+                let event_data = JSON.parse(event.data)
+                let event_name = event_data.event_name
+
+                if (is_def(events[event_name])) {
+                    console.log('event_nameevent_name', event_data.sess_id, event_name, event_data.data)
+                    events[event_name](event_data)
+                }
+                else {
+                    console.error(' - undefined event_name', event)
+                }
+
+                return
+            }
+
+
+            // temporary reload....
+            this_sock_int.ws.onclose = function(event) {
+                this_sock_int.connected = false
+                console.log('closed')
+
+                setTimeout(function() {
+                    sutup_websocket()
+                    // window.location.reload() 
+                }, 1000) 
+                setTimeout(function() {
+                    window.location.reload() 
+                }, 100) 
+
+                // setTimeout(start_websocket, 500)
+            }
+        }
+        sutup_websocket()
+
+
+        return
+    }
+
     // ---------------------------------------------------------------------------
     // the socket
     // ---------------------------------------------------------------------------
     function setup_socket() {
         let widget_name = window.WIDGET_NAME
-        this_top.socket = io.connect('/' + widget_name)
+
+        this_top.socket = new SocketInterface()
+        // this_top.socket = io.connect('/' + widget_name)
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        this_top.socket.on('initial_connect', function(data_in) {
+        function initial_connect(data_in) {
             // console.log("initial_connect");
             // console.log('initial_connect',data_in);
 
@@ -72,11 +154,10 @@ function SocketManager() {
             window.SOCKET_INFO = tel_info
 
             validate_server(data_in.server_name)
-
-            let sockId = this.socket.sessionid
+            this_top.sess_id = unique({prefix: ''})
 
             this_top.is_reload = false
-            this_top.socket.emit('join_session', sockId)
+            this_top.socket.emit('set_sess_id')
 
             this_top.con_stat = new connection_state()
             this_top.con_stat.set_server_con_state(true)
@@ -85,16 +166,36 @@ function SocketManager() {
             check_is_offline()
             check_is_hidden()
             check_was_offline()
-        })
 
-        // -------------------------------------------------------------------
-        //
-        // -------------------------------------------------------------------
-        this_top.socket.on('reconnect', function(data_in) {
+            return
+        }
+
+        function reconnect(data_in) {
             // console.log('reconnect',data_in);
             this_top.is_reload = false
             validate_server(data_in.server_name)
+        }
+
+        let is_init = true
+        this_top.socket.on('initial_connect', function(data_in) {
+            // console.log('xxxxxxx initial_connect', is_init)
+            if (is_init) {
+                is_init = false
+                initial_connect(data_in)
+            }
+            else {
+                reconnect(data_in)
+            }
         })
+
+        // // -------------------------------------------------------------------
+        // //
+        // // -------------------------------------------------------------------
+        // this_top.socket.on('reconnect', function(data_in) {
+        //     // console.log('reconnect',data_in);
+        //     this_top.is_reload = false
+        //     validate_server(data_in.server_name)
+        // })
 
         // -------------------------------------------------------------------
         //
@@ -109,7 +210,7 @@ function SocketManager() {
         }
 
         function is_socket_connected() {
-            return this_top.socket.socket.connected
+            return this_top.socket.connected
         }
         this_top.is_socket_connected = is_socket_connected
 

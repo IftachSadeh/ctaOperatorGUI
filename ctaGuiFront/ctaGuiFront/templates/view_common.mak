@@ -82,42 +82,42 @@
         // var ws = new WebSocket("ws://localhost:8090/ws");
         // const socket = new WebSocket('ws://localhost:8090');
         // var ws = new WebSocket("ws://0.0.0.0:8090/ws")
-        var ws = new WebSocket("ws://127.0.0.1:8090/my_ws")
+        if (0) {
+            var ws = new WebSocket('ws://127.0.0.1:8090/my_ws')
+            window.ws = ws
 
-        ws.onopen = function(event) {
-            // let mes = 'opened .........'
-            // console.log(mes, event)
+            ws.onopen = function(event) {
+                // let mes = 'opened .........'
+                // console.log(mes, event)
 
-            // ws.send('here i am')
-            data = {xxx:'here i am', yyy:4}
-            data = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww '
-            ws.send(JSON.stringify(data))
+                // ws.send('here i am')
+                data = {xxx:'here i am', yyy:4}
+                data = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww '
+                ws.send(JSON.stringify(data))
 
+            }
+
+            ws.onmessage = function(event) {
+                let event_data = JSON.parse(event.data)
+                let event_name = event_data.event_name
+                let data = event_data.data
+
+                console.log('event_nameevent_name',event_name)
+
+            }
+
+
+            // temporary reload....
+            ws.onclose = function(event) {
+                // let mes = 'closed .........'
+                // console.log(mes, event)
+
+                setTimeout(function() {
+                    window.location.reload() 
+                }, 10) 
+            }
         }
-
-
-        ws.onmessage = function(event) {
-            // let mes = 'message .........'
-            // console.log(mes, event)
-
-            let data = JSON.parse(event.data)
-            console.log(data.event_name)
-            console.log(data.data)
-
-
-        }
-
-
-        // temporary reload....
-        ws.onclose = function(event) {
-            // let mes = 'closed .........'
-            // console.log(mes, event)
-
-            setTimeout(function() {
-                window.location.reload() 
-            }, 10) 
-        }
-
+        
         // setTimeout(function() {
         // }, 100);
         

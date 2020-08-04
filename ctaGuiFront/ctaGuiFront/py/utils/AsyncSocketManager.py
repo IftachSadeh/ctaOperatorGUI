@@ -81,8 +81,6 @@ def extend_app_to_asgi(wsgi_app):
                         await send({"type": "websocket.accept"})
                         await async_manager.websocket_connect()
                     except Exception as e:
-                        print('-'*40)
-                        # print(e)
                         traceback.print_tb(e.__traceback__)
                     
 
@@ -106,11 +104,16 @@ def extend_app_to_asgi(wsgi_app):
 
                     # print('qqqqqqqqqqqqqqqqqq',message)
                     if text:
-                        # text = ['got mes:', text]
-                        text = json.dumps(text)
-                        await send({"type": "websocket.send", "text": text})
-                    else:
-                        await send({"type": "websocket.send", "bytes": message.get("bytes")})
+                        text = json.loads(text)
+
+                        try:
+                            await async_manager.receive(data=text)
+                        except Exception as e:
+                            traceback.print_tb(e.__traceback__)
+
+                        # await send({"type": "websocket.send", "text": text})
+                    # else:
+                    #     await send({"type": "websocket.send", "bytes": message.get("bytes")})
                 
                 elif message["type"] == "websocket.disconnect":
                     # print('-------------------- websocket.disconnect', message )
@@ -144,7 +147,8 @@ class AsyncSocketManager:
 
         self.sync_send = sync_send
 
-        self.sess_id = get_time('msec') + rnd_gen.randint(1000000, (1000000 * 10) -1)
+        # self.sess_id = get_time('msec') + rnd_gen.randint(1000000, (1000000 * 10) -1)
+        self.sess_id = None
         self.user_id = ''
         self.user_group = ''
         self.user_group_id = ''
@@ -209,14 +213,14 @@ class AsyncSocketManager:
         return data
 
     # ------------------------------------------------------------------
-    async def emit(self, event_name, data_in):
-        data = {
+    async def emit(self, event_name, data):
+        data_out = {
             'event_name': event_name,
             'sess_id': self.sess_id,
-            'data': data_in,
+            'data': data,
         }
 
-        await self.sync_send(self.websocket_data_dump(data))
+        await self.sync_send(self.websocket_data_dump(data_out))
 
         return
 
@@ -224,7 +228,7 @@ class AsyncSocketManager:
     # ------------------------------------------------------------------
     async def websocket_connect(self):
         # '''upon any new connection'''
-        self.log.info([['b', ' - websocket.connect '], ['p', self.sess_id]])
+        # self.log.info([['b', ' - websocket.connect '], ['p', self.sess_id]])
 
         server_name = self.server_name
         tel_ids = self.inst_data.get_inst_ids()
@@ -239,6 +243,35 @@ class AsyncSocketManager:
         }
         await self.emit('initial_connect', data)
 
+        return
+
+
+
+
+    # ------------------------------------------------------------------
+    async def receive(self, data):
+        # data = {
+        #     'event_name': event_name,
+        #     'sess_id': self.sess_id,
+        #     'data': data_in,
+        # }
+
+        # await self.sync_send(self.websocket_data_dump(data))
+        # print('rec',data)
+
+
+        try:
+            getattr(self, data['event_name'])(data)
+        except Exception as e:
+            print(data)
+            raise e
+
+        return
+
+
+    def set_sess_id(self, data):
+        self.sess_id = data['sess_id']
+        self.log.info([['b', ' - websocket.connected '], ['p', self.sess_id]])
         return
 
 

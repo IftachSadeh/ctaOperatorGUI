@@ -41,7 +41,7 @@ class LogParser():
         self.base_title = title
         self.title = (
             self.colors['c'](
-                '' if (title is '') else
+                '' if (title == '') else
                 ((' [' + title + ']' if self.base_config.use_log_title else ''))
             )
         )
@@ -212,56 +212,56 @@ class LogParser():
         col_cyan = '\033[36m'
 
         def no_color(msg):
-            return '' if (str(msg) is '') else str(msg)
+            return '' if (str(msg) == '') else str(msg)
 
         def blue(msg):
-            return '' if (str(msg) is '') else col_blue + str(msg) + col_def
+            return '' if (str(msg) == '') else col_blue + str(msg) + col_def
 
         def red(msg):
-            return '' if (str(msg) is '') else col_red + str(msg) + col_def
+            return '' if (str(msg) == '') else col_red + str(msg) + col_def
 
         def green(msg):
-            return '' if (str(msg) is '') else col_green + str(msg) + col_def
+            return '' if (str(msg) == '') else col_green + str(msg) + col_def
 
         def light_blue(msg):
-            return '' if (str(msg) is '') else col_light_blue + str(msg) + col_def
+            return '' if (str(msg) == '') else col_light_blue + str(msg) + col_def
 
         def yellow(msg):
-            return '' if (str(msg) is '') else col_yellow + str(msg) + col_def
+            return '' if (str(msg) == '') else col_yellow + str(msg) + col_def
 
         def purple(msg):
-            return '' if (str(msg) is '') else col_purple + str(msg) + col_def
+            return '' if (str(msg) == '') else col_purple + str(msg) + col_def
 
         def cyan(msg):
-            return '' if (str(msg) is '') else col_cyan + str(msg) + col_def
+            return '' if (str(msg) == '') else col_cyan + str(msg) + col_def
 
         def white_on_black(msg):
-            return '' if (str(msg) is '') else col_white_on_black + str(msg) + col_def
+            return '' if (str(msg) == '') else col_white_on_black + str(msg) + col_def
 
         def red_on_black(msg):
-            return '' if (str(msg) is ''
+            return '' if (str(msg) == ''
                           ) else col_white_on_black + col_red + str(msg) + col_def
 
         def blue_on_black(msg):
-            return '' if (str(msg) is ''
+            return '' if (str(msg) == ''
                           ) else col_white_on_black + col_blue + str(msg) + col_def
 
         def yellow_on_black(msg):
-            return '' if (str(msg) is ''
+            return '' if (str(msg) == ''
                           ) else col_white_on_black + col_yellow + str(msg) + col_def
 
         def white_on_red(msg):
-            return '' if (str(msg) is '') else col_white_on_red + str(msg) + col_def
+            return '' if (str(msg) == '') else col_white_on_red + str(msg) + col_def
 
         def yellow_on_red(msg):
-            return '' if (str(msg) is ''
+            return '' if (str(msg) == ''
                           ) else col_white_on_red + col_yellow + str(msg) + col_def
 
         def white_on_yellow(msg):
-            return '' if (str(msg) is '') else col_white_on_yellow + str(msg) + col_def
+            return '' if (str(msg) == '') else col_white_on_yellow + str(msg) + col_def
 
         def white_on_green(msg):
-            return '' if (str(msg) is '') else col_white_on_green + str(msg) + col_def
+            return '' if (str(msg) == '') else col_white_on_green + str(msg) + col_def
 
         colors = dict()
 
@@ -302,7 +302,7 @@ class LogParser():
 #     locks = {}
 
 #     def __init__(self, name='', seconds_to_check=None):
-#         self.name = 'generic' if name is '' else name
+#         self.name = 'generic' if name == '' else name
 
 #         self.seconds_to_check = max(
 #             0.0001,

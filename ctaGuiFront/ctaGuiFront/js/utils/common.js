@@ -10,11 +10,39 @@
 // ------------------------------------------------------------------
 // unique identification
 // ------------------------------------------------------------------
-window.unique = function() {
-    let postfix_0 = '00000'
-    let rnd_now = Math.floor(Math.random() * 1e5).toString()
-    let postfix = (postfix_0 + rnd_now).slice(-1 * postfix_0.length)
-    return '_' + Date.now().toString() + postfix
+function get_rnd_once(n_digits) {
+    let rnd_min = Math.pow(10, n_digits-1)
+    let rnd_max = Math.pow(10, n_digits)
+    let rnd_now = Math.random() * (rnd_max - rnd_min) + rnd_min
+    rnd_now = (Math.min(Math.floor(rnd_now), rnd_max - 1)).toString()
+    return rnd_now
+}
+
+window.unique = function(opt_in) {
+    if (!is_def(opt_in)) {
+        opt_in = {}
+    }
+    let n_digits = is_def(opt_in['n_digits']) ? opt_in['n_digits'] : 20
+    let prefix = is_def(opt_in['prefix']) ? opt_in['prefix'] : '_'
+    let postfix = is_def(opt_in['postfix']) ? opt_in['postfix'] : ''
+
+    n_digits = Math.max(n_digits, 1)
+
+    let rnd_now = ''
+    let ntry = 0
+    let rnd_precision = 10
+    while (true) {
+        let n_digits_now = Math.floor(Math.min(n_digits, rnd_precision))
+        n_digits -= n_digits_now
+        ntry += 1
+        if (n_digits_now < 1 || ntry > 100) {
+            break
+        }
+        rnd_now += get_rnd_once(n_digits_now)
+    }
+
+    return prefix + rnd_now + postfix
+    // return prefix + Date.now().toString() + postfix
 }
 let unique = window.unique
 

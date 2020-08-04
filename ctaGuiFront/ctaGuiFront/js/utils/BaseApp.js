@@ -23,36 +23,37 @@ $.getScript('/js/utils/common.js', function() {
     let is_socket_view = output.is_socket_view
 
 
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
-    is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    // is_socket_view = false
+    is_socket_view = true
 
     // -------------------------------------------------------------------
     //
