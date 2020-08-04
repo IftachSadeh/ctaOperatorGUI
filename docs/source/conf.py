@@ -13,7 +13,16 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-
+root_for_relative_js_paths = '../../ctaGuiFront/ctaGuiFront/js/'
+js_source_path = [
+    root_for_relative_js_paths + 'widgets/',
+    root_for_relative_js_paths + 'utils/',
+    root_for_relative_js_paths + 'utils/blocks/',
+    root_for_relative_js_paths + 'utils/targets/',
+    root_for_relative_js_paths + 'utils/telescopes/',
+    root_for_relative_js_paths + 'utils/events/',
+    root_for_relative_js_paths + 'utils/ArrZoomer/',
+]
 
 # -- Project information -----------------------------------------------------
 
@@ -41,6 +50,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'sphinx_js',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -10,6 +10,7 @@
 /* global icon_badge */
 /* global run_when_ready */
 /* global loaded_scripts */
+/* global LOG_LEVELS */
 
 // -------------------------------------------------------------------
 // setup the socket and load resources
@@ -23,8 +24,14 @@
 
 // document.getElementById('topRightMenuTog').setAttribute("style","");
 
+
+
+
+
 // ---------------------------------------------------------------------------
-// manager for sockets
+/**
+ * general manager for sockets
+ */
 // ---------------------------------------------------------------------------
 function SocketManager() {
     let this_top = this
@@ -50,22 +57,40 @@ function SocketManager() {
 
     this_top.state_change_funcs = []
 
+    // wrappers for encoding/decoding data for socket communications
+    const stringify_replacer = (key, value) => !is_def(value) ? null : value
+    function encode_socket_data(data) {
+        return JSON.stringify(data, stringify_replacer)
+    }
+    function decode_socket_data(data) {
+        return JSON.parse(data)
+    }
 
+
+    // ---------------------------------------------------------------------------
+    /**
+     * wrapper for WebSocket events
+     */
     function SocketInterface() {
         let this_sock_int = this
         this_sock_int.connected = false
 
+        // obj for all event names
         let events = {
         }
+
+        // on event of a given type, use the registered function
         function on(event_name, func) {
             events[event_name] = func
             return
         }
         this_sock_int.on = on
 
+        // send a socket event by event name
         function emit(event_name, data_in) {
             if (!is_def(data_in)) {
-                data_in = {}
+                data_in = {
+                }
             }
             let data = {
                 event_name: event_name,
@@ -73,19 +98,53 @@ function SocketManager() {
                 data: data_in,
             }
             // console.log(data)
-            data = JSON.stringify(data)
-            this_sock_int.ws.send(data)
+            
+            this_sock_int.ws.send(
+                encode_socket_data(data)
+            )
+
             return
         }
         this_sock_int.emit = emit
 
+        // logging event interface
+        function server_log(data_in) {
+            let event_name = 'client_log'
+            let log_level = is_def(data_in.log_level) ? data_in.log_level : LOG_LEVELS.ERROR
+            let is_verb = is_def(data_in.is_verb) ? data_in.is_verb : false
+            
+            let data = {
+                event_name: event_name,
+                sess_id: this_top.sess_id,
+                log_level: log_level,
+                data: data_in.data,
+            }
+
+            // send the log to the server
+            this_sock_int.ws.send(
+                encode_socket_data(data)
+            )
+
+            // local print in the client if needed
+            if (log_level === LOG_LEVELS.ERROR) {
+                console.error(event_name, data)
+            }
+            else if (is_verb) {
+                console.log(event_name, data)
+            }
+            
+            return
+        }
+        this_sock_int.server_log = server_log
+
+        // open the WebSocket and add interfaces
         function sutup_websocket() {
             let ws = new WebSocket('ws://127.0.0.1:8090/my_ws')
             this_sock_int.ws = ws
 
             this_sock_int.ws.onopen = function(event) {
                 this_sock_int.connected = true
-                console.log('opened',this_sock_int.ws)
+                // console.log('opened',this_sock_int.ws)
                 // // this_sock_int.ws.send('here i am')
                 // let data = {xxx:'here i am', yyy:4}
                 // data = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww '
@@ -93,15 +152,32 @@ function SocketManager() {
             }
 
             this_sock_int.ws.onmessage = function(event) {
-                let event_data = JSON.parse(event.data)
-                let event_name = event_data.event_name
+                try {
+                    if (!event.data) {
+                        throw [
+                            'no event data in this_sock_int.ws.onmessage',
+                        ]
+                    }
 
-                if (is_def(events[event_name])) {
-                    console.log('event_nameevent_name', event_data.sess_id, event_name, event_data.data)
-                    events[event_name](event_data)
+                    let event_data = decode_socket_data(event.data)
+                    let event_name = event_data.event_name
+
+                    if (is_def(events[event_name])) {
+                        // console.log('event_nameevent_name', event_data.sess_id, event_name, event_data.data)
+                        events[event_name](event_data)
+                    }
+                    else {
+                        throw [
+                            'undefined event_name', event.data,
+                        ]
+                    }
                 }
-                else {
-                    console.error(' - undefined event_name', event)
+                catch (err) {
+                    this_top.socket.server_log({
+                        data: err,
+                        is_verb: true,
+                        log_level: LOG_LEVELS.ERROR,
+                    })
                 }
 
                 return
@@ -111,7 +187,7 @@ function SocketManager() {
             // temporary reload....
             this_sock_int.ws.onclose = function(event) {
                 this_sock_int.connected = false
-                console.log('closed')
+                // console.log('closed')
 
                 setTimeout(function() {
                     sutup_websocket()
@@ -131,7 +207,9 @@ function SocketManager() {
     }
 
     // ---------------------------------------------------------------------------
-    // the socket
+    /**
+     * initial setup of socket functionalities
+     */
     // ---------------------------------------------------------------------------
     function setup_socket() {
         let widget_name = window.WIDGET_NAME
@@ -852,6 +930,8 @@ function SocketManager() {
         })
     }
     this_top.add_to_table = add_to_table
+
+    return
 }
 
 

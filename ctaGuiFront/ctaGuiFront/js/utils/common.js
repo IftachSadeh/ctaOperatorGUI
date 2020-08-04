@@ -525,7 +525,7 @@ window.col_purple = function(index) {
 
     return cols_purples[index % cols_purples.length]
 }
-window.colMix = function(index) {
+window.col_mix = function(index) {
     if (!is_def(index)) {
         index = 0
     }
@@ -535,6 +535,16 @@ window.colMix = function(index) {
 
     return cols_mix[index % cols_mix.length]
 }
+
+// ------------------------------------------------------------------
+// colours for different states (red, yellow, green)
+// ------------------------------------------------------------------
+let LOG_LEVELS = {
+    ERROR: 'ERROR',
+    WARNING: 'WARNING',
+    INFO: 'INFO',
+}
+window.LOG_LEVELS = LOG_LEVELS
 
 // ------------------------------------------------------------------
 // commonly used units and symbols

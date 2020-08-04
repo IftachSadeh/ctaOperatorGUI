@@ -11,7 +11,7 @@
             4
         ],
         "max-len": [
-            "error", 
+            "warn", 
             // { "code": 90 }
             { "code": 90, "ignoreComments": true }
         ],

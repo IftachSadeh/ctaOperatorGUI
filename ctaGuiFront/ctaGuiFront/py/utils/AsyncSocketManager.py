@@ -2,6 +2,7 @@ import gevent
 from gevent import sleep
 from random import Random
 from math import ceil
+import traceback
 import importlib
 try: 
     from gevent.coros import BoundedSemaphore 
@@ -21,7 +22,6 @@ import json
 rnd_seed = get_rnd_seed()
 rnd_gen = Random(rnd_seed)
 
-import traceback
 
 # ------------------------------------------------------------------
 class ExtendedWsgiToAsgi(WsgiToAsgi):
@@ -261,18 +261,34 @@ class AsyncSocketManager:
 
 
         try:
-            getattr(self, data['event_name'])(data)
+            event_func = getattr(self, data['event_name'])
+            event_func(data)
         except Exception as e:
+            print('-'*20, 'event name undefined:', data['event_name'], '-'*20)
             print(data)
+            print('-'*60)
             raise e
 
         return
 
 
+    def client_log(self, data):
+        if data['log_level'] == 'ERROR':
+            self.log.error([['wr', ' - client_log:'], ['p', '', self.sess_id, ''], ['y', data]])
+        elif data['log_level'] == 'INFO':
+            self.log.info([['b', ' - client_log:'], ['p', '', self.sess_id, '' ], ['y', data]])
+        else:
+            raise Exception('unrecognised logging level from client', self.sess_id, data)
+
+        return
+
     def set_sess_id(self, data):
         self.sess_id = data['sess_id']
         self.log.info([['b', ' - websocket.connected '], ['p', self.sess_id]])
         return
+
+
+
 
 
 

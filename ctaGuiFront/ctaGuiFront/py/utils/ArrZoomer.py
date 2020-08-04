@@ -12,19 +12,6 @@ from ctaGuiUtils.py.LogParser import LogParser
 #  ArrZoomer
 # ------------------------------------------------------------------
 class ArrZoomer():
-    """ArrZoomer_ArrZoomer_ArrZoomer_ArrZoomer_ArrZoomer
-    
-        Parameters
-        ----------
-        name : type
-            ArrZoomer_ArrZoomer_ArrZoomer_ArrZoomer_ArrZoomer
-            ArrZoomer_ArrZoomer_ArrZoomer_ArrZoomer_ArrZoomer
-    
-        Returns
-        -------
-        type str
-            description ArrZoomer_ArrZoomer
-    """
     # privat lock for this util class
     lock = BoundedSemaphore(1)
 

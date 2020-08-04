@@ -14,6 +14,7 @@ Welcome to CTA_HMI's documentation!
 
     ctaGuiFront/ctaGuiFront/py/utils/ArrZoomer
     ctaGuiFront/ctaGuiFront/py/utils/security
+    ctaGuiFront/ctaGuiFront/js/utils/SocketManager
 
 .. _ctaGuiBack:
 .. toctree::
