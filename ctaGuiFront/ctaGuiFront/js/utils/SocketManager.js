@@ -52,10 +52,12 @@ function SocketManager() {
     this_top.widget_table = {
     }
 
-    this_top.has_joined_session = false
+    // this_top.has_joined_session = false
     this_top.session_props = null
 
     this_top.state_change_funcs = []
+
+    this_top.n_sess_msg = 0
 
     // wrappers for encoding/decoding data for socket communications
     const stringify_replacer = (key, value) => !is_def(value) ? null : value
@@ -95,8 +97,10 @@ function SocketManager() {
             let data = {
                 event_name: event_name,
                 sess_id: this_top.sess_id,
+                n_sess_msg: this_top.n_sess_msg,
                 data: data_in,
             }
+            this_top.n_sess_msg += 1
             // console.log(data)
             
             this_sock_int.ws.send(
@@ -117,8 +121,10 @@ function SocketManager() {
                 event_name: event_name,
                 sess_id: this_top.sess_id,
                 log_level: log_level,
+                n_sess_msg: this_top.n_sess_msg,
                 data: data_in.data,
             }
+            this_top.n_sess_msg += 1
 
             // send the log to the server
             this_sock_int.ws.send(
@@ -221,18 +227,21 @@ function SocketManager() {
         //
         // -------------------------------------------------------------------
         function initial_connect(data_in) {
-            // console.log("initial_connect");
-            // console.log('initial_connect',data_in);
-
             let tel_info = {
             }
             tel_info.tel_ids = data_in.tel_ids
             tel_info.tel_id_to_types = data_in.tel_id_to_types
             tel_info.categorical_types = data_in.categorical_types
             window.SOCKET_INFO = tel_info
-
+            
             validate_server(data_in.server_name)
             this_top.sess_id = String(unique({prefix: ''}))
+
+            this_top.session_props = {
+                sess_id: this_top.sess_id,
+                user_id: window.DISPLAY_USER_ID,
+                is_simulation: data_in.is_simulation,
+            }
 
             this_top.is_reload = false
 
@@ -241,7 +250,29 @@ function SocketManager() {
                 display_user_group: window.DISPLAY_USER_GROUP,
             }
 
-            this_top.socket.emit('replay_initial_connect', data_out)
+            // this_top.socket.server_log({
+            //     data: {ssssssssss: 1},
+            //     is_verb: true,
+            //     log_level: LOG_LEVELS.INFO,
+            // })
+            // this_top.socket.server_log({
+            //     data: {ssssssssss: 2},
+            //     is_verb: true,
+            //     log_level: LOG_LEVELS.INFO,
+            // })
+            // this_top.socket.server_log({
+            //     data: {ssssssssss: 3},
+            //     is_verb: true,
+            //     log_level: LOG_LEVELS.INFO,
+            // })
+
+            this_top.socket.emit('initial_connect_replay', data_out)
+
+            // this_top.socket.server_log({
+            //     data: {ssssssssss: 1},
+            //     is_verb: true,
+            //     log_level: LOG_LEVELS.ERROR,
+            // })
 
             this_top.con_stat = new connection_state()
             this_top.con_stat.set_server_con_state(true)
@@ -265,7 +296,7 @@ function SocketManager() {
             // console.log('xxxxxxx initial_connect', is_init, data_in)
             if (is_init) {
                 is_init = false
-                initial_connect(data_in)
+                initial_connect(data_in.data)
             }
             else {
                 reconnect(data_in)
@@ -407,18 +438,18 @@ function SocketManager() {
         // // -------------------------------------------------------------------
         // // -------------------------------------------------------------------
 
-        // -------------------------------------------------------------------
-        //
-        // -------------------------------------------------------------------
-        this_top.socket.on('join_session_data', function(data_in) {
-            if (!this_top.has_joined_session) {
-                if (is_def(setup_view[widget_name])) {
-                    setup_view[widget_name]()
-                }
-                this_top.has_joined_session = true
-                this_top.session_props = data_in.session_props
-            }
-        })
+        // // -------------------------------------------------------------------
+        // //
+        // // -------------------------------------------------------------------
+        // this_top.socket.on('join_session_data', function(data_in) {
+        //     if (!this_top.has_joined_session) {
+        //         if (is_def(setup_view[widget_name])) {
+        //             setup_view[widget_name]()
+        //         }
+        //         this_top.has_joined_session = true
+        //         this_top.session_props = data_in.session_props
+        //     }
+        // })
 
         return
     }

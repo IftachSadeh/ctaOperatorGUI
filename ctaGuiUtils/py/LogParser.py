@@ -1,4 +1,7 @@
 import logging
+from threading import  Lock
+# from time  import sleep
+
 try: 
     from gevent.coros import BoundedSemaphore 
 except: 
@@ -11,10 +14,12 @@ except:
 # ------------------------------------------------------------------
 class LogParser():
     # lock = LogLock('LogParser')
-    lock = BoundedSemaphore(1)
+    # lock = BoundedSemaphore(1)
+    lock = Lock()
+    
     logging_config = None
 
-    server_name = 'uvicorn'
+    web_server_name = 'uvicorn'
     handlers = {
         '': ['console', 'info_rotating_file_handler'],
         'server': ['info_rotating_file_handler'],
@@ -92,7 +97,7 @@ class LogParser():
                     'propagate': True,
                     # 'propagate': False,
                 },
-                self.server_name: {
+                self.web_server_name: {
                     # 'handlers': ['console', 'info_rotating_file_handler'],
                     'handlers': self.handlers['server'],
                     'level': 'WARNING',
