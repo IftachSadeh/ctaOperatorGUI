@@ -23,6 +23,10 @@ class BaseConfig():
     # rnd_seed = get_rnd_seed()
     rnd_seed = 9897324
     rnd_gen = Random(rnd_seed)
+    
+    rnd_seed = (datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds()
+    rnd_seed = int(float(str(rnd_seed * 1e6)[-10:]))
+    rnd_gen_unique = Random(rnd_seed)
 
     datetime_epoch = datetime.utcfromtimestamp(0)
 
@@ -84,10 +88,14 @@ class BaseConfig():
     # ---------------------------------------------------------------------------
     def __init__(
         self,
-        is_simulation,
         site_type,
         redis_port,
-        app_prefix=None,
+        app_port,
+        app_prefix,
+        app_host,
+        websocket_route,
+        is_HMI_dev,
+        is_simulation,
         allow_panel_sync=None,
         *args,
         **kwargs
@@ -102,8 +110,12 @@ class BaseConfig():
 
         self.site_type = site_type
         self.redis_port = redis_port
+        self.app_port = app_port
+        self.app_host = app_host
         self.app_prefix = app_prefix
+        self.websocket_route = websocket_route
         self.allow_panel_sync = allow_panel_sync
         self.is_simulation = is_simulation
+        self.is_HMI_dev = is_HMI_dev
 
         return

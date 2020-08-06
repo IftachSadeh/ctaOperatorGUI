@@ -144,17 +144,13 @@ function SocketManager() {
         this_sock_int.server_log = server_log
 
         // open the WebSocket and add interfaces
-        function sutup_websocket() {
-            let ws = new WebSocket('ws://127.0.0.1:8090/my_ws')
+        function setup_websocket() {
+            let ws = new WebSocket(window.WEBSOCKET_ROUTE)
             this_sock_int.ws = ws
 
             this_sock_int.ws.onopen = function(event) {
                 this_sock_int.connected = true
-                // console.log('opened',this_sock_int.ws)
-                // // this_sock_int.ws.send('here i am')
-                // let data = {xxx:'here i am', yyy:4}
-                // data = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww '
-                // this_sock_int.ws.send(JSON.stringify(data))
+                // console.log(' -ZZZ- onopen - ')
             }
 
             this_sock_int.ws.onmessage = function(event) {
@@ -169,7 +165,7 @@ function SocketManager() {
                     let event_name = event_data.event_name
 
                     if (is_def(events[event_name])) {
-                        // console.log('event_nameevent_name', event_data.sess_id, event_name, event_data.data)
+                        // console.log(' - onmessage - ', [event_data.sess_id, event_name])
                         events[event_name](event_data)
                     }
                     else {
@@ -193,20 +189,30 @@ function SocketManager() {
             // temporary reload....
             this_sock_int.ws.onclose = function(event) {
                 this_sock_int.connected = false
-                // console.log('closed')
+                // console.log(' -ZZZ- onclose - ', this_top.is_reload)
+
+                if (!this_top.is_reload) {  
+                    this_top.con_stat.set_server_con_state(false)
+                    this_top.con_stat.set_user_con_state_opts(false)
+                }
 
                 setTimeout(function() {
-                    sutup_websocket()
                     // window.location.reload() 
-                }, 1000) 
-                setTimeout(function() {
-                    window.location.reload() 
-                }, 100) 
+                    // window.location.reload() 
+                    // window.location.reload() 
+                    // window.location.reload() 
+                    // window.location.reload() 
+                    // window.location.reload() 
+                    // window.location.reload() 
+                    
+                    // try to reconnect the session
+                    setup_websocket()
+                }, 500) 
 
-                // setTimeout(start_websocket, 500)
+                // window.location.reload()
             }
         }
-        sutup_websocket()
+        setup_websocket()
 
 
         return
@@ -221,7 +227,6 @@ function SocketManager() {
         let widget_name = window.WIDGET_NAME
 
         this_top.socket = new SocketInterface()
-        // this_top.socket = io.connect('/' + widget_name)
 
         // -------------------------------------------------------------------
         //
@@ -234,8 +239,9 @@ function SocketManager() {
             tel_info.categorical_types = data_in.categorical_types
             window.SOCKET_INFO = tel_info
             
-            validate_server(data_in.server_name)
-            this_top.sess_id = String(unique({prefix: ''}))
+            this_top.sess_id = String(data_in.sess_id)
+            // this_top.sess_id = String('_xx_00_xx_') // for debugging
+            // this_top.sess_id = String(unique({prefix: ''}))
 
             this_top.session_props = {
                 sess_id: this_top.sess_id,
@@ -249,80 +255,72 @@ function SocketManager() {
                 display_user_id: window.DISPLAY_USER_ID,
                 display_user_group: window.DISPLAY_USER_GROUP,
             }
-
-            // this_top.socket.server_log({
-            //     data: {ssssssssss: 1},
-            //     is_verb: true,
-            //     log_level: LOG_LEVELS.INFO,
-            // })
-            // this_top.socket.server_log({
-            //     data: {ssssssssss: 2},
-            //     is_verb: true,
-            //     log_level: LOG_LEVELS.INFO,
-            // })
-            // this_top.socket.server_log({
-            //     data: {ssssssssss: 3},
-            //     is_verb: true,
-            //     log_level: LOG_LEVELS.INFO,
-            // })
-
+            
+            let test_log = 0
+            if (test_log) {
+                this_top.socket.server_log({
+                    data: {ssssssssss: 1},
+                    is_verb: true,
+                    log_level: LOG_LEVELS.INFO,
+                })
+            }
+            
+            // this_top.socket.emit('test_socket_evt', {test: 0})
+            this_top.socket.emit('test_socket_evt', {test: 1})
+            
             this_top.socket.emit('initial_connect_replay', data_out)
 
-            // this_top.socket.server_log({
-            //     data: {ssssssssss: 1},
-            //     is_verb: true,
-            //     log_level: LOG_LEVELS.ERROR,
-            // })
+            // this_top.socket.emit('test_socket_evt', {test: 2})
 
-            this_top.con_stat = new connection_state()
+            if (test_log) {
+                this_top.socket.server_log({
+                    data: {ssssssssss: 1},
+                    is_verb: true,
+                    log_level: LOG_LEVELS.ERROR,
+                })
+            }
+
+            if (!is_def(this_top.con_stat)) {
+                this_top.con_stat = new connection_state()
+    
+                check_is_offline()
+                check_is_hidden()
+                check_was_offline()
+            }
+
             this_top.con_stat.set_server_con_state(true)
             this_top.con_stat.set_user_con_state_opts(true)
-
-            check_is_offline()
-            check_is_hidden()
-            check_was_offline()
 
             return
         }
 
-        function reconnect(data_in) {
-            // console.log('reconnect',data_in);
-            this_top.is_reload = false
-            validate_server(data_in.server_name)
-        }
-
         let is_init = true
         this_top.socket.on('initial_connect', function(data_in) {
-            // console.log('xxxxxxx initial_connect', is_init, data_in)
+            // console.log('xxxxXXXXXXXXxxx initial_connect', is_init)
             if (is_init) {
                 is_init = false
                 initial_connect(data_in.data)
             }
             else {
-                reconnect(data_in)
+
+                data_in.sess_id = this_top.sess_id
+                data_in.data.sess_id = this_top.sess_id
+
+                // console.log(' - reconnect - ', data_in)
+                this_top.is_reload = false
+                initial_connect(data_in.data)
+                // reconnect(data_in)
             }
         })
 
-        // // -------------------------------------------------------------------
-        // //
-        // // -------------------------------------------------------------------
-        // this_top.socket.on('reconnect', function(data_in) {
-        //     // console.log('reconnect',data_in);
-        //     this_top.is_reload = false
-        //     validate_server(data_in.server_name)
-        // })
 
-        // -------------------------------------------------------------------
-        //
-        // -------------------------------------------------------------------
-        function validate_server(name_in) {
-            if (server_name == null) {
-                server_name = name_in
-            }
-            else if (server_name !== name_in) {
+        // 
+        this_top.socket.on('reload_session', function(data_in) {
+            setTimeout(function() {
                 window.location.reload()
-            }
-        }
+            }, 100)
+        })
+
 
         function is_socket_connected() {
             return this_top.socket.connected
@@ -387,7 +385,7 @@ function SocketManager() {
             this_top.is_reload = true
             // explicitly needed for firefox, but good in any case...
             if (this_top.socket) {
-                this_top.socket.disconnect()
+                // this_top.socket.disconnect()
                 this_top.socket = null
             }
             if (is_debug) {
@@ -395,14 +393,14 @@ function SocketManager() {
             }
         })
 
-        // in case we disconnect (internet is off or server is down)
-        this_top.socket.on('disconnect', function() {
-            // console.log('disconnect',this_top.is_reload)
-            if (!this_top.is_reload) {
-                this_top.con_stat.set_server_con_state(false)
-                this_top.con_stat.set_user_con_state_opts(false)
-            }
-        })
+        // // in case we disconnect (internet is off or server is down)
+        // this_top.socket.on('disconnect', function() {
+        //     console.log('disconnect',this_top.is_reload)
+        //     if (!this_top.is_reload) {  
+        //         this_top.con_stat.set_server_con_state(false)
+        //         this_top.con_stat.set_user_con_state_opts(false)
+        //     }
+        // })
 
         // this_top.socket.on('error', function(obj) {
         //   console.log("error", obj);

@@ -17,7 +17,7 @@ all_files="ctaGuiUtils/py/*py ctaGuiBack/ctaGuiBack/py/*py ctaGuiBack/ctaGuiBack
 # sed -i .sed_bck 's/iteritems/items/g' $all_files
 
 
-grep "colMix" $all_files
+grep "xxxxxxxx" $all_files
 
 
 

@@ -10,6 +10,7 @@
     <script>
         window.APP_PREFIX = '${app_prefix}'
         window.SITE_TYPE = '${ns_type}'
+        window.WEBSOCKET_ROUTE = '${websocket_route}'
         window.WIDGET_NAME = '${widget_name}'
         window.DISPLAY_USER_ID = '${display_user_id}'
         window.DISPLAY_USER_GROUP = '${display_user_group}'

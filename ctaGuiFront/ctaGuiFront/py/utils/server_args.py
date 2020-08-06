@@ -17,6 +17,11 @@ def parse_args():
         default=None,
     )
     parser.add_argument(
+        '--app_host',
+        type=str,
+        default=None,
+    )
+    parser.add_argument(
         '--redis_port',
         type=int,
         default=None,
@@ -27,11 +32,25 @@ def parse_args():
         default=1,
     )
     parser.add_argument(
+        '--is_HMI_dev',
+        type=str_to_bool,
+        nargs='?',
+        const=True,
+        default='True',
+    )
+    parser.add_argument(
         '--is_simulation',
         type=str_to_bool,
         nargs='?',
         const=True,
         default='True',
+    )
+    parser.add_argument(
+        '--do_flush_redis',
+        type=str_to_bool,
+        nargs='?',
+        const=True,
+        default='False',
     )
     parser.add_argument(
         '--allow_panel_sync',
@@ -52,7 +71,7 @@ def parse_args():
             'app_prefix': 'cta',
             'app_host': '0.0.0.0',
             'pyramid.reload_templates': 'true',
-            'sqlalchemy.url': sqlite,
+            'sqlalchemy.url': sqlite, 
         }
 
         if input_args['site_type'] == 'N':

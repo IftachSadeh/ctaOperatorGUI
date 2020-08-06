@@ -153,6 +153,10 @@ try:
     app_name = settings['app_name']
     # southern or northen CTA sites have different telescope configurations
     site_type = settings['site_type']
+    # the address for the site
+    app_host = settings['app_host']
+    # the port for the site
+    app_port = settings['app_port']
     # the redis port use for this site
     redis_port = settings['redis_port']
     # define the prefix to all urls (must be non-empy string)
@@ -161,16 +165,30 @@ try:
     allow_panel_sync = bool(settings['allow_panel_sync'])
     # is this a simulation
     is_simulation = settings['is_simulation']
+    # development mode
+    is_HMI_dev = settings['is_HMI_dev']
+    # do we flush redis on startup
+    do_flush_redis = settings['do_flush_redis']
+
+    websocket_postfix = '/websockets'
+    websocket_route = {
+        'server': '/' + app_prefix + websocket_postfix,
+        'client': 'ws://' + app_host + ':' + str(app_port) + '/' + app_prefix + websocket_postfix,
+    }
 
     # ------------------------------------------------------------------
     # instantiate the general settings class (must come first!)
     # ------------------------------------------------------------------
     base_config = BaseConfig(
-        is_simulation=is_simulation,
         site_type=site_type,
         redis_port=redis_port,
+        app_port=app_port,
         app_prefix=app_prefix,
+        app_host=app_host,
+        websocket_route=websocket_route,
         allow_panel_sync=allow_panel_sync,
+        is_HMI_dev=is_HMI_dev,
+        is_simulation=is_simulation,
     )
 
     log = LogParser(
@@ -180,19 +198,20 @@ try:
         log_file='logs/ctaGuiFront_uvicorn.log',
     )
     log.info([['wg', ' - Starting pyramid app - ctaGuiFront ...']])
-    log.info([['p', ' - has_acs = '], [('g' if has_acs else 'r'), has_acs]])
+    log.info([['c', ' - has_acs = '], [('g' if has_acs else 'r'), has_acs]])
 
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    do_flush_redis = 1
+    settings_log = [['g', ' - server settings:\n']]
+    for k,v in settings.items():
+        settings_log += [['b', str(k)], [': ']]
+        settings_log += [['c', str(v)], [',  ']]
+    log.info(settings_log)
+
+    # do_flush_redis = True
     if do_flush_redis:
         from ctaGuiUtils.py.RedisManager import RedisManager
         log.warn([['wr', ' ---- flusing redis ... ----']])
         _redis = RedisManager(name='_init_', port=redis_port, log=log)
         _redis.redis.flushall()
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
     # set the list of telescopes for this particular site
     InstData(base_config=base_config)
@@ -203,7 +222,7 @@ try:
 
     # ------------------------------------------------------------------
     wsgi_app = setup_app()
-    app = extend_app_to_asgi(wsgi_app)
+    app = extend_app_to_asgi(wsgi_app, websocket_route)
 
 except Exception as e:
     log.info([['c', e]])

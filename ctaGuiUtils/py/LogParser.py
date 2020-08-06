@@ -207,6 +207,7 @@ class LogParser():
         col_red = '\033[31m'
         col_light_blue = '\033[94m'
         col_yellow = '\033[33m'
+        col_orange = "\033[48;95;38;5;215m"
         # col_underline = '\033[4;30m'
         col_white_on_black = '\33[40;37;1m'
         col_white_on_green = '\33[42;37;1m'
@@ -233,6 +234,9 @@ class LogParser():
 
         def yellow(msg):
             return '' if (str(msg) == '') else col_yellow + str(msg) + col_def
+
+        def orange(msg):
+            return '' if (str(msg) == '') else col_orange + str(msg) + col_def
 
         def purple(msg):
             return '' if (str(msg) == '') else col_purple + str(msg) + col_def
@@ -275,6 +279,7 @@ class LogParser():
         colors['g'] = no_color if not use_colors else green
         colors['b'] = no_color if not use_colors else blue
         colors['y'] = no_color if not use_colors else yellow
+        colors['o'] = no_color if not use_colors else orange
         colors['p'] = no_color if not use_colors else purple
         colors['c'] = no_color if not use_colors else cyan
         colors['lb'] = no_color if not use_colors else light_blue

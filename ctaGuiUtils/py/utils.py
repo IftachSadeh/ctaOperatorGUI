@@ -180,12 +180,17 @@ def get_rnd_seed():
 # ---------------------------------------------------------------------------
 #
 # ---------------------------------------------------------------------------
-def get_rnd(n_digits=2, out_type=int):
+def get_rnd(n_digits=2, out_type=int, is_unique_seed=False):
     n_digits = max(n_digits, 1)
-    output = out_type(
-        BaseConfig.rnd_gen.randint(pow(10, n_digits - 1),
-                                   pow(10, n_digits) - 1)
-    )
+    rnd_min = pow(10, n_digits - 1)
+    rnd_max = pow(10, n_digits)  - 1
+
+    if is_unique_seed:
+        output = BaseConfig.rnd_gen_unique.randint(rnd_min, rnd_max)
+    else:
+        output = BaseConfig.rnd_gen.randint(rnd_min, rnd_max)
+
+    output = out_type(output)
     if out_type is float:
         output = round(output * pow(10, -n_digits), n_digits)
         # output = out_type(('%0' + str(n_digits) + 'f') % output)

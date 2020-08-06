@@ -31,6 +31,7 @@ class ViewManager():
         self.base_config = base_config
         self.app_prefix = base_config.app_prefix
         self.site_type = base_config.site_type
+        self.websocket_route = base_config.websocket_route
 
         # attach the BaseConfig instance to the socket
         setattr(SocketManager, 'base_config', self.base_config)
@@ -99,8 +100,6 @@ class ViewManager():
             password = request.params['password']
             hashed_pw = USERS.get(user_name)
 
-            print('xxxxxxxx', user_name, password, hashed_pw)
-
             if hashed_pw and check_password(password, hashed_pw):
                 headers = remember(request, user_name)
                 return HTTPFound(location=request.route_url("index"), headers=headers)
@@ -110,6 +109,7 @@ class ViewManager():
             login=request.authenticated_userid,
             app_prefix=self.app_prefix,
             ns_type=self.site_type,
+            websocket_route=self.websocket_route['client'],
             widget_name=view_name,
             display_user_id=self.get_display_user_id(request),
             display_user_group=self.get_display_user_group(request),
@@ -139,6 +139,7 @@ class ViewManager():
 
         return dict(
             ns_type=self.site_type,
+            websocket_route=self.websocket_route['client'],
             widget_name=view_name,
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
@@ -158,6 +159,7 @@ class ViewManager():
 
         return dict(
             ns_type=self.site_type,
+            websocket_route=self.websocket_route['client'],
             widget_name=view_name,
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
@@ -174,6 +176,7 @@ class ViewManager():
 
         return dict(
             ns_type=self.site_type,
+            websocket_route=self.websocket_route['client'],
             widget_name=view_name,
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,

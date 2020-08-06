@@ -1,3 +1,5 @@
+# import os
+# self.debug_pid = os.getpid()
 import gevent
 from gevent import sleep
 from random import Random
@@ -41,22 +43,6 @@ class ExtendedWsgiToAsgi(WsgiToAsgi):
         protocol = scope['type']
         path = scope['path']
 
-        # # # print(protocol, ' \t ', scope['path'])
-        # # if path == '/cta/index':
-        # #     # print(self.initial_response)
-        # #     print(kwargs)
-        # #     import inspect
-        # #     lines = inspect.getsource(args[1])
-        # #     print(lines)
-        # #     for k,v in scope.items():
-        # #         print(k, ' \t ', v)
-        # #     for v in scope['headers']:
-        # #         print(' - ', v[0], ' \t ', v[1])
-        # if path == '/cta/index':
-        #     # print(self.request.__dict__)
-        #     print(self.request.registry.__dict__.keys())
-        #     # print(self.request.request_factory.response.__dict__)
-
         try:
             consumer = self.protocol_router[protocol][path]
         except KeyError:
@@ -70,7 +56,6 @@ class ExtendedWsgiToAsgi(WsgiToAsgi):
             raise e
 
     def route(self, rule, *args, **kwargs):
-        # print(kwargs, rule)
         try:
             protocol = kwargs['protocol']
         except KeyError:
@@ -85,14 +70,25 @@ class ExtendedWsgiToAsgi(WsgiToAsgi):
 
 
 # ------------------------------------------------------------------
-def extend_app_to_asgi(wsgi_app):
+def extend_app_to_asgi(wsgi_app, websocket_route):
+    """description
+    
+        Parameters
+        ----------
+        name : type
+            description
+    
+        Returns
+        -------
+        type
+            description
+    """
+    
     app = ExtendedWsgiToAsgi(wsgi_app)
 
     # see: https://asgi.readthedocs.io/en/latest/specs/www.html
-    @app.route("/my_ws", protocol="websocket")
+    @app.route(websocket_route['server'], protocol='websocket')
     async def hello_websocket(scope, receive, send):
-
-
         try:
             async_manager = AsyncSocketManager(sync_send=send)
 
@@ -148,25 +144,30 @@ def extend_app_to_asgi(wsgi_app):
 
 # ------------------------------------------------------------------
 class AsyncSocketManager:
-    server_name = 'server_' + get_rnd(n_digits=10, out_type=str)
+    server_name = None
+    n_server_sess = 0
 
     # common dictionaries for all instances of
     # the class (keeping track of all sessions etc.)
     # sess_endpoints = dict()
     coroutine_sigs = dict()
-    all_sess_ids = []
     widget_inits = dict()
 
 
     # ------------------------------------------------------------------
     def __init__(self, sync_send, *args, **kwargs):
-        # super(SocketManager, self).__init__(*args, **kwargs)
+        
+        if AsyncSocketManager.server_name is None:
+            AsyncSocketManager.server_name = (
+                'svr_' + str(self.base_config.app_port)
+                + '_' + get_rnd(n_digits=6, out_type=str, is_unique_seed=True)
+            )
 
         self.sync_send = sync_send
 
-        # self.sess_id = get_time('msec') + rnd_gen.randint(1000000, (1000000 * 10) -1)
-        self.has_init_sess = False
         self.sess_id = None
+        # self.sess_id = str(get_time('msec') + rnd_gen.randint(1000000, (1000000 * 10) -1))
+        self.has_init_sess = False
         self.user_id = ''
         self.user_group = ''
         self.user_group_id = ''
@@ -179,7 +180,6 @@ class AsyncSocketManager:
 
         self.asyncio_queue = asyncio.Queue()
 
-
         self.log = LogParser(base_config=self.base_config, title=__name__)
 
         self.allowed_widget_types = self.base_config.allowed_widget_types
@@ -187,14 +187,15 @@ class AsyncSocketManager:
         self.site_type = self.base_config.site_type
         self.allow_panel_sync = self.base_config.allow_panel_sync
         self.is_simulation = self.base_config.is_simulation
-
+        self.is_HMI_dev = self.base_config.is_HMI_dev
+        
         self.redis = RedisManager(
             name=self.__class__.__name__, port=self.redis_port, log=self.log
         )
 
         self.inst_data = self.base_config.inst_data
 
-
+        
 
         return
     
@@ -209,10 +210,6 @@ class AsyncSocketManager:
         # self.async_loop.create_task(func())
 
         return asyncio.ensure_future(func(*args, **kwargs))
-
-    # ------------------------------------------------------------------
-    def is_asyncio_locked(self):
-        return asyncio_lock.locked()
 
     # ------------------------------------------------------------------
     def websocket_data_dump(self, data):
@@ -234,10 +231,9 @@ class AsyncSocketManager:
 
         return
 
-
-
-
-
+    # ------------------------------------------------------------------
+    def is_asyncio_locked(self):
+        return asyncio_lock.locked()
 
 
     # ------------------------------------------------------------------
@@ -250,20 +246,26 @@ class AsyncSocketManager:
                 input data fof the received function
         """
         
+        # ------------------------------------------------------------------
+        # TODO: uncomment the exception raise ...
+        # ------------------------------------------------------------------
         try:
             event_func = getattr(self, data['event_name'])
         except Exception as e:
             self.log.error([['p', '\n'],['r', '-'*20, 'event name undefined:'], ['p', '', data['event_name'], ''], ['r', '-'*20], ['p', '\n', self.sess_id, ''], ['y', data, '\n'], ['r', '-'*100],])
-            raise e
+            # raise e
+            return
 
         try:
             # check that events are received in the expected order, where the
             # initial connection and any logging messages get executed immediately
             # and any other events get put in an ordered queue for execution
-            if data['event_name'] in ['initial_connect_replay', 'client_log']:
+            if data['event_name'] in ['client_log']:
+                event_func(data)
+            elif data['event_name'] in ['initial_connect_replay']:
                 await event_func(data)
             else:
-                await self.asyncio_queue.put(event_func(data))
+                await self.asyncio_queue.put({'coroutine':event_func(data), 'data': data,})
 
         except Exception as e:
             self.log.error([['r', e]])
@@ -271,10 +273,19 @@ class AsyncSocketManager:
 
         return
 
+    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    async def test_socket_evt(self, data):
+            self.log.info([['c', ' - test_socket_evt:'], ['p', '', self.sess_id, '\n\t\t\t' ], ['g', data]])
+    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
-    async def client_log(self, data):
+    def client_log(self, data):
         """interface for client logs to be processed by the server
+
+            This function is not awaited, since we need maximal fidelity that
+            all messages are proccessed and in order
         
             Parameters
             ----------
@@ -295,21 +306,29 @@ class AsyncSocketManager:
 
     # ------------------------------------------------------------------
     async def send_initial_connect(self):
-        """upon any new connection, sed the client initialisation data
+        """upon any new connection, send the client initialisation data
         """
 
-        # temporary hack - make sure the lifecycle is understood - this should only happen once...
-        if self.sess_id is not None:
-            self.log.error([['wr', ' - already connected ?!?!?!?!', self.sess_id]])
-            raise Exception('already connected ?!?!?', self.sess_id)
+        # # temporary hack - make sure the lifecycle is understood - this should only happen once...
+        # if self.sess_id is not None:
+        #     self.log.error([['wr', ' - already connected ?!?!?!?!', self.sess_id]])
+        #     raise Exception('already connected ?!?!?', self.sess_id)
 
-        server_name = self.server_name
+        async with asyncio_lock:
+            self.sess_id = (
+                self.server_name + '_'
+                +  '{:07d}'.format(AsyncSocketManager.n_server_sess)
+            )
+            AsyncSocketManager.n_server_sess += 1
+            # AsyncSocketManager.n_server_sess += get_rnd(n_digits=4, out_type=int, is_unique_seed=True)
+
         tel_ids = self.inst_data.get_inst_ids()
         tel_id_to_types = self.inst_data.get_inst_id_to_types()
         categorical_types = self.inst_data.get_categorical_types()
 
         data = {
-            'server_name': server_name,
+            'server_name': self.server_name,
+            'sess_id': self.sess_id,
             'tel_ids': tel_ids,
             'tel_id_to_types': tel_id_to_types,
             'categorical_types': categorical_types,
@@ -332,24 +351,40 @@ class AsyncSocketManager:
         """
 
         async with asyncio_lock:
+            is_existing_sess = (self.sess_id != data['sess_id'])
 
-            self.sess_id = data['sess_id']
+            # ------------------------------------------------------------------
+            # for development, its conveniet to reload if the server was restarted, but
+            # for deployment, the same session can simply be restored
+            if self.is_HMI_dev:
+                if is_existing_sess:
+                    self.sess_id = data['sess_id']
+                    await self.emit('reload_session', data)
+                    return
+            # ------------------------------------------------------------------
 
+            if is_existing_sess:
+                self.sess_id = data['sess_id']
+                self.log.info([['p', ' - restoring existing session: '], ['c', self.sess_id]])
+
+            # get and validate the user id
             self.user_id = str(data['data']['display_user_id'])
             if self.user_id == 'None':
                 self.user_id = ''
+            else:
+                # sanity check
+                hashed_pw = USERS.get(self.user_id)
+                if not hashed_pw:
+                    raise Exception(
+                        'got unidentified user_name in initial_connect_replay...', data
+                    )
 
+            # get the user group and set some names
             self.user_group = str(data['data']['display_user_group'])
-
             self.user_group_id = self.user_group + '_' + self.user_id
             self.sess_name = self.user_group_id + '_' + self.sess_id
 
             self.log.info([['b', ' - websocket.connected '], ['p', self.sess_id], ['y', '', self.user_id, '/', self.user_group],])
-
-            # sanity check
-            hashed_pw = USERS.get(self.user_id)
-            if not hashed_pw:
-                raise Exception('got unidentified user_name in initial_connect_replay...', data)
 
             # override the global logging variable with a
             # name corresponding to the current session ids
@@ -358,69 +393,78 @@ class AsyncSocketManager:
                 title=(str(self.user_id) + '/' + str(self.sess_id) + '/' + __name__),
             )
 
-            # await asyncio.sleep(2.5)
-
-            # register the user_name if needed
+            # register the user_name if needed (this list is never cleaned up)
             user_ids = self.redis.l_get('user_ids', packed=False)
-
             if self.user_id not in user_ids:
-                self.redis.r_push(name='user_ids', data=self.user_id, packed=False)
+                self.redis.r_push(
+                    name='user_ids', data=self.user_id, packed=False
+                )
 
-            # ------------------------------------------------------------------
-            # all session ids in one list (heartbeat should be first to
-            # avoid cleanup racing conditions!)
-            # ------------------------------------------------------------------
+            # register the sess_id in all lists
+            # heartbeat should be first to avoid cleanup racing conditions!
             self.redis.set(
                 name='sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10), packed=False,
             )
-            self.redis.r_push(name='all_sess_ids', data=self.sess_id, packed=False)
 
-            AsyncSocketManager.all_sess_ids += [self.sess_id]
+            # global and local lists session ids
 
-            # ------------------------------------------------------------------
-            #
-            # ------------------------------------------------------------------
+            all_sess_ids = self.redis.l_get('all_sess_ids', packed=False)
+            if self.sess_id not in all_sess_ids:
+                self.redis.r_push(
+                    name='all_sess_ids', data=self.sess_id, packed=False
+                )
+
+            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=False)
+            if self.sess_id not in all_sess_ids:
+                self.redis.r_push(
+                    name=self.server_name+';all_sess_ids', data=self.sess_id, packed=False
+                )
+
             if not self.redis.h_exists(name='sync_groups', key=self.user_id):
                 self.redis.h_set(
                     name='sync_groups', key=self.user_id, data=[], packed=True
                 )
 
-            # ------------------------------------------------------------------
             # list of all sessions for this user
-            # ------------------------------------------------------------------
-            self.redis.r_push(
-                name='user_sess_ids;' + self.user_id, data=self.sess_id, packed=False
-            )
+            all_user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=False)
+            if self.sess_id not in all_user_sess_ids:
+                self.redis.r_push(
+                    name='user_sess_ids;' + self.user_id, data=self.sess_id, packed=False
+                )
 
             self.init_common_loops()
             # await self.init_common_loops()  
 
-            # await asyncio.sleep(3)
             # as the final step within the lock, flag the session as initialised
             self.has_init_sess = True
 
-            # ------------------------------------------------------------------
             # function which may be overloaded, setting up individual
             # properties for a given session-type
-            # ------------------------------------------------------------------
-            self.on_join_session_()
+            if not is_existing_sess:
+                self.on_join_session_()
 
             self.init_user_sync_loops()
 
 
+            # await asyncio.sleep(3)
 
+            test_connection_sess = 0
+            if test_connection_sess:
+                all_sess_ids = self.redis.l_get('all_sess_ids', packed=False)
+                print('all_sess_ids \t\t\t', all_sess_ids)
 
+                for s in all_sess_ids:
+                    print('heartbeat \t\t\t', s, '  -->  ', self.redis.exists('sess_heartbeat;' + s))
+                all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=False)
+                print('server_name;all_sess_ids \t', all_sess_ids)
 
-            all_sess_ids = self.redis.l_get('all_sess_ids', packed=False)
-            print('all_sess_ids \t', all_sess_ids, AsyncSocketManager.all_sess_ids)
-            user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=False)
-            print('user_sess_ids \t', user_sess_ids)
-            sync_groups = self.redis.h_get(
-                name='sync_groups', key=self.user_id, packed=True, default_val=[]
-            )
-            print('sync_groups \t', sync_groups)
-            for s in all_sess_ids:
-                print('heartbeat \t ', s, self.redis.exists('sess_heartbeat;' + s))
+                user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=False)
+                print('user_sess_ids \t\t\t', user_sess_ids)
+
+                sync_groups = self.redis.h_get(
+                    name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                )
+                print('sync_groups \t\t\t', sync_groups)
 
 
         return
@@ -428,6 +472,12 @@ class AsyncSocketManager:
     # ------------------------------------------------------------------
     def on_join_session_(self):
         """placeholder for overloaded method, to be run as part of on_join_session
+        """
+        return
+
+    # ------------------------------------------------------------------
+    def on_leave_session_(self):
+        """placeholder for overloaded method, to be run as part of on_leave_session
         """
         return
 
@@ -505,24 +555,55 @@ class AsyncSocketManager:
                 metadata needed to determine when is the loop should continue
         """
 
-        self.log.info([['y', ' - starting receive_queue: ', AsyncSocketManager.server_name]])
+        self.log.info([['y', ' - starting receive_queue for session: '], ['c', self.sess_id]])
 
-        async def get_queue_item():
-            await self.asyncio_queue.get_nowait()
+        # proccess an item from the queue
+        async def await_queue_item():
+            queue_item = self.asyncio_queue.get_nowait()
+            # verufy that the session has initialised, that we have the right sess_id, etc.
+            self.verify_sess_event(queue_item['data'])
+            # execute the coroutine
+            await queue_item['coroutine']
+            return
 
         while self.check_coroutine_loop(coroutine_info):
             if self.asyncio_queue.qsize() > 0 and self.is_valid_session():
-                self.spawn(get_queue_item)
+                self.spawn(await_queue_item)
 
             await asyncio.sleep(self.valid_loop_sleep_sec)
             # await asyncio.sleep(1)
 
         # cancel remaining tasks
         for _ in range(self.asyncio_queue.qsize()):
-            self.spawn(get_queue_item).cancel()
+            self.spawn(await_queue_item).cancel()
 
-        self.log.info([['y', ' - ending receive_queue']])
+        self.log.info([['o', ' - ending receive_queue for session: '], ['c', self.sess_id]])
         
+        return
+
+    # ------------------------------------------------------------------
+    def verify_sess_event(self, data):
+        """verify that an event may be executed
+        
+            Parameters
+            ----------
+            data : dict
+                client data and metadata related to the coroutine to be executed
+        """
+
+        try:
+            if not self.has_init_sess:
+                raise Exception('events not coming in order - has not init session...', data)
+            
+            if not data['sess_id'] == self.sess_id:
+                raise Exception('mismatch in sess_id...', data)
+
+            if not self.is_valid_session():
+                raise Exception('not a valid session', data)
+
+        except Exception as e:
+            raise e
+
         return
 
     # ------------------------------------------------------------------
@@ -542,8 +623,8 @@ class AsyncSocketManager:
                 metadata needed to determine when is the loop should continue
         """
 
-        self.log.info([['y', ' - starting shared_coroutine('], ['g', 'sess_heartbeat'],
-                       ['y', ') - ', AsyncSocketManager.server_name],])
+        self.log.info([['y', ' - starting shared_coroutine('], ['o', 'sess_heartbeat_loop'],
+                       ['y', ') for server: '], ['c', self.server_name ],])
 
         sleep_seconds = min(1, max(ceil(self.sess_expire * 0.1), 10))
         sess_expire = ceil(max(self.sess_expire, sleep_seconds * 5))
@@ -557,11 +638,7 @@ class AsyncSocketManager:
                 # sess_ids = self.redis.l_get('all_sess_ids')
                 # print('xxxxxxxx', [[s, self.redis.exists('sess_heartbeat;' + s)] for s in sess_ids])
                 
-                sess_ids = self.redis.l_get('all_sess_ids')
-                sess_ids = [
-                    x for x in sess_ids if x in AsyncSocketManager.all_sess_ids
-                ]
-
+                sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
                 for sess_id in sess_ids:
                     if self.redis.exists('sess_heartbeat;' + sess_id):
                         self.redis.expire(
@@ -598,11 +675,7 @@ class AsyncSocketManager:
         if sess_id is None:
             sess_id = self.sess_id
 
-        sess_ids = self.redis.l_get('all_sess_ids')
-        sess_ids = [
-            x for x in sess_ids if x in AsyncSocketManager.all_sess_ids
-        ]
-
+        sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
         if sess_id in sess_ids:
             if self.redis.exists('sess_heartbeat;' + sess_id):
                 return True
@@ -648,14 +721,15 @@ class AsyncSocketManager:
                 raise Exception('got asyncio not locked in set_coroutine_state')
 
 
-            if self.sess_id in AsyncSocketManager.all_sess_ids:
-                AsyncSocketManager.all_sess_ids.remove(self.sess_id)
+            # if self.sess_id in AsyncSocketManager.all_sess_ids:
+            #     AsyncSocketManager.all_sess_ids.remove(self.sess_id)
     
             user_ids = self.redis.l_get('user_ids')
             widget_ids = self.redis.l_get('sess_widgets;' + sess_id)
             
             self.redis.delete('sess_heartbeat;' + sess_id)
             self.redis.l_rem(name='all_sess_ids', data=sess_id)
+            self.redis.l_rem(name=self.server_name+';all_sess_ids', data=sess_id)
 
             for user_id in user_ids:
                 self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
@@ -665,47 +739,52 @@ class AsyncSocketManager:
         except Exception as e:
             raise e
 
+        test_connection_sess = 0
+        if test_connection_sess:
+            print('-'*70)
+            all_sess_ids = self.redis.l_get('all_sess_ids', packed=False)
+            print('all_sess_ids \t\t', all_sess_ids)
 
-        print('-'*70)
-        self.log.info([['c', ' - cleanup_session '], ['p', sess_id]])
-        all_sess_ids = self.redis.l_get('all_sess_ids', packed=False)
-        print('all_sess_ids \t', all_sess_ids, AsyncSocketManager.all_sess_ids)
-        user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=False)
-        print('user_sess_ids \t', user_sess_ids)
-        sync_groups = self.redis.h_get(
-            name='sync_groups', key=self.user_id, packed=True, default_val=[]
-        )
-        print('sync_groups \t', sync_groups)
-        for s in all_sess_ids:
-            print('heartbeat \t ', s, self.redis.exists('sess_heartbeat;' + s))
-        print('+'*70)
+            for s in all_sess_ids:
+                print('heartbeat \t\t', s, self.redis.exists('sess_heartbeat;' + s))
+            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=False)
+            print('server_name;all_sess_ids \t\t', all_sess_ids)
 
-        return
+            user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=False)
+            print('user_sess_ids \t\t', user_sess_ids)
+
+            sync_groups = self.redis.h_get(
+                name='sync_groups', key=self.user_id, packed=True, default_val=[]
+            )
+            print('sync_groups \t\t', sync_groups)
+            print('+'*70)
+
+        # return
 
 
-        # user_ids = self.redis.l_get('user_ids')
-        widget_ids = self.redis.l_get('sess_widgets;' + sess_id)
+        # # user_ids = self.redis.l_get('user_ids')
+        # widget_ids = self.redis.l_get('sess_widgets;' + sess_id)
 
-        # for user_id in user_ids:
-        #     self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
+        # # for user_id in user_ids:
+        # #     self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
 
-        for widget_id in widget_ids:
-            self.log.info([[
-                'b', ' - cleanup_session widget_id (', __old_SocketManager__.server_name, ') '
-            ], ['p', widget_id]])
+        # for widget_id in widget_ids:
+        #     self.log.info([[
+        #         'b', ' - cleanup_session widget_id (', __old_SocketManager__.server_name, ') '
+        #     ], ['p', widget_id]])
 
-            self.redis.h_del(name='all_widgets', key=widget_id)
-            if widget_id in __old_SocketManager__.widget_inits:
-                __old_SocketManager__.widget_inits.pop(widget_id, None)
-            for user_id in user_ids:
-                self.redis.l_rem(name='user_widgets;' + user_id, data=widget_id)
+        #     self.redis.h_del(name='all_widgets', key=widget_id)
+        #     if widget_id in __old_SocketManager__.widget_inits:
+        #         __old_SocketManager__.widget_inits.pop(widget_id, None)
+        #     for user_id in user_ids:
+        #         self.redis.l_rem(name='user_widgets;' + user_id, data=widget_id)
 
-        self.redis.delete('sess_widgets;' + sess_id)
-        # self.redis.delete('sess_heartbeat;' + sess_id)
-        # self.redis.l_rem(name='all_sess_ids', data=sess_id)
+        # self.redis.delete('sess_widgets;' + sess_id)
+        # # self.redis.delete('sess_heartbeat;' + sess_id)
+        # # self.redis.l_rem(name='all_sess_ids', data=sess_id)
 
-        if sess_id in __old_SocketManager__.sess_endpoints:
-            __old_SocketManager__.sess_endpoints.pop(sess_id, None)
+        # if sess_id in __old_SocketManager__.sess_endpoints:
+        #     __old_SocketManager__.sess_endpoints.pop(sess_id, None)
 
         return
 
@@ -725,7 +804,7 @@ class AsyncSocketManager:
                 description
         """
 
-        self.log.info([['y', ' - starting cleanup_loop: ', AsyncSocketManager.server_name]])
+        self.log.info([['y', ' - starting cleanup_loop for server: '], ['c', self.server_name]])
 
         # self.cleanup_sleep=2
         while self.check_coroutine_loop(coroutine_info):
@@ -870,6 +949,36 @@ class AsyncSocketManager:
 
         return
 
+    # ------------------------------------------------------------------
+    def check_panel_sync(self):
+        """prevent panle sync based on a global setting & user-name
+        """
+
+        allow = False
+        if self.allow_panel_sync:
+            allow = (self.user_id != 'guest')
+
+        return allow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -984,13 +1093,13 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def on_set_online_state(self, data):
-        # print 'set_online_state',data
+    # # ------------------------------------------------------------------
+    # #
+    # # ------------------------------------------------------------------
+    # def on_set_online_state(self, data):
+    #     # print 'set_online_state',data
 
-        return
+    #     return
 
     # # ------------------------------------------------------------------
     # #
@@ -1285,22 +1394,21 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
+    # # ------------------------------------------------------------------
+    # #
+    # # ------------------------------------------------------------------
+    # def init_user_sync_loops(self):
+    #     return
 
-    def init_user_sync_loops(self):
-        return
+    # # ------------------------------------------------------------------
+    # # prevent panle sync based on a global setting & user-name
+    # # ------------------------------------------------------------------
+    # def check_panel_sync(self):
+    #     allow = False
+    #     if self.allow_panel_sync:
+    #         allow = (self.user_id != 'guest')
 
-    # ------------------------------------------------------------------
-    # prevent panle sync based on a global setting & user-name
-    # ------------------------------------------------------------------
-    def check_panel_sync(self):
-        allow = False
-        if self.allow_panel_sync:
-            allow = (self.user_id != 'guest')
-
-        return allow
+    #     return allow
 
     # ------------------------------------------------------------------
     #
@@ -1384,11 +1492,11 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    # placeholder for overloaded method, to be run as part of on_leave_session
-    # ------------------------------------------------------------------
-    def on_leave_session_(self):
-        return
+    # # ------------------------------------------------------------------
+    # # placeholder for overloaded method, to be run as part of on_leave_session
+    # # ------------------------------------------------------------------
+    # def on_leave_session_(self):
+    #     return
 
     # ------------------------------------------------------------------
     # initial dataset and send to client
