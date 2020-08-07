@@ -167,6 +167,7 @@ class AsyncSocketManager:
 
         self.sess_id = None
         # self.sess_id = str(get_time('msec') + rnd_gen.randint(1000000, (1000000 * 10) -1))
+        self.n_server_msg = 0
         self.has_init_sess = False
         self.user_id = ''
         self.user_group = ''
@@ -177,6 +178,27 @@ class AsyncSocketManager:
         self.cleanup_sleep = 60
         # self.max_sess_valid_time_sec = 20
         self.valid_loop_sleep_sec = 0.01
+        
+        # session ping/pong heartbeat
+        self.sess_ping = {
+            # interval for sending ping/pong events
+            'interval_msec': 2500,
+            # how much delay is considered ok for a slow session
+            'tolerance_optimal_msec': 100,
+            # how much delay is considered ok for a disconnected session
+            'tolerance_slow_msec': 1000,
+            # how much delay before the client socket is forcibly closed
+            # and set in a reconnection attempt loop
+            'tolerance_close_msec': 5000,
+        }
+        # self.sess_ping = {
+        #     # interval for sending ping/pong events
+        #     'interval_msec': 2000,
+        #     # how much delay is considered ok for a slow session
+        #     'tolerance_optimal_msec': 2000,
+        #     # how much delay is considered ok for a disconnected session
+        #     'tolerance_slow_msec': 6000,
+        # }
 
         self.asyncio_queue = asyncio.Queue()
 
@@ -188,7 +210,7 @@ class AsyncSocketManager:
         self.allow_panel_sync = self.base_config.allow_panel_sync
         self.is_simulation = self.base_config.is_simulation
         self.is_HMI_dev = self.base_config.is_HMI_dev
-        
+
         self.redis = RedisManager(
             name=self.__class__.__name__, port=self.redis_port, log=self.log
         )
@@ -220,12 +242,15 @@ class AsyncSocketManager:
         return data
 
     # ------------------------------------------------------------------
-    async def emit(self, event_name, data):
+    async def emit(self, event_name, data={}):
         data_out = {
             'event_name': event_name,
             'sess_id': self.sess_id,
+            'n_server_msg': self.n_server_msg,
+            'send_time_msec': get_time('msec'),
             'data': data,
         }
+        self.n_server_msg += 1
 
         await self.sync_send(self.websocket_data_dump(data_out))
 
@@ -296,6 +321,9 @@ class AsyncSocketManager:
         if data['log_level'] == 'ERROR':
             self.log.error([['wr', ' - client_log:'], ['p', '', self.sess_id, ''], ['y', data]])
 
+        elif data['log_level'] in ['WARN', 'WARNING']:
+            self.log.warn([['b', ' - client_log:'], ['p', '', self.sess_id, '' ], ['y', data]])
+
         elif data['log_level'] == 'INFO':
             self.log.info([['b', ' - client_log:'], ['p', '', self.sess_id, '' ], ['y', data]])
 
@@ -316,7 +344,7 @@ class AsyncSocketManager:
 
         async with asyncio_lock:
             self.sess_id = (
-                self.server_name + '_'
+                self.server_name + '_ses_'
                 +  '{:07d}'.format(AsyncSocketManager.n_server_sess)
             )
             AsyncSocketManager.n_server_sess += 1
@@ -329,6 +357,7 @@ class AsyncSocketManager:
         data = {
             'server_name': self.server_name,
             'sess_id': self.sess_id,
+            'sess_ping': self.sess_ping,
             'tel_ids': tel_ids,
             'tel_id_to_types': tel_id_to_types,
             'categorical_types': categorical_types,
@@ -403,7 +432,7 @@ class AsyncSocketManager:
             # register the sess_id in all lists
             # heartbeat should be first to avoid cleanup racing conditions!
             self.redis.set(
-                name='sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10), packed=False,
+                name='server_sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10), packed=False,
             )
 
             # global and local lists session ids
@@ -454,7 +483,7 @@ class AsyncSocketManager:
                 print('all_sess_ids \t\t\t', all_sess_ids)
 
                 for s in all_sess_ids:
-                    print('heartbeat \t\t\t', s, '  -->  ', self.redis.exists('sess_heartbeat;' + s))
+                    print('heartbeat \t\t\t', s, '  -->  ', self.redis.exists('server_sess_heartbeat;' + s))
                 all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=False)
                 print('server_name;all_sess_ids \t', all_sess_ids)
 
@@ -500,8 +529,18 @@ class AsyncSocketManager:
             {
                 'id': -1,
                 'group': 'shared_coroutine',
-                'tag': 'sess_heartbeat_loop',
-                'func': self.sess_heartbeat_loop,
+                'tag': 'server_sess_heartbeat_loop',
+                'func': self.server_sess_heartbeat_loop,
+            },
+        ]
+
+        # client ping/pong heartbeat for a particular session
+        coroutines += [
+            {
+                'id': -1,
+                'group': self.sess_id,
+                'tag': 'client_sess_heartbeat_loop',
+                'func': self.client_sess_heartbeat_loop,
             },
         ]
         
@@ -530,8 +569,8 @@ class AsyncSocketManager:
             {
                 'id': -1,
                 'group': self.sess_id,
-                'tag': 'receive_queue',
-                'func': self.receive_queue,
+                'tag': 'receive_queue_loop',
+                'func': self.receive_queue_loop,
             },
         ]
 
@@ -546,7 +585,7 @@ class AsyncSocketManager:
 
 
     # ------------------------------------------------------------------
-    async def receive_queue(self, coroutine_info):
+    async def receive_queue_loop(self, coroutine_info):
         """process the received event queue
         
             Parameters
@@ -555,7 +594,7 @@ class AsyncSocketManager:
                 metadata needed to determine when is the loop should continue
         """
 
-        self.log.info([['y', ' - starting receive_queue for session: '], ['c', self.sess_id]])
+        self.log.info([['y', ' - starting receive_queue_loop for session: '], ['c', self.sess_id],])
 
         # proccess an item from the queue
         async def await_queue_item():
@@ -577,7 +616,7 @@ class AsyncSocketManager:
         for _ in range(self.asyncio_queue.qsize()):
             self.spawn(await_queue_item).cancel()
 
-        self.log.info([['o', ' - ending receive_queue for session: '], ['c', self.sess_id]])
+        self.log.info([['o', ' - ending receive_queue_loop for session: '], ['c', self.sess_id]])
         
         return
 
@@ -607,7 +646,7 @@ class AsyncSocketManager:
         return
 
     # ------------------------------------------------------------------
-    async def sess_heartbeat_loop(self, coroutine_info):
+    async def server_sess_heartbeat_loop(self, coroutine_info):
         """renew session heartbeat tokens
 
             run in coroutine so long as there are active sessions
@@ -623,36 +662,93 @@ class AsyncSocketManager:
                 metadata needed to determine when is the loop should continue
         """
 
-        self.log.info([['y', ' - starting shared_coroutine('], ['o', 'sess_heartbeat_loop'],
+        self.log.info([['y', ' - starting shared_coroutine('], ['o', 'server_sess_heartbeat_loop'],
                        ['y', ') for server: '], ['c', self.server_name ],])
 
-        sleep_seconds = min(1, max(ceil(self.sess_expire * 0.1), 10))
-        sess_expire = ceil(max(self.sess_expire, sleep_seconds * 5))
+        sleep_sec = min(1, max(ceil(self.sess_expire * 0.1), 10))
+        sess_expire = ceil(max(self.sess_expire, sleep_sec * 5))
 
-        # sleep_seconds = 2
+        # sleep_sec = 2
         # sess_expire = 4
-        # print('sleep_seconds',sleep_seconds,sess_expire)
+        # print('sleep_sec',sleep_sec,sess_expire)
 
         while self.check_coroutine_loop(coroutine_info):
             async with asyncio_lock:
                 # sess_ids = self.redis.l_get('all_sess_ids')
-                # print('xxxxxxxx', [[s, self.redis.exists('sess_heartbeat;' + s)] for s in sess_ids])
+                # print('xxxxxxxx', [[s, self.redis.exists('server_sess_heartbeat;' + s)] for s in sess_ids])
                 
                 sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
                 for sess_id in sess_ids:
-                    if self.redis.exists('sess_heartbeat;' + sess_id):
+                    if self.redis.exists('server_sess_heartbeat;' + sess_id):
                         self.redis.expire(
-                            name='sess_heartbeat;' + sess_id, expire=sess_expire
+                            name='server_sess_heartbeat;' + sess_id, expire=sess_expire
                         )
                     # else:
                     #     self.cleanup_session(sess_id)
 
-            await asyncio.sleep(sleep_seconds)
+            await asyncio.sleep(sleep_sec)
 
         self.log.info([['y', ' - ending shared_coroutine']])
 
         return
 
+
+    
+    # ------------------------------------------------------------------
+    async def client_sess_heartbeat_loop(self, coroutine_info):
+        """send ping/pong heartbeat message to client to verify the connection
+        
+            Parameters
+            ----------
+            coroutine_info : dict
+                metadata needed to determine when is the loop should continue
+        """
+
+        self.log.info([['y', ' - starting client_sess_heartbeat_loop for session: '], ['c', self.sess_id],])
+
+        sleep_sec = self.sess_ping['interval_msec'] * 1e-3
+        ping_interval_msec = 0
+
+        while self.check_coroutine_loop(coroutine_info):
+            data = {
+                'ping_interval_msec': ping_interval_msec,
+            }
+            self.sess_ping_time = get_time('msec')
+            await self.emit('heartbeat_ping', data)
+
+            # update the interval between pings
+            ping_interval_msec = get_time('msec')
+            await asyncio.sleep(sleep_sec)
+            ping_interval_msec = get_time('msec') - ping_interval_msec
+
+        self.log.info([['y', ' - ending shared_coroutine']])
+
+        return
+
+    # ------------------------------------------------------------------
+    async def heartbeat_pong(self, data):
+        """server check for bad connections (maybe not needed...?!?)
+        
+            Parameters
+            ----------
+            data : dict
+                client data and metadata related to the event
+        """
+
+        ping_delay = data['send_time_msec'] - self.sess_ping_time
+
+        if ping_delay > self.sess_ping['tolerance_optimal_msec']:
+            is_slow = (
+                ping_delay < self.sess_ping['tolerance_slow_msec']
+            )
+
+            log_func = self.log.warn if is_slow else self.log.error
+            log_txt = 'unstable connection for ' if is_slow else 'not connected to '
+            log_func([['y', ' - ', log_txt], ['r', self.sess_id, '\n'], ['g', self.sess_ping_time, ' --> ',],['o', data],])
+        
+        return
+
+    
 
     # ------------------------------------------------------------------
     def is_valid_session(self, sess_id=None):
@@ -677,7 +773,7 @@ class AsyncSocketManager:
 
         sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
         if sess_id in sess_ids:
-            if self.redis.exists('sess_heartbeat;' + sess_id):
+            if self.redis.exists('server_sess_heartbeat;' + sess_id):
                 return True
 
         return False
@@ -716,6 +812,8 @@ class AsyncSocketManager:
         if sess_id is None:
             return
 
+        self.log.info([['c', ' - cleanup_session '], ['p', sess_id]])
+
         try:
             if not self.is_asyncio_locked():
                 raise Exception('got asyncio not locked in set_coroutine_state')
@@ -727,7 +825,7 @@ class AsyncSocketManager:
             user_ids = self.redis.l_get('user_ids')
             widget_ids = self.redis.l_get('sess_widgets;' + sess_id)
             
-            self.redis.delete('sess_heartbeat;' + sess_id)
+            self.redis.delete('server_sess_heartbeat;' + sess_id)
             self.redis.l_rem(name='all_sess_ids', data=sess_id)
             self.redis.l_rem(name=self.server_name+';all_sess_ids', data=sess_id)
 
@@ -746,7 +844,7 @@ class AsyncSocketManager:
             print('all_sess_ids \t\t', all_sess_ids)
 
             for s in all_sess_ids:
-                print('heartbeat \t\t', s, self.redis.exists('sess_heartbeat;' + s))
+                print('heartbeat \t\t', s, self.redis.exists('server_sess_heartbeat;' + s))
             all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=False)
             print('server_name;all_sess_ids \t\t', all_sess_ids)
 
@@ -780,7 +878,7 @@ class AsyncSocketManager:
         #         self.redis.l_rem(name='user_widgets;' + user_id, data=widget_id)
 
         # self.redis.delete('sess_widgets;' + sess_id)
-        # # self.redis.delete('sess_heartbeat;' + sess_id)
+        # # self.redis.delete('server_sess_heartbeat;' + sess_id)
         # # self.redis.l_rem(name='all_sess_ids', data=sess_id)
 
         # if sess_id in __old_SocketManager__.sess_endpoints:
@@ -804,7 +902,7 @@ class AsyncSocketManager:
                 description
         """
 
-        self.log.info([['y', ' - starting cleanup_loop for server: '], ['c', self.server_name]])
+        self.log.info([['y', ' - starting cleanup_loop for server: '], ['c', self.server_name],])
 
         # self.cleanup_sleep=2
         while self.check_coroutine_loop(coroutine_info):
@@ -812,7 +910,7 @@ class AsyncSocketManager:
                 sess_ids = self.redis.l_get('all_sess_ids')
 
                 for sess_id in sess_ids:
-                    if not self.redis.exists('sess_heartbeat;' + sess_id):
+                    if not self.redis.exists('server_sess_heartbeat;' + sess_id):
                         # do some cleanup for expired session
                         self.cleanup_session(sess_id)
 
@@ -1581,12 +1679,12 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
         coroutine_id = opt_in['coroutine_id']
         coroutine_group = opt_in['coroutine_group']
         data_func = opt_in['data_func']
-        sleep_seconds = opt_in['sleep_seconds'] if 'sleep_seconds' in opt_in else 5
+        sleep_sec = opt_in['sleep_sec'] if 'sleep_sec' in opt_in else 5
         is_group_coroutine = opt_in['is_group_coroutine']
 
         emit_data = {'widget_type': widget.widget_name, 'event_name': coroutine_group}
 
-        sleep(sleep_seconds)
+        sleep(sleep_sec)
 
         if is_group_coroutine:
             while (coroutine_id == self.get_coroutine_id(widget.widget_group, coroutine_group)):
@@ -1604,7 +1702,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                             widget.widget_group_sess.pop(widget.widget_group, None)
                             break
 
-                sleep(sleep_seconds)
+                sleep(sleep_sec)
 
         else:
             while (coroutine_id == self.get_coroutine_id(widget.widget_id, coroutine_group)):
@@ -1616,7 +1714,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                         event_name=coroutine_group, data=emit_data, sess_ids=sess_ids
                     )
 
-                sleep(sleep_seconds)
+                sleep(sleep_sec)
 
         return
 
@@ -1939,8 +2037,8 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #     self.log.info([['y', ' - starting shared_coroutine('], ['g', 'sess_heartbeat'],
     #                    ['y', ') - ', __old_SocketManager__.server_name]])
 
-    #     sleep_seconds = max(ceil(self.sess_expire * 0.1), 10)
-    #     sess_expire = int(max(self.sess_expire, sleep_seconds * 2))
+    #     sleep_sec = max(ceil(self.sess_expire * 0.1), 10)
+    #     sess_expire = int(max(self.sess_expire, sleep_sec * 2))
 
     #     while self.check_coroutine_loop(coroutine_info):
     #         with __old_SocketManager__.lock:
@@ -1955,7 +2053,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #                 else:
     #                     self.cleanup_session(sess_id)
 
-    #         sleep(sleep_seconds)
+    #         sleep(sleep_sec)
 
     #     self.log.info([['y', ' - ending shared_coroutine('], ['g', 'sess_heartbeat']])
 

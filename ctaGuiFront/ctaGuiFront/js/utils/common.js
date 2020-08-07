@@ -42,7 +42,7 @@ window.unique = function(opt_in) {
     }
 
     return prefix + rnd_now + postfix
-    // return prefix + Date.now().toString() + postfix
+    // return prefix + get_time_msec().toString() + postfix
 }
 let unique = window.unique
 
@@ -1477,7 +1477,7 @@ window.RunLoop = function(opt_in) {
             return
         }
 
-        let time = parseInt(is_def(opt_in.time) ? opt_in.time : Date.now())
+        let time = parseInt(is_def(opt_in.time) ? opt_in.time : get_time_msec())
         runs[opt_in.tag].push({
             data: opt_in.data,
             time: time,
@@ -2521,6 +2521,10 @@ window.date_to_string = function(date_in) {
     //        +date_in.getHours()+":"+date_in.getMinutes()+":"+date_in.getSeconds();
 }
 
+window.get_time_msec = function() {
+    return Date.now()
+}
+
 // ------------------------------------------------------------------
 // numerical
 // ------------------------------------------------------------------
@@ -3047,7 +3051,7 @@ window.add_accordion_div = function(opt_in) {
 //   function checkSetZoomFunc() {
 //     if(prevWheel < 0) return;
 
-//     let time_dif = Date.now() - prevWheel;
+//     let time_dif = get_time_msec() - prevWheel;
 //     if(time_dif > timeWheel) {
 //       exeFunc( ((countWheel > 0) ? 1 : -1) );
 
@@ -3062,7 +3066,7 @@ window.add_accordion_div = function(opt_in) {
 //   // ------------------------------------------------------------------
 //   function doIntMouse(){
 //     countWheel += (event.detail<0) ? 1 : (event.wheelDelta>0) ? 1 : -1;;
-//     prevWheel   = Date.now();
+//     prevWheel   = get_time_msec();
 //     return;
 //   };
 

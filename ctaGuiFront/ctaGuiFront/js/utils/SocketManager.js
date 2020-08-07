@@ -10,6 +10,7 @@
 /* global icon_badge */
 /* global run_when_ready */
 /* global loaded_scripts */
+/* global get_time_msec */
 /* global LOG_LEVELS */
 
 // -------------------------------------------------------------------
@@ -45,6 +46,12 @@ function SocketManager() {
     let tab_table_title_id = 'table_title'
     let tab_table_main_id = 'table_content'
     
+    this_top.con_states = {
+        'CONNECTED': 'CONNECTED',
+        'SLOW_CONNECTION': 'SLOW_CONNECTION',
+        'NOT_CONNECTED': 'NOT_CONNECTED',
+    }
+
     this_top.socket = null
     this_top.con_stat = null
     this_top.all_widgets = {
@@ -57,7 +64,7 @@ function SocketManager() {
 
     this_top.state_change_funcs = []
 
-    this_top.n_sess_msg = 0
+    this_top.n_client_msg = 0
 
     // wrappers for encoding/decoding data for socket communications
     const stringify_replacer = (key, value) => !is_def(value) ? null : value
@@ -97,15 +104,20 @@ function SocketManager() {
             let data = {
                 event_name: event_name,
                 sess_id: this_top.sess_id,
-                n_sess_msg: this_top.n_sess_msg,
+                n_client_msg: this_top.n_client_msg,
+                send_time_msec: get_time_msec(),
                 data: data_in,
             }
-            this_top.n_sess_msg += 1
+            this_top.n_client_msg += 1
             // console.log(data)
             
-            this_sock_int.ws.send(
-                encode_socket_data(data)
-            )
+            // console.log('sending ', event_name, this_sock_int.ws.readyState)
+
+            if (this_sock_int.ws.readyState === this_sock_int.ws.OPEN) {
+                this_sock_int.ws.send(
+                    encode_socket_data(data)
+                )
+            }
 
             return
         }
@@ -121,10 +133,10 @@ function SocketManager() {
                 event_name: event_name,
                 sess_id: this_top.sess_id,
                 log_level: log_level,
-                n_sess_msg: this_top.n_sess_msg,
+                n_client_msg: this_top.n_client_msg,
                 data: data_in.data,
             }
-            this_top.n_sess_msg += 1
+            this_top.n_client_msg += 1
 
             // send the log to the server
             this_sock_int.ws.send(
@@ -149,8 +161,8 @@ function SocketManager() {
             this_sock_int.ws = ws
 
             this_sock_int.ws.onopen = function(event) {
-                this_sock_int.connected = true
-                // console.log(' -ZZZ- onopen - ')
+                // console.log(' -ZZZ- onopen - ')                
+                return
             }
 
             this_sock_int.ws.onmessage = function(event) {
@@ -185,31 +197,35 @@ function SocketManager() {
                 return
             }
 
-
             // temporary reload....
             this_sock_int.ws.onclose = function(event) {
-                this_sock_int.connected = false
                 // console.log(' -ZZZ- onclose - ', this_top.is_reload)
 
-                if (!this_top.is_reload) {  
-                    this_top.con_stat.set_server_con_state(false)
-                    this_top.con_stat.set_user_con_state_opts(false)
-                }
+                this_top.con_stat.set_server_con_state(this_top.con_states.NOT_CONNECTED)
+                this_top.con_stat.set_user_con_state_opts(false)
+                this_top.con_stat.set_check_heartbeat(false)
 
+                // try to reconnect the session
                 setTimeout(function() {
-                    // window.location.reload() 
-                    // window.location.reload() 
-                    // window.location.reload() 
-                    // window.location.reload() 
-                    // window.location.reload() 
-                    // window.location.reload() 
-                    // window.location.reload() 
-                    
-                    // try to reconnect the session
                     setup_websocket()
                 }, 500) 
-
                 // window.location.reload()
+
+                return
+            }
+
+            this_sock_int.ws.onerror = function(event) {
+                // console.log(' -ZZZ- onerror - ', event)
+                this_top.socket.server_log({
+                    data: {
+                        event_name: 'ws.onerror',
+                        event: event,
+                    },
+                    is_verb: true,
+                    log_level: LOG_LEVELS.ERROR,
+                })
+             
+                return
             }
         }
         setup_websocket()
@@ -232,6 +248,8 @@ function SocketManager() {
         //
         // -------------------------------------------------------------------
         function initial_connect(data_in) {
+            // console.log(' -ZZZ- initial_connect - ')
+            
             let tel_info = {
             }
             tel_info.tel_ids = data_in.tel_ids
@@ -242,6 +260,8 @@ function SocketManager() {
             this_top.sess_id = String(data_in.sess_id)
             // this_top.sess_id = String('_xx_00_xx_') // for debugging
             // this_top.sess_id = String(unique({prefix: ''}))
+
+            this_top.sess_ping = data_in.sess_ping
 
             this_top.session_props = {
                 sess_id: this_top.sess_id,
@@ -264,7 +284,7 @@ function SocketManager() {
                     log_level: LOG_LEVELS.INFO,
                 })
             }
-            
+
             // this_top.socket.emit('test_socket_evt', {test: 0})
             this_top.socket.emit('test_socket_evt', {test: 1})
             
@@ -283,13 +303,18 @@ function SocketManager() {
             if (!is_def(this_top.con_stat)) {
                 this_top.con_stat = new connection_state()
     
-                check_is_offline()
                 check_is_hidden()
                 check_was_offline()
+    
+                // start the ping/pong heartbeat loop
+                check_ping_delay()
             }
-
-            this_top.con_stat.set_server_con_state(true)
+            
+            // set the connection status indicators
+            this_top.con_stat.set_server_con_state(this_top.con_states.CONNECTED)
             this_top.con_stat.set_user_con_state_opts(true)
+            this_top.con_stat.set_check_heartbeat(true)
+            
 
             return
         }
@@ -302,7 +327,8 @@ function SocketManager() {
                 initial_connect(data_in.data)
             }
             else {
-
+                // if this is an exsisting session reconnecting, override
+                // the sess_id, which will also be transmitted to the server
                 data_in.sess_id = this_top.sess_id
                 data_in.data.sess_id = this_top.sess_id
 
@@ -321,11 +347,120 @@ function SocketManager() {
             }, 100)
         })
 
+        // -------------------------------------------------------------------
+        // get/send heartbeat ping/pong messages to the server
+        // -------------------------------------------------------------------
+        let ping_time_msec = null
+        let ping_latest_delay_msec = 0
+        this_top.socket.on('heartbeat_ping', function(data_in) {
+            // console.log(' - got heartbeat_ping', data_in)
+            // if this is not the first ping, check that the delay is within the allowed range
+            if (is_def(ping_time_msec)) {
+                let ping_interval_msec = get_time_msec() - ping_time_msec
+                ping_latest_delay_msec = Math.abs(
+                    ping_interval_msec - data_in.data.ping_interval_msec
+                )
 
-        function is_socket_connected() {
-            return this_top.socket.connected
+                this_top.con_stat.set_check_heartbeat(true)
+                // console.log(' xxx', ping_interval_msec)
+            }
+
+            // update the local variable
+            ping_time_msec = get_time_msec()
+            // let the server know that the ping was received
+            this_top.socket.emit('heartbeat_pong')
+        })
+
+        // -------------------------------------------------------------------
+        // func to run continously and check that the ping/pong heartbeat
+        // is within accepted limits
+        // -------------------------------------------------------------------
+        function check_ping_delay() {
+            setTimeout(function() {
+
+                // this_top.socket.emit('test_socket_evt', {test: 1})
+
+                // if this is not the first ping, check that the delay is within the allowed range
+                let ping_total_delay_msec = 0
+                if (is_def(ping_time_msec)) {
+                    let ping_interval_msec = get_time_msec() - ping_time_msec
+                    ping_total_delay_msec = (
+                        ping_interval_msec - this_top.sess_ping.interval_msec
+                    )
+                    // console.log('check_ping_delay:', ping_latest_delay_msec, ping_total_delay_msec)
+                }
+
+                // mostly ping_total_delay_msec will be negative if the connecition is ok
+                // and so the latest (event) delay will be taken
+                let ping_compare_delay_msec = Math.max(
+                    ping_latest_delay_msec, ping_total_delay_msec
+                )
+
+                if (!this_top.con_stat.do_check_heartbeat()) {
+                    // after setting the state in the previous iteration (to make
+                    // sure we do not attempt to send further messages), close the socket
+                    if (this_top.socket.ws.readyState === this_top.socket.ws.OPEN) {
+                        let do_ws_close = (
+                            ping_compare_delay_msec > this_top.sess_ping.tolerance_close_msec
+                        )
+                        if (do_ws_close) {
+                            this_top.socket.ws.close()
+                        }
+                    }
+
+                    check_ping_delay()
+                    return
+                }
+
+                let state = null
+                if (ping_compare_delay_msec < this_top.sess_ping.tolerance_optimal_msec) {
+                    state = this_top.con_states.CONNECTED
+                    // console.log('            GOOD connection ?!')
+                }
+                else if (ping_compare_delay_msec < this_top.sess_ping.tolerance_slow_msec) {
+                    state = this_top.con_states.SLOW_CONNECTION
+                    // console.log(' SLOW_CONNECTION connection ?!')
+                }
+                else {
+                    state = this_top.con_states.NOT_CONNECTED
+                    // console.log('              NO  connection ?!')
+                }
+
+                let prev_state = this_top.con_stat.get_server_con_state()
+                
+                if (prev_state !== state) {
+                    // send a log entry to the server
+                    if (state !== this_top.con_states.CONNECTED) {
+                        let level = (
+                            state === this_top.con_states.NOT_CONNECTED
+                                ? LOG_LEVELS.ERROR
+                                : LOG_LEVELS.WARNING
+                        )
+                        this_top.socket.server_log({
+                            data: {
+                                event_name: state,
+                                ping_latest_delay_msec: ping_latest_delay_msec,
+                                ping_total_delay_msec: ping_total_delay_msec,
+                            },
+                            is_verb: true,
+                            log_level: level,
+                        })
+                    }
+
+                    // modify the connection state of the client
+                    let is_con = (state !== this_top.con_states.NOT_CONNECTED)
+
+                    this_top.con_stat.set_server_con_state(state)
+                    this_top.con_stat.set_user_con_state_opts(is_con)
+                    this_top.con_stat.set_check_heartbeat(is_con)
+                }
+
+                check_ping_delay()
+                return
+
+            }, 500)
         }
-        this_top.is_socket_connected = is_socket_connected
+        
 
         // -------------------------------------------------------------------
         // if the window/tab is hidden (minimized or another tab is focused), then flush the time
@@ -339,22 +474,6 @@ function SocketManager() {
                 }
                 check_is_hidden()
             }, 5000)
-        }
-
-        // -------------------------------------------------------------------
-        // ask for wakeup data if returning from an offline state
-        // -------------------------------------------------------------------
-        function check_is_offline() {
-            setTimeout(function() {
-                let is_con = this_top.is_socket_connected()
-                this_top.con_stat.set_server_con_state(is_con)
-                // if(!is_con) {
-                //   if (this_top.con_stat.user_btn.checked) {
-                //     this_top.con_stat.set_user_con_state_opts(false)
-                //   }
-                // }
-                check_is_offline()
-            }, 500)
         }
 
         let socket_was_offline = false
@@ -397,7 +516,7 @@ function SocketManager() {
         // this_top.socket.on('disconnect', function() {
         //     console.log('disconnect',this_top.is_reload)
         //     if (!this_top.is_reload) {  
-        //         this_top.con_stat.set_server_con_state(false)
+        //         this_top.con_stat.set_server_con_state(this_top.con_states.NOT_CONNECTED)
         //         this_top.con_stat.set_user_con_state_opts(false)
         //     }
         // })
@@ -453,10 +572,13 @@ function SocketManager() {
     }
     this_top.setup_socket = setup_socket
 
+
+
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
     function connection_state(is_connect) {
+        let this_con_state_top = this
         let is_server_on = false
         let is_user_on = true
         let off_opacity = '40%'
@@ -465,20 +587,70 @@ function SocketManager() {
         let user_btn = base_app.get_connection_stat_div(false, '_btn')
         let user_tog = base_app.get_connection_stat_div(false, '_tog')
 
-        this.user_btn = user_btn
+        let tooltip_span_id = 'server_con_stat_div_container_extra_tooltip'
+        let tooltip_span = document.querySelector('#' + tooltip_span_id)
+        if (!is_def(tooltip_span)) {
+            let tooltip_div = document.querySelector('#server_con_stat_div_container')
+            if (is_def(tooltip_div)) {
+                let texts = tooltip_div.getElementsByClassName('tooltip-text')
+                if (texts && texts.length > 0) {
+                    tooltip_span = texts[0].appendChild(
+                        document.createElement('span')
+                    )
+                    tooltip_span.id = tooltip_span_id
+                }
+            }
+        }
 
-        function set_server_con_state(is_con) {
-            is_server_on = is_con
-            if (is_con) {
+        this_con_state_top.user_btn = user_btn
+
+        // 
+        function set_server_con_state(state) {
+            let is_con = false
+            if (state == this_top.con_states.CONNECTED) {
+                is_con = true
                 server_btn.classList.add('status-indicator-on')
+                server_btn.classList.remove('status-indicator-warn')
+                if (is_def(tooltip_span)) {
+                    tooltip_span.innerHTML = 'Server connected'
+                }
+            }
+            else if (state == this_top.con_states.SLOW_CONNECTION) {
+                is_con = true
+                server_btn.classList.add('status-indicator-warn')
+                server_btn.classList.remove('status-indicator-on')
+                if (is_def(tooltip_span)) {
+                    tooltip_span.innerHTML = 'Unstable server connection'
+                }
+            }
+            else if (state == this_top.con_states.NOT_CONNECTED) {
+                is_con = false
+                server_btn.classList.remove('status-indicator-on')
+                server_btn.classList.remove('status-indicator-warn')
+                if (is_def(tooltip_span)) {
+                    tooltip_span.innerHTML = 'Server not connected'
+                }
             }
             else {
-                server_btn.classList.remove('status-indicator-on')
+                console.error('unrecognised connection state ?!?!?!')
             }
+
+            server_con_state = state
+            is_server_on = is_con
+            this_top.socket.connected = is_con
+
             return
         }
-        this.set_server_con_state = set_server_con_state
+        this_con_state_top.set_server_con_state = set_server_con_state
 
+        // 
+        let server_con_state = this_top.con_states.NOT_CONNECTED
+        function get_server_con_state() {
+            return server_con_state
+        }
+        this_con_state_top.get_server_con_state = get_server_con_state
+
+        // 
         function set_user_con_state_opts(is_con) {
             if (is_con) {
                 user_tog.style = 'opacity: 1;'
@@ -490,7 +662,21 @@ function SocketManager() {
             }
             return
         }
-        this.set_user_con_state_opts = set_user_con_state_opts
+        this_con_state_top.set_user_con_state_opts = set_user_con_state_opts
+
+        // 
+        let check_heartbeat = false
+        function set_check_heartbeat(is_con) {
+            // console.log(' -ZZZ- set_check_heartbeat ', is_con)
+            check_heartbeat = is_con
+            return
+        }
+        this_con_state_top.set_check_heartbeat = set_check_heartbeat
+
+        function do_check_heartbeat() {
+            return check_heartbeat
+        }
+        this_con_state_top.do_check_heartbeat = do_check_heartbeat
 
         user_btn.addEventListener('change', function(e) {
             is_user_on = e.target.checked
@@ -500,7 +686,7 @@ function SocketManager() {
         let has_changed = null
         function is_offline() {
             let is_offline_now = false
-            if (!this_top.is_socket_connected()) {
+            if (!this_top.socket.connected) {
                 is_offline_now = true
             }
             else if (document.hidden) {
@@ -520,10 +706,10 @@ function SocketManager() {
             })
             has_changed = is_offline_now
 
-            // console.log('-is_offline-',is_offline_now, this_top.is_socket_connected())
+            // console.log('-is_offline-',is_offline_now, this_top.socket.connected)
             return is_offline_now
         }
-        this.is_offline = is_offline
+        this_con_state_top.is_offline = is_offline
 
         return
     }

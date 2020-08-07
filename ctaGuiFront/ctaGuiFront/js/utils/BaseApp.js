@@ -288,7 +288,8 @@ function BaseApp() {
             input_id: 'server_con_stat_div_btn',
             checked: true,
             tooltip: {
-                text: 'Server status',
+                // text filled in dynamically as part of SocketManager
+                text: '',
                 class_list: [ 'tooltip-bottom-left' ],
             },
         })
