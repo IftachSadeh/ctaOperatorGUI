@@ -59,7 +59,7 @@ function SocketManager() {
     this_top.widget_table = {
     }
 
-    // this_top.has_joined_session = false
+    this_top.has_joined_session = false
     this_top.session_props = null
 
     this_top.state_change_funcs = []
@@ -80,92 +80,28 @@ function SocketManager() {
     /**
      * wrapper for WebSocket events
      */
+    // ---------------------------------------------------------------------------
     function SocketInterface() {
         let this_sock_int = this
+        let ws = null
         this_sock_int.connected = false
 
         // obj for all event names
         let events = {
         }
 
-        // on event of a given type, use the registered function
-        function on(event_name, func) {
-            events[event_name] = func
-            return
-        }
-        this_sock_int.on = on
-
-        // send a socket event by event name
-        function emit(event_name, data_in) {
-            if (!is_def(data_in)) {
-                data_in = {
-                }
-            }
-            let data = {
-                event_name: event_name,
-                sess_id: this_top.sess_id,
-                n_client_msg: this_top.n_client_msg,
-                send_time_msec: get_time_msec(),
-                data: data_in,
-            }
-            this_top.n_client_msg += 1
-            // console.log(data)
-            
-            // console.log('sending ', event_name, this_sock_int.ws.readyState)
-
-            if (this_sock_int.ws.readyState === this_sock_int.ws.OPEN) {
-                this_sock_int.ws.send(
-                    encode_socket_data(data)
-                )
-            }
-
-            return
-        }
-        this_sock_int.emit = emit
-
-        // logging event interface
-        function server_log(data_in) {
-            let event_name = 'client_log'
-            let log_level = is_def(data_in.log_level) ? data_in.log_level : LOG_LEVELS.ERROR
-            let is_verb = is_def(data_in.is_verb) ? data_in.is_verb : false
-            
-            let data = {
-                event_name: event_name,
-                sess_id: this_top.sess_id,
-                log_level: log_level,
-                n_client_msg: this_top.n_client_msg,
-                data: data_in.data,
-            }
-            this_top.n_client_msg += 1
-
-            // send the log to the server
-            this_sock_int.ws.send(
-                encode_socket_data(data)
-            )
-
-            // local print in the client if needed
-            if (log_level === LOG_LEVELS.ERROR) {
-                console.error(event_name, data)
-            }
-            else if (is_verb) {
-                console.log(event_name, data)
-            }
-            
-            return
-        }
-        this_sock_int.server_log = server_log
-
         // open the WebSocket and add interfaces
         function setup_websocket() {
-            let ws = new WebSocket(window.WEBSOCKET_ROUTE)
-            this_sock_int.ws = ws
+            ws = new WebSocket(window.WEBSOCKET_ROUTE)
 
-            this_sock_int.ws.onopen = function(event) {
+            // 
+            ws.onopen = function(event) {
                 // console.log(' -ZZZ- onopen - ')                
                 return
             }
 
-            this_sock_int.ws.onmessage = function(event) {
+            // 
+            ws.onmessage = function(event) {
                 try {
                     if (!event.data) {
                         throw [
@@ -197,9 +133,9 @@ function SocketManager() {
                 return
             }
 
-            // temporary reload....
-            this_sock_int.ws.onclose = function(event) {
-                // console.log(' -ZZZ- onclose - ', this_top.is_reload)
+            //
+            ws.onclose = function(event) {
+                // console.log(' -ZZZ- onclose - ')
 
                 this_top.con_stat.set_server_con_state(this_top.con_states.NOT_CONNECTED)
                 this_top.con_stat.set_user_con_state_opts(false)
@@ -214,7 +150,7 @@ function SocketManager() {
                 return
             }
 
-            this_sock_int.ws.onerror = function(event) {
+            ws.onerror = function(event) {
                 // console.log(' -ZZZ- onerror - ', event)
                 this_top.socket.server_log({
                     data: {
@@ -228,8 +164,82 @@ function SocketManager() {
                 return
             }
         }
-        setup_websocket()
+        this_sock_int.setup_websocket = setup_websocket
 
+        // on event of a given type, use the registered function
+        function on(event_name, func) {
+            events[event_name] = func
+            return
+        }
+        this_sock_int.on = on
+
+        // send a socket event by event name
+        function emit(event_name, data_in, metadata_in) {
+            if (!is_def(data_in)) {
+                data_in = {
+                }
+            }
+            let data = {
+                event_name: event_name,
+                sess_id: this_top.sess_id,
+                n_client_msg: this_top.n_client_msg,
+                send_time_msec: get_time_msec(),
+                data: data_in,
+            }
+            if (is_def(metadata_in)) {
+                $.each(metadata_in, function(key, data_now) {
+                    data[key] = data_now
+                })
+            }
+            this_top.n_client_msg += 1
+            
+            // console.log('sending ', event_name, this_sock_int.ws.readyState)
+            if (is_ws_open()) {
+                ws.send(
+                    encode_socket_data(data)
+                )
+            }
+
+            return
+        }
+        this_sock_int.emit = emit
+
+        // logging event interface
+        function server_log(data_in) {
+            let event_name = 'client_log'
+            let log_level = is_def(data_in.log_level) ? data_in.log_level : LOG_LEVELS.ERROR
+            let is_verb = is_def(data_in.is_verb) ? data_in.is_verb : false
+            
+            let metadata = {
+                log_level: log_level,
+            }
+
+            this_sock_int.emit(event_name, data_in.data, metadata)
+
+            // local print in the client if needed
+            if (log_level === LOG_LEVELS.ERROR) {
+                console.error(event_name, metadata, data_in.data)
+            }
+            else if (is_verb) {
+                console.log(event_name, metadata, data_in.data)
+            }
+            
+            return
+        }
+        this_sock_int.server_log = server_log
+
+        // check if the socket is open for buisness
+        function is_ws_open() {
+            return (ws.readyState === ws.OPEN)
+        }
+        this_sock_int.is_ws_open = is_ws_open
+
+        // close the socket manually (will trigger ws.onclose())
+        function close_ws() {
+            ws.close()
+            return
+        }
+        this_sock_int.close_ws = close_ws
 
         return
     }
@@ -243,6 +253,7 @@ function SocketManager() {
         let widget_name = window.WIDGET_NAME
 
         this_top.socket = new SocketInterface()
+        this_top.socket.setup_websocket()
 
         // -------------------------------------------------------------------
         //
@@ -269,8 +280,6 @@ function SocketManager() {
                 is_simulation: data_in.is_simulation,
             }
 
-            this_top.is_reload = false
-
             let data_out = {
                 display_user_id: window.DISPLAY_USER_ID,
                 display_user_group: window.DISPLAY_USER_GROUP,
@@ -286,7 +295,7 @@ function SocketManager() {
             }
 
             // this_top.socket.emit('test_socket_evt', {test: 0})
-            this_top.socket.emit('test_socket_evt', {test: 1})
+            // this_top.socket.emit('test_socket_evt', {test: 1})
             
             this_top.socket.emit('initial_connect_replay', data_out)
 
@@ -308,6 +317,8 @@ function SocketManager() {
     
                 // start the ping/pong heartbeat loop
                 check_ping_delay()
+
+                this_top.has_joined_session = true
             }
             
             // set the connection status indicators
@@ -333,7 +344,6 @@ function SocketManager() {
                 data_in.data.sess_id = this_top.sess_id
 
                 // console.log(' - reconnect - ', data_in)
-                this_top.is_reload = false
                 initial_connect(data_in.data)
                 // reconnect(data_in)
             }
@@ -399,12 +409,12 @@ function SocketManager() {
                 if (!this_top.con_stat.do_check_heartbeat()) {
                     // after setting the state in the previous iteration (to make
                     // sure we do not attempt to send further messages), close the socket
-                    if (this_top.socket.ws.readyState === this_top.socket.ws.OPEN) {
+                    if (this_top.socket.is_ws_open()) {
                         let do_ws_close = (
                             ping_compare_delay_msec > this_top.sess_ping.tolerance_close_msec
                         )
                         if (do_ws_close) {
-                            this_top.socket.ws.close()
+                            this_top.socket.close_ws()
                         }
                     }
 
@@ -460,12 +470,13 @@ function SocketManager() {
 
             }, 500)
         }
-        
 
         // -------------------------------------------------------------------
-        // if the window/tab is hidden (minimized or another tab is focused), then flush the time
-        // function -> execute all zero-delay transitions at once. If this is not running on a loop forever
-        // then updates on a hidden tab will not go through in real-time (see: https://github.com/d3/d3-timer)
+        // if the window/tab is hidden (minimized or another tab
+        // is focused), then flush the time function -> execute all zero-delay
+        // transitions at once. If this is not running on a loop forever
+        // then updates on a hidden tab will not go through in
+        // real-time (see: https://github.com/d3/d3-timer)
         // -------------------------------------------------------------------
         function check_is_hidden() {
             setTimeout(function() {
@@ -496,35 +507,6 @@ function SocketManager() {
             }, 500)
         }
 
-
-        // -------------------------------------------------------------------
-        // upon leaving the session or leaving the page
-        // -------------------------------------------------------------------
-        window.addEventListener('beforeunload', function(_, do_reload) {
-            this_top.is_reload = true
-            // explicitly needed for firefox, but good in any case...
-            if (this_top.socket) {
-                // this_top.socket.disconnect()
-                this_top.socket = null
-            }
-            if (is_debug) {
-                window.location.reload() // clear cache
-            }
-        })
-
-        // // in case we disconnect (internet is off or server is down)
-        // this_top.socket.on('disconnect', function() {
-        //     console.log('disconnect',this_top.is_reload)
-        //     if (!this_top.is_reload) {  
-        //         this_top.con_stat.set_server_con_state(this_top.con_states.NOT_CONNECTED)
-        //         this_top.con_stat.set_user_con_state_opts(false)
-        //     }
-        // })
-
-        // this_top.socket.on('error', function(obj) {
-        //   console.log("error", obj);
-        // });
-
         // -------------------------------------------------------------------
         // run the respective sync-state function for each widget
         // -------------------------------------------------------------------
@@ -542,18 +524,6 @@ function SocketManager() {
             })
         })
 
-        // // -------------------------------------------------------------------
-        // // -------------------------------------------------------------------
-        // // for development...
-        // // -------------------------------------------------------------------
-        // this_top.socket.on('refreshAll', function (data) {
-        //   if (widget_name !== 'view_refresh_all') {
-        //     is_debug = false // prevent double reloadding
-        //     window.location.reload()
-        //   }
-        // })
-        // // -------------------------------------------------------------------
-        // // -------------------------------------------------------------------
 
         // // -------------------------------------------------------------------
         // //
@@ -1197,3 +1167,30 @@ window.sock = new SocketManager()
 //   })
 // }
 // // this.winResize = winResize;
+
+
+// // -------------------------------------------------------------------
+// // upon leaving the session or leaving the page
+// // -------------------------------------------------------------------
+// window.addEventListener('beforeunload', function(_, do_reload) {
+//     // explicitly needed for firefox, but good in any case...
+//     if (this_top.socket) {
+//         // this_top.socket.disconnect()
+//         this_top.socket = null
+//     }
+//     if (is_debug) {
+//         window.location.reload() // clear cache
+//     }
+// })
+// // in case we disconnect (internet is off or server is down)
+// this_top.socket.on('disconnect', function() {
+//     console.log('disconnect',this_top.is_reload)
+//     if (!this_top.is_reload) {  
+//         this_top.con_stat.set_server_con_state(this_top.con_states.NOT_CONNECTED)
+//         this_top.con_stat.set_user_con_state_opts(false)
+//     }
+// })
+// this_top.socket.on('error', function(obj) {
+//   console.log("error", obj);
+// });
+

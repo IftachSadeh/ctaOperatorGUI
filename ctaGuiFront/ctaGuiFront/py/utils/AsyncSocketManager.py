@@ -92,6 +92,8 @@ def extend_app_to_asgi(wsgi_app, websocket_route):
         try:
             async_manager = AsyncSocketManager(sync_send=send)
 
+            # async_manager.add_app()
+
             while True:
                 try:
                     message = await receive()
@@ -114,6 +116,8 @@ def extend_app_to_asgi(wsgi_app, websocket_route):
                     if text:
                         text = json.loads(text)
 
+                        # print('n_apps',async_manager.n_apps, text)
+
                         try:
                             # non-blocking receive events
                             asyncio.ensure_future(async_manager.receive(data=text))
@@ -128,6 +132,9 @@ def extend_app_to_asgi(wsgi_app, websocket_route):
                     except Exception as e:
                         traceback.print_tb(e.__traceback__)
                         print(e)
+                    
+                    # async_manager.rm_app() ; async_manager.log.info([['wr', ' - finish loop:', '', async_manager.sess_id, async_manager.n_app()]])
+
                     break
                 else:
                     raise Exception('unknown message type ', message)
@@ -153,6 +160,13 @@ class AsyncSocketManager:
     coroutine_sigs = dict()
     widget_inits = dict()
 
+    # n_apps = 0
+    # def add_app(self):
+    #     AsyncSocketManager.n_apps += 1
+    # def rm_app(self):
+    #     AsyncSocketManager.n_apps -= 1
+    # def n_app(self):
+    #     return AsyncSocketManager.n_apps
 
     # ------------------------------------------------------------------
     def __init__(self, sync_send, *args, **kwargs):
