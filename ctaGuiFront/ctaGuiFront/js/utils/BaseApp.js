@@ -38,8 +38,19 @@ $.getScript('/js/utils/common.js', function() {
                     },
                     execute: function() {
                         base_app.setup_opt_socks()
+
+                        // widgets should all be initialised before this event...
+                        // widgets should all be initialised before this event...
+                        // widgets should all be initialised before this event...
+                        // widgets should all be initialised before this event...
+                        // widgets should all be initialised before this event...
+                        // widgets should all be initialised before this event...
+                        // widgets should all be initialised before this event...
+                        // widgets should all be initialised before this event...
+                        
+                        sock.socket.emit('sess_setup_finalised')
                     },
-                    wait: 100,
+                    wait: 25,
                 })
             })
         })
@@ -61,7 +72,7 @@ function BaseApp() {
         let widget_name = window.WIDGET_NAME
         let has_side_menu = true
         let is_socket_view = true
-        let is_login = widget_name == 'login'
+        let is_login = (widget_name == 'login')
 
         if (widget_name === 'not_found') {
             console.warn('ready(base-app)...', widget_name)
@@ -459,6 +470,11 @@ function BaseApp() {
 
         // for debugging
         let is_open = false
+        is_open = true
+        is_open = true
+        is_open = true
+        is_open = true
+        is_open = true
         if (is_open) {
             setTimeout(function() {
                 tog_opt_menu()
@@ -815,11 +831,9 @@ function BaseApp() {
             let is_skip_daytime = opt_in.is_skip_daytime
             let is_short_night = opt_in.is_short_night
             let data_emit = {
-                data: {
-                    speed_factor: speed_factor,
-                    is_skip_daytime: is_skip_daytime,
-                    is_short_night: is_short_night,
-                },
+                speed_factor: speed_factor,
+                is_skip_daytime: is_skip_daytime,
+                is_short_night: is_short_night,
             }
             socket.emit('set_sim_clock_sim_params', data_emit)
 
@@ -827,21 +841,17 @@ function BaseApp() {
         }
 
         socket.on('get_sim_clock_sim_params', function(data_in) {
-            let data = {
-                speed_factor: data_in.data.speed_factor,
-                min_speed_factor: data_in.data.min_speed_factor,
-                max_speed_factor: data_in.data.max_speed_factor,
-                is_skip_daytime: data_in.data.is_skip_daytime,
-                is_short_night: data_in.data.is_short_night,
-            }
-            update_eles(data)
+            // console.log('dddddddddddd', data_in.data)
+            update_eles(data_in.data)
         })
 
+
+        // socket.on('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', function(data_in) {
+        //     console.log('dddddddddddd', data_in.data)
+        // })
+
         setTimeout(function() {
-            let data_emit = {
-                sess_id: window.sock.session_props.sess_id,
-            }
-            socket.emit('get_sim_clock_sim_params', data_emit)
+            socket.emit('ask_sim_clock_sim_params')
         }, times.wait_loop)
 
         // data_emit = {

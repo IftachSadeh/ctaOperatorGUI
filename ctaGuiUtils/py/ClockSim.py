@@ -1,8 +1,8 @@
 from random import Random
 from datetime import timedelta
 
-import gevent
-from gevent import sleep
+import threading
+from time import sleep
 
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.utils import datetime_to_secs, secs_to_datetime, date_to_string, get_rnd
@@ -70,7 +70,7 @@ class ClockSim():
 
         self.init_night_times()
 
-        gevent.spawn(self.pubsub_sim_params)
+        threading.Thread(target=self.pubsub_sim_params).start()
 
         return
 
@@ -88,7 +88,7 @@ class ClockSim():
 
         self.set_night_times()
 
-        gevent.spawn(self.loop)
+        threading.Thread(target=self.loop).start()
 
         return
 
@@ -290,9 +290,6 @@ class ClockSim():
                 name='clock_sim_sim_params',
                 packed=True,
             )
-
-            print(red_data)
-            print('--'*30)
 
             if red_data is not None:
                 speed_factor = red_data['speed_factor']

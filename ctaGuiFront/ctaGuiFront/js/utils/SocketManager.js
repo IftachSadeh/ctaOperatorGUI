@@ -258,6 +258,7 @@ function SocketManager() {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
+        let is_first = true
         function initial_connect(data_in) {
             // console.log(' -ZZZ- initial_connect - ')
             
@@ -297,7 +298,7 @@ function SocketManager() {
             // this_top.socket.emit('test_socket_evt', {test: 0})
             // this_top.socket.emit('test_socket_evt', {test: 1})
             
-            this_top.socket.emit('initial_connect_replay', data_out)
+            this_top.socket.emit('sess_setup_begin', data_out)
 
             // this_top.socket.emit('test_socket_evt', {test: 2})
 
@@ -309,7 +310,7 @@ function SocketManager() {
                 })
             }
 
-            if (!is_def(this_top.con_stat)) {
+            if (is_first) {
                 this_top.con_stat = new connection_state()
     
                 check_is_hidden()
@@ -317,8 +318,6 @@ function SocketManager() {
     
                 // start the ping/pong heartbeat loop
                 check_ping_delay()
-
-                this_top.has_joined_session = true
             }
             
             // set the connection status indicators
@@ -326,6 +325,10 @@ function SocketManager() {
             this_top.con_stat.set_user_con_state_opts(true)
             this_top.con_stat.set_check_heartbeat(true)
             
+            if (is_first) {
+                this_top.has_joined_session = true
+            }
+            is_first = false
 
             return
         }
@@ -395,7 +398,7 @@ function SocketManager() {
                 if (is_def(ping_time_msec)) {
                     let ping_interval_msec = get_time_msec() - ping_time_msec
                     ping_total_delay_msec = (
-                        ping_interval_msec - this_top.sess_ping.interval_msec
+                        ping_interval_msec - this_top.sess_ping.send_interval_msec
                     )
                     // console.log('check_ping_delay:', ping_latest_delay_msec, ping_total_delay_msec)
                 }
@@ -411,7 +414,7 @@ function SocketManager() {
                     // sure we do not attempt to send further messages), close the socket
                     if (this_top.socket.is_ws_open()) {
                         let do_ws_close = (
-                            ping_compare_delay_msec > this_top.sess_ping.tolerance_close_msec
+                            ping_compare_delay_msec > this_top.sess_ping.max_interval_bad_msec
                         )
                         if (do_ws_close) {
                             this_top.socket.close_ws()
@@ -423,11 +426,11 @@ function SocketManager() {
                 }
 
                 let state = null
-                if (ping_compare_delay_msec < this_top.sess_ping.tolerance_optimal_msec) {
+                if (ping_compare_delay_msec < this_top.sess_ping.max_interval_good_msec) {
                     state = this_top.con_states.CONNECTED
                     // console.log('            GOOD connection ?!')
                 }
-                else if (ping_compare_delay_msec < this_top.sess_ping.tolerance_slow_msec) {
+                else if (ping_compare_delay_msec < this_top.sess_ping.max_interval_slow_msec) {
                     state = this_top.con_states.SLOW_CONNECTION
                     // console.log(' SLOW_CONNECTION connection ?!')
                 }

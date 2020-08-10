@@ -1,18 +1,19 @@
 import uvicorn
-from ctaGuiUtils.py.server_args import parse_args
+# from ctaGuiUtils.py.server_args import parse_args
+from ctaGuiBack.py.server_setup import setup_server
 
 is_dev = True
 # is_dev = False
 
-settings = parse_args(app_name='ctaGuiFront')
+# settings = parse_args(app_name='ctaGuiBack')
 
-app = 'ctaGuiFront.py.utils.server_setup:app'
+# app = 'ctaGuiBack.py.server_setup:app'
 
-conf = { 
-    'host': str(settings['app_host']), 
-    'port': int(settings['app_port']),
-    'workers': int(settings['app_workers']),
-}
+# conf = { 
+#     'host': str(settings['app_host']), 
+#     'port': int(settings['app_port']),
+#     'workers': int(settings['app_workers']),
+# }
 
 # defined the directories to watch for changes (development purpose only)
 reload_dirs = []
@@ -31,11 +32,11 @@ reload_dirs += [
     base_dir + 'py',
     base_dir + 'acs',
 ]
-if is_dev:
-    conf.update({
-        'reload': True,  
-        'reload_dirs': reload_dirs,
-    })
+# if is_dev:
+#     conf.update({
+#         'reload': True,  
+#         'reload_dirs': reload_dirs,
+#     })
 
 # ------------------------------------------------------------------
 # see: https://docs.python.org/3/library/asyncio.html
@@ -43,8 +44,8 @@ if is_dev:
 # see: https://www.uvicorn.org/
 # ------------------------------------------------------------------
 if __name__ == "__main__":
-    uvicorn.run(
-        app, **conf
-    )
+    # uvicorn.run(
+    #     app, **conf
+    # )
 
-
+    setup_server()

@@ -71,27 +71,24 @@ class ExtendedWsgiToAsgi(WsgiToAsgi):
 
 # ------------------------------------------------------------------
 def extend_app_to_asgi(wsgi_app, websocket_route):
-    """description
-    
-        Parameters
-        ----------
-        name : type
-            description
-    
-        Returns
-        -------
-        type
-            description
-    """
-    
+
     app = ExtendedWsgiToAsgi(wsgi_app)
 
     # see: https://asgi.readthedocs.io/en/latest/specs/www.html
     @app.route(websocket_route['server'], protocol='websocket')
     async def hello_websocket(scope, receive, send):
         try:
+            log = LogParser(base_config=AsyncSocketManager.base_config, title=__name__)
+        except Exception as e:
+            raise e
+        
+        try:
             async_manager = AsyncSocketManager(sync_send=send)
+        except Exception as e:
+            log.error([['r', e]])
+            raise e
 
+        try:
             # async_manager.add_app()
 
             while True:
@@ -102,44 +99,46 @@ def extend_app_to_asgi(wsgi_app, websocket_route):
                     raise e
 
                 if message["type"] == "websocket.connect":
-                    
+                    async_manager.set_sess_state(True)
+
                     try:
                         # blocking connect event
                         await send({"type": "websocket.accept"})
                         await async_manager.send_initial_connect()
                     except Exception as e:
+                        log.error([['r', e]])
                         traceback.print_tb(e.__traceback__)
-                        print(e)
                     
                 elif message["type"] == "websocket.receive":
                     text = message.get("text")
                     if text:
                         text = json.loads(text)
 
-                        # print('n_apps',async_manager.n_apps, text)
-
                         try:
                             # non-blocking receive events
                             asyncio.ensure_future(async_manager.receive(data=text))
                         except Exception as e:
                             traceback.print_tb(e.__traceback__)
-                            print(e)
+                            log.error([['r', e]])
 
                 elif message["type"] == "websocket.disconnect":
                     try:
+                        async_manager.set_sess_state(False)
+                        
                         # blocking disconnect event
                         await async_manager.websocket_disconnect()
                     except Exception as e:
                         traceback.print_tb(e.__traceback__)
-                        print(e)
-                    
-                    # async_manager.rm_app() ; async_manager.log.info([['wr', ' - finish loop:', '', async_manager.sess_id, async_manager.n_app()]])
+                        log.error([['r', e]])
+
+                        # async_manager.rm_app() ; async_manager.log.info([['wr', ' - finish loop:', '', async_manager.sess_id, async_manager.n_app()]])
 
                     break
                 else:
                     raise Exception('unknown message type ', message)
 
         except Exception as e:
+            log.error([['r', e]])
             raise e
 
     return app
@@ -157,7 +156,7 @@ class AsyncSocketManager:
     # common dictionaries for all instances of
     # the class (keeping track of all sessions etc.)
     # sess_endpoints = dict()
-    coroutine_sigs = dict()
+    crt_sigs = dict()
     widget_inits = dict()
 
     # n_apps = 0
@@ -183,6 +182,7 @@ class AsyncSocketManager:
         # self.sess_id = str(get_time('msec') + rnd_gen.randint(1000000, (1000000 * 10) -1))
         self.n_server_msg = 0
         self.has_init_sess = False
+        self.is_sess_open = False
         self.user_id = ''
         self.user_group = ''
         self.user_group_id = ''
@@ -196,23 +196,24 @@ class AsyncSocketManager:
         # session ping/pong heartbeat
         self.sess_ping = {
             # interval for sending ping/pong events
-            'interval_msec': 2500,
+            'send_interval_msec': 2500,
             # how much delay is considered ok for a slow session
-            'tolerance_optimal_msec': 100,
+            'max_interval_good_msec': 100,
             # how much delay is considered ok for a disconnected session
-            'tolerance_slow_msec': 1000,
+            'max_interval_slow_msec': 1000,
             # how much delay before the client socket is forcibly closed
             # and set in a reconnection attempt loop
-            'tolerance_close_msec': 5000,
+            'max_interval_bad_msec': 5000,
         }
         # self.sess_ping = {
         #     # interval for sending ping/pong events
-        #     'interval_msec': 2000,
+        #     'send_interval_msec': 2000,
         #     # how much delay is considered ok for a slow session
-        #     'tolerance_optimal_msec': 2000,
+        #     'max_interval_good_msec': 2000,
         #     # how much delay is considered ok for a disconnected session
-        #     'tolerance_slow_msec': 6000,
+        #     'max_interval_slow_msec': 6000,
         # }
+        self.crt_loops = []
 
         self.asyncio_queue = asyncio.Queue()
 
@@ -231,10 +232,14 @@ class AsyncSocketManager:
 
         self.inst_data = self.base_config.inst_data
 
-        
+        try:
+            SocketDecorator(self)
+        except Exception as e:
+            # print(e)
+            raise e
 
         return
-    
+
     # ------------------------------------------------------------------
     def spawn(self, func, *args, **kwargs):
         # try:
@@ -266,7 +271,10 @@ class AsyncSocketManager:
         }
         self.n_server_msg += 1
 
-        await self.sync_send(self.websocket_data_dump(data_out))
+        # print('event_name\t\t\t',event_name)
+
+        if self.is_sess_open:
+            await self.sync_send(self.websocket_data_dump(data_out))
 
         return
 
@@ -301,16 +309,17 @@ class AsyncSocketManager:
             # and any other events get put in an ordered queue for execution
             if data['event_name'] in ['client_log']:
                 event_func(data)
-            elif data['event_name'] in ['initial_connect_replay']:
+            elif data['event_name'] in ['sess_setup_begin', 'sess_setup_finalised']:
                 await event_func(data)
             else:
-                await self.asyncio_queue.put({'coroutine':event_func(data), 'data': data,})
+                await self.asyncio_queue.put({'crt':event_func(data), 'data': data,})
 
         except Exception as e:
             self.log.error([['r', e]])
             raise e
 
         return
+
 
     # ------------------------------------------------------------------
     # ------------------------------------------------------------------
@@ -382,7 +391,7 @@ class AsyncSocketManager:
         return
 
     # ------------------------------------------------------------------
-    async def initial_connect_replay(self, data):
+    async def sess_setup_begin(self, data):
         """the replay of the client to the initial_connect event
 
             set the session-id which is derived by the client upon connecting the socket
@@ -419,7 +428,7 @@ class AsyncSocketManager:
                 hashed_pw = USERS.get(self.user_id)
                 if not hashed_pw:
                     raise Exception(
-                        'got unidentified user_name in initial_connect_replay...', data
+                        'got unidentified user_name in sess_setup_begin ...', data
                     )
 
             # get the user group and set some names
@@ -437,30 +446,30 @@ class AsyncSocketManager:
             )
 
             # register the user_name if needed (this list is never cleaned up)
-            user_ids = self.redis.l_get('user_ids', packed=False)
+            user_ids = self.redis.l_get('user_ids', packed=True)
             if self.user_id not in user_ids:
                 self.redis.r_push(
-                    name='user_ids', data=self.user_id, packed=False
+                    name='user_ids', data=self.user_id, packed=True
                 )
 
             # register the sess_id in all lists
             # heartbeat should be first to avoid cleanup racing conditions!
             self.redis.set(
-                name='server_sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10), packed=False,
+                name='server_sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10), packed=True,
             )
 
             # global and local lists session ids
 
-            all_sess_ids = self.redis.l_get('all_sess_ids', packed=False)
+            all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
             if self.sess_id not in all_sess_ids:
                 self.redis.r_push(
-                    name='all_sess_ids', data=self.sess_id, packed=False
+                    name='all_sess_ids', data=self.sess_id, packed=True
                 )
 
-            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=False)
+            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
             if self.sess_id not in all_sess_ids:
                 self.redis.r_push(
-                    name=self.server_name+';all_sess_ids', data=self.sess_id, packed=False
+                    name=self.server_name+';all_sess_ids', data=self.sess_id, packed=True
                 )
 
             if not self.redis.h_exists(name='sync_groups', key=self.user_id):
@@ -469,17 +478,14 @@ class AsyncSocketManager:
                 )
 
             # list of all sessions for this user
-            all_user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=False)
+            all_user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=True)
             if self.sess_id not in all_user_sess_ids:
                 self.redis.r_push(
-                    name='user_sess_ids;' + self.user_id, data=self.sess_id, packed=False
+                    name='user_sess_ids;' + self.user_id, data=self.sess_id, packed=True
                 )
 
             self.init_common_loops()
-            # await self.init_common_loops()  
 
-            # as the final step within the lock, flag the session as initialised
-            self.has_init_sess = True
 
             # function which may be overloaded, setting up individual
             # properties for a given session-type
@@ -489,19 +495,52 @@ class AsyncSocketManager:
             self.init_user_sync_loops()
 
 
+
+
+
+
+
+
+
+            async def aa():
+                # await asyncio.sleep(1.5)
+                print('aaaaaaaaaaaa')
+                data = self.redis.get('clock_sim_sim_params', packed=True)
+                await self.emit('get_sim_clock_sim_params', data)
+            await self.asyncio_queue.put({'crt':aa(), 'data': {'sess_id': self.sess_id},})
+
+            # async def emit_to_queue(self, event_name, data={}):
+            # async def emit_to_queue(self, event_name, data={}):
+            # async def emit_to_queue(self, event_name, data={}):
+            # async def emit_to_queue(self, event_name, data={}):
+            # async def emit_to_queue(self, event_name, data={}):
+            # async def emit_to_queue(self, event_name, data={}):
+            # async def emit_to_queue(self, event_name, data={}):
+            #     await self.asyncio_queue.put({'crt':aa(), 'data': {'sess_id': self.sess_id},})
+            #     return
+
+
+
+
+
+
+
+
+
+
             # await asyncio.sleep(3)
 
             test_connection_sess = 0
             if test_connection_sess:
-                all_sess_ids = self.redis.l_get('all_sess_ids', packed=False)
+                all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
                 print('all_sess_ids \t\t\t', all_sess_ids)
 
                 for s in all_sess_ids:
                     print('heartbeat \t\t\t', s, '  -->  ', self.redis.exists('server_sess_heartbeat;' + s))
-                all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=False)
+                all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
                 print('server_name;all_sess_ids \t', all_sess_ids)
 
-                user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=False)
+                user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=True)
                 print('user_sess_ids \t\t\t', user_sess_ids)
 
                 sync_groups = self.redis.h_get(
@@ -511,6 +550,18 @@ class AsyncSocketManager:
 
 
         return
+
+
+
+    # ------------------------------------------------------------------
+    async def sess_setup_finalised(self, data):
+        """as the final step within the lock, flag the session as initialised
+        """
+
+        self.has_init_sess = True
+        return
+
+
 
     # ------------------------------------------------------------------
     def on_join_session_(self):
@@ -531,97 +582,138 @@ class AsyncSocketManager:
     def init_user_sync_loops(self):
         return
 
-    # ------------------------------------------------------------------
-    def init_common_loops(self):
-        """initialise shared maintenance coroutines
-        """
+    
 
-        coroutines = []
+    # ------------------------------------------------------------------
+    def init_crt_loops(self):
+        """define the default set of crts to run in the background
+        """
+        
+        loops = []
 
         # session heartbeat (shared between all sessions for this server)
-        coroutines += [
+        loops += [
             {
-                'id': -1,
-                'group': 'shared_coroutine',
+                'id': None,
+                'group': 'shared_crt',
                 'tag': 'server_sess_heartbeat_loop',
                 'func': self.server_sess_heartbeat_loop,
             },
         ]
+        
+        # session cleanup (shared between all sessions for this server)
+        loops += [
+            {
+                'id': None,
+                'group': 'shared_crt',
+                'tag': 'cleanup_loop',
+                'func': self.cleanup_loop,
+            },
+        ]
+
+        # # 
+        # loops += [
+        #     {
+        #         'id': None,
+        #         'group': 'shared_crt',
+        #         'tag': 'get_pubsub_loop',
+        #         'func': self.get_pubsub_loop,
+        #     },
+        # ]
+
+        # 
+        # loops += [
+        #     {
+        #         'id': None,
+        #         'group': 'shared_crt',
+        #         'tag': 'pubsub_socket_evt_widgets',
+        #         'func': self.pubsub_socket_evt_widgets,
+        #     },
+        # ]
 
         # client ping/pong heartbeat for a particular session
-        coroutines += [
+        loops += [
             {
-                'id': -1,
+                'id': None,
                 'group': self.sess_id,
                 'tag': 'client_sess_heartbeat_loop',
                 'func': self.client_sess_heartbeat_loop,
             },
         ]
         
-        # session cleanup (shared between all sessions for this server)
-        coroutines += [
-            {
-                'id': -1,
-                'group': 'shared_coroutine',
-                'tag': 'cleanup_loop',
-                'func': self.cleanup_loop,
-            },
-        ]
-            
-        # 
-        # coroutines += [
-        #     {
-        #         'id': -1,
-        #         'group': 'shared_coroutine',
-        #         'tag': 'pubsub_socket_evt_widgets',
-        #         'func': self.pubsub_socket_evt_widgets,
-        #     },
-        # ]
-        
         # received event execution (one instance for each session)
-        coroutines += [
+        loops += [
             {
-                'id': -1,
+                'id': None,
                 'group': self.sess_id,
                 'tag': 'receive_queue_loop',
                 'func': self.receive_queue_loop,
             },
         ]
+        
+        for crt in loops:
+            self.add_crt_loop(crt)
 
-        for coroutine_info in coroutines:
-            if self.check_coroutine_loop(coroutine_info):
-                coroutine_info['id'] = self.set_coroutine_state(
-                    coroutine_info['group'], coroutine_info['tag'], True
+        return
+
+    # ------------------------------------------------------------------
+    def add_crt_loop(self, crt_info):
+        has_crt = any([
+            crt_info['tag'] == c['tag'] for c in self.crt_loops
+        ])
+        if not has_crt:
+            self.crt_loops += [crt_info]
+
+        return
+
+    # ------------------------------------------------------------------
+    def init_common_loops(self):
+        """initialise shared maintenance crts
+        """
+
+        self.init_crt_loops()
+
+        for crt_info in self.crt_loops:
+            if self.is_new_crt(crt_info):
+                crt_info['id'] = self.set_crt_state(
+                    crt_group=crt_info['group'], crt_tag=crt_info['tag'], state=True
                 )
-                self.spawn(coroutine_info['func'], coroutine_info=coroutine_info)
+                self.spawn(crt_info['func'], crt_info=crt_info)
 
         return
 
 
     # ------------------------------------------------------------------
-    async def receive_queue_loop(self, coroutine_info):
+    async def receive_queue_loop(self, crt_info):
         """process the received event queue
         
             Parameters
             ----------
-            coroutine_info : dict
+            crt_info : dict
                 metadata needed to determine when is the loop should continue
         """
 
-        self.log.info([['y', ' - starting receive_queue_loop for session: '], ['c', self.sess_id],])
+        self.log.info([['y', ' - starting '],['b', 'receive_queue_loop'], ['y', ' for session: '], ['c', self.sess_id],])
 
         # proccess an item from the queue
         async def await_queue_item():
             queue_item = self.asyncio_queue.get_nowait()
+            # ------------------------------------------------------------------
+            # ------------------------------------------------------------------
             # verufy that the session has initialised, that we have the right sess_id, etc.
             self.verify_sess_event(queue_item['data'])
-            # execute the coroutine
-            await queue_item['coroutine']
+            # ------------------------------------------------------------------
+            # ------------------------------------------------------------------
+            # execute the crt
+            if queue_item is not None:
+                if ('crt' in queue_item) and (queue_item['crt'] is not None):
+                    await queue_item['crt']
             return
 
-        while self.check_coroutine_loop(coroutine_info):
-            if self.asyncio_queue.qsize() > 0 and self.is_valid_session():
-                self.spawn(await_queue_item)
+        while self.is_valid_crt(crt_info):
+            if self.asyncio_queue.qsize() > 0:
+                if self.is_valid_session():
+                    self.spawn(await_queue_item)
 
             await asyncio.sleep(self.valid_loop_sleep_sec)
             # await asyncio.sleep(1)
@@ -630,9 +722,13 @@ class AsyncSocketManager:
         for _ in range(self.asyncio_queue.qsize()):
             self.spawn(await_queue_item).cancel()
 
-        self.log.info([['o', ' - ending receive_queue_loop for session: '], ['c', self.sess_id]])
+        self.log.info([['r', ' - ending '],['b', 'receive_queue_loop'], ['r', ' for session: '], ['c', self.sess_id],])
         
         return
+
+
+
+
 
     # ------------------------------------------------------------------
     def verify_sess_event(self, data):
@@ -641,7 +737,7 @@ class AsyncSocketManager:
             Parameters
             ----------
             data : dict
-                client data and metadata related to the coroutine to be executed
+                client data and metadata related to the crt to be executed
         """
 
         try:
@@ -660,10 +756,10 @@ class AsyncSocketManager:
         return
 
     # ------------------------------------------------------------------
-    async def server_sess_heartbeat_loop(self, coroutine_info):
+    async def server_sess_heartbeat_loop(self, crt_info):
         """renew session heartbeat tokens
 
-            run in coroutine so long as there are active sessions
+            run in crt so long as there are active sessions
             renewes all sessions which belong to this server
             (registered in AsyncSocketManager.all_sess_ids)
 
@@ -672,12 +768,11 @@ class AsyncSocketManager:
         
             Parameters
             ----------
-            coroutine_info : dict
+            crt_info : dict
                 metadata needed to determine when is the loop should continue
         """
 
-        self.log.info([['y', ' - starting shared_coroutine('], ['o', 'server_sess_heartbeat_loop'],
-                       ['y', ') for server: '], ['c', self.server_name ],])
+        self.log.info([['y', ' - starting '],['b', 'server_sess_heartbeat_loop'], ['y', ' by: '], ['c', self.sess_id], ['y', ' for server: '], ['c', self.server_name],])
 
         sleep_sec = min(1, max(ceil(self.sess_expire * 0.1), 10))
         sess_expire = ceil(max(self.sess_expire, sleep_sec * 5))
@@ -686,7 +781,7 @@ class AsyncSocketManager:
         # sess_expire = 4
         # print('sleep_sec',sleep_sec,sess_expire)
 
-        while self.check_coroutine_loop(coroutine_info):
+        while self.is_valid_crt(crt_info):
             async with asyncio_lock:
                 # sess_ids = self.redis.l_get('all_sess_ids')
                 # print('xxxxxxxx', [[s, self.redis.exists('server_sess_heartbeat;' + s)] for s in sess_ids])
@@ -702,40 +797,53 @@ class AsyncSocketManager:
 
             await asyncio.sleep(sleep_sec)
 
-        self.log.info([['y', ' - ending shared_coroutine']])
+        self.log.info([['r', ' - ending '],['b', 'server_sess_heartbeat_loop'], ['r', ' by: '], ['c', self.sess_id], ['r', ' for server: '], ['c', self.server_name],])
 
         return
 
 
     
     # ------------------------------------------------------------------
-    async def client_sess_heartbeat_loop(self, coroutine_info):
+    async def client_sess_heartbeat_loop(self, crt_info):
         """send ping/pong heartbeat message to client to verify the connection
         
             Parameters
             ----------
-            coroutine_info : dict
+            crt_info : dict
                 metadata needed to determine when is the loop should continue
         """
 
-        self.log.info([['y', ' - starting client_sess_heartbeat_loop for session: '], ['c', self.sess_id],])
+        self.log.info([['y', ' - starting '],['b', 'client_sess_heartbeat_loop'], ['y', ' for session: '], ['c', self.sess_id],])
 
-        sleep_sec = self.sess_ping['interval_msec'] * 1e-3
-        ping_interval_msec = 0
+        # the interval to sleep between heartbeats
+        send_interval_msec = self.sess_ping['send_interval_msec']
+        
+        # the maximal interval achieved in practice between heartbeats,
+        # to test for server overloads
+        max_ping_interval_msec = (
+            send_interval_msec + self.sess_ping['max_interval_good_msec']
+        )
 
-        while self.check_coroutine_loop(coroutine_info):
+        interval_now_msec = 0
+        sleep_sec = send_interval_msec * 1e-3
+        
+        while self.is_valid_crt(crt_info):
             data = {
-                'ping_interval_msec': ping_interval_msec,
+                'ping_interval_msec': interval_now_msec,
             }
             self.sess_ping_time = get_time('msec')
             await self.emit('heartbeat_ping', data)
 
             # update the interval between pings
-            ping_interval_msec = get_time('msec')
+            interval_now_msec = get_time('msec')
             await asyncio.sleep(sleep_sec)
-            ping_interval_msec = get_time('msec') - ping_interval_msec
+            interval_now_msec = get_time('msec') - interval_now_msec
 
-        self.log.info([['y', ' - ending shared_coroutine']])
+            # for now we only produce a log warning in case of these kinds of problems
+            if interval_now_msec > max_ping_interval_msec:
+                self.log.warn([['y', ' - high server load for '], ['r', self.sess_id], ['y', ' --> ',],['o', interval_now_msec],])
+
+        self.log.info([['r', ' - ending '],['b', 'client_sess_heartbeat_loop'], ['r', ' for session: '], ['c', self.sess_id],])
 
         return
 
@@ -751,9 +859,9 @@ class AsyncSocketManager:
 
         ping_delay = data['send_time_msec'] - self.sess_ping_time
 
-        if ping_delay > self.sess_ping['tolerance_optimal_msec']:
+        if ping_delay > self.sess_ping['max_interval_good_msec']:
             is_slow = (
-                ping_delay < self.sess_ping['tolerance_slow_msec']
+                ping_delay < self.sess_ping['max_interval_slow_msec']
             )
 
             log_func = self.log.warn if is_slow else self.log.error
@@ -793,12 +901,17 @@ class AsyncSocketManager:
         return False
 
     # ------------------------------------------------------------------
+    def set_sess_state(self, state):
+        self.is_sess_open = state
+        return
+    
+    # ------------------------------------------------------------------
     async def websocket_disconnect(self):
         """local cleanup for the current server session upon disconnection
         """
 
         self.log.info([['c', ' - websocket_disconnect '], ['p', self.sess_id]])
-
+        
         try:
             async with asyncio_lock:
                 self.cleanup_session(self.sess_id)
@@ -810,18 +923,6 @@ class AsyncSocketManager:
 
     # ------------------------------------------------------------------
     def cleanup_session(self, sess_id):
-        """description
-        
-            Parameters
-            ----------
-            name : type
-                description
-        
-            Returns
-            -------
-            type
-                description
-        """
 
         if sess_id is None:
             return
@@ -830,7 +931,7 @@ class AsyncSocketManager:
 
         try:
             if not self.is_asyncio_locked():
-                raise Exception('got asyncio not locked in set_coroutine_state')
+                raise Exception('got asyncio not locked in set_crt_state')
 
 
             # if self.sess_id in AsyncSocketManager.all_sess_ids:
@@ -846,23 +947,31 @@ class AsyncSocketManager:
             for user_id in user_ids:
                 self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
 
-            self.clear_coroutine_group(self.sess_id)
+            self.clear_crt_group(self.sess_id)
+
+            # after the cleanup for this particular session
+            sess_ids = self.redis.l_get('all_sess_ids')
+            if len(sess_ids) == 0:
+                self.clear_crt_group('shared_crt')
+
+
+
 
         except Exception as e:
             raise e
 
-        test_connection_sess = 0
+        test_connection_sess = 0 
         if test_connection_sess:
             print('-'*70)
-            all_sess_ids = self.redis.l_get('all_sess_ids', packed=False)
+            all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
             print('all_sess_ids \t\t', all_sess_ids)
 
             for s in all_sess_ids:
                 print('heartbeat \t\t', s, self.redis.exists('server_sess_heartbeat;' + s))
-            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=False)
+            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
             print('server_name;all_sess_ids \t\t', all_sess_ids)
 
-            user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=False)
+            user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=True)
             print('user_sess_ids \t\t', user_sess_ids)
 
             sync_groups = self.redis.h_get(
@@ -902,7 +1011,7 @@ class AsyncSocketManager:
 
 
     # ------------------------------------------------------------------
-    async def cleanup_loop(self, coroutine_info):
+    async def cleanup_loop(self, crt_info):
         """description
         
             Parameters
@@ -916,10 +1025,19 @@ class AsyncSocketManager:
                 description
         """
 
-        self.log.info([['y', ' - starting cleanup_loop for server: '], ['c', self.server_name],])
+        self.log.info([['y', ' - starting '],['b', 'cleanup_loop'], ['y', ' by: '], ['c', self.sess_id], ['y', ' for server: '], ['c', self.server_name],])
 
-        # self.cleanup_sleep=2
-        while self.check_coroutine_loop(coroutine_info):
+
+        self.cleanup_sleep = 2
+        self.cleanup_sleep = 2
+        self.cleanup_sleep = 2
+        self.cleanup_sleep = 2
+        self.cleanup_sleep = 2
+        self.cleanup_sleep = 2
+
+
+        while self.is_valid_crt(crt_info):
+            await asyncio.sleep(self.cleanup_sleep)
             async with asyncio_lock:
                 sess_ids = self.redis.l_get('all_sess_ids')
 
@@ -928,16 +1046,14 @@ class AsyncSocketManager:
                         # do some cleanup for expired session
                         self.cleanup_session(sess_id)
 
-            await asyncio.sleep(self.cleanup_sleep)
 
 
         # some for of cleanup for every group....:
-            # self.clear_coroutine_group('shared_coroutine')
-            # self.clear_coroutine_group(widget_id)
-            # self.clear_coroutine_group(self.sess_name)
-
-
-        self.log.info([['y', ' - ending cleanup_loop']])
+            # self.clear_crt_group('shared_crt')
+            # self.clear_crt_group(widget_id)
+            # self.clear_crt_group(self.sess_name)
+            # self.sess_id
+        self.log.info([['r', ' - ending '],['b', 'cleanup_loop'], ['r', ' by: '], ['c', self.sess_id], ['r', ' for server: '], ['c', self.server_name],])
 
         return
 
@@ -945,55 +1061,49 @@ class AsyncSocketManager:
 
 
 
+    # ------------------------------------------------------------------
+    def is_new_crt(self, crt_info):
+        try:
+            # make sure the function which calls this has secured the lock
+            if not self.is_asyncio_locked():
+                raise Exception('got asyncio not locked in set_crt_state')
+            crt_id = crt_info['id']
+            crt_group = crt_info['group']
+            crt_tag = crt_info['tag']
 
+            registered_id = self.get_crt_id(crt_group, crt_tag)
+            is_new = (registered_id is None)
+
+            # print('is', self.sess_id, crt_tag, crt_group, is_new)
+        except Exception as e:
+            raise e
+
+        return is_new
 
     # ------------------------------------------------------------------
-    def get_coroutine_id(self, coroutine_group, coroutine_tag):
-        """description
-        
-            Parameters
-            ----------
-            name : type
-                description
-        
-            Returns
-            -------
-            type
-                description
-        """
-
-        if coroutine_group in AsyncSocketManager.coroutine_sigs:
-            for ele_now in AsyncSocketManager.coroutine_sigs[coroutine_group]:
-                if ele_now[0] == coroutine_tag:
+    def get_crt_id(self, crt_group, crt_tag):
+        if crt_group in AsyncSocketManager.crt_sigs:
+            for ele_now in AsyncSocketManager.crt_sigs[crt_group]:
+                if ele_now[0] == crt_tag:
                     return ele_now[1]
 
-        return -1
+        return None
 
     # ------------------------------------------------------------------
-    def check_coroutine_loop(self, coroutine_info):
-        """description
-        
-            Parameters
-            ----------
-            name : type
-                description
-        
-            Returns
-            -------
-            type
-                description
-        """
-        
-        coroutine_id = coroutine_info['id']
-        coroutine_group = coroutine_info['group']
-        coroutine_tag = coroutine_info['tag']
+    def is_valid_crt(self, crt_info):
+        crt_id = crt_info['id']
+        crt_group = crt_info['group']
+        crt_tag = crt_info['tag']
 
-        is_valid = (coroutine_id == self.get_coroutine_id(coroutine_group, coroutine_tag))
-        return is_valid
+        registered_id = self.get_crt_id(crt_group, crt_tag)
+        if registered_id is None:
+            return False
+        
+        return (crt_id == registered_id)
 
     # ------------------------------------------------------------------
-    def set_coroutine_state(self, coroutine_group, coroutine_tag, state):
-        """bookkeeping of coroutine and their signal cleanup
+    def set_crt_state(self, crt_group, crt_tag, state):
+        """bookkeeping of crt and their signal cleanup
         
             Parameters
             ----------
@@ -1009,55 +1119,48 @@ class AsyncSocketManager:
         try:
             # make sure the function which calls this has secured the lock
             if not self.is_asyncio_locked():
-                raise Exception('got asyncio not locked in set_coroutine_state')
+                raise Exception('got asyncio not locked in set_crt_state')
             
-            sigs = AsyncSocketManager.coroutine_sigs
+            sigs = AsyncSocketManager.crt_sigs
             if state:
-                if coroutine_group not in sigs:
-                    sigs[coroutine_group] = []
+                if crt_group not in sigs:
+                    sigs[crt_group] = []
 
-                coroutine_id_now = get_rnd(n_digits=15, out_type=int)
+                crt_id_now = get_rnd(n_digits=15, out_type=int)
 
-                for n_ele_now in range(len(sigs[coroutine_group])):
-                    if sigs[coroutine_group][n_ele_now][0] == coroutine_tag:
-                        sigs[coroutine_group][n_ele_now][1] = coroutine_id_now
-                        return coroutine_id_now
+                for n_ele_now in range(len(sigs[crt_group])):
+                    if sigs[crt_group][n_ele_now][0] == crt_tag:
+                        sigs[crt_group][n_ele_now][1] = crt_id_now
+                        return crt_id_now
 
-                sigs[coroutine_group].append([
-                    coroutine_tag, coroutine_id_now,
+                sigs[crt_group].append([
+                    crt_tag, crt_id_now,
                 ])
 
-                return coroutine_id_now
+                return crt_id_now
             else:
-                for n_ele_now in range(len(sigs[coroutine_group])):
-                    if sigs[coroutine_group][n_ele_now][0] == coroutine_tag:
-                        sigs[coroutine_group][n_ele_now][1] = -1
+                for n_ele_now in range(len(sigs[crt_group])):
+                    if sigs[crt_group][n_ele_now][0] == crt_tag:
+                        sigs[crt_group][n_ele_now][1] = None
 
-                return -1
+                return None
         
         except Exception as e:
             raise e
 
-        return -1
+        return None
 
 
 
     # ------------------------------------------------------------------
-    # clean unneeded coroutines, assuming we are already in a coroutine
-    # lock, for safe modification of AsyncSocketManager.coroutine_sigs
+    # clean unneeded crts, assuming we are already in a crt
+    # lock, for safe modification of AsyncSocketManager.crt_sigs
     # ------------------------------------------------------------------
-    def clear_coroutine_group(self, coroutine_group):
-        """description
-        
-            Parameters
-            ----------
-            name : type
-                description
-        """
-        if coroutine_group in AsyncSocketManager.coroutine_sigs:
-            AsyncSocketManager.coroutine_sigs.pop(coroutine_group, None)
+    def clear_crt_group(self, crt_group):
+        if crt_group in AsyncSocketManager.crt_sigs:
+            AsyncSocketManager.crt_sigs.pop(crt_group, None)
 
-            self.log.info([['r', ' - clear_coroutine_group(' + str(coroutine_group) + ') ...']])
+            self.log.info([['r', ' - clear_crt_group(' + str(crt_group) + ') ...']])
 
         return
 
@@ -1109,7 +1212,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # # common dictionaries for all instances of
     # # the class (keeping track of all sessions etc.)
     # sess_endpoints = dict()
-    # coroutine_sigs = dict()
+    # crt_sigs = dict()
     # widget_inits = dict()
 
     # lock = BoundedSemaphore(1)
@@ -1284,36 +1387,36 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #         self.redis.r_push(name='user_sess_ids;' + self.user_id, data=self.sess_id)
 
     #     # ------------------------------------------------------------------
-    #     # initiate the coroutines which does periodic cleanup, heartbeat managment etc.
+    #     # initiate the crts which does periodic cleanup, heartbeat managment etc.
     #     # ------------------------------------------------------------------
     #     with __old_SocketManager__.lock:
-    #         coroutines = [
+    #         crts = [
     #             {
     #                 'id': -1,
-    #                 'group': 'shared_coroutine',
+    #                 'group': 'shared_crt',
     #                 'tag': 'sess_heartbeat',
     #                 'func': self.sess_heartbeat,
     #             },
     #             {
     #                 'id': -1,
-    #                 'group': 'shared_coroutine',
+    #                 'group': 'shared_crt',
     #                 'tag': 'cleanup',
     #                 'func': self.cleanup,
     #             },
     #             {
     #                 'id': -1,
-    #                 'group': 'shared_coroutine',
+    #                 'group': 'shared_crt',
     #                 'tag': 'pubsub_socket_evt_widgets',
     #                 'func': self.pubsub_socket_evt_widgets,
     #             },
     #         ]
 
-    #         for coroutine_info in coroutines:
-    #             if self.check_coroutine_loop(coroutine_info):
-    #                 coroutine_info['id'] = self.set_coroutine_state(
-    #                     coroutine_info['group'], coroutine_info['tag'], True
+    #         for crt_info in crts:
+    #             if self.is_valid_crt(crt_info):
+    #                 crt_info['id'] = self.set_crt_state(
+    #                     crt_info['group'], crt_info['tag'], True
     #                 )
-    #                 gevent.spawn(coroutine_info['func'], coroutine_info)
+    #                 gevent.spawn(crt_info['func'], crt_info)
 
     #     # ------------------------------------------------------------------
     #     # transmit the initial data to the client
@@ -1616,25 +1719,25 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     def send_init_widget(self, opt_in=None):
         widget = opt_in['widget']
         data_func = (opt_in['data_func'] if 'data_func' in opt_in else lambda: dict())
-        coroutine_group = (
-            opt_in['coroutine_group'] if 'coroutine_group' in opt_in else 'init_data'
+        crt_group = (
+            opt_in['crt_group'] if 'crt_group' in opt_in else 'init_data'
         )
 
         with widget.lock:
             emit_data = {
                 'widget_type': widget.widget_name,
-                'event_name': coroutine_group,
+                'event_name': crt_group,
                 'n_icon': widget.n_icon,
                 'data': data_func()
             }
 
             widget.log.info([['y', ' - sending - ('],
-                             ['b', widget.widget_name, coroutine_group], ['y', ','],
+                             ['b', widget.widget_name, crt_group], ['y', ','],
                              ['g', self.sess_id, '/', widget.widget_id], ['y', ')']])
 
-            # print('widget.widget_id',widget.widget_id, coroutine_group, emit_data)
+            # print('widget.widget_id',widget.widget_id, crt_group, emit_data)
             self.socket_evt_session(
-                widget_id=widget.widget_id, event_name=coroutine_group, data=emit_data
+                widget_id=widget.widget_id, event_name=crt_group, data=emit_data
             )
 
         return
@@ -1643,23 +1746,23 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #
     # ------------------------------------------------------------------
     def add_widget_tread(self, opt_in=None):
-        if 'is_group_coroutine' not in opt_in:
-            opt_in['is_group_coroutine'] = True
+        if 'is_group_crt' not in opt_in:
+            opt_in['is_group_crt'] = True
 
         widget = opt_in['widget']
 
-        coroutine_group = opt_in['coroutine_group'
-                              ] if 'coroutine_group' in opt_in else 'update_data'
-        opt_in['coroutine_group'] = coroutine_group
+        crt_group = opt_in['crt_group'
+                              ] if 'crt_group' in opt_in else 'update_data'
+        opt_in['crt_group'] = crt_group
 
-        coroutine_func = opt_in['coroutine_func'] if 'coroutine_func' in opt_in else None
-        if coroutine_func is None and coroutine_group == 'update_data':
-            coroutine_func = self.widget_coroutine_func
+        crt_func = opt_in['crt_func'] if 'crt_func' in opt_in else None
+        if crt_func is None and crt_group == 'update_data':
+            crt_func = self.widget_crt_func
 
-        is_group_coroutine = opt_in['is_group_coroutine']
+        is_group_crt = opt_in['is_group_crt']
 
         with widget.lock:
-            if is_group_coroutine:
+            if is_group_crt:
                 if widget.widget_group not in widget.widget_group_sess:
                     widget.widget_group_sess[widget.widget_group] = []
 
@@ -1667,65 +1770,65 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                     widget.socket_manager.sess_id
                 )
 
-                if self.get_coroutine_id(widget.widget_group, coroutine_group) == -1:
+                if self.get_crt_id(widget.widget_group, crt_group) == -1:
                     with __old_SocketManager__.lock:
-                        opt_in['coroutine_id'] = self.set_coroutine_state(
-                            widget.widget_group, coroutine_group, True
+                        opt_in['crt_id'] = self.set_crt_state(
+                            widget.widget_group, crt_group, True
                         )
 
-                        gevent.spawn(coroutine_func, opt_in=opt_in)
+                        gevent.spawn(crt_func, opt_in=opt_in)
             else:
-                if self.get_coroutine_id(widget.widget_id, coroutine_group) == -1:
+                if self.get_crt_id(widget.widget_id, crt_group) == -1:
                     with __old_SocketManager__.lock:
-                        opt_in['coroutine_id'] = self.set_coroutine_state(
-                            widget.widget_id, coroutine_group, True
+                        opt_in['crt_id'] = self.set_crt_state(
+                            widget.widget_id, crt_group, True
                         )
 
-                        gevent.spawn(coroutine_func, opt_in=opt_in)
+                        gevent.spawn(crt_func, opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def widget_coroutine_func(self, opt_in=None):
+    def widget_crt_func(self, opt_in=None):
         widget = opt_in['widget']
-        coroutine_id = opt_in['coroutine_id']
-        coroutine_group = opt_in['coroutine_group']
+        crt_id = opt_in['crt_id']
+        crt_group = opt_in['crt_group']
         data_func = opt_in['data_func']
         sleep_sec = opt_in['sleep_sec'] if 'sleep_sec' in opt_in else 5
-        is_group_coroutine = opt_in['is_group_coroutine']
+        is_group_crt = opt_in['is_group_crt']
 
-        emit_data = {'widget_type': widget.widget_name, 'event_name': coroutine_group}
+        emit_data = {'widget_type': widget.widget_name, 'event_name': crt_group}
 
         sleep(sleep_sec)
 
-        if is_group_coroutine:
-            while (coroutine_id == self.get_coroutine_id(widget.widget_group, coroutine_group)):
+        if is_group_crt:
+            while (crt_id == self.get_crt_id(widget.widget_group, crt_group)):
                 with widget.lock:
                     sess_ids = widget.widget_group_sess[widget.widget_group]
                     emit_data['data'] = data_func()
 
                     self.socket_event_widgets(
-                        event_name=coroutine_group, data=emit_data, sess_ids=sess_ids
+                        event_name=crt_group, data=emit_data, sess_ids=sess_ids
                     )
 
                     if len(widget.widget_group_sess[widget.widget_group]) == 0:
                         with self.lock:
-                            self.clear_coroutine_group(widget.widget_group)
+                            self.clear_crt_group(widget.widget_group)
                             widget.widget_group_sess.pop(widget.widget_group, None)
                             break
 
                 sleep(sleep_sec)
 
         else:
-            while (coroutine_id == self.get_coroutine_id(widget.widget_id, coroutine_group)):
+            while (crt_id == self.get_crt_id(widget.widget_id, crt_group)):
                 with widget.lock:
                     sess_ids = [widget.socket_manager.sess_id]
                     emit_data['data'] = data_func()
 
                     self.socket_event_widgets(
-                        event_name=coroutine_group, data=emit_data, sess_ids=sess_ids
+                        event_name=crt_group, data=emit_data, sess_ids=sess_ids
                     )
 
                 sleep(sleep_sec)
@@ -1735,8 +1838,8 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def pubsub_socket_evt_widgets(self, coroutine_info):
-        self.log.info([['y', ' - starting shared_coroutine('],
+    def pubsub_socket_evt_widgets(self, crt_info):
+        self.log.info([['y', ' - starting shared_crt('],
                        ['g', 'pubsub_socket_evt_widgets'], ['y', ')']])
 
         while self.redis.set_pubsub('socket_event_widgets') is None:
@@ -1744,7 +1847,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                            ['b', 'socket_event_widgets'], ['y', ' ...']])
             sleep(0.1)
 
-        while self.check_coroutine_loop(coroutine_info):
+        while self.is_valid_crt(crt_info):
             sleep(0.1)
 
             msg = self.redis.get_pubsub('socket_event_widgets', packed=True)
@@ -1795,7 +1898,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
             if self.log_send_packet:
                 self.log.info(['r', 'end of send ' + event_name])
 
-        self.log.info([['y', ' - ending shared_coroutine('],
+        self.log.info([['y', ' - ending shared_crt('],
                        ['g', 'pubsub_socket_evt_widgets'], ['y', ')']])
 
         return
@@ -1842,38 +1945,38 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
         return
 
     # # ------------------------------------------------------------------
-    # # bookkeeping of coroutines and coroutine-signal cleanup
+    # # bookkeeping of crts and crt-signal cleanup
     # # make sure the function which calls this has secured the thred-lock (__old_SocketManager__.lock)
     # # ------------------------------------------------------------------
-    # def set_coroutine_state(self, coroutine_group, coroutine_tag, state):
+    # def set_crt_state(self, crt_group, crt_tag, state):
     #     if state:
-    #         if coroutine_group not in __old_SocketManager__.coroutine_sigs:
-    #             __old_SocketManager__.coroutine_sigs[coroutine_group] = []
+    #         if crt_group not in __old_SocketManager__.crt_sigs:
+    #             __old_SocketManager__.crt_sigs[crt_group] = []
 
-    #         coroutine_id_now = get_rnd(n_digits=15, out_type=int)
+    #         crt_id_now = get_rnd(n_digits=15, out_type=int)
 
-    #         for n_ele_now in range(len(__old_SocketManager__.coroutine_sigs[coroutine_group])):
-    #             if __old_SocketManager__.coroutine_sigs[coroutine_group][n_ele_now][0] == coroutine_tag:
-    #                 __old_SocketManager__.coroutine_sigs[coroutine_group][n_ele_now][1] = coroutine_id_now
-    #                 return coroutine_id_now
+    #         for n_ele_now in range(len(__old_SocketManager__.crt_sigs[crt_group])):
+    #             if __old_SocketManager__.crt_sigs[crt_group][n_ele_now][0] == crt_tag:
+    #                 __old_SocketManager__.crt_sigs[crt_group][n_ele_now][1] = crt_id_now
+    #                 return crt_id_now
 
-    #         __old_SocketManager__.coroutine_sigs[coroutine_group].append([coroutine_tag, coroutine_id_now])
+    #         __old_SocketManager__.crt_sigs[crt_group].append([crt_tag, crt_id_now])
 
-    #         return coroutine_id_now
+    #         return crt_id_now
     #     else:
-    #         for n_ele_now in range(len(__old_SocketManager__.coroutine_sigs[coroutine_group])):
-    #             if __old_SocketManager__.coroutine_sigs[coroutine_group][n_ele_now][0] == coroutine_tag:
-    #                 __old_SocketManager__.coroutine_sigs[coroutine_group][n_ele_now][1] = -1
+    #         for n_ele_now in range(len(__old_SocketManager__.crt_sigs[crt_group])):
+    #             if __old_SocketManager__.crt_sigs[crt_group][n_ele_now][0] == crt_tag:
+    #                 __old_SocketManager__.crt_sigs[crt_group][n_ele_now][1] = -1
 
     #         return -1
 
     # # ------------------------------------------------------------------
     # #
     # # ------------------------------------------------------------------
-    # def get_coroutine_id(self, coroutine_group, coroutine_tag):
-    #     if coroutine_group in __old_SocketManager__.coroutine_sigs:
-    #         for ele_now in __old_SocketManager__.coroutine_sigs[coroutine_group]:
-    #             if ele_now[0] == coroutine_tag:
+    # def get_crt_id(self, crt_group, crt_tag):
+    #     if crt_group in __old_SocketManager__.crt_sigs:
+    #         for ele_now in __old_SocketManager__.crt_sigs[crt_group]:
+    #             if ele_now[0] == crt_tag:
     #                 return ele_now[1]
 
     #     return -1
@@ -1881,23 +1984,23 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # # ------------------------------------------------------------------
     # #
     # # ------------------------------------------------------------------
-    # def check_coroutine_loop(self, coroutine_info):
-    #     coroutine_id = coroutine_info['id']
-    #     coroutine_group = coroutine_info['group']
-    #     coroutine_tag = coroutine_info['tag']
+    # def is_valid_crt(self, crt_info):
+    #     crt_id = crt_info['id']
+    #     crt_group = crt_info['group']
+    #     crt_tag = crt_info['tag']
 
-    #     is_valid = (coroutine_id == self.get_coroutine_id(coroutine_group, coroutine_tag))
+    #     is_valid = (crt_id == self.get_crt_id(crt_group, crt_tag))
     #     return is_valid
 
     # # ------------------------------------------------------------------
-    # # clean unneeded coroutines, assuming we are already in a coroutine
-    # # lock, for safe modification of __old_SocketManager__.coroutine_sigs
+    # # clean unneeded crts, assuming we are already in a crt
+    # # lock, for safe modification of __old_SocketManager__.crt_sigs
     # # ------------------------------------------------------------------
-    # def clear_coroutine_group(self, coroutine_group):
-    #     if coroutine_group in __old_SocketManager__.coroutine_sigs:
-    #         __old_SocketManager__.coroutine_sigs.pop(coroutine_group, None)
+    # def clear_crt_group(self, crt_group):
+    #     if crt_group in __old_SocketManager__.crt_sigs:
+    #         __old_SocketManager__.crt_sigs.pop(crt_group, None)
 
-    #         self.log.info([['r', ' - clear_coroutine_group(' + str(coroutine_group) + ') ...']])
+    #         self.log.info([['r', ' - clear_crt_group(' + str(crt_group) + ') ...']])
 
     #     return
 
@@ -1979,7 +2082,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                         for rm_element in rm_elements:
                             sync_states.remove(rm_element)
 
-                self.clear_coroutine_group(widget_id)
+                self.clear_crt_group(widget_id)
 
             self.redis.h_set(
                 name='sync_groups', key=self.user_id, data=sync_groups, packed=True
@@ -1991,9 +2094,9 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
             self.cleanup_session(self.sess_id)
 
             # ------------------------------------------------------------------
-            # cleanup possible coroutines belonging to this specific session
+            # cleanup possible crts belonging to this specific session
             # ------------------------------------------------------------------
-            self.clear_coroutine_group(self.sess_name)
+            self.clear_crt_group(self.sess_name)
 
         self.update_sync_group()
 
@@ -2045,16 +2148,16 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #     return
 
     # # ------------------------------------------------------------------
-    # # renew session heartbeat token (run in coroutine) for all active sessions
+    # # renew session heartbeat token (run in crt) for all active sessions
     # # ------------------------------------------------------------------
-    # def sess_heartbeat(self, coroutine_info):
-    #     self.log.info([['y', ' - starting shared_coroutine('], ['g', 'sess_heartbeat'],
+    # def sess_heartbeat(self, crt_info):
+    #     self.log.info([['y', ' - starting shared_crt('], ['g', 'sess_heartbeat'],
     #                    ['y', ') - ', __old_SocketManager__.server_name]])
 
     #     sleep_sec = max(ceil(self.sess_expire * 0.1), 10)
     #     sess_expire = int(max(self.sess_expire, sleep_sec * 2))
 
-    #     while self.check_coroutine_loop(coroutine_info):
+    #     while self.is_valid_crt(crt_info):
     #         with __old_SocketManager__.lock:
     #             sess_ids = self.redis.l_get('all_sess_ids')
     #             sess_ids = [x for x in sess_ids if x in self.socket.server.sockets]
@@ -2069,19 +2172,19 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
     #         sleep(sleep_sec)
 
-    #     self.log.info([['y', ' - ending shared_coroutine('], ['g', 'sess_heartbeat']])
+    #     self.log.info([['y', ' - ending shared_crt('], ['g', 'sess_heartbeat']])
 
     #     return
 
     # ------------------------------------------------------------------
-    # cleanup (run in coroutine) for all the bookkeeping elements
+    # cleanup (run in crt) for all the bookkeeping elements
     # ------------------------------------------------------------------
-    def cleanup(self, coroutine_info):
-        self.log.info([['y', ' - starting shared_coroutine('], ['g', 'cleanup'],
+    def cleanup(self, crt_info):
+        self.log.info([['y', ' - starting shared_crt('], ['g', 'cleanup'],
                        ['y', ') - ', __old_SocketManager__.server_name]])
         sleep(3)
 
-        while self.check_coroutine_loop(coroutine_info):
+        while self.is_valid_crt(crt_info):
             with __old_SocketManager__.lock:
                 user_ids = self.redis.l_get('user_ids')
                 sess_ids = self.redis.l_get('all_sess_ids')
@@ -2115,14 +2218,31 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
             sleep(self.cleanup_sleep)
 
-        self.clear_coroutine_group('shared_coroutine')
-        # self.set_coroutine_state('shared_coroutine', 'cleanup', False)
-        # self.set_coroutine_state('shared_coroutine', 'sess_heartbeat', False)
-        # self.set_coroutine_state('shared_coroutine', 'pubsub_socket_evt_widgets', False)
+        self.clear_crt_group('shared_crt')
+        # self.set_crt_state('shared_crt', 'cleanup', False)
+        # self.set_crt_state('shared_crt', 'sess_heartbeat', False)
+        # self.set_crt_state('shared_crt', 'pubsub_socket_evt_widgets', False)
 
-        self.log.info([['y', ' - ending shared_coroutine('], ['g', 'cleanup']])
+        self.log.info([['y', ' - ending shared_crt('], ['g', 'cleanup']])
 
         return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ------------------------------------------------------------------
@@ -2141,9 +2261,20 @@ class SocketDecorator():
 
 
 # ------------------------------------------------------------------
-#
-# ------------------------------------------------------------------
 class ClockSimDecorator():
+    """description
+    
+        Parameters
+        ----------
+        name : type
+            description
+    
+        Returns
+        -------
+        type
+            description
+    """
+    
     def __init__(self, socket_manager, *args, **kwargs):
         self.socket_manager = socket_manager
         self.log = self.socket_manager.log
@@ -2151,52 +2282,41 @@ class ClockSimDecorator():
 
         setattr(
             self.socket_manager,
-            'on_get_sim_clock_sim_params',
-            self.on_get_sim_clock_sim_params,
+            'ask_sim_clock_sim_params',
+            self.ask_sim_clock_sim_params,
         )
 
         setattr(
             self.socket_manager,
-            'on_set_sim_clock_sim_params',
-            self.on_set_sim_clock_sim_params,
+            'set_sim_clock_sim_params',
+            self.set_sim_clock_sim_params,
         )
 
-        coroutine_info = {
-            'id': -1,
-            'group': 'shared_coroutine',
-            'tag': 'clock_sim_sim_params',
-        }
-        if self.socket_manager.check_coroutine_loop(coroutine_info):
-            coroutine_info['id'] = self.socket_manager.set_coroutine_state(
-                coroutine_info['group'], coroutine_info['tag'], True
-            )
+        setattr(
+            self.socket_manager,
+            'clock_sim_update_sim_params',
+            self.clock_sim_update_sim_params,
+        )
 
-            gevent.spawn(self.update_sim_params, coroutine_info)
+        self.socket_manager.add_crt_loop({
+            'id': None,
+            'group': 'shared_crt',
+            'tag': 'clock_sim_update_sim_params_loop',
+            'func': self.clock_sim_update_sim_params,
+        })
 
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def on_get_sim_clock_sim_params(self, data_in):
-        sess_id = data_in['sess_id']
-
+    async def ask_sim_clock_sim_params(self, data_in):
         data = self.redis.get('clock_sim_sim_params', packed=True)
-        emit_data = {'data': data}
 
-        # send the requested data back to the same session
-        self.socket_manager.socket_event_widgets(
-            event_name='get_sim_clock_sim_params',
-            sess_ids=[sess_id],
-            data=emit_data,
-        )
+        await self.socket_manager.emit('get_sim_clock_sim_params', data)
 
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def on_set_sim_clock_sim_params(self, data_in):
+    def set_sim_clock_sim_params(self, data_in):
         data_pubsub = data_in['data']
 
         self.redis.publish(
@@ -2208,35 +2328,141 @@ class ClockSimDecorator():
         return
 
     # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
-    def update_sim_params(self, coroutine_info):
-        self.log.info([
-            ['y', ' - starting shared_coroutine('],
-            ['g', 'clock_sim_sim_params'],
-            ['y', ') - ', self.socket_manager.server_name],
-        ])
+    async def clock_sim_update_sim_params(self, crt_info):
+
+        self.log.info([['y', ' - starting '],['b', 'clock_sim_sim_params'], ['y', ' for server: '], ['c', self.socket_manager.server_name],])
 
         # setup the channel once
         pubsub_tag = 'clock_sim_updated_sim_params'
         while self.redis.set_pubsub(pubsub_tag) is None:
             sleep(0.1)
 
-        while self.socket_manager.check_coroutine_loop(coroutine_info):
-            msg = self.redis.get_pubsub(pubsub_tag, packed=True)
+        sleep_sec = 0.1
+        while self.socket_manager.is_valid_crt(crt_info):
+            await asyncio.sleep(sleep_sec)    
+
+            msg = self.redis.set_pubsub(pubsub_tag).get_message()
             if msg is None:
                 continue
 
-            # get the full data structure
             data = self.redis.get('clock_sim_sim_params', packed=True)
-            emit_data = {'data': data}
+            await self.socket_manager.emit('get_sim_clock_sim_params', data)
 
-            # send the updated value to all sessions
-            self.socket_manager.socket_event_widgets(
-                event_name='get_sim_clock_sim_params',
-                data=emit_data,
-            )
 
-            sleep(0.1)
+        self.log.info([['r', ' - ending '],['b', 'clock_sim_sim_params'], ['r', ' for server: '], ['c', self.socket_manager.server_name],])
 
         return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if 0:
+    async def tmp_func():
+
+        def get_pubsub():
+            for i in range(5):
+                print('    ------ ', i)
+                print('-->', self.socket_manager.is_valid_crt(crt_info))
+                sleep(1)
+            return i 
+
+        loop = asyncio.get_event_loop()
+
+        for i in range(5):
+            if not self.socket_manager.is_valid_crt(crt_info):
+                print('done!!!!!!!!!!!!!')
+                break
+            blocking_future = loop.run_in_executor(None, get_pubsub)
+            if i == 2:
+                blocking_future.cancel() 
+            if blocking_future.done():
+                print('done!')
+                break 
+            msg = await blocking_future
+            print(msg) 
+            # print('sssssssssssssssssssssssss333333', self.redis.pubsub.keys())
+        return
+
+
+        def get_pubsub():
+            msg = self.redis.get_pubsub(pubsub_tag, packed=True)
+            return msg
+
+        loop = asyncio.get_event_loop()
+        await asyncio.sleep(1)
+
+        sleep_sec = 0.1
+        sleep_sec = 1
+        while self.socket_manager.is_valid_crt(crt_info):
+            # await loop.run_in_executor(None, get_pubsub)
+            msg = await loop.run_in_executor(None, get_pubsub)
+            if msg is None:
+                continue
+
+
+            print('qqqqqqqqqqqqqqqq')
+            data = self.redis.get('clock_sim_sim_params', packed=True)
+            await self.socket_manager.emit('get_sim_clock_sim_params', data)
+
+
+
+            # await self.socket_manager.emit('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', data)
+
+            # async with asyncio_lock:
+            #     # get the full data structure
+            #     data = self.redis.get('clock_sim_sim_params', packed=True)
+            #     emit_data = {'data': data}
+
+            # # send the updated value to all sessions
+            # self.socket_manager.socket_event_widgets(
+            #     event_name='get_sim_clock_sim_params',
+            #     data=emit_data,
+            # )
+            # print('ddddddddd',data)
+
+            await asyncio.sleep(sleep_sec)

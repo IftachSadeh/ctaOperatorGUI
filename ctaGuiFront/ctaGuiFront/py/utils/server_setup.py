@@ -12,7 +12,7 @@ from ctaGuiUtils.py.utils import has_acs
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiFront.py.utils.ViewManager import ViewManager
 
-from ctaGuiFront.py.utils.server_args import parse_args
+from ctaGuiUtils.py.server_args import parse_args
 from ctaGuiFront.py.utils.AsyncSocketManager import AsyncSocketManager, extend_app_to_asgi
 
 
@@ -147,7 +147,8 @@ def setup_app():
 
 # ------------------------------------------------------------------
 try:
-    settings = parse_args()
+    app_name = 'ctaGuiFront'
+    settings = parse_args(app_name=app_name)
 
     # the app name (corresponding to the directory name)
     app_name = settings['app_name']
@@ -197,7 +198,7 @@ try:
         log_level='INFO',
         log_file='logs/ctaGuiFront_uvicorn.log',
     )
-    log.info([['wg', ' - Starting pyramid app - ctaGuiFront ...']])
+    log.info([['wg', ' - Starting pyramid app -', app_name, '...']])
     log.info([['c', ' - has_acs = '], [('g' if has_acs else 'r'), has_acs]])
 
     settings_log = [['g', ' - server settings:\n']]
@@ -206,12 +207,12 @@ try:
         settings_log += [['c', str(v)], [',  ']]
     log.info(settings_log)
 
-    # do_flush_redis = True
-    if do_flush_redis:
-        from ctaGuiUtils.py.RedisManager import RedisManager
-        log.warn([['wr', ' ---- flusing redis ... ----']])
-        _redis = RedisManager(name='_init_', port=redis_port, log=log)
-        _redis.redis.flushall()
+    # # do_flush_redis = True
+    # if do_flush_redis:
+    #     from ctaGuiUtils.py.RedisManager import RedisManager
+    #     log.warn([['wr', ' ---- flusing redis ... ----']])
+    #     _redis = RedisManager(name='_init_', port=redis_port, log=log)
+    #     _redis.redis.flushall()
 
     # set the list of telescopes for this particular site
     InstData(base_config=base_config)
@@ -227,66 +228,4 @@ try:
 except Exception as e:
     log.info([['c', e]])
     raise e
-
-
-
-
-
-
-
-
-
-
-import asyncio
-import time
-
-lock = asyncio.Lock()
-if 0:
-    try:
-        loop = asyncio.get_running_loop()
-        if not (loop and loop.is_running()):
-            raise RuntimeError
-    except RuntimeError:
-        raise Exception('no running event loop ?!?')
-
-
-    async def main():
-
-        async def say_after(delay, what):
-            await asyncio.sleep(delay)
-            # async with lock:
-            for _ in range(8):
-                await asyncio.sleep(0.5)
-                log.info([['b', _, what]])
-
-        async def hello(i):
-            print(f"started at {time.strftime('%X')}")
-
-            await say_after(1, ' x ' + str(i))
-            # await say_after(4, 'world')
-
-            # print(f"finished at {time.strftime('%X')}")
-
-
-        for _ in range(3):
-            # print('ssssssssssssss', _)  
-            tsk = loop.create_task(hello(_))
-            # await asyncio.sleep(0.1)
-
-    tsk = loop.create_task(main())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -23,12 +23,14 @@ class RedisBase(object):
         self.name = name
         self.log = log
 
+        # self.async_redis = AsyncRedisBase(redis_base=self)
+
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def set(self, name=None, data=None, expire=None, packed=False):
+    def set(self, name=None, data=None, expire=None, packed=True):
         try:
             if (name is None):
                 raise
@@ -57,7 +59,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def h_set(self, name=None, key=None, data=None, packed=False):
+    def h_set(self, name=None, key=None, data=None, packed=True):
         try:
             if (name is None) or (key is None):
                 raise
@@ -105,7 +107,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def h_get(self, name=None, key=None, packed=False, default_val=None):
+    def h_get(self, name=None, key=None, packed=True, default_val=None):
         try:
             if (name is None) or (key is None):
                 raise
@@ -138,7 +140,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def h_m_get(self, name=None, key=None, packed=False, filter=False):
+    def h_m_get(self, name=None, key=None, packed=True, filter=False):
         try:
             if (name is None) or (key is None):
                 raise
@@ -175,7 +177,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def r_push(self, name=None, data=None, packed=False):
+    def r_push(self, name=None, data=None, packed=True):
         try:
             if (name is None):
                 raise
@@ -202,13 +204,13 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def l_rem(self, name=None, data=None, packed=False):
+    def l_rem(self, name=None, data=None, packed=True):
         try:
             if (name is None):
                 raise
 
             if packed and (data is not None):
-                data = unpack_object(data)
+                data = packb(data)
 
             out = self.base.lrem(name=name, value=data, count=0)
             return out
@@ -231,7 +233,7 @@ class RedisBase(object):
         name=None,
         score=None,
         data=None,
-        packed=False,
+        packed=True,
         clip_score=None,
         packed_score=False
     ):
@@ -310,6 +312,41 @@ class RedisBase(object):
             # return False
 
 
+# # ------------------------------------------------------------------
+# class AsyncRedisBase(object):
+#     def __init__(self, redis_base):
+#         self.redis_base = redis_base
+
+#     async def set(self, *arg, **kwargs):
+#         return self.redis_base.set(*arg, **kwargs)
+    
+#     async def h_set(self, *arg, **kwargs):
+#         return self.redis_base.h_set(*arg, **kwargs)
+    
+#     async def h_del(self, *arg, **kwargs):
+#         return self.redis_base.h_del(*arg, **kwargs)
+    
+#     async def h_get(self, *arg, **kwargs):
+#         return self.redis_base.h_get(*arg, **kwargs)
+    
+#     async def h_m_get(self, *arg, **kwargs):
+#         return self.redis_base.h_m_get(*arg, **kwargs)
+    
+#     async def r_push(self, *arg, **kwargs):
+#         return self.redis_base.r_push(*arg, **kwargs)
+    
+#     async def l_rem(self, *arg, **kwargs):
+#         return self.redis_base.l_rem(*arg, **kwargs)
+    
+#     async def z_add(self, *arg, **kwargs):
+#         return self.redis_base.z_add(*arg, **kwargs)
+    
+#     async def expire(self, *arg, **kwargs):
+#         return self.redis_base.expire(*arg, **kwargs)
+    
+#     async def delete(self, *arg, **kwargs):
+#         return self.redis_base.delete(*arg, **kwargs)
+
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
@@ -330,12 +367,14 @@ class RedisManager(RedisBase):
 
         self.pubsub = dict()
 
+        # self.async_redis = AsyncRedisManager(redis_mngr=self)
+
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get(self, name=None, packed=False, default_val=None):
+    def get(self, name=None, packed=True, default_val=None):
         data = default_val
 
         try:
@@ -361,7 +400,7 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def h_get_all(self, name=None, packed=False):
+    def h_get_all(self, name=None, packed=True):
         try:
             if name is None:
                 raise
@@ -386,7 +425,7 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def z_get(self, name=None, packed=False, packed_score=False):
+    def z_get(self, name=None, packed=True, packed_score=False):
         try:
             if (name is None):
                 raise
@@ -418,7 +457,10 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def l_get(self, name=None, packed=False):
+    # async def async_l_get(self, *arg, **kwargs):
+    #     return self.l_get(*arg, **kwargs)
+
+    def l_get(self, name=None, packed=True):
         try:
             if (name is None):
                 raise
@@ -495,7 +537,7 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def publish(self, channel=None, message='', packed=False):
+    def publish(self, channel=None, message='', packed=True):
         try:
             if channel is None:
                 raise
@@ -547,7 +589,7 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_pubsub(self, key=None, timeout=3600, packed=False):
+    def get_pubsub(self, key=None, timeout=0, packed=True, ignore_subscribe_messages=True):
         msg = None
 
         try:
@@ -564,7 +606,10 @@ class RedisManager(RedisBase):
             # return msg
 
         try:
-            msg = self.pubsub[key].get_message(timeout=timeout)
+            msg = self.pubsub[key].get_message(
+                timeout=timeout,
+                ignore_subscribe_messages=ignore_subscribe_messages,
+            )
 
             if packed and isinstance(msg, dict):
                 if 'data' in msg:
@@ -585,12 +630,35 @@ class RedisManager(RedisBase):
     # # ------------------------------------------------------------------
     # #
     # # ------------------------------------------------------------------
-    # def has_pubsub(self, key=None, timeout=3600, packed=False):
+    # def has_pubsub(self, key=None, timeout=0, packed=True):
     #     if not ((key is None) or (key not in self.pubsub)):
     #         msg = self.pubsub[key].get_message(timeout=timeout)
     #         print(msg)
     #     return not ((key is None) or (key not in self.pubsub))
 
+
+# # ------------------------------------------------------------------
+# class AsyncRedisManager(object):
+#     def __init__(self, redis_mngr):
+#         self.redis_mngr = redis_mngr
+
+#     async def get(self, *arg, **kwargs):
+#         return self.redis_mngr.get(*arg, **kwargs)
+    
+#     async def h_get_all(self, *arg, **kwargs):
+#         return self.redis_mngr.h_get_all(*arg, **kwargs)
+    
+#     async def z_get(self, *arg, **kwargs):
+#         return self.redis_mngr.z_get(*arg, **kwargs)
+    
+#     async def l_get(self, *arg, **kwargs):
+#         return self.redis_mngr.l_get(*arg, **kwargs)
+    
+#     async def exists(self, *arg, **kwargs):
+#         return self.redis_mngr.exists(*arg, **kwargs)
+    
+#     async def h_exists(self, *arg, **kwargs):
+#         return self.redis_mngr.h_exists(*arg, **kwargs)
 
 # ------------------------------------------------------------------
 #
@@ -609,6 +677,8 @@ class RedisPipeManager(RedisBase):
 
         self.pipe = self.redis.pipeline()
         self.base = self.pipe
+
+        # self.async_redis = AsyncPipeRedisManager(redis_pipe=self)
 
         return
 
@@ -665,7 +735,7 @@ class RedisPipeManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def execute(self, packed=False, packed_score=False):
+    def execute(self, packed=True, packed_score=False):
         data = []
 
         try:
@@ -709,13 +779,38 @@ class RedisPipeManager(RedisBase):
             # return False
 
 
+# # ------------------------------------------------------------------
+# class AsyncPipeRedisManager(object):
+#     def __init__(self, redis_pipe):
+#         self.redis_pipe = redis_pipe
+
+#     async def get(self, *arg, **kwargs):
+#         return self.redis_pipe.get(*arg, **kwargs)
+    
+#     async def z_get(self, *arg, **kwargs):
+#         return self.redis_pipe.z_get(*arg, **kwargs)
+    
+#     async def execute(self, *arg, **kwargs):
+#         return self.redis_pipe.execute(*arg, **kwargs)
+    
+#     async def reset(self, *arg, **kwargs):
+#         return self.redis_pipe.reset(*arg, **kwargs)
+
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
 def unpack_object(data_in, log=None):
     try:
-        if isinstance(data_in, (str, bytes)):
-            data = unpackb(data_in, encoding="utf-8")
+        if isinstance(data_in, str):
+            data = data_in
+        elif isinstance(data_in, bytes):
+            try:
+                data = unpackb(data_in, encoding="utf-8")
+            except Exception as e:
+                if data_in == b'':
+                    data = '' 
+                else:
+                    raise e
         elif isinstance(data_in, list):
             data = []
             for data_now_0 in data_in:
@@ -758,3 +853,67 @@ def is_empty(data):
         return (len(data) == 0)
     else:
         return (data is None or data == '')
+
+
+
+
+
+# import inspect
+# def add_async_attrs():
+#     class AsyncDecorator():
+#         pass
+#         # def __init__(self, arg):
+#         #     super(AsyncDecorator, self).__init__()
+#         #     self.arg = arg
+
+#     # async def a(self):
+#     #     print('aaaaaaaa')
+#     #     return 99
+#     # setattr(RedisBase, 'async_'+ 'a', a)
+    
+#     for redis_cls in [RedisBase, RedisManager, RedisPipeManager]:
+#         a = inspect.getmembers(redis_cls)
+#         for f in a:
+#             name, func = f[0], f[1]
+#             if not inspect.isfunction(func):
+#                 continue
+#             if name.startswith('__') and name.endswith('__'):
+#                 continue
+#             if name.startswith('async_'):
+#                 continue
+#             # print(name, ' \t\t\t', func)
+
+
+#             async def async_func(self, *arg, **kwargs):
+#                 print('111111111111')
+#                 # xx = func(*arg, **kwargs)
+#                 # xx = self.l_get(*arg, **kwargs)
+#                 # xx = 77
+#                 return self.l_get(*arg, **kwargs)
+
+#             # async def async_func(*arg, **kwargs):
+#             #     print('111111111111')
+#             #     xx = func(*arg, **kwargs)
+#             #     xx = 77
+#             #     return xx
+
+#             # xx = await l_get('all_sess_ids')
+#             # print('qqqqqqqqqqq', xx)
+
+#             print('async_'+ name, ' \t\t\t',async_func)
+#             setattr(redis_cls, 'async_'+ name, func)
+#             # setattr(redis_cls, 'async_'+ name, async_func)
+
+#         # a = inspect.getmembers(AsyncDecorator)
+#         # print(a)
+#         # setattr(redis_cls, 'asyncio', AsyncDecorator)
+
+#     # def qqq(self):
+#     #     print('eeeeeeeeeeeeeeeeeeee')
+#     # setattr(RedisBase, 'qqq', qqq)
+#     return
+
+#             # getattr(SocketManager.widget_inits[widget_id], 'update_sync_groups')()
+
+
+# add_async_attrs()

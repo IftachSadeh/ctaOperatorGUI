@@ -2,9 +2,7 @@ import argparse
 import os
 
 
-def parse_args():
-    app_name = 'ctaGuiFront'
-
+def parse_args(app_name):
     parser = argparse.ArgumentParser(description='Command line parser:')
     parser.add_argument(
         '--site_type',
@@ -76,13 +74,13 @@ def parse_args():
 
         if input_args['site_type'] == 'N':
             settings.update({
-                'app_port': '8090',
-                'redis_port': '6379',
+                'app_port': '8090' if (app_name == 'ctaGuiFront') else '8091',
+                'redis_port': '8092',
             })
         elif input_args['site_type'] == 'S':
             settings.update({
-                'app_port': '8091',
-                'redis_port': '6378',
+                'app_port': '8093' if (app_name == 'ctaGuiFront') else '8094',
+                'redis_port': '8095',
             })
         else:
             raise ValueError('must specify --site_type as "N" or "S"')
