@@ -30,6 +30,16 @@ def parse_args(app_name):
         default=1,
     )
     parser.add_argument(
+        '--log_file',
+        type=str,
+        default=None,
+    )
+    parser.add_argument(
+        '--log_level',
+        type=str,
+        default=None,
+    )
+    parser.add_argument(
         '--is_HMI_dev',
         type=str_to_bool,
         nargs='?',
@@ -68,6 +78,9 @@ def parse_args(app_name):
             'app_name': app_name,
             'app_prefix': 'cta',
             'app_host': '0.0.0.0',
+            'log_file': 'logs/' + app_name + '_server.log',
+            # 'log_level': 'WARN',
+            'log_level': 'INFO',
             'pyramid.reload_templates': 'true',
             'sqlalchemy.url': sqlite, 
         }

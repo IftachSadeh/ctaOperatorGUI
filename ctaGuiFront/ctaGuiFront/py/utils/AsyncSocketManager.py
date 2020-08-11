@@ -156,7 +156,8 @@ class AsyncSocketManager:
     # common dictionaries for all instances of
     # the class (keeping track of all sessions etc.)
     # sess_endpoints = dict()
-    crt_sigs = dict()
+    asy_func_sigs = dict()
+    managers = dict()
     widget_inits = dict()
 
     # n_apps = 0
@@ -213,7 +214,7 @@ class AsyncSocketManager:
         #     # how much delay is considered ok for a disconnected session
         #     'max_interval_slow_msec': 6000,
         # }
-        self.crt_loops = []
+        self.asy_func_loops = []
 
         self.asyncio_queue = asyncio.Queue()
 
@@ -271,12 +272,84 @@ class AsyncSocketManager:
         }
         self.n_server_msg += 1
 
-        # print('event_name\t\t\t',event_name)
-
         if self.is_sess_open:
             await self.sync_send(self.websocket_data_dump(data_out))
 
         return
+
+    # ------------------------------------------------------------------
+    async def emit_to_queue(self, asy_func=None, event_name=None, data={}):
+        if asy_func is None and event_name is None:
+            raise Exception('trying to use emit_to_queue without asy_func/event_name', data)
+        
+        if 'sess_id' not in data:
+            data['sess_id'] = self.sess_id
+        
+        if asy_func is not None:
+            await self.asyncio_queue.put({'asy_func':asy_func, 'data': data,})
+        
+        elif event_name is not None:
+            data['event_name'] = event_name
+            await self.asyncio_queue.put({'asy_func':self.emit(event_name, data), 'data': data,})
+
+        return
+
+
+    # ------------------------------------------------------------------
+    async def receive_queue_loop(self, asy_func_info):
+        """process the received event queue
+        
+            Parameters
+            ----------
+            asy_func_info : dict
+                metadata needed to determine when is the loop should continue
+        """
+
+        self.log.info([['y', ' - starting '],['b', 'receive_queue_loop'], ['y', ' for session: '], ['c', self.sess_id],])
+
+        # proccess an item from the queue
+        async def await_queue_item():
+            queue_item = self.asyncio_queue.get_nowait()
+            # ------------------------------------------------------------------
+            # ------------------------------------------------------------------
+            # verufy that the session has initialised, that we have the right sess_id, etc.
+            self.verify_sess_event(queue_item['data'])
+            # ------------------------------------------------------------------
+            # ------------------------------------------------------------------
+            # check if this if this is a regular function or a coroutine object/function
+            if queue_item is not None:
+                if 'asy_func' in queue_item:
+                    event_func = queue_item['asy_func']
+                    is_coroutine = (
+                        asyncio.iscoroutine(event_func)
+                        or asyncio.iscoroutinefunction(event_func)
+                    )
+                    if is_coroutine:
+                        await event_func
+                    else:
+                        event_func(queue_item['data'])
+            return
+
+        while self.is_valid_asy_func(asy_func_info):
+            for _ in range(self.asyncio_queue.qsize()):
+                if self.is_valid_session():
+                    self.spawn(await_queue_item)
+
+            await asyncio.sleep(self.valid_loop_sleep_sec)
+            # await asyncio.sleep(1)
+
+        # cancel remaining tasks
+        for _ in range(self.asyncio_queue.qsize()):
+            self.spawn(await_queue_item).cancel()
+
+        self.log.info([['r', ' - ending '],['b', 'receive_queue_loop'], ['r', ' for session: '], ['c', self.sess_id],])
+        
+        return
+
+
+
+
+
 
     # ------------------------------------------------------------------
     def is_asyncio_locked(self):
@@ -297,22 +370,31 @@ class AsyncSocketManager:
         # TODO: uncomment the exception raise ...
         # ------------------------------------------------------------------
         try:
-            event_func = getattr(self, data['event_name'])
-        except Exception as e:
-            self.log.error([['p', '\n'],['r', '-'*20, 'event name undefined:'], ['p', '', data['event_name'], ''], ['r', '-'*20], ['p', '\n', self.sess_id, ''], ['y', data, '\n'], ['r', '-'*100],])
-            # raise e
+            event_name = data['event_name']
+        except Exception:
+            self.log.error([['p', '\n'],['r', '-'*20, 'event name undefined in input:'], ['p', '\n', self.sess_id, ''], ['y', data, '\n'], ['r', '-'*100],])
+            return
+        try:
+            event_func = getattr(self, event_name)
+        except Exception:
+            self.log.error([['p', '\n'],['r', '-'*20, 'event name undefined as func:'], ['p', '', event_name, ''], ['r', '-'*20], ['p', '\n', self.sess_id, ''], ['y', data, '\n'], ['r', '-'*100],])
             return
 
         try:
             # check that events are received in the expected order, where the
             # initial connection and any logging messages get executed immediately
             # and any other events get put in an ordered queue for execution
-            if data['event_name'] in ['client_log']:
+            if event_name in ['client_log']:
                 event_func(data)
-            elif data['event_name'] in ['sess_setup_begin', 'sess_setup_finalised']:
+            elif event_name in ['sess_setup_begin', 'sess_setup_finalised']:
                 await event_func(data)
             else:
-                await self.asyncio_queue.put({'crt':event_func(data), 'data': data,})
+
+                # check if this if this is a regular function or a coroutine object/function
+                if asyncio.iscoroutine(event_func) or asyncio.iscoroutinefunction(event_func):
+                    await self.asyncio_queue.put({'asy_func':event_func(data), 'data': data,})
+                else:
+                    await self.asyncio_queue.put({'asy_func':event_func, 'data': data,})
 
         except Exception as e:
             self.log.error([['r', e]])
@@ -436,6 +518,8 @@ class AsyncSocketManager:
             self.user_group_id = self.user_group + '_' + self.user_id
             self.sess_name = self.user_group_id + '_' + self.sess_id
 
+            AsyncSocketManager.managers[self.sess_id] = self
+            
             self.log.info([['b', ' - websocket.connected '], ['p', self.sess_id], ['y', '', self.user_id, '/', self.user_group],])
 
             # override the global logging variable with a
@@ -454,6 +538,9 @@ class AsyncSocketManager:
 
             # register the sess_id in all lists
             # heartbeat should be first to avoid cleanup racing conditions!
+            self.redis.set(
+                name='server_sess_heartbeat', expire=(int(self.sess_expire) * 10), packed=True
+            )
             self.redis.set(
                 name='server_sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10), packed=True,
             )
@@ -502,25 +589,6 @@ class AsyncSocketManager:
 
 
 
-            async def aa():
-                # await asyncio.sleep(1.5)
-                print('aaaaaaaaaaaa')
-                data = self.redis.get('clock_sim_sim_params', packed=True)
-                await self.emit('get_sim_clock_sim_params', data)
-            await self.asyncio_queue.put({'crt':aa(), 'data': {'sess_id': self.sess_id},})
-
-            # async def emit_to_queue(self, event_name, data={}):
-            # async def emit_to_queue(self, event_name, data={}):
-            # async def emit_to_queue(self, event_name, data={}):
-            # async def emit_to_queue(self, event_name, data={}):
-            # async def emit_to_queue(self, event_name, data={}):
-            # async def emit_to_queue(self, event_name, data={}):
-            # async def emit_to_queue(self, event_name, data={}):
-            #     await self.asyncio_queue.put({'crt':aa(), 'data': {'sess_id': self.sess_id},})
-            #     return
-
-
-
 
 
 
@@ -535,6 +603,7 @@ class AsyncSocketManager:
                 all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
                 print('all_sess_ids \t\t\t', all_sess_ids)
 
+                print('heartbeat \t\t\t', 'shared', '  -->  ', self.redis.exists('server_sess_heartbeat'))
                 for s in all_sess_ids:
                     print('heartbeat \t\t\t', s, '  -->  ', self.redis.exists('server_sess_heartbeat;' + s))
                 all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
@@ -585,8 +654,8 @@ class AsyncSocketManager:
     
 
     # ------------------------------------------------------------------
-    def init_crt_loops(self):
-        """define the default set of crts to run in the background
+    def init_asy_func_loops(self):
+        """define the default set of asy_funcs to run in the background
         """
         
         loops = []
@@ -595,7 +664,7 @@ class AsyncSocketManager:
         loops += [
             {
                 'id': None,
-                'group': 'shared_crt',
+                'group': 'shared_asy_func',
                 'tag': 'server_sess_heartbeat_loop',
                 'func': self.server_sess_heartbeat_loop,
             },
@@ -605,7 +674,7 @@ class AsyncSocketManager:
         loops += [
             {
                 'id': None,
-                'group': 'shared_crt',
+                'group': 'shared_asy_func',
                 'tag': 'cleanup_loop',
                 'func': self.cleanup_loop,
             },
@@ -615,7 +684,7 @@ class AsyncSocketManager:
         # loops += [
         #     {
         #         'id': None,
-        #         'group': 'shared_crt',
+        #         'group': 'shared_asy_func',
         #         'tag': 'get_pubsub_loop',
         #         'func': self.get_pubsub_loop,
         #     },
@@ -625,7 +694,7 @@ class AsyncSocketManager:
         # loops += [
         #     {
         #         'id': None,
-        #         'group': 'shared_crt',
+        #         'group': 'shared_asy_func',
         #         'tag': 'pubsub_socket_evt_widgets',
         #         'func': self.pubsub_socket_evt_widgets,
         #     },
@@ -651,81 +720,36 @@ class AsyncSocketManager:
             },
         ]
         
-        for crt in loops:
-            self.add_crt_loop(crt)
+        for asy_func in loops:
+            self.add_asy_func_loop(asy_func)
 
         return
 
     # ------------------------------------------------------------------
-    def add_crt_loop(self, crt_info):
-        has_crt = any([
-            crt_info['tag'] == c['tag'] for c in self.crt_loops
+    def add_asy_func_loop(self, asy_func_info):
+        has_asy_func = any([
+            asy_func_info['tag'] == c['tag'] for c in self.asy_func_loops
         ])
-        if not has_crt:
-            self.crt_loops += [crt_info]
+        if not has_asy_func:
+            self.asy_func_loops += [asy_func_info]
 
         return
 
     # ------------------------------------------------------------------
     def init_common_loops(self):
-        """initialise shared maintenance crts
+        """initialise shared maintenance asy_funcs
         """
 
-        self.init_crt_loops()
+        self.init_asy_func_loops()
 
-        for crt_info in self.crt_loops:
-            if self.is_new_crt(crt_info):
-                crt_info['id'] = self.set_crt_state(
-                    crt_group=crt_info['group'], crt_tag=crt_info['tag'], state=True
+        for asy_func_info in self.asy_func_loops:
+            if self.is_new_asy_func(asy_func_info):
+                asy_func_info['id'] = self.set_asy_func_state(
+                    asy_func_group=asy_func_info['group'], asy_func_tag=asy_func_info['tag'], state=True
                 )
-                self.spawn(crt_info['func'], crt_info=crt_info)
+                self.spawn(asy_func_info['func'], asy_func_info=asy_func_info)
 
         return
-
-
-    # ------------------------------------------------------------------
-    async def receive_queue_loop(self, crt_info):
-        """process the received event queue
-        
-            Parameters
-            ----------
-            crt_info : dict
-                metadata needed to determine when is the loop should continue
-        """
-
-        self.log.info([['y', ' - starting '],['b', 'receive_queue_loop'], ['y', ' for session: '], ['c', self.sess_id],])
-
-        # proccess an item from the queue
-        async def await_queue_item():
-            queue_item = self.asyncio_queue.get_nowait()
-            # ------------------------------------------------------------------
-            # ------------------------------------------------------------------
-            # verufy that the session has initialised, that we have the right sess_id, etc.
-            self.verify_sess_event(queue_item['data'])
-            # ------------------------------------------------------------------
-            # ------------------------------------------------------------------
-            # execute the crt
-            if queue_item is not None:
-                if ('crt' in queue_item) and (queue_item['crt'] is not None):
-                    await queue_item['crt']
-            return
-
-        while self.is_valid_crt(crt_info):
-            if self.asyncio_queue.qsize() > 0:
-                if self.is_valid_session():
-                    self.spawn(await_queue_item)
-
-            await asyncio.sleep(self.valid_loop_sleep_sec)
-            # await asyncio.sleep(1)
-
-        # cancel remaining tasks
-        for _ in range(self.asyncio_queue.qsize()):
-            self.spawn(await_queue_item).cancel()
-
-        self.log.info([['r', ' - ending '],['b', 'receive_queue_loop'], ['r', ' for session: '], ['c', self.sess_id],])
-        
-        return
-
 
 
 
@@ -737,7 +761,7 @@ class AsyncSocketManager:
             Parameters
             ----------
             data : dict
-                client data and metadata related to the crt to be executed
+                client data and metadata related to the asy_func to be executed
         """
 
         try:
@@ -756,10 +780,10 @@ class AsyncSocketManager:
         return
 
     # ------------------------------------------------------------------
-    async def server_sess_heartbeat_loop(self, crt_info):
+    async def server_sess_heartbeat_loop(self, asy_func_info):
         """renew session heartbeat tokens
 
-            run in crt so long as there are active sessions
+            run in asy_func so long as there are active sessions
             renewes all sessions which belong to this server
             (registered in AsyncSocketManager.all_sess_ids)
 
@@ -768,7 +792,7 @@ class AsyncSocketManager:
         
             Parameters
             ----------
-            crt_info : dict
+            asy_func_info : dict
                 metadata needed to determine when is the loop should continue
         """
 
@@ -781,7 +805,7 @@ class AsyncSocketManager:
         # sess_expire = 4
         # print('sleep_sec',sleep_sec,sess_expire)
 
-        while self.is_valid_crt(crt_info):
+        while self.is_valid_asy_func(asy_func_info):
             async with asyncio_lock:
                 # sess_ids = self.redis.l_get('all_sess_ids')
                 # print('xxxxxxxx', [[s, self.redis.exists('server_sess_heartbeat;' + s)] for s in sess_ids])
@@ -789,6 +813,9 @@ class AsyncSocketManager:
                 sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
                 for sess_id in sess_ids:
                     if self.redis.exists('server_sess_heartbeat;' + sess_id):
+                        self.redis.expire(
+                            name='server_sess_heartbeat', expire=sess_expire
+                        )
                         self.redis.expire(
                             name='server_sess_heartbeat;' + sess_id, expire=sess_expire
                         )
@@ -804,12 +831,12 @@ class AsyncSocketManager:
 
     
     # ------------------------------------------------------------------
-    async def client_sess_heartbeat_loop(self, crt_info):
+    async def client_sess_heartbeat_loop(self, asy_func_info):
         """send ping/pong heartbeat message to client to verify the connection
         
             Parameters
             ----------
-            crt_info : dict
+            asy_func_info : dict
                 metadata needed to determine when is the loop should continue
         """
 
@@ -827,12 +854,12 @@ class AsyncSocketManager:
         interval_now_msec = 0
         sleep_sec = send_interval_msec * 1e-3
         
-        while self.is_valid_crt(crt_info):
+        while self.is_valid_asy_func(asy_func_info):
             data = {
                 'ping_interval_msec': interval_now_msec,
             }
             self.sess_ping_time = get_time('msec')
-            await self.emit('heartbeat_ping', data)
+            await self.emit_to_queue(event_name='heartbeat_ping', data=data)
 
             # update the interval between pings
             interval_now_msec = get_time('msec')
@@ -931,7 +958,7 @@ class AsyncSocketManager:
 
         try:
             if not self.is_asyncio_locked():
-                raise Exception('got asyncio not locked in set_crt_state')
+                raise Exception('got asyncio not locked in set_asy_func_state')
 
 
             # if self.sess_id in AsyncSocketManager.all_sess_ids:
@@ -947,25 +974,22 @@ class AsyncSocketManager:
             for user_id in user_ids:
                 self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
 
-            self.clear_crt_group(self.sess_id)
+            self.clear_asy_func_group(self.sess_id)
 
-            # after the cleanup for this particular session
-            sess_ids = self.redis.l_get('all_sess_ids')
-            if len(sess_ids) == 0:
-                self.clear_crt_group('shared_crt')
-
+            AsyncSocketManager.managers.pop(self.sess_id, None)
 
 
 
         except Exception as e:
             raise e
 
-        test_connection_sess = 0 
+        test_connection_sess = 0
         if test_connection_sess:
             print('-'*70)
             all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
             print('all_sess_ids \t\t', all_sess_ids)
 
+            print('heartbeat \t\t\t', 'shared', '  -->  ', self.redis.exists('server_sess_heartbeat'))
             for s in all_sess_ids:
                 print('heartbeat \t\t', s, self.redis.exists('server_sess_heartbeat;' + s))
             all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
@@ -1011,7 +1035,7 @@ class AsyncSocketManager:
 
 
     # ------------------------------------------------------------------
-    async def cleanup_loop(self, crt_info):
+    async def cleanup_loop(self, asy_func_info):
         """description
         
             Parameters
@@ -1036,7 +1060,7 @@ class AsyncSocketManager:
         self.cleanup_sleep = 2
 
 
-        while self.is_valid_crt(crt_info):
+        while self.is_valid_asy_func(asy_func_info):
             await asyncio.sleep(self.cleanup_sleep)
             async with asyncio_lock:
                 sess_ids = self.redis.l_get('all_sess_ids')
@@ -1046,12 +1070,41 @@ class AsyncSocketManager:
                         # do some cleanup for expired session
                         self.cleanup_session(sess_id)
 
+                # after the cleanup for this particular session
+                if not self.redis.exists('server_sess_heartbeat'):
+                    sess_ids = self.redis.l_get('all_sess_ids')
+                    if len(sess_ids) == 0:
+                        self.clear_asy_func_group('shared_asy_func')
+
+                else:
+                    test_connection_sess = 0
+                    if test_connection_sess:
+                        print('-'*70)
+                        all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
+                        print('all_sess_ids \t\t', all_sess_ids)
+
+                        print('heartbeat \t\t\t', 'shared', '  -->  ', self.redis.exists('server_sess_heartbeat'))
+                        for s in all_sess_ids:
+                            print('heartbeat \t\t', s, self.redis.exists('server_sess_heartbeat;' + s))
+                        all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
+                        print('server_name;all_sess_ids \t\t', all_sess_ids)
+
+                        user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=True)
+                        print('user_sess_ids \t\t', user_sess_ids)
+
+                        sync_groups = self.redis.h_get(
+                            name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                        )
+                        print('sync_groups \t\t', sync_groups)
+                        print('+'*70)
+
+
 
 
         # some for of cleanup for every group....:
-            # self.clear_crt_group('shared_crt')
-            # self.clear_crt_group(widget_id)
-            # self.clear_crt_group(self.sess_name)
+            # self.clear_asy_func_group('shared_asy_func')
+            # self.clear_asy_func_group(widget_id)
+            # self.clear_asy_func_group(self.sess_name)
             # self.sess_id
         self.log.info([['r', ' - ending '],['b', 'cleanup_loop'], ['r', ' by: '], ['c', self.sess_id], ['r', ' for server: '], ['c', self.server_name],])
 
@@ -1062,48 +1115,48 @@ class AsyncSocketManager:
 
 
     # ------------------------------------------------------------------
-    def is_new_crt(self, crt_info):
+    def is_new_asy_func(self, asy_func_info):
         try:
             # make sure the function which calls this has secured the lock
             if not self.is_asyncio_locked():
-                raise Exception('got asyncio not locked in set_crt_state')
-            crt_id = crt_info['id']
-            crt_group = crt_info['group']
-            crt_tag = crt_info['tag']
+                raise Exception('got asyncio not locked in set_asy_func_state')
+            asy_func_id = asy_func_info['id']
+            asy_func_group = asy_func_info['group']
+            asy_func_tag = asy_func_info['tag']
 
-            registered_id = self.get_crt_id(crt_group, crt_tag)
+            registered_id = self.get_asy_func_id(asy_func_group, asy_func_tag)
             is_new = (registered_id is None)
 
-            # print('is', self.sess_id, crt_tag, crt_group, is_new)
+            # print('is', self.sess_id, asy_func_tag, asy_func_group, is_new)
         except Exception as e:
             raise e
 
         return is_new
 
     # ------------------------------------------------------------------
-    def get_crt_id(self, crt_group, crt_tag):
-        if crt_group in AsyncSocketManager.crt_sigs:
-            for ele_now in AsyncSocketManager.crt_sigs[crt_group]:
-                if ele_now[0] == crt_tag:
+    def get_asy_func_id(self, asy_func_group, asy_func_tag):
+        if asy_func_group in AsyncSocketManager.asy_func_sigs:
+            for ele_now in AsyncSocketManager.asy_func_sigs[asy_func_group]:
+                if ele_now[0] == asy_func_tag:
                     return ele_now[1]
 
         return None
 
     # ------------------------------------------------------------------
-    def is_valid_crt(self, crt_info):
-        crt_id = crt_info['id']
-        crt_group = crt_info['group']
-        crt_tag = crt_info['tag']
+    def is_valid_asy_func(self, asy_func_info):
+        asy_func_id = asy_func_info['id']
+        asy_func_group = asy_func_info['group']
+        asy_func_tag = asy_func_info['tag']
 
-        registered_id = self.get_crt_id(crt_group, crt_tag)
+        registered_id = self.get_asy_func_id(asy_func_group, asy_func_tag)
         if registered_id is None:
             return False
         
-        return (crt_id == registered_id)
+        return (asy_func_id == registered_id)
 
     # ------------------------------------------------------------------
-    def set_crt_state(self, crt_group, crt_tag, state):
-        """bookkeeping of crt and their signal cleanup
+    def set_asy_func_state(self, asy_func_group, asy_func_tag, state):
+        """bookkeeping of asy_func and their signal cleanup
         
             Parameters
             ----------
@@ -1119,29 +1172,29 @@ class AsyncSocketManager:
         try:
             # make sure the function which calls this has secured the lock
             if not self.is_asyncio_locked():
-                raise Exception('got asyncio not locked in set_crt_state')
+                raise Exception('got asyncio not locked in set_asy_func_state')
             
-            sigs = AsyncSocketManager.crt_sigs
+            sigs = AsyncSocketManager.asy_func_sigs
             if state:
-                if crt_group not in sigs:
-                    sigs[crt_group] = []
+                if asy_func_group not in sigs:
+                    sigs[asy_func_group] = []
 
-                crt_id_now = get_rnd(n_digits=15, out_type=int)
+                asy_func_id_now = get_rnd(n_digits=15, out_type=int)
 
-                for n_ele_now in range(len(sigs[crt_group])):
-                    if sigs[crt_group][n_ele_now][0] == crt_tag:
-                        sigs[crt_group][n_ele_now][1] = crt_id_now
-                        return crt_id_now
+                for n_ele_now in range(len(sigs[asy_func_group])):
+                    if sigs[asy_func_group][n_ele_now][0] == asy_func_tag:
+                        sigs[asy_func_group][n_ele_now][1] = asy_func_id_now
+                        return asy_func_id_now
 
-                sigs[crt_group].append([
-                    crt_tag, crt_id_now,
+                sigs[asy_func_group].append([
+                    asy_func_tag, asy_func_id_now,
                 ])
 
-                return crt_id_now
+                return asy_func_id_now
             else:
-                for n_ele_now in range(len(sigs[crt_group])):
-                    if sigs[crt_group][n_ele_now][0] == crt_tag:
-                        sigs[crt_group][n_ele_now][1] = None
+                for n_ele_now in range(len(sigs[asy_func_group])):
+                    if sigs[asy_func_group][n_ele_now][0] == asy_func_tag:
+                        sigs[asy_func_group][n_ele_now][1] = None
 
                 return None
         
@@ -1153,14 +1206,14 @@ class AsyncSocketManager:
 
 
     # ------------------------------------------------------------------
-    # clean unneeded crts, assuming we are already in a crt
-    # lock, for safe modification of AsyncSocketManager.crt_sigs
+    # clean unneeded asy_funcs, assuming we are already in a asy_func
+    # lock, for safe modification of AsyncSocketManager.asy_func_sigs
     # ------------------------------------------------------------------
-    def clear_crt_group(self, crt_group):
-        if crt_group in AsyncSocketManager.crt_sigs:
-            AsyncSocketManager.crt_sigs.pop(crt_group, None)
+    def clear_asy_func_group(self, asy_func_group):
+        if asy_func_group in AsyncSocketManager.asy_func_sigs:
+            AsyncSocketManager.asy_func_sigs.pop(asy_func_group, None)
 
-            self.log.info([['r', ' - clear_crt_group(' + str(crt_group) + ') ...']])
+            self.log.info([['r', ' - clear_asy_func_group '], ['c', str(asy_func_group)], ['r', ' ...'],])
 
         return
 
@@ -1212,7 +1265,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # # common dictionaries for all instances of
     # # the class (keeping track of all sessions etc.)
     # sess_endpoints = dict()
-    # crt_sigs = dict()
+    # asy_func_sigs = dict()
     # widget_inits = dict()
 
     # lock = BoundedSemaphore(1)
@@ -1387,36 +1440,36 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #         self.redis.r_push(name='user_sess_ids;' + self.user_id, data=self.sess_id)
 
     #     # ------------------------------------------------------------------
-    #     # initiate the crts which does periodic cleanup, heartbeat managment etc.
+    #     # initiate the asy_funcs which does periodic cleanup, heartbeat managment etc.
     #     # ------------------------------------------------------------------
     #     with __old_SocketManager__.lock:
-    #         crts = [
+    #         asy_funcs = [
     #             {
     #                 'id': -1,
-    #                 'group': 'shared_crt',
+    #                 'group': 'shared_asy_func',
     #                 'tag': 'sess_heartbeat',
     #                 'func': self.sess_heartbeat,
     #             },
     #             {
     #                 'id': -1,
-    #                 'group': 'shared_crt',
+    #                 'group': 'shared_asy_func',
     #                 'tag': 'cleanup',
     #                 'func': self.cleanup,
     #             },
     #             {
     #                 'id': -1,
-    #                 'group': 'shared_crt',
+    #                 'group': 'shared_asy_func',
     #                 'tag': 'pubsub_socket_evt_widgets',
     #                 'func': self.pubsub_socket_evt_widgets,
     #             },
     #         ]
 
-    #         for crt_info in crts:
-    #             if self.is_valid_crt(crt_info):
-    #                 crt_info['id'] = self.set_crt_state(
-    #                     crt_info['group'], crt_info['tag'], True
+    #         for asy_func_info in asy_funcs:
+    #             if self.is_valid_asy_func(asy_func_info):
+    #                 asy_func_info['id'] = self.set_asy_func_state(
+    #                     asy_func_info['group'], asy_func_info['tag'], True
     #                 )
-    #                 gevent.spawn(crt_info['func'], crt_info)
+    #                 gevent.spawn(asy_func_info['func'], asy_func_info)
 
     #     # ------------------------------------------------------------------
     #     # transmit the initial data to the client
@@ -1719,25 +1772,25 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     def send_init_widget(self, opt_in=None):
         widget = opt_in['widget']
         data_func = (opt_in['data_func'] if 'data_func' in opt_in else lambda: dict())
-        crt_group = (
-            opt_in['crt_group'] if 'crt_group' in opt_in else 'init_data'
+        asy_func_group = (
+            opt_in['asy_func_group'] if 'asy_func_group' in opt_in else 'init_data'
         )
 
         with widget.lock:
             emit_data = {
                 'widget_type': widget.widget_name,
-                'event_name': crt_group,
+                'event_name': asy_func_group,
                 'n_icon': widget.n_icon,
                 'data': data_func()
             }
 
             widget.log.info([['y', ' - sending - ('],
-                             ['b', widget.widget_name, crt_group], ['y', ','],
+                             ['b', widget.widget_name, asy_func_group], ['y', ','],
                              ['g', self.sess_id, '/', widget.widget_id], ['y', ')']])
 
-            # print('widget.widget_id',widget.widget_id, crt_group, emit_data)
+            # print('widget.widget_id',widget.widget_id, asy_func_group, emit_data)
             self.socket_evt_session(
-                widget_id=widget.widget_id, event_name=crt_group, data=emit_data
+                widget_id=widget.widget_id, event_name=asy_func_group, data=emit_data
             )
 
         return
@@ -1746,23 +1799,23 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #
     # ------------------------------------------------------------------
     def add_widget_tread(self, opt_in=None):
-        if 'is_group_crt' not in opt_in:
-            opt_in['is_group_crt'] = True
+        if 'is_group_asy_func' not in opt_in:
+            opt_in['is_group_asy_func'] = True
 
         widget = opt_in['widget']
 
-        crt_group = opt_in['crt_group'
-                              ] if 'crt_group' in opt_in else 'update_data'
-        opt_in['crt_group'] = crt_group
+        asy_func_group = opt_in['asy_func_group'
+                              ] if 'asy_func_group' in opt_in else 'update_data'
+        opt_in['asy_func_group'] = asy_func_group
 
-        crt_func = opt_in['crt_func'] if 'crt_func' in opt_in else None
-        if crt_func is None and crt_group == 'update_data':
-            crt_func = self.widget_crt_func
+        asy_func_func = opt_in['asy_func_func'] if 'asy_func_func' in opt_in else None
+        if asy_func_func is None and asy_func_group == 'update_data':
+            asy_func_func = self.widget_asy_func_func
 
-        is_group_crt = opt_in['is_group_crt']
+        is_group_asy_func = opt_in['is_group_asy_func']
 
         with widget.lock:
-            if is_group_crt:
+            if is_group_asy_func:
                 if widget.widget_group not in widget.widget_group_sess:
                     widget.widget_group_sess[widget.widget_group] = []
 
@@ -1770,65 +1823,65 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                     widget.socket_manager.sess_id
                 )
 
-                if self.get_crt_id(widget.widget_group, crt_group) == -1:
+                if self.get_asy_func_id(widget.widget_group, asy_func_group) == -1:
                     with __old_SocketManager__.lock:
-                        opt_in['crt_id'] = self.set_crt_state(
-                            widget.widget_group, crt_group, True
+                        opt_in['asy_func_id'] = self.set_asy_func_state(
+                            widget.widget_group, asy_func_group, True
                         )
 
-                        gevent.spawn(crt_func, opt_in=opt_in)
+                        gevent.spawn(asy_func_func, opt_in=opt_in)
             else:
-                if self.get_crt_id(widget.widget_id, crt_group) == -1:
+                if self.get_asy_func_id(widget.widget_id, asy_func_group) == -1:
                     with __old_SocketManager__.lock:
-                        opt_in['crt_id'] = self.set_crt_state(
-                            widget.widget_id, crt_group, True
+                        opt_in['asy_func_id'] = self.set_asy_func_state(
+                            widget.widget_id, asy_func_group, True
                         )
 
-                        gevent.spawn(crt_func, opt_in=opt_in)
+                        gevent.spawn(asy_func_func, opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def widget_crt_func(self, opt_in=None):
+    def widget_asy_func_func(self, opt_in=None):
         widget = opt_in['widget']
-        crt_id = opt_in['crt_id']
-        crt_group = opt_in['crt_group']
+        asy_func_id = opt_in['asy_func_id']
+        asy_func_group = opt_in['asy_func_group']
         data_func = opt_in['data_func']
         sleep_sec = opt_in['sleep_sec'] if 'sleep_sec' in opt_in else 5
-        is_group_crt = opt_in['is_group_crt']
+        is_group_asy_func = opt_in['is_group_asy_func']
 
-        emit_data = {'widget_type': widget.widget_name, 'event_name': crt_group}
+        emit_data = {'widget_type': widget.widget_name, 'event_name': asy_func_group}
 
         sleep(sleep_sec)
 
-        if is_group_crt:
-            while (crt_id == self.get_crt_id(widget.widget_group, crt_group)):
+        if is_group_asy_func:
+            while (asy_func_id == self.get_asy_func_id(widget.widget_group, asy_func_group)):
                 with widget.lock:
                     sess_ids = widget.widget_group_sess[widget.widget_group]
                     emit_data['data'] = data_func()
 
                     self.socket_event_widgets(
-                        event_name=crt_group, data=emit_data, sess_ids=sess_ids
+                        event_name=asy_func_group, data=emit_data, sess_ids=sess_ids
                     )
 
                     if len(widget.widget_group_sess[widget.widget_group]) == 0:
                         with self.lock:
-                            self.clear_crt_group(widget.widget_group)
+                            self.clear_asy_func_group(widget.widget_group)
                             widget.widget_group_sess.pop(widget.widget_group, None)
                             break
 
                 sleep(sleep_sec)
 
         else:
-            while (crt_id == self.get_crt_id(widget.widget_id, crt_group)):
+            while (asy_func_id == self.get_asy_func_id(widget.widget_id, asy_func_group)):
                 with widget.lock:
                     sess_ids = [widget.socket_manager.sess_id]
                     emit_data['data'] = data_func()
 
                     self.socket_event_widgets(
-                        event_name=crt_group, data=emit_data, sess_ids=sess_ids
+                        event_name=asy_func_group, data=emit_data, sess_ids=sess_ids
                     )
 
                 sleep(sleep_sec)
@@ -1838,8 +1891,8 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def pubsub_socket_evt_widgets(self, crt_info):
-        self.log.info([['y', ' - starting shared_crt('],
+    def pubsub_socket_evt_widgets(self, asy_func_info):
+        self.log.info([['y', ' - starting shared_asy_func('],
                        ['g', 'pubsub_socket_evt_widgets'], ['y', ')']])
 
         while self.redis.set_pubsub('socket_event_widgets') is None:
@@ -1847,7 +1900,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                            ['b', 'socket_event_widgets'], ['y', ' ...']])
             sleep(0.1)
 
-        while self.is_valid_crt(crt_info):
+        while self.is_valid_asy_func(asy_func_info):
             sleep(0.1)
 
             msg = self.redis.get_pubsub('socket_event_widgets', packed=True)
@@ -1898,7 +1951,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
             if self.log_send_packet:
                 self.log.info(['r', 'end of send ' + event_name])
 
-        self.log.info([['y', ' - ending shared_crt('],
+        self.log.info([['y', ' - ending shared_asy_func('],
                        ['g', 'pubsub_socket_evt_widgets'], ['y', ')']])
 
         return
@@ -1945,38 +1998,38 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
         return
 
     # # ------------------------------------------------------------------
-    # # bookkeeping of crts and crt-signal cleanup
+    # # bookkeeping of asy_funcs and asy_func-signal cleanup
     # # make sure the function which calls this has secured the thred-lock (__old_SocketManager__.lock)
     # # ------------------------------------------------------------------
-    # def set_crt_state(self, crt_group, crt_tag, state):
+    # def set_asy_func_state(self, asy_func_group, asy_func_tag, state):
     #     if state:
-    #         if crt_group not in __old_SocketManager__.crt_sigs:
-    #             __old_SocketManager__.crt_sigs[crt_group] = []
+    #         if asy_func_group not in __old_SocketManager__.asy_func_sigs:
+    #             __old_SocketManager__.asy_func_sigs[asy_func_group] = []
 
-    #         crt_id_now = get_rnd(n_digits=15, out_type=int)
+    #         asy_func_id_now = get_rnd(n_digits=15, out_type=int)
 
-    #         for n_ele_now in range(len(__old_SocketManager__.crt_sigs[crt_group])):
-    #             if __old_SocketManager__.crt_sigs[crt_group][n_ele_now][0] == crt_tag:
-    #                 __old_SocketManager__.crt_sigs[crt_group][n_ele_now][1] = crt_id_now
-    #                 return crt_id_now
+    #         for n_ele_now in range(len(__old_SocketManager__.asy_func_sigs[asy_func_group])):
+    #             if __old_SocketManager__.asy_func_sigs[asy_func_group][n_ele_now][0] == asy_func_tag:
+    #                 __old_SocketManager__.asy_func_sigs[asy_func_group][n_ele_now][1] = asy_func_id_now
+    #                 return asy_func_id_now
 
-    #         __old_SocketManager__.crt_sigs[crt_group].append([crt_tag, crt_id_now])
+    #         __old_SocketManager__.asy_func_sigs[asy_func_group].append([asy_func_tag, asy_func_id_now])
 
-    #         return crt_id_now
+    #         return asy_func_id_now
     #     else:
-    #         for n_ele_now in range(len(__old_SocketManager__.crt_sigs[crt_group])):
-    #             if __old_SocketManager__.crt_sigs[crt_group][n_ele_now][0] == crt_tag:
-    #                 __old_SocketManager__.crt_sigs[crt_group][n_ele_now][1] = -1
+    #         for n_ele_now in range(len(__old_SocketManager__.asy_func_sigs[asy_func_group])):
+    #             if __old_SocketManager__.asy_func_sigs[asy_func_group][n_ele_now][0] == asy_func_tag:
+    #                 __old_SocketManager__.asy_func_sigs[asy_func_group][n_ele_now][1] = -1
 
     #         return -1
 
     # # ------------------------------------------------------------------
     # #
     # # ------------------------------------------------------------------
-    # def get_crt_id(self, crt_group, crt_tag):
-    #     if crt_group in __old_SocketManager__.crt_sigs:
-    #         for ele_now in __old_SocketManager__.crt_sigs[crt_group]:
-    #             if ele_now[0] == crt_tag:
+    # def get_asy_func_id(self, asy_func_group, asy_func_tag):
+    #     if asy_func_group in __old_SocketManager__.asy_func_sigs:
+    #         for ele_now in __old_SocketManager__.asy_func_sigs[asy_func_group]:
+    #             if ele_now[0] == asy_func_tag:
     #                 return ele_now[1]
 
     #     return -1
@@ -1984,23 +2037,23 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # # ------------------------------------------------------------------
     # #
     # # ------------------------------------------------------------------
-    # def is_valid_crt(self, crt_info):
-    #     crt_id = crt_info['id']
-    #     crt_group = crt_info['group']
-    #     crt_tag = crt_info['tag']
+    # def is_valid_asy_func(self, asy_func_info):
+    #     asy_func_id = asy_func_info['id']
+    #     asy_func_group = asy_func_info['group']
+    #     asy_func_tag = asy_func_info['tag']
 
-    #     is_valid = (crt_id == self.get_crt_id(crt_group, crt_tag))
+    #     is_valid = (asy_func_id == self.get_asy_func_id(asy_func_group, asy_func_tag))
     #     return is_valid
 
     # # ------------------------------------------------------------------
-    # # clean unneeded crts, assuming we are already in a crt
-    # # lock, for safe modification of __old_SocketManager__.crt_sigs
+    # # clean unneeded asy_funcs, assuming we are already in a asy_func
+    # # lock, for safe modification of __old_SocketManager__.asy_func_sigs
     # # ------------------------------------------------------------------
-    # def clear_crt_group(self, crt_group):
-    #     if crt_group in __old_SocketManager__.crt_sigs:
-    #         __old_SocketManager__.crt_sigs.pop(crt_group, None)
+    # def clear_asy_func_group(self, asy_func_group):
+    #     if asy_func_group in __old_SocketManager__.asy_func_sigs:
+    #         __old_SocketManager__.asy_func_sigs.pop(asy_func_group, None)
 
-    #         self.log.info([['r', ' - clear_crt_group(' + str(crt_group) + ') ...']])
+    #         self.log.info([['r', ' - clear_asy_func_group(' + str(asy_func_group) + ') ...']])
 
     #     return
 
@@ -2082,7 +2135,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                         for rm_element in rm_elements:
                             sync_states.remove(rm_element)
 
-                self.clear_crt_group(widget_id)
+                self.clear_asy_func_group(widget_id)
 
             self.redis.h_set(
                 name='sync_groups', key=self.user_id, data=sync_groups, packed=True
@@ -2094,9 +2147,9 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
             self.cleanup_session(self.sess_id)
 
             # ------------------------------------------------------------------
-            # cleanup possible crts belonging to this specific session
+            # cleanup possible asy_funcs belonging to this specific session
             # ------------------------------------------------------------------
-            self.clear_crt_group(self.sess_name)
+            self.clear_asy_func_group(self.sess_name)
 
         self.update_sync_group()
 
@@ -2148,16 +2201,16 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #     return
 
     # # ------------------------------------------------------------------
-    # # renew session heartbeat token (run in crt) for all active sessions
+    # # renew session heartbeat token (run in asy_func) for all active sessions
     # # ------------------------------------------------------------------
-    # def sess_heartbeat(self, crt_info):
-    #     self.log.info([['y', ' - starting shared_crt('], ['g', 'sess_heartbeat'],
+    # def sess_heartbeat(self, asy_func_info):
+    #     self.log.info([['y', ' - starting shared_asy_func('], ['g', 'sess_heartbeat'],
     #                    ['y', ') - ', __old_SocketManager__.server_name]])
 
     #     sleep_sec = max(ceil(self.sess_expire * 0.1), 10)
     #     sess_expire = int(max(self.sess_expire, sleep_sec * 2))
 
-    #     while self.is_valid_crt(crt_info):
+    #     while self.is_valid_asy_func(asy_func_info):
     #         with __old_SocketManager__.lock:
     #             sess_ids = self.redis.l_get('all_sess_ids')
     #             sess_ids = [x for x in sess_ids if x in self.socket.server.sockets]
@@ -2172,19 +2225,19 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
     #         sleep(sleep_sec)
 
-    #     self.log.info([['y', ' - ending shared_crt('], ['g', 'sess_heartbeat']])
+    #     self.log.info([['y', ' - ending shared_asy_func('], ['g', 'sess_heartbeat']])
 
     #     return
 
     # ------------------------------------------------------------------
-    # cleanup (run in crt) for all the bookkeeping elements
+    # cleanup (run in asy_func) for all the bookkeeping elements
     # ------------------------------------------------------------------
-    def cleanup(self, crt_info):
-        self.log.info([['y', ' - starting shared_crt('], ['g', 'cleanup'],
+    def cleanup(self, asy_func_info):
+        self.log.info([['y', ' - starting shared_asy_func('], ['g', 'cleanup'],
                        ['y', ') - ', __old_SocketManager__.server_name]])
         sleep(3)
 
-        while self.is_valid_crt(crt_info):
+        while self.is_valid_asy_func(asy_func_info):
             with __old_SocketManager__.lock:
                 user_ids = self.redis.l_get('user_ids')
                 sess_ids = self.redis.l_get('all_sess_ids')
@@ -2218,12 +2271,12 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
             sleep(self.cleanup_sleep)
 
-        self.clear_crt_group('shared_crt')
-        # self.set_crt_state('shared_crt', 'cleanup', False)
-        # self.set_crt_state('shared_crt', 'sess_heartbeat', False)
-        # self.set_crt_state('shared_crt', 'pubsub_socket_evt_widgets', False)
+        self.clear_asy_func_group('shared_asy_func')
+        # self.set_asy_func_state('shared_asy_func', 'cleanup', False)
+        # self.set_asy_func_state('shared_asy_func', 'sess_heartbeat', False)
+        # self.set_asy_func_state('shared_asy_func', 'pubsub_socket_evt_widgets', False)
 
-        self.log.info([['y', ' - ending shared_crt('], ['g', 'cleanup']])
+        self.log.info([['y', ' - ending shared_asy_func('], ['g', 'cleanup']])
 
         return
 
@@ -2298,9 +2351,9 @@ class ClockSimDecorator():
             self.clock_sim_update_sim_params,
         )
 
-        self.socket_manager.add_crt_loop({
+        self.socket_manager.add_asy_func_loop({
             'id': None,
-            'group': 'shared_crt',
+            'group': 'shared_asy_func',
             'tag': 'clock_sim_update_sim_params_loop',
             'func': self.clock_sim_update_sim_params,
         })
@@ -2308,10 +2361,9 @@ class ClockSimDecorator():
         return
 
     # ------------------------------------------------------------------
-    async def ask_sim_clock_sim_params(self, data_in):
+    async def ask_sim_clock_sim_params(self, data_in=None):
         data = self.redis.get('clock_sim_sim_params', packed=True)
-
-        await self.socket_manager.emit('get_sim_clock_sim_params', data)
+        await self.socket_manager.emit_to_queue(event_name='get_sim_clock_sim_params', data=data,)
 
         return
 
@@ -2328,9 +2380,11 @@ class ClockSimDecorator():
         return
 
     # ---------------------------------------------------------------------------
-    async def clock_sim_update_sim_params(self, crt_info):
+    async def clock_sim_update_sim_params(self, asy_func_info):
 
         self.log.info([['y', ' - starting '],['b', 'clock_sim_sim_params'], ['y', ' for server: '], ['c', self.socket_manager.server_name],])
+
+        managers = self.socket_manager.managers
 
         # setup the channel once
         pubsub_tag = 'clock_sim_updated_sim_params'
@@ -2338,15 +2392,20 @@ class ClockSimDecorator():
             sleep(0.1)
 
         sleep_sec = 0.1
-        while self.socket_manager.is_valid_crt(crt_info):
+        while self.socket_manager.is_valid_asy_func(asy_func_info):
             await asyncio.sleep(sleep_sec)    
 
-            msg = self.redis.set_pubsub(pubsub_tag).get_message()
+            msg = self.redis.get_pubsub(key=pubsub_tag)
             if msg is None:
                 continue
 
-            data = self.redis.get('clock_sim_sim_params', packed=True)
-            await self.socket_manager.emit('get_sim_clock_sim_params', data)
+            all_sess_ids = self.redis.l_get(self.socket_manager.server_name+';all_sess_ids', packed=True,)
+            all_sess_ids = [
+                s for s in all_sess_ids if s in managers.keys()
+
+            ]
+            for sess_id in all_sess_ids:
+                await managers[sess_id].ask_sim_clock_sim_params()
 
 
         self.log.info([['r', ' - ending '],['b', 'clock_sim_sim_params'], ['r', ' for server: '], ['c', self.socket_manager.server_name],])
@@ -2407,14 +2466,14 @@ if 0:
         def get_pubsub():
             for i in range(5):
                 print('    ------ ', i)
-                print('-->', self.socket_manager.is_valid_crt(crt_info))
+                print('-->', self.socket_manager.is_valid_asy_func(asy_func_info))
                 sleep(1)
             return i 
 
         loop = asyncio.get_event_loop()
 
         for i in range(5):
-            if not self.socket_manager.is_valid_crt(crt_info):
+            if not self.socket_manager.is_valid_asy_func(asy_func_info):
                 print('done!!!!!!!!!!!!!')
                 break
             blocking_future = loop.run_in_executor(None, get_pubsub)
@@ -2438,7 +2497,7 @@ if 0:
 
         sleep_sec = 0.1
         sleep_sec = 1
-        while self.socket_manager.is_valid_crt(crt_info):
+        while self.socket_manager.is_valid_asy_func(asy_func_info):
             # await loop.run_in_executor(None, get_pubsub)
             msg = await loop.run_in_executor(None, get_pubsub)
             if msg is None:

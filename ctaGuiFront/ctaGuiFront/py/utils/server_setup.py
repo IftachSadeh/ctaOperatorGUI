@@ -156,6 +156,10 @@ try:
     site_type = settings['site_type']
     # the address for the site
     app_host = settings['app_host']
+    # local log file location
+    log_file = settings['log_file']
+    # logging level
+    log_level = settings['log_level']
     # the port for the site
     app_port = settings['app_port']
     # the redis port use for this site
@@ -195,8 +199,8 @@ try:
     log = LogParser(
         base_config=base_config,
         title=__name__,
-        log_level='INFO',
-        log_file='logs/ctaGuiFront_uvicorn.log',
+        log_level=log_level,
+        log_file=log_file,
     )
     log.info([['wg', ' - Starting pyramid app -', app_name, '...']])
     log.info([['c', ' - has_acs = '], [('g' if has_acs else 'r'), has_acs]])

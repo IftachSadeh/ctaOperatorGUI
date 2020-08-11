@@ -193,7 +193,7 @@ function SocketManager() {
             }
             this_top.n_client_msg += 1
             
-            // console.log('sending ', event_name, this_sock_int.ws.readyState)
+            // console.log('sending ', event_name)
             if (is_ws_open()) {
                 ws.send(
                     encode_socket_data(data)

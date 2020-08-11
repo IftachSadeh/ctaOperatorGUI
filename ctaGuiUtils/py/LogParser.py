@@ -32,6 +32,13 @@ class LogParser():
         self, base_config, title='', do_parse_msg=True, use_colors=True, log_level='INFO', log_file=None,
     ):
         self.base_config = base_config
+        if self.base_config is None:
+            self.use_log_title = False
+            self.add_msg_ele_space = False
+        else:
+            self.use_log_title = self.base_config.use_log_title
+            self.add_msg_ele_space = self.base_config.add_msg_ele_space
+        
         self.do_parse_msg = do_parse_msg
         self.log_file = log_file
         self.log_level = log_level
@@ -47,7 +54,7 @@ class LogParser():
         self.title = (
             self.colors['c'](
                 '' if (title == '') else
-                ((' [' + title + ']' if self.base_config.use_log_title else ''))
+                ((' [' + title + ']' if self.use_log_title else ''))
             )
         )
 
@@ -131,7 +138,7 @@ class LogParser():
                 if isinstance(msg_now, list):
                     # list with one element
                     if len(msg_now) == 1:
-                        if self.base_config.add_msg_ele_space and msg != '':
+                        if self.add_msg_ele_space and msg != '':
                             msg += ' '
                         msg += str(msg_now[0])
                     # list with multiple elements
@@ -152,7 +159,7 @@ class LogParser():
                             msg_str = (' ').join([str(ele_now) for ele_now in msg_now])
 
                         # compose the colored output from the (joined list of) messages(s)
-                        if self.base_config.add_msg_ele_space and msg != '':
+                        if self.add_msg_ele_space and msg != '':
                             msg += color_func(' ')
                         msg += color_func(msg_str)
 
@@ -160,7 +167,7 @@ class LogParser():
                 # if there is a single message (non-list)
                 # ------------------------------------------------------------------
                 else:
-                    if self.base_config.add_msg_ele_space and msg != '':
+                    if self.add_msg_ele_space and msg != '':
                         msg += ' '
                     msg += str(msg_now)
 

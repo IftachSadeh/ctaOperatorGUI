@@ -48,4 +48,10 @@ if __name__ == "__main__":
     #     app, **conf
     # )
 
-    setup_server()
+    setup_server(reload_dirs=reload_dirs)
+
+
+
+
+
+

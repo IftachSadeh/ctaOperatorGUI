@@ -8,14 +8,16 @@ from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.utils import datetime_to_secs, secs_to_datetime, date_to_string, get_rnd
 from ctaGuiUtils.py.RedisManager import RedisManager
 
-
+ppp=1
+ppp=0  
 # ---------------------------------------------------------------------------
 #
 # ---------------------------------------------------------------------------
 class ClockSim():
     is_active = False
+    threads = []
 
-    def __init__(self, base_config, *args, **kwargs):
+    def __init__(self, base_config, evt, *args, **kwargs):
         self.log = LogParser(base_config=base_config, title=__name__)
 
         if ClockSim.is_active:
@@ -28,6 +30,8 @@ class ClockSim():
         self.base_config = base_config
         self.base_config.clock_sim = self
 
+        self.evt = evt
+
         self.datetime_epoch = self.base_config.datetime_epoch
 
         self.redis = RedisManager(
@@ -39,7 +43,8 @@ class ClockSim():
         # self.debug_datetime_now = True
 
         # real-time rate of progress of updates
-        self.loop_sleep = 1
+        self.pubsub_sleep_sec = 0.1
+        self.loop_sleep_sec = 1
 
         # self.is_skip_daytime = False
         self.is_skip_daytime = True
@@ -49,7 +54,7 @@ class ClockSim():
 
         # safety measure
         self.min_speed_factor = 1
-        self.max_speed_factor = 10 * 60 * self.loop_sleep
+        self.max_speed_factor = 10 * 60 * self.loop_sleep_sec
 
         # speedup simulation e.g.,:
         #   60*10 --> every 1 real sec goes to 10 simulated min
@@ -70,10 +75,50 @@ class ClockSim():
 
         self.init_night_times()
 
-        threading.Thread(target=self.pubsub_sim_params).start()
+        return
+    
+    # ---------------------------------------------------------------------------
+    def run_threads(self):
+        self.add_thread(
+            trd=threading.Thread(target=self.main_loop)
+        )
+        self.add_thread(
+            trd=threading.Thread(target=self.pubsub_sim_params)
+        )
+
+        for trd in ClockSim.threads:
+            trd.start()
+        for trd in ClockSim.threads:
+            trd.join()
+
+        # self.start_threads()
+        # self.join_threads()
+
 
         return
 
+    # ---------------------------------------------------------------------------
+    def can_loop(self):
+        return not self.evt.is_set()
+
+    # ---------------------------------------------------------------------------
+    def add_thread(self, trd):
+        ClockSim.threads += [trd]
+        return
+
+    # # ---------------------------------------------------------------------------
+    # def start_threads(self):
+    #     for trd in ClockSim.threads:
+    #         trd.start()
+    #     return
+
+    # # ---------------------------------------------------------------------------
+    # def join_threads(self):
+    #     for trd in ClockSim.threads:
+    #         trd.join()
+    #     return
+
+    
     # ---------------------------------------------------------------------------
     #
     # ---------------------------------------------------------------------------
@@ -88,18 +133,16 @@ class ClockSim():
 
         self.set_night_times()
 
-        threading.Thread(target=self.loop).start()
-
         return
 
     # ---------------------------------------------------------------------------
     #
     # ---------------------------------------------------------------------------
-    def loop(self):
-        self.log.info([['g', ' - starting ClockSim.loop ...']])
+    def main_loop(self):
+        self.log.info([['g', ' - starting ClockSim.main_loop ...']])
 
-        while True:
-            self.datetime_now += timedelta(seconds=self.loop_sleep * self.speed_factor)
+        while self.can_loop():
+            self.datetime_now += timedelta(seconds=self.loop_sleep_sec * self.speed_factor)
 
             if self.debug_datetime_now:
                 self.log.info([
@@ -136,7 +179,8 @@ class ClockSim():
                 data=self.night_end_sec,
             )
 
-            sleep(self.loop_sleep)
+            if ppp: print('++', self.datetime_now)
+            sleep(self.loop_sleep_sec)
 
         return
 
@@ -353,7 +397,10 @@ class ClockSim():
             sleep(0.1)
 
         # listen to changes on the channel and do stuff
-        while True:
+        while self.can_loop():
+            sleep(self.pubsub_sleep_sec)
+            if ppp: print('XXXXXXXXXX pubsub_sim_params')
+            
             msg = self.redis.get_pubsub(pubsub_tag, packed=True)
             if msg is None:
                 continue
@@ -364,8 +411,6 @@ class ClockSim():
                 data_out[key] = msg['data'][key] if key in msg['data'] else None
 
             self.set_speed_factor(data_in=data_out)
-
-            sleep(0.1)
 
         return
 

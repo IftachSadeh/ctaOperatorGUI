@@ -3,8 +3,9 @@ import numpy as np
 from math import floor
 from datetime import datetime
 from datetime import timedelta
-import gevent
-from gevent import sleep
+
+import threading
+from time import sleep
 
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
@@ -274,7 +275,8 @@ class time_of_night():
 
         self.reset_night()
 
-        gevent.spawn(self.loop)
+        threading.Thread(target=self.loop).start()
+
 
         return
 
@@ -365,6 +367,7 @@ class time_of_night():
                 name='time_of_night_' + 'now', data=int(floor(self.time_now_sec))
             )
 
+            # self.log.info([['g', ' - starting time_of_night.loop ...', self.time_now_sec]])
             sleep(sleep_sec)
 
         return
