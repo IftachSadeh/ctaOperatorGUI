@@ -4,13 +4,23 @@ base_ACS_dir = os.path.dirname(os.getcwd()) + '/acs'
 if base_ACS_dir not in sys.path:
     sys.path.append(base_ACS_dir)
 
+import importlib
+import traceback
+
 # my specialized logging interface - important to init the
 # logger vefore importing any ACS ?
 from ctaGuiUtils.py.server_args import parse_args
 from ctaGuiUtils.py.LogParser import LogParser
+
+
+# import ctaGuiUtils.py.LogParser as _LogParser
+# importlib.reload(_LogParser)
+# LogParser = _LogParser.LogParser
+
+
+from ctaGuiUtils.py.ThreadManager import ThreadManager
 from ctaGuiUtils.py.BaseConfig import BaseConfig
 
-# import the utils module to allow access to utils.app_prefix
 import ctaGuiUtils.py.utils as utils
 from ctaGuiUtils.py.ClockSim import ClockSim
 from ctaGuiUtils.py.InstData import InstData
@@ -19,15 +29,22 @@ from ctaGuiUtils.py.utils import has_acs
 from ctaGuiBack.py.MockTarget import MockTarget
 from ctaGuiBack.py.InstHealth import InstHealth
 from ctaGuiBack.py.InstPos import InstPos
-from ctaGuiBack.py.Scheduler import SchedulerACS, SchedulerStandalone
+from ctaGuiBack.py.Scheduler import SchedulerACS
+from ctaGuiBack.py.Scheduler import SchedulerStandalone
 
 
+# ---------------------------------------------------------------------------
 class Manager():
+    # ---------------------------------------------------------------------------
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
 
-    def run_server(self, evt):
+        return
+
+    # ---------------------------------------------------------------------------
+    def run_server(self, interrupt_sig):
+        log = None
         try:
             app_name = 'ctaGuiBack'
             settings = parse_args(app_name=app_name)
@@ -66,6 +83,7 @@ class Manager():
                 app_port=app_port,
                 app_prefix=app_prefix,
                 app_host=app_host,
+                log_level=log_level,
                 websocket_route=None,
                 allow_panel_sync=None,
                 is_HMI_dev=is_HMI_dev,
@@ -78,72 +96,56 @@ class Manager():
                 log_level=log_level,
                 log_file=log_file,
             )
-            log.info([['wg', ' - Starting pyramid app -', app_name, '...']])
+            log.info([['g', ' - starting services for '], ['y', app_name], ['g', ' ...']])
             log.info([['c', ' - has_acs = '], [('g' if has_acs else 'r'), has_acs]])
 
+            # do_flush_redis = True
+            if do_flush_redis:
+                from ctaGuiUtils.py.RedisManager import RedisManager
+                log.warn([['wr', ' ---- flusing redis ... ----']])
+                _redis = RedisManager(name='_init_', port=redis_port, log=log)
+                _redis.redis.flushall()
 
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
-            # check log levels ; finish all back-threads
+            
+            # ------------------------------------------------------------------
+            # start the time_of_night clock (to be phased out....)
+            time_of_night = utils.time_of_night(base_config=base_config, interrupt_sig=interrupt_sig)
+            # ------------------------------------------------------------------
+
+            ClockSim(base_config=base_config, interrupt_sig=interrupt_sig)
+
+            InstData(base_config=base_config)
+            
+            InstHealth(base_config=base_config, interrupt_sig=interrupt_sig)
+
+            InstPos(base_config=base_config, interrupt_sig=interrupt_sig)
+
+            MockTarget(base_config=base_config)
+            if utils.has_acs:
+                raise Exception('threading has not been properly updated for the acs version....')
+                SchedulerACS(base_config=base_config, interrupt_sig=interrupt_sig)
+            else:
+                SchedulerStandalone(base_config=base_config, interrupt_sig=interrupt_sig)
 
 
             
-            # # ------------------------------------------------------------------
-            # # start the time_of_night clock (to be phased out....)
-            # utils.time_of_night(base_config=base_config)
-            # # ------------------------------------------------------------------
 
-            # ---------------------------------------------------------------------------
-            clock_sim = ClockSim(base_config=base_config, evt=evt)
-            clock_sim.run_threads()
-
-
-            
-            # InstData(base_config=base_config)
-
-            # InstHealth(base_config=base_config)
-            # InstPos(base_config=base_config)
-            # MockTarget(base_config=base_config)
-
-            # if utils.has_acs:
-            #     SchedulerACS(base_config=base_config)
-            # else:
-            #     SchedulerStandalone(base_config=base_config)
-
-            # settings_log = [['g', ' - server settings:\n']]
-            # for k,v in settings.items():
-            #     settings_log += [['b', str(k)], [': ']]
-            #     settings_log += [['c', str(v)], [',  ']]
-            # log.info(settings_log)
-
-            # # do_flush_redis = True
-            # if do_flush_redis:
-            #     from ctaGuiUtils.py.RedisManager import RedisManager
-            #     log.warn([['wr', ' ---- flusing redis ... ----']])
-            #     _redis = RedisManager(name='_init_', port=redis_port, log=log)
-            #     _redis.redis.flushall()
+            # after initialising all classes, start the threads
+            thread_manager = ThreadManager(base_config=base_config, interrupt_sig=interrupt_sig)
+            thread_manager.run_threads()
 
             return
         
         except KeyboardInterrupt:
-            evt.set()
+            interrupt_sig.set()
             pass
         
         except Exception as e:
-            log.info([['c', e]])
+            if log is None:
+                print(e)
+                traceback.print_tb(e.__traceback__)
+            else:
+                log.info([['wr', e]])
             raise e
 
+        return

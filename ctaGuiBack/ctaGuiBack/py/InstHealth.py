@@ -1,9 +1,11 @@
-import gevent
-from gevent import sleep
 from math import ceil
 import random
 from random import Random
 
+from time import sleep
+from threading import Lock
+
+from ctaGuiUtils.py.ThreadManager import ThreadManager
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.utils import flatten_dict
 from ctaGuiUtils.py.RedisManager import RedisManager
@@ -12,15 +14,25 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-class InstHealth():
-    def __init__(self, base_config):
+class InstHealth(ThreadManager):
+    is_active = False
+    lock = Lock()
+
+    def __init__(self, base_config, interrupt_sig):
         self.log = LogParser(base_config=base_config, title=__name__)
         self.log.info([['y', ' - InstHealth - ']])
+
+        if InstHealth.is_active:
+            raise Exception('Can not instantiate InstHealth more than once...')
+        else:
+            InstHealth.is_active = True
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
         self.clock_sim = self.base_config.clock_sim
         self.inst_data = self.base_config.inst_data
+
+        self.interrupt_sig = interrupt_sig
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
@@ -47,13 +59,22 @@ class InstHealth():
         self.inst_data = self.base_config.inst_data
         self.health_tag = self.inst_data.health_tag
 
-        # minimal real-time delay between randomisations
-        self.loop_sleep = 5
+        # sleep duration for thread loops
+        self.loop_sleep_sec = 1
+        # minimal real-time delay between randomisations (once every self.loop_act_rate sec)
+        self.loop_act_rate = max(int(5 / self.loop_sleep_sec), 1)
 
         self.init()
-        gevent.spawn(self.loop)
+        
+        self.setup_threads()
 
         return
+
+    # ---------------------------------------------------------------------------
+    def setup_threads(self):
+        self.add_thread(target=self.main_loop)
+        return
+
 
     # ------------------------------------------------------------------
     #
@@ -304,20 +325,26 @@ class InstHealth():
     #
     # ------------------------------------------------------------------
 
-    def loop(self):
-        self.log.info([['g', ' - starting inst_health.loop ...']])
-        sleep(2)
+    def main_loop(self):
+        self.log.info([['g', ' - starting InstHealth.main_loop ...']])
+        sleep(0.1)
 
+        n_loop = 0
         rnd_seed = 12564654
-        while True:
+        while self.can_loop(self.interrupt_sig):
+            n_loop += 1
+            sleep(self.loop_sleep_sec)
+            if n_loop % self.loop_act_rate != 0:
+                continue
+
             need_update = self.clock_sim.need_data_update(
                 update_opts=self.check_update_opts,
             )
-            if need_update:
+            if not need_update:
+                continue
+
+            with InstHealth.lock:
                 self.rand_once(rnd_seed=rnd_seed)
-
                 rnd_seed += 1
-
-            sleep(self.loop_sleep)
 
         return

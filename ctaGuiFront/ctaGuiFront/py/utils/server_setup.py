@@ -190,6 +190,7 @@ try:
         app_port=app_port,
         app_prefix=app_prefix,
         app_host=app_host,
+        log_level=log_level,
         websocket_route=websocket_route,
         allow_panel_sync=allow_panel_sync,
         is_HMI_dev=is_HMI_dev,

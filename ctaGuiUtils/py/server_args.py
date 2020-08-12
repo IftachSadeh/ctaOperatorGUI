@@ -70,6 +70,8 @@ def parse_args(app_name):
     input_args = vars(parser.parse_args())
 
     try:
+        module_names = ['ctaGuiBack', 'ctaGuiFront', 'ctaGuiUtils']
+        
         pwd = os.getcwd()
         sqlite = 'sqlite:////' + os.path.join(pwd, (app_name + '.db'))
         # 'sqlite://///Users/sadeh/test/ctaOperatorGUI/ctaGuiFront/ctaGuiFront.db',
@@ -79,10 +81,13 @@ def parse_args(app_name):
             'app_prefix': 'cta',
             'app_host': '0.0.0.0',
             'log_file': 'logs/' + app_name + '_server.log',
-            # 'log_level': 'WARN',
+            # 'log_level': 'DEBUG',
             'log_level': 'INFO',
+            # 'log_level': 'WARN',
+            # 'log_level': 'ERROR',
             'pyramid.reload_templates': 'true',
             'sqlalchemy.url': sqlite, 
+            'module_names': module_names,
         }
 
         if input_args['site_type'] == 'N':

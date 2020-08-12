@@ -1,5 +1,5 @@
 import copy
-from gevent import sleep
+from time import sleep
 
 from ctaGuiUtils.py.LogParser import LogParser
 

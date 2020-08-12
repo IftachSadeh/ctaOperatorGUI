@@ -4,7 +4,6 @@ from math import floor
 from datetime import datetime
 from datetime import timedelta
 
-import threading
 from time import sleep
 
 from ctaGuiUtils.py.LogParser import LogParser
@@ -239,10 +238,14 @@ def format_float_to_string(x):
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-class time_of_night():
+from ctaGuiUtils.py.ThreadManager import ThreadManager
+class time_of_night(ThreadManager):
     is_active = False
 
-    def __init__(self, base_config, end_time_sec=None, timescale=None, *args, **kwargs):
+    def __init__(self, base_config, interrupt_sig, end_time_sec=None, timescale=None, *args, **kwargs):
+        super(time_of_night, self).__init__(base_config, *args, **kwargs)
+        
+        self.interrupt_sig = interrupt_sig
         self.log = LogParser(base_config=base_config, title=__name__)
 
         if time_of_night.is_active:
@@ -268,6 +271,9 @@ class time_of_night():
 
         self.n_night = -1
 
+        # sleep duration for thread loops
+        self.loop_sleep_sec = 1
+        
         # range in seconds of time-series data to be stored for eg monitoring points
         self.epoch = datetime.utcfromtimestamp(0)
         self.time_series_n_seconds = 60 * 30
@@ -275,9 +281,13 @@ class time_of_night():
 
         self.reset_night()
 
-        threading.Thread(target=self.loop).start()
+        self.setup_threads()
 
+        return
 
+    # ---------------------------------------------------------------------------
+    def setup_threads(self):
+        self.add_thread(target=self.main_loop)
         return
 
     # ---------------------------------------------------------------------------
@@ -354,12 +364,11 @@ class time_of_night():
     # ---------------------------------------------------------------------------
     #
     # ---------------------------------------------------------------------------
-    def loop(self):
-        self.log.info([['g', ' - starting time_of_night.loop ...']])
+    def main_loop(self):
+        self.log.info([['g', ' - starting time_of_night.main_loop ...']])
 
-        sleep_sec = 1
-        while True:
-            self.time_now_sec += sleep_sec / self.timescale
+        while self.can_loop(self.interrupt_sig):            
+            self.time_now_sec += self.loop_sleep_sec / self.timescale
             if self.time_now_sec > self.end_time_sec:
                 self.reset_night()
 
@@ -367,8 +376,8 @@ class time_of_night():
                 name='time_of_night_' + 'now', data=int(floor(self.time_now_sec))
             )
 
-            # self.log.info([['g', ' - starting time_of_night.loop ...', self.time_now_sec]])
-            sleep(sleep_sec)
+            sleep(self.loop_sleep_sec)
+            # self.log.info([['g', ' - starting time_of_night.main_loop ...', self.time_now_sec]])
 
         return
 

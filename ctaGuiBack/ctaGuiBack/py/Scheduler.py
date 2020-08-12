@@ -1,16 +1,18 @@
-import gevent
-from gevent import sleep
 from math import floor
 import random
 from random import Random
 import copy
 from datetime import datetime
 
-from ctaGuiUtils.py.utils import has_acs
+from time import sleep
+from threading import Lock
+
+from ctaGuiUtils.py.ThreadManager import ThreadManager
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.utils import get_rnd, get_time, get_rnd_seed
 from ctaGuiUtils.py.RedisManager import RedisManager
 from ctaGuiBack.py.MockSched import MockSched
+from ctaGuiUtils.py.utils import has_acs
 
 if has_acs:
     # from Acspy.Clients.SimpleClient import PySimpleClient
@@ -26,15 +28,25 @@ if has_acs:
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-class SchedulerACS():
-    def __init__(self, base_config):
+class SchedulerACS(ThreadManager):
+    is_active = False
+    lock = Lock()
+
+    def __init__(self, base_config, interrupt_sig):
         self.log = LogParser(base_config=base_config, title=__name__)
         self.log.info([['y', ' - SchedulerACS - '], ['g', base_config.site_type]])
+
+        if SchedulerACS.is_active:
+            raise Exception('Can not instantiate SchedulerACS more than once...')
+        else:
+            SchedulerACS.is_active = True
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
         self.clock_sim = self.base_config.clock_sim
         self.inst_data = self.base_config.inst_data
+
+        self.interrupt_sig = interrupt_sig
 
         self.tel_ids = self.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
@@ -73,15 +85,15 @@ class SchedulerACS():
 
         self.az_min_max = [-180, 180]
 
-        self.loop_sleep = 3
+        self.loop_sleep_sec = 3
 
         rnd_seed = get_rnd_seed()
         # rnd_seed = 10987268332
         self.rnd_gen = Random(rnd_seed)
 
-        gevent.spawn(self.loop)
+        self.setup_threads()
 
-        self.MockSched = MockSched(base_config=self.base_config)
+        self.MockSched = MockSched(base_config=self.base_config, interrupt_sig=self.interrupt_sig)
 
         # ------------------------------------------------------------------
         # temporary hack to be consistent with SchedulerStandalone
@@ -92,6 +104,12 @@ class SchedulerACS():
         external_generate_events(self)
 
         return
+
+    # ---------------------------------------------------------------------------
+    def setup_threads(self):
+        self.add_thread(target=self.main_loop)
+        return
+
 
     # ------------------------------------------------------------------
     #
@@ -341,8 +359,8 @@ class SchedulerACS():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def loop(self):
-        self.log.info([['g', ' - starting SchedulerACS.loop ...']])
+    def main_loop(self):
+        self.log.info([['g', ' - starting SchedulerACS.main_loop ...']])
 
         self.redis.pipe.set(name='obs_block_ids_' + 'wait', data='')
         self.redis.pipe.set(name='obs_block_ids_' + 'run', data='')
@@ -354,29 +372,54 @@ class SchedulerACS():
 
         update_sub_arrs(self=self, blocks=[])
 
-        while True:
-            self.reset_blocks()
+        while self.can_loop(self.interrupt_sig):
+            sleep(self.loop_sleep_sec)
 
-            sleep(self.loop_sleep)
+            with SchedulerACS.lock:
+                self.reset_blocks()
 
         return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-class SchedulerStandalone():
+class SchedulerStandalone(ThreadManager):
+    is_active = False
+    lock = Lock()
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, base_config):
+    def __init__(self, base_config, interrupt_sig):
         self.log = LogParser(base_config=base_config, title=__name__)
         self.log.info([['y', ' - SchedulerStandalone - ']])
+
+        if SchedulerStandalone.is_active:
+            raise Exception('Can not instantiate SchedulerStandalone more than once...')
+        else:
+            SchedulerStandalone.is_active = True
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
         self.clock_sim = self.base_config.clock_sim
         self.inst_data = self.base_config.inst_data
+
+        self.interrupt_sig = interrupt_sig
 
         self.tel_ids = self.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
@@ -396,7 +439,11 @@ class SchedulerStandalone():
         # ------------------------------------------------------------------
         self.max_n_obs_block = 4 if self.site_type == 'N' else 7
         self.max_n_obs_block = min(self.max_n_obs_block, floor(len(self.tel_ids) / 4))
-        self.loop_sleep = 4
+
+        # sleep duration for thread loops
+        self.loop_sleep_sec = 1
+        # minimal real-time delay between randomisations (once every self.loop_act_rate sec)
+        self.loop_act_rate = max(int(2 / self.loop_sleep_sec), 1)
 
         self.max_n_cycles = 100
         self.min_n_sched_block = 2  # 2
@@ -438,7 +485,6 @@ class SchedulerStandalone():
         self.phase_rnd_frac['finish'] = 0.1
         self.phase_rnd_frac['cancel'] = 0.06
         self.phase_rnd_frac['fail'] = 0.1
-        self.loop_sleep = 2
 
         # 1800 = 30 minutes
         self.obs_block_sec = 1800
@@ -464,9 +510,15 @@ class SchedulerStandalone():
 
         self.init()
 
-        gevent.spawn(self.loop)
+        self.setup_threads()
 
         return
+
+    # ---------------------------------------------------------------------------
+    def setup_threads(self):
+        self.add_thread(target=self.main_loop)
+        return
+
 
     # ------------------------------------------------------------------
     #
@@ -807,9 +859,9 @@ class SchedulerStandalone():
 
         has_change = False
         for block in wait_blocks:
-            if time_now_sec < block['time']['start'] - self.loop_sleep:
+            if time_now_sec < block['time']['start'] - (self.loop_sleep_sec * self.loop_act_rate):
                 # datetime.strptime(block['start_time_sec'], '%Y-%m-%d %H:%M:%S'):
-                # - deltatime(self.loop_sleep)
+                # - deltatime((self.loop_sleep_sec * self.loop_act_rate))
                 continue
 
             block['exe_state']['state'] = 'run'
@@ -1156,32 +1208,40 @@ class SchedulerStandalone():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def loop(self):
-        self.log.info([['g', ' - starting SchedulerStandalone.loop ...']])
-        sleep(2)
+    def main_loop(self):
+        self.log.info([['g', ' - starting SchedulerStandalone.main_loop ...']])
+        sleep(0.1)
 
-        while True:
-            if self.n_nights < self.clock_sim.get_n_nights():
-                self.init()
-            else:
-                self.external_add_new_redis_blocks()
-                wait_blocks = [
-                    x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'wait')
-                ]
-                runs = [
-                    x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'run')
-                ]
-                if len(wait_blocks) + len(runs) == 0:
+        n_loop = 0
+        while self.can_loop(self.interrupt_sig):
+            n_loop += 1
+            sleep(self.loop_sleep_sec)
+            if n_loop % self.loop_act_rate != 0:
+                continue
+
+            with SchedulerStandalone.lock:
+                if self.n_nights < self.clock_sim.get_n_nights():
                     self.init()
                 else:
-                    self.wait_to_run()
-                    self.run_phases()
-                    self.run_to_done()
-                    external_generate_events(self)
+                    self.external_add_new_redis_blocks()
+                    wait_blocks = [
+                        x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'wait')
+                    ]
+                    runs = [
+                        x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'run')
+                    ]
+                    # print('wait_blocks',wait_blocks)
+                    # print('runs',runs)
+                    
+                    if len(wait_blocks) + len(runs) == 0:
+                        self.init()
+                    else:
+                        self.wait_to_run()
+                        self.run_phases()
+                        self.run_to_done()
+                        external_generate_events(self)
 
-            self.update_exe_statuses()
-
-            sleep(self.loop_sleep)
+                self.update_exe_statuses()
 
         return
 

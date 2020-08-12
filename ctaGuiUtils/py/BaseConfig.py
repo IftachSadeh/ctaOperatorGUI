@@ -93,6 +93,7 @@ class BaseConfig():
         app_port,
         app_prefix,
         app_host,
+        log_level,
         websocket_route,
         is_HMI_dev,
         is_simulation,
@@ -112,6 +113,7 @@ class BaseConfig():
         self.redis_port = redis_port
         self.app_port = app_port
         self.app_host = app_host
+        self.log_level = log_level
         self.app_prefix = app_prefix
         self.websocket_route = websocket_route
         self.allow_panel_sync = allow_panel_sync

@@ -1,6 +1,6 @@
 import sys
 import redis
-from gevent import GreenletExit
+# from gevent import GreenletExit
 from msgpack import packb
 from msgpack import unpackb
 
@@ -119,9 +119,9 @@ class RedisBase(object):
             elif packed:
                 data = unpack_object(data)
 
-        except GreenletExit:
-            pass
-            return default_val
+        # except GreenletExit:
+        #     pass
+        #     return default_val
         except Exception as e:
             if self.log:
                 self.log.error([
@@ -473,9 +473,9 @@ class RedisManager(RedisBase):
                 else:
                     data = [d.decode("utf-8") for d in data]
 
-        except GreenletExit:
-            pass
-            return []
+        # except GreenletExit:
+        #     pass
+        #     return []
         except Exception as e:
             if self.log:
                 self.log.error([

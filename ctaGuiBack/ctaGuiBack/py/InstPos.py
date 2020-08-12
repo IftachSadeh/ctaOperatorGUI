@@ -1,23 +1,35 @@
-import gevent
-from gevent import sleep
 from random import Random
+from time import sleep
+from threading import Lock
 
+from ctaGuiUtils.py.ThreadManager import ThreadManager
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
-class InstPos():
+class InstPos(ThreadManager):
+    is_active = False
+    lock = Lock()
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, base_config):
+    def __init__(self, base_config, interrupt_sig):
         self.log = LogParser(base_config=base_config, title=__name__)
         self.log.info([['y', ' - InstPos - ']])
+
+        if InstPos.is_active:
+            raise Exception('Can not instantiate InstPos more than once...')
+        else:
+            InstPos.is_active = True
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
         self.clock_sim = self.base_config.clock_sim
         self.inst_data = self.base_config.inst_data
+        
+        self.interrupt_sig = interrupt_sig
+
         self.tel_ids = self.inst_data.get_inst_ids()
 
         self.inst_pos_0 = self.base_config.inst_pos_0
@@ -40,14 +52,22 @@ class InstPos():
             'min_wait': min_wait_update_sec,
         }
 
-        # minimal real-time delay between randomisations
-        self.loop_sleep = 5
+        # sleep duration for thread loops
+        self.loop_sleep_sec = 1
+        # minimal real-time delay between randomisations (once every self.loop_act_rate sec)
+        self.loop_act_rate = max(int(5 / self.loop_sleep_sec), 1)
 
         self.init()
 
-        gevent.spawn(self.loop)
+        self.setup_threads()
 
         return
+
+    # ---------------------------------------------------------------------------
+    def setup_threads(self):
+        self.add_thread(target=self.main_loop)
+        return
+
 
     # ------------------------------------------------------------------
     #
@@ -55,7 +75,8 @@ class InstPos():
     def init(self):
         self.log.info([['g', ' - InstPos.init() ...']])
 
-        self.update_inst_pos()
+        with InstPos.lock:
+            self.update_inst_pos()
 
         return
 
@@ -139,17 +160,25 @@ class InstPos():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def loop(self):
-        self.log.info([['g', ' - starting inst_pos.loop ...']])
-        sleep(2)
+    def main_loop(self):
+        self.log.info([['g', ' - starting InstPos.main_loop ...']])
+        sleep(0.1)
 
-        while True:
+        n_loop = 0
+        while self.can_loop(self.interrupt_sig):
+            n_loop += 1
+            sleep(self.loop_sleep_sec)
+            if n_loop % self.loop_act_rate != 0:
+                continue
+            
             need_update = self.clock_sim.need_data_update(
                 update_opts=self.check_update_opts,
             )
-            if need_update:
+            if not need_update:
+                continue
+
+            with InstPos.lock:
                 self.update_inst_pos()
 
-            sleep(self.loop_sleep)
 
         return

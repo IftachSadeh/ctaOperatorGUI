@@ -1,22 +1,12 @@
 import logging
-from threading import  Lock
-# from time  import sleep
-
-try: 
-    from gevent.coros import BoundedSemaphore 
-except: 
-    from gevent.lock import BoundedSemaphore 
-
-
+from threading import Lock
 
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
 class LogParser():
-    # lock = LogLock('LogParser')
-    # lock = BoundedSemaphore(1)
     lock = Lock()
-    
+
     logging_config = None
 
     web_server_name = 'uvicorn'
@@ -29,7 +19,7 @@ class LogParser():
     #
     # ------------------------------------------------------------------
     def __init__(
-        self, base_config, title='', do_parse_msg=True, use_colors=True, log_level='INFO', log_file=None,
+        self, base_config, title='', do_parse_msg=True, use_colors=True, log_level=None, log_file=None,
     ):
         self.base_config = base_config
         if self.base_config is None:
@@ -40,8 +30,14 @@ class LogParser():
             self.add_msg_ele_space = self.base_config.add_msg_ele_space
         
         self.do_parse_msg = do_parse_msg
+
         self.log_file = log_file
-        self.log_level = log_level
+        
+        if log_level is None:
+            self.log_level = self.base_config.log_level
+        else:
+            self.log_level = log_level
+        # print('oooooooooooooooo', LogParser.logging_config is None, log_level)
 
         # before getting the logger
         self.set_logging_config()
