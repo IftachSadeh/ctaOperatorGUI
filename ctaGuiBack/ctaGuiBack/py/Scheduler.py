@@ -29,17 +29,17 @@ if has_acs:
 #
 # ------------------------------------------------------------------
 class SchedulerACS(ThreadManager):
-    is_active = False
+    has_active = False
     lock = Lock()
 
     def __init__(self, base_config, interrupt_sig):
         self.log = LogParser(base_config=base_config, title=__name__)
-        self.log.info([['y', ' - SchedulerACS - '], ['g', base_config.site_type]])
+        # self.log.info([['y', ' - SchedulerACS - '], ['g', base_config.site_type]])
 
-        if SchedulerACS.is_active:
+        if SchedulerACS.has_active:
             raise Exception('Can not instantiate SchedulerACS more than once...')
         else:
-            SchedulerACS.is_active = True
+            SchedulerACS.has_active = True
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
@@ -107,7 +107,7 @@ class SchedulerACS(ThreadManager):
 
     # ---------------------------------------------------------------------------
     def setup_threads(self):
-        self.add_thread(target=self.main_loop)
+        self.add_thread(target=self.loop_main)
         return
 
 
@@ -359,8 +359,8 @@ class SchedulerACS(ThreadManager):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def main_loop(self):
-        self.log.info([['g', ' - starting SchedulerACS.main_loop ...']])
+    def loop_main(self):
+        self.log.info([['g', ' - starting SchedulerACS.loop_main ...']])
 
         self.redis.pipe.set(name='obs_block_ids_' + 'wait', data='')
         self.redis.pipe.set(name='obs_block_ids_' + 'run', data='')
@@ -372,12 +372,14 @@ class SchedulerACS(ThreadManager):
 
         update_sub_arrs(self=self, blocks=[])
 
-        while self.can_loop(self.interrupt_sig):
+        while self.can_loop():
             sleep(self.loop_sleep_sec)
 
             with SchedulerACS.lock:
                 self.reset_blocks()
 
+        self.log.info([['c', ' - ending SchedulerACS.loop_main ...']])
+        
         return
 
 
@@ -399,7 +401,7 @@ class SchedulerACS(ThreadManager):
 #
 # ------------------------------------------------------------------
 class SchedulerStandalone(ThreadManager):
-    is_active = False
+    has_active = False
     lock = Lock()
 
     # ------------------------------------------------------------------
@@ -407,12 +409,12 @@ class SchedulerStandalone(ThreadManager):
     # ------------------------------------------------------------------
     def __init__(self, base_config, interrupt_sig):
         self.log = LogParser(base_config=base_config, title=__name__)
-        self.log.info([['y', ' - SchedulerStandalone - ']])
+        # self.log.info([['y', ' - SchedulerStandalone - ']])
 
-        if SchedulerStandalone.is_active:
+        if SchedulerStandalone.has_active:
             raise Exception('Can not instantiate SchedulerStandalone more than once...')
         else:
-            SchedulerStandalone.is_active = True
+            SchedulerStandalone.has_active = True
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
@@ -516,7 +518,7 @@ class SchedulerStandalone(ThreadManager):
 
     # ---------------------------------------------------------------------------
     def setup_threads(self):
-        self.add_thread(target=self.main_loop)
+        self.add_thread(target=self.loop_main)
         return
 
 
@@ -540,6 +542,18 @@ class SchedulerStandalone(ThreadManager):
         night_start_sec = self.clock_sim.get_night_start_sec()
         night_end_sec = self.clock_sim.get_night_end_sec()
         night_duration_sec = self.clock_sim.get_night_duration_sec()
+
+
+
+        print('-'*100)
+        print('11111111111111111111111111111111')
+        print('-'*100)
+        print('self.n_night', self.n_nights )
+        print('night_start_sec ', night_start_sec )
+        print('night_end_sec ', night_end_sec )
+        print('night_duration_sec ', night_duration_sec )
+        print('-'*100)
+
 
         self.n_init_cycle += 1
 
@@ -1208,12 +1222,12 @@ class SchedulerStandalone(ThreadManager):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def main_loop(self):
-        self.log.info([['g', ' - starting SchedulerStandalone.main_loop ...']])
+    def loop_main(self):
+        self.log.info([['g', ' - starting SchedulerStandalone.loop_main ...']])
         sleep(0.1)
 
         n_loop = 0
-        while self.can_loop(self.interrupt_sig):
+        while self.can_loop():
             n_loop += 1
             sleep(self.loop_sleep_sec)
             if n_loop % self.loop_act_rate != 0:
@@ -1242,6 +1256,8 @@ class SchedulerStandalone(ThreadManager):
                         external_generate_events(self)
 
                 self.update_exe_statuses()
+
+        self.log.info([['c', ' - ending SchedulerStandalone.loop_main ...']])
 
         return
 

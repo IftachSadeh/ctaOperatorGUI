@@ -240,20 +240,21 @@ def format_float_to_string(x):
 # ------------------------------------------------------------------
 from ctaGuiUtils.py.ThreadManager import ThreadManager
 class time_of_night(ThreadManager):
-    is_active = False
+    has_active = False
 
     def __init__(self, base_config, interrupt_sig, end_time_sec=None, timescale=None, *args, **kwargs):
-        super(time_of_night, self).__init__(base_config, *args, **kwargs)
+        # super(time_of_night, self).__init__(base_config, *args, **kwargs)
         
-        self.interrupt_sig = interrupt_sig
         self.log = LogParser(base_config=base_config, title=__name__)
 
-        if time_of_night.is_active:
+        if time_of_night.has_active:
             raise ValueError('Can not instantiate time_of_night more than once...')
         else:
-            time_of_night.is_active = True
+            time_of_night.has_active = True
 
         self.base_config = base_config
+        
+        self.interrupt_sig = interrupt_sig
 
         # 28800 -> 8 hour night
         self.end_time_sec = 28800 if end_time_sec is None else end_time_sec
@@ -287,7 +288,7 @@ class time_of_night(ThreadManager):
 
     # ---------------------------------------------------------------------------
     def setup_threads(self):
-        self.add_thread(target=self.main_loop)
+        self.add_thread(target=self.loop_main)
         return
 
     # ---------------------------------------------------------------------------
@@ -364,10 +365,10 @@ class time_of_night(ThreadManager):
     # ---------------------------------------------------------------------------
     #
     # ---------------------------------------------------------------------------
-    def main_loop(self):
-        self.log.info([['g', ' - starting time_of_night.main_loop ...']])
+    def loop_main(self):
+        self.log.info([['g', ' - starting time_of_night.loop_main ...']])
 
-        while self.can_loop(self.interrupt_sig):            
+        while self.can_loop():            
             self.time_now_sec += self.loop_sleep_sec / self.timescale
             if self.time_now_sec > self.end_time_sec:
                 self.reset_night()
@@ -377,7 +378,8 @@ class time_of_night(ThreadManager):
             )
 
             sleep(self.loop_sleep_sec)
-            # self.log.info([['g', ' - starting time_of_night.main_loop ...', self.time_now_sec]])
+
+        self.log.info([['c', ' - ending time_of_night.loop_main ...']])
 
         return
 

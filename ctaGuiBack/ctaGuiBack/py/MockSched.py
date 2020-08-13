@@ -24,7 +24,7 @@ if has_acs:
 #
 # ------------------------------------------------------------------
 class MockSched(ThreadManager):
-    is_active = False
+    has_active = False
     lock = Lock()
 
     # ------------------------------------------------------------------
@@ -44,15 +44,15 @@ class MockSched(ThreadManager):
             return
         # ------------------------------------------------------------------
 
-        if MockSched.is_active:
+        if MockSched.has_active:
             raise Exception('Can not instantiate MockSched more than once...')
         else:
-            MockSched.is_active = True
+            MockSched.has_active = True
 
-        # if MockSched.is_active:
-        #     self.log.info([['wr', (' - is_active -') * 5]])
+        # if MockSched.has_active:
+        #     self.log.info([['wr', (' - has_active -') * 5]])
         #     return
-        # MockSched.is_active = True
+        # MockSched.has_active = True
 
         # ------------------------------------------------------------------
 
@@ -121,7 +121,7 @@ class MockSched(ThreadManager):
 
     # ---------------------------------------------------------------------------
     def setup_threads(self):
-        self.add_thread(target=self.main_loop)
+        self.add_thread(target=self.loop_main)
         return
 
     # ------------------------------------------------------------------
@@ -971,8 +971,8 @@ class MockSched(ThreadManager):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def main_loop(self):
-        self.log.info([['g', ' - starting MockSched.main_loop ...']])
+    def loop_main(self):
+        self.log.info([['g', ' - starting MockSched.loop_main ...']])
 
         self.submit_block_cycle()
 
@@ -981,7 +981,7 @@ class MockSched(ThreadManager):
         print(' -- self.loop_act_rate has not been verified, since no acs ...')
 
         n_loop = 0
-        while self.can_loop(self.interrupt_sig):
+        while self.can_loop():
             n_loop += 1
             sleep(self.loop_sleep_sec)
             if n_loop % self.loop_act_rate != 0:
@@ -1096,7 +1096,7 @@ if False:
 # #
 # # ------------------------------------------------------------------
 # class MockSched():
-#     is_active = False
+#     has_active = False
 
 #     # privat lock for this widget type
 #     lock = BoundedSemaphore(1)
@@ -1117,11 +1117,11 @@ if False:
 #             self.log.info([['wr', (' - no ACS !?! -') * 5]])
 #             return
 #         # ------------------------------------------------------------------
-#         if MockSched.is_active:
-#             self.log.info([['wr', (' - is_active -') * 5]])
+#         if MockSched.has_active:
+#             self.log.info([['wr', (' - has_active -') * 5]])
 #             return
 
-#         MockSched.is_active = True
+#         MockSched.has_active = True
 #         # ------------------------------------------------------------------
 
 #         self.site_type = self.base_config.site_type

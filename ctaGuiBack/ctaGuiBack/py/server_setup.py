@@ -5,13 +5,15 @@ import importlib
 import multiprocessing
 from time import sleep
 
-# from ctaGuiBack.py.manager import Manager
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.server_args import parse_args
+from ctaGuiUtils.py.utils import has_acs
 
 
 # ---------------------------------------------------------------------------
 def deep_module_reload(module_names, log=None):
+    # add all relevant modules to populate the sys.modules list
+    importlib.import_module('ctaGuiBack.py.manager')
     # get all loaded modules
     mods = tuple(sys.modules)
     # filter moduls from the project
@@ -35,14 +37,36 @@ def deep_module_reload(module_names, log=None):
 
 
 # ---------------------------------------------------------------------------
-def get_manager(module_names, is_first, log=None):
-    if not is_first:
+def get_manager(module_names, do_reload, log=None):
+    if do_reload:
         deep_module_reload(module_names=module_names, log=log)
 
     import ctaGuiBack.py.manager as manager
     manager = manager.Manager()
 
     return manager
+
+# ---------------------------------------------------------------------------
+def run_service(service_name, do_reload, log, module_names, interrupt_sig):
+    try:
+        manager = get_manager(
+            module_names=module_names, do_reload=do_reload, log=log
+        )
+
+        manager.run_service(
+            service_name=service_name, interrupt_sig=interrupt_sig
+        )
+
+    except KeyboardInterrupt:
+        interrupt_sig.set()
+        pass
+    
+    except Exception as e:
+        log.info([['wr', e]])
+        traceback.print_tb(e.__traceback__)
+        raise e
+
+    return
 
 # ---------------------------------------------------------------------------
 def setup_server(reload_dirs):
@@ -65,6 +89,7 @@ def setup_server(reload_dirs):
         log_level=log_level,
         log_file=log_file,
     )
+    log.info([['c', ' - has_acs = '], [('g' if has_acs else 'r'), has_acs]])
 
     settings_log = [['g', ' - server settings:\n']]
     for k,v in settings.items():
@@ -72,34 +97,42 @@ def setup_server(reload_dirs):
         settings_log += [['c', str(v)], [',  ']]
     log.info(settings_log)
 
-    def run_once(interrupt_sig, is_first):
-        try:
-            manager = get_manager(module_names=module_names, is_first=is_first, log=log)
-            manager.run_server(interrupt_sig=interrupt_sig)
-        except Exception as e:
-            traceback.print_tb(e.__traceback__)
-            pass
-        return
-
-    n_loop = 0
+    # 
     while True:
         try:
-
+            sleep(.01)
+            
+            multi_procs = []
+            service_names = [
+                'clock_sim_service',
+                'inst_health_service',
+                'inst_pos_service',
+                'scheduler_service',
+            ]
+            
             interrupt_sig = multiprocessing.Event()
-            multi_proc = multiprocessing.Process(
-                target=run_once,
-                kwargs={
-                    'interrupt_sig':interrupt_sig,
-                    'is_first':(n_loop == 0),
-                },
-            )
-            multi_proc.start()
+            for n_service in range(len(service_names)):
+                service_name = service_names[n_service]
+                multi_proc = multiprocessing.Process(
+                    target=run_service,
+                    kwargs={
+                        'log':log,
+                        'module_names':module_names,
+                        'interrupt_sig':interrupt_sig,
+                        'do_reload': (n_service == 0),
+                        'service_name': service_name,
+                    },
+                )
+                multi_proc.start()
+
+                multi_procs += [multi_proc]
             
             cmnd_watch = 'fswatch -1 -e ".pyc" -l 1 ' + ' '.join(reload_dirs)
             changed = subprocess.check_output(cmnd_watch, shell=True)
-            # multi_proc.terminate()
             interrupt_sig.set()
-            multi_proc.join()
+
+            for multi_proc in multi_procs:
+                multi_proc.join()
 
             try:
                 changed = changed.decode('utf-8').replace('\n', '  ')
@@ -110,8 +143,6 @@ def setup_server(reload_dirs):
             if not is_HMI_dev:
                 raise KeyboardInterrupt
 
-            sleep(.01)
-            n_loop += 1
 
         except KeyboardInterrupt:
             log.info([['g', ' ' + ('=' * 55)]])
@@ -124,11 +155,15 @@ def setup_server(reload_dirs):
             break
 
         except Exception as e:
+            # for development purposes, we continue the loop instead of raising the exception
+            log.info([['wr', e]])
             traceback.print_tb(e.__traceback__)
-            sleep(1)
-            pass
+
+            if not is_HMI_dev:
+                raise e
+            else:
+                sleep(1)
+                pass
 
     return
-
-
 

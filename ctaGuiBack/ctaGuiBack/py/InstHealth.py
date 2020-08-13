@@ -15,17 +15,17 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 #
 # ------------------------------------------------------------------
 class InstHealth(ThreadManager):
-    is_active = False
+    has_active = False
     lock = Lock()
 
     def __init__(self, base_config, interrupt_sig):
         self.log = LogParser(base_config=base_config, title=__name__)
-        self.log.info([['y', ' - InstHealth - ']])
+        # self.log.info([['y', ' - InstHealth - ']])
 
-        if InstHealth.is_active:
+        if InstHealth.has_active:
             raise Exception('Can not instantiate InstHealth more than once...')
         else:
-            InstHealth.is_active = True
+            InstHealth.has_active = True
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
@@ -72,7 +72,7 @@ class InstHealth(ThreadManager):
 
     # ---------------------------------------------------------------------------
     def setup_threads(self):
-        self.add_thread(target=self.main_loop)
+        self.add_thread(target=self.loop_main)
         return
 
 
@@ -80,10 +80,8 @@ class InstHealth(ThreadManager):
     #
     # ------------------------------------------------------------------
     def init(self):
-        self.log.info([['g', ' - inst_health.init() ...']])
-        # ------------------------------------------------------------------
-        #
-        # ------------------------------------------------------------------
+        # self.log.info([['g', ' - inst_health.init() ...']])
+
         for id_now in self.tel_ids:
             self.inst_health_s0[id_now] = {
                 self.health_tag: 100,
@@ -285,6 +283,7 @@ class InstHealth(ThreadManager):
 
             time_now_sec = self.clock_sim.get_time_now_sec()
             time_min = self.clock_sim.get_time_series_start_time_sec()
+
             base_name = 'inst_health;' + str(id_now)
 
             for key, val in self.inst_health_sub_flat[id_now].items():
@@ -325,13 +324,13 @@ class InstHealth(ThreadManager):
     #
     # ------------------------------------------------------------------
 
-    def main_loop(self):
-        self.log.info([['g', ' - starting InstHealth.main_loop ...']])
+    def loop_main(self):
+        self.log.info([['g', ' - starting InstHealth.loop_main ...']])
         sleep(0.1)
 
         n_loop = 0
         rnd_seed = 12564654
-        while self.can_loop(self.interrupt_sig):
+        while self.can_loop():
             n_loop += 1
             sleep(self.loop_sleep_sec)
             if n_loop % self.loop_act_rate != 0:
@@ -347,4 +346,6 @@ class InstHealth(ThreadManager):
                 self.rand_once(rnd_seed=rnd_seed)
                 rnd_seed += 1
 
+        self.log.info([['c', ' - ending InstHealth.loop_main ...']])
+        
         return

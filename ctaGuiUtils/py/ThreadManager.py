@@ -6,15 +6,13 @@ from ctaGuiUtils.py.LogParser import LogParser
 # ---------------------------------------------------------------------------
 class ThreadManager():
     threads = []
-
-    def __init__(self, base_config, *args, **kwargs):
-        self.log = LogParser(base_config=base_config, title=__name__)
-
-        return
     
     # ---------------------------------------------------------------------------
-    def can_loop(self, interrupt_sig):
-        return not interrupt_sig.is_set()
+    def can_loop(self, interrupt_sig=None):
+        if interrupt_sig is None:
+            return not self.interrupt_sig.is_set()
+        else:
+            return not interrupt_sig.is_set()
 
     # ---------------------------------------------------------------------------
     def add_thread(self, target):
@@ -26,6 +24,10 @@ class ThreadManager():
 
         return
 
+    # ---------------------------------------------------------------------------
+    def get_threads(self):
+        return ThreadManager.threads
+    
     # ---------------------------------------------------------------------------
     def run_threads(self):
         # for thread in ThreadManager.threads:

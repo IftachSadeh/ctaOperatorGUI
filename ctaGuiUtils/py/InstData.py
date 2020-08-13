@@ -27,7 +27,7 @@ class InstData():
 
         def init():
             self.log.debug([['y', ' - initializing InstData - '],
-                            ['g', 'init_inst_pos()'], ['y', ' ...']])
+                            ['g', 'init_inst_pos()'], ['y', ' ...'],])
 
             self.base_config = base_config
             self.base_config.inst_data = self

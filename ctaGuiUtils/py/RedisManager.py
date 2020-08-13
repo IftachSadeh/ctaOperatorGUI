@@ -356,7 +356,7 @@ class RedisManager(RedisBase):
     #
     # ------------------------------------------------------------------
     def __init__(self, name='', log=None, port=None, host='localhost'):
-        super(RedisManager, self).__init__(name=name, log=log)
+        # super(RedisManager, self).__init__(name=name, log=log)
 
         self.name = name
         self.log = log
@@ -669,7 +669,7 @@ class RedisPipeManager(RedisBase):
     #
     # ------------------------------------------------------------------
     def __init__(self, name='', log=None, redis=None):
-        super(RedisPipeManager, self).__init__(name=name, log=log)
+        # super(RedisPipeManager, self).__init__(name=name, log=log)
 
         self.name = name
         self.log = log

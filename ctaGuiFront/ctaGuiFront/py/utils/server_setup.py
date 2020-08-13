@@ -219,7 +219,7 @@ try:
     #     _redis = RedisManager(name='_init_', port=redis_port, log=log)
     #     _redis.redis.flushall()
 
-    # set the list of telescopes for this particular site
+    # set the list of telescopes for this particular site and attach it to base_config
     InstData(base_config=base_config)
 
     # 

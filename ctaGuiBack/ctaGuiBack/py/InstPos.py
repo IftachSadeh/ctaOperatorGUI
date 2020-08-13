@@ -8,7 +8,7 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 
 
 class InstPos(ThreadManager):
-    is_active = False
+    has_active = False
     lock = Lock()
 
     # ------------------------------------------------------------------
@@ -16,12 +16,11 @@ class InstPos(ThreadManager):
     # ------------------------------------------------------------------
     def __init__(self, base_config, interrupt_sig):
         self.log = LogParser(base_config=base_config, title=__name__)
-        self.log.info([['y', ' - InstPos - ']])
 
-        if InstPos.is_active:
+        if InstPos.has_active:
             raise Exception('Can not instantiate InstPos more than once...')
         else:
-            InstPos.is_active = True
+            InstPos.has_active = True
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
@@ -65,7 +64,7 @@ class InstPos(ThreadManager):
 
     # ---------------------------------------------------------------------------
     def setup_threads(self):
-        self.add_thread(target=self.main_loop)
+        self.add_thread(target=self.loop_main)
         return
 
 
@@ -73,7 +72,7 @@ class InstPos(ThreadManager):
     #
     # ------------------------------------------------------------------
     def init(self):
-        self.log.info([['g', ' - InstPos.init() ...']])
+        # self.log.info([['g', ' - InstPos.init() ...']])
 
         with InstPos.lock:
             self.update_inst_pos()
@@ -160,12 +159,12 @@ class InstPos(ThreadManager):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def main_loop(self):
-        self.log.info([['g', ' - starting InstPos.main_loop ...']])
+    def loop_main(self):
+        self.log.info([['g', ' - starting InstPos.loop_main ...']])
         sleep(0.1)
 
         n_loop = 0
-        while self.can_loop(self.interrupt_sig):
+        while self.can_loop():
             n_loop += 1
             sleep(self.loop_sleep_sec)
             if n_loop % self.loop_act_rate != 0:
@@ -180,5 +179,6 @@ class InstPos(ThreadManager):
             with InstPos.lock:
                 self.update_inst_pos()
 
+        self.log.info([['c', ' - ending InstPos.loop_main ...']])
 
         return

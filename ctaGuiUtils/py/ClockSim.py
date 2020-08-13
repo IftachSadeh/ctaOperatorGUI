@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from time import sleep
 from threading import Lock
+import multiprocessing
 
 from ctaGuiUtils.py.ThreadManager import ThreadManager
 from ctaGuiUtils.py.LogParser import LogParser
@@ -13,30 +14,43 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 #
 # ---------------------------------------------------------------------------
 class ClockSim(ThreadManager):
-    is_active = False
     lock = Lock()
 
-    def __init__(self, base_config, interrupt_sig, *args, **kwargs):
-        super(ClockSim, self).__init__(base_config, *args, **kwargs)
-
-        self.interrupt_sig = interrupt_sig
+    def __init__(self, base_config, is_passive, interrupt_sig=None, *args, **kwargs):
         self.log = LogParser(base_config=base_config, title=__name__)
 
-        if ClockSim.is_active:
-            raise Exception('Can not instantiate ClockSim more than once...')
-        else:
-            ClockSim.is_active = True
+        # self.log.info([['y', ' - ClockSim\nClockSim\nClockSim\n - ']]) ;  
 
         self.class_name = self.__class__.__name__
 
         self.base_config = base_config
-        self.base_config.clock_sim = self
 
-        self.datetime_epoch = self.base_config.datetime_epoch
+        # print('is_passiveis_passiveis_passive',is_passive)
+        self.is_passive = is_passive
+        if self.is_passive:
+            self.base_config.clock_sim = self
 
         self.redis = RedisManager(
             name=self.class_name, port=base_config.redis_port, log=self.log
         )
+
+        self.interrupt_sig = interrupt_sig
+        if self.interrupt_sig is None:
+            self.interrupt_sig = multiprocessing.Event()
+        
+        if is_passive:
+            return
+
+        self.loop_active_expire = 0.5
+        self.active_expire = self.loop_active_expire * 2
+        self.active_init_expire = 100
+        self.active_init_state = 0
+
+        with ClockSim.lock:
+            self.validate_no_active_instance()
+            self.set_active_instance(expire=self.active_init_expire)
+
+        self.datetime_epoch = self.base_config.datetime_epoch
 
         self.rnd_gen = Random(11)
         self.debug_datetime_now = False
@@ -64,6 +78,13 @@ class ClockSim(ThreadManager):
         self.init_sim_params_from_redis = True
         # self.init_sim_params_from_redis = False
 
+        self.sim_params = {
+            'speed_factor': self.speed_factor,
+            'min_speed_factor': self.min_speed_factor,
+            'max_speed_factor': self.max_speed_factor,
+            'is_skip_daytime': self.is_skip_daytime,
+            'is_short_night': self.is_short_night,
+        }
         self.set_speed_factor(
             data_in={
                 'speed_factor': self.speed_factor,
@@ -81,8 +102,51 @@ class ClockSim(ThreadManager):
     
     # ---------------------------------------------------------------------------
     def setup_threads(self):
-        self.add_thread(target=self.main_loop)
+        self.add_thread(target=self.loop_main)
+        self.add_thread(target=self.loop_active_heartbeat)
         self.add_thread(target=self.pubsub_sim_params)
+        return
+
+    # ---------------------------------------------------------------------------
+    def has_active_instance(self):
+        return self.redis.exists('clock_sim_active_instance')
+    
+    # ---------------------------------------------------------------------------
+    def set_active_instance(self, expire=None):
+        if expire is None:
+            expire = self.active_expire
+        
+        self.redis.set(
+            name='clock_sim_active_instance', data=self.active_init_state, expire=int(expire), packed=True,
+        )
+        
+        return
+
+    # ---------------------------------------------------------------------------
+    def unset_active_instance(self):
+        self.log.info([['r', ' - ClockSim.unset_active_instance ...']])
+        self.redis.delete(name='clock_sim_active_instance')
+        return
+
+    # ---------------------------------------------------------------------------
+    def validate_no_active_instance(self):
+        if not self.has_active_instance():
+            return
+        
+        # sleep for a bit
+        sleep(self.active_expire)
+        
+        # try again for n_sec_try
+        n_sec_try = 3
+        for _ in range(n_sec_try):
+            if not self.has_active_instance():
+                break
+            sleep(1)
+        
+        # if the instance is still locked, something must be wrong
+        if self.has_active_instance():
+            raise Exception('Can not instantiate ClockSim more than once...')
+        
         return
 
 
@@ -95,61 +159,61 @@ class ClockSim(ThreadManager):
 
         self.night_start_sec = datetime_to_secs(self.datetime_epoch)
         self.night_end_sec = datetime_to_secs(self.datetime_epoch)
-        self.night_duration_sec = 0
         self.time_series_start_time_sec = self.night_start_sec
 
         self.set_night_times()
+        self.update_once()
+
+        self.active_init_state = 1
 
         return
 
+
     # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
-    def main_loop(self):
-        self.log.info([['g', ' - starting ClockSim.main_loop ...']])
+    def update_once(self):
+        with ClockSim.lock:
+            self.datetime_now += timedelta(seconds=self.loop_sleep_sec * self.speed_factor)
 
-        while self.can_loop(self.interrupt_sig):
-            sleep(self.loop_sleep_sec)
+            if self.debug_datetime_now:
+                self.log.info([
+                    ['g', ' --- Now (night:', self.n_nights, '/', ''],
+                    ['p', self.is_night_time_now()],
+                    ['g', ') '],
+                    ['y', self.datetime_now],
+                    ['c', ' (' + str(datetime_to_secs(self.datetime_now)) + ' sec)'],
+                ])
 
-            with ClockSim.lock:
-                self.datetime_now += timedelta(seconds=self.loop_sleep_sec * self.speed_factor)
+            self.update_n_night()
 
-                if self.debug_datetime_now:
-                    self.log.info([
-                        ['g', ' --- Now (night:', self.n_nights, '/', ''],
-                        ['p', self.is_night_time_now()],
-                        ['g', ') '],
-                        ['y', self.datetime_now],
-                        ['c', ' (' + str(datetime_to_secs(self.datetime_now)) + ' sec)'],
-                    ])
+            time_now_sec = datetime_to_secs(self.datetime_now)
+            is_night_now = self.is_night_time_now()
 
-                self.update_n_night()
-
-                time_now_sec = datetime_to_secs(self.datetime_now)
-                is_night_now = self.is_night_time_now()
-
-                self.redis.set(
-                    name='clock_sim_time_now_sec',
-                    data=time_now_sec,
-                )
-                self.redis.set(
-                    name='clock_sim_is_night_now',
-                    data=is_night_now,
-                )
-                self.redis.set(
-                    name='clock_sim_n_nights',
-                    data=self.n_nights,
-                )
-                self.redis.set(
-                    name='clock_sim_night_start_sec',
-                    data=self.night_start_sec,
-                )
-                self.redis.set(
-                    name='clock_sim_night_end_sec',
-                    data=self.night_end_sec,
-                )
-
+            self.redis.set(
+                name='clock_sim_time_now_sec',
+                data=time_now_sec,
+            )
+            self.redis.set(
+                name='clock_sim_is_night_now',
+                data=is_night_now,
+            )
+            self.redis.set(
+                name='clock_sim_n_nights',
+                data=self.n_nights,
+            )
+            self.redis.set(
+                name='clock_sim_night_start_sec',
+                data=self.night_start_sec,
+            )
+            self.redis.set(
+                name='clock_sim_night_end_sec',
+                data=self.night_end_sec,
+            )
+            self.redis.set(
+                name='clock_sim_time_series_start_time_sec',
+                data=self.time_series_start_time_sec,
+            )
         return
+    
 
     # ---------------------------------------------------------------------------
     #
@@ -196,8 +260,6 @@ class ClockSim(ThreadManager):
                 secs_to_datetime(self.night_start_sec) - timedelta(seconds=10)
             )
 
-        self.night_duration_sec = (self.night_end_sec - self.night_start_sec)
-
         night_start = date_to_string(
             secs_to_datetime(self.night_start_sec),
             date_string=None,
@@ -236,22 +298,15 @@ class ClockSim(ThreadManager):
     # ---------------------------------------------------------------------------
     #
     # ---------------------------------------------------------------------------
-    def is_night_time_now(self):
-        time_now_sec = datetime_to_secs(self.datetime_now)
-        is_night = (
-            time_now_sec > self.night_start_sec and time_now_sec <= self.night_end_sec
-        )
-        return is_night
-
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
     def need_data_update(self, update_opts):
         # updates only happen after min_wait of simulation time
         time_now = self.get_time_now_sec()
 
-        if (('prev_update' not in update_opts.keys())
-                or (update_opts['prev_update'] is None)):
+        set_prev_update = (
+            ('prev_update' not in update_opts.keys())
+            or (update_opts['prev_update'] is None)
+        )
+        if set_prev_update:
             update_opts['prev_update'] = time_now - 2 * update_opts['min_wait']
 
         time_diff = time_now - update_opts['prev_update']
@@ -266,27 +321,6 @@ class ClockSim(ThreadManager):
 
         # print('--', time_now, update_opts['prev_update'], [can_update, is_night_time])
         return need_update
-
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
-    def get_sec_since_midnight(self):
-        days_since_epoch = (self.datetime_now - self.datetime_epoch).days
-        sec_since_midnight = ((self.datetime_now - self.datetime_epoch).seconds
-                              + timedelta(days=days_since_epoch).total_seconds())
-        return sec_since_midnight
-
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
-    def get_n_nights(self):
-        return self.n_nights
-
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
-    def get_speed_factor(self):
-        return self.speed_factor
 
     # ---------------------------------------------------------------------------
     #
@@ -337,7 +371,7 @@ class ClockSim(ThreadManager):
             ['p', self.is_short_night],
         ])
 
-        data = {
+        self.sim_params = {
             'speed_factor': self.speed_factor,
             'min_speed_factor': self.min_speed_factor,
             'max_speed_factor': self.max_speed_factor,
@@ -347,7 +381,7 @@ class ClockSim(ThreadManager):
         self.redis.set(
             name='clock_sim_sim_params',
             packed=True,
-            data=data,
+            data=self.sim_params,
         )
 
         self.redis.publish(channel='clock_sim_updated_sim_params')
@@ -355,7 +389,180 @@ class ClockSim(ThreadManager):
         return
 
     # ---------------------------------------------------------------------------
-    #
+    def check_passive(self):
+        """check if this is an active or passive instance
+        
+            if this is a passive instance, make sure that an active instance
+            has been initialised by some other proccess. after n_sec_try of
+            waiting, raise an exception
+        
+            Returns
+            -------
+            bool
+                is this a passive instance
+        """
+
+        need_check = (
+            self.can_loop() and self.is_passive and not self.has_active_instance()
+        )
+        if not need_check:
+            return self.is_passive
+        
+        n_loop, n_sec_sleep, n_sec_try = 0, 0.01, 10
+        n_loops = 1 + int(n_sec_try / n_sec_sleep)
+        while not self.has_active_instance():
+            sleep(n_sec_sleep)
+            if n_loop >= n_loops:
+                raise Exception(
+                    ' - ClockSim can not proceed in passive mode'
+                    + ' without an initialised active instance'
+                )
+            if n_loop > 0 and (n_loop % int(1/n_sec_sleep) == 0):
+                self.log.warn([
+                    ['r', ' - ClockSim blocking ! --> waiting for an active'],
+                    ['r', ' instance to come online ...'],
+                ])
+
+            n_loop += 1
+        
+        # check that the active instance has finished the initialisation stage
+        for n_loop in range(n_loops + 1):
+            sleep(n_sec_sleep) 
+
+            active_init_state = self.redis.get(
+                name='clock_sim_active_instance', packed=True
+            )
+            if active_init_state == 1:
+                break
+            if n_loop >= n_loops:
+                raise Exception(
+                    ' - ClockSim active instance can not initialise ?!?!'
+                )
+
+
+        return self.is_passive
+
+
+    # ---------------------------------------------------------------------------
+    def get_time_now_sec(self):
+        datetime_now = self.get_datetime_now()
+        time_now_sec = int(datetime_to_secs(datetime_now))
+
+        return time_now_sec
+
+    # ---------------------------------------------------------------------------
+    def get_is_night_now(self):
+        if self.check_passive():
+            return self.redis.get('clock_sim_is_night_now')
+
+        return self.is_night_now
+
+    # ---------------------------------------------------------------------------
+    def get_n_nights(self):
+        if self.check_passive():
+            return self.redis.get('clock_sim_n_nights')
+
+        return self.n_nights
+
+    # ---------------------------------------------------------------------------
+    def get_night_start_sec(self):
+        if self.check_passive():
+            return self.redis.get('clock_sim_night_start_sec')
+
+        return self.night_start_sec
+
+    # ---------------------------------------------------------------------------
+    def get_night_end_sec(self):
+        if self.check_passive():
+            return self.redis.get('clock_sim_night_end_sec')
+
+        return self.night_end_sec
+
+    # ---------------------------------------------------------------------------
+    def get_time_series_start_time_sec(self):
+        if self.check_passive():
+            start_time_sec = self.redis.get('clock_sim_time_series_start_time_sec')
+        else:
+            start_time_sec = self.time_series_start_time_sec
+
+        return int(start_time_sec)
+
+    # ---------------------------------------------------------------------------
+    def get_datetime_now(self):
+        if self.check_passive():
+            time_now_sec = self.redis.get('clock_sim_time_now_sec')
+            return secs_to_datetime(time_now_sec)
+
+        return self.datetime_now
+
+    # ---------------------------------------------------------------------------
+    def is_night_time_now(self):
+        time_now_sec = self.get_time_now_sec()
+        is_night = (
+            time_now_sec > self.get_night_start_sec()
+            and time_now_sec <= self.get_night_end_sec()
+        )
+        return is_night
+
+    # ---------------------------------------------------------------------------
+    def get_night_duration_sec(self):
+        return (self.get_night_end_sec() - self.get_night_start_sec())
+
+    # ---------------------------------------------------------------------------
+    def get_astro_night_start_sec(self):
+        # beginig of the astronomical night
+        return int(self.get_night_start_sec())
+
+    # ---------------------------------------------------------------------------
+    def get_sim_params(self):
+        if self.check_passive():
+            sim_params = self.redis.get(
+                name='clock_sim_sim_params',
+                packed=True,
+            )
+        else:
+            sim_params = self.sim_params
+        
+        return sim_params
+
+    # ---------------------------------------------------------------------------
+    def get_speed_factor(self):
+        sim_params = self.get_sim_params()
+        return sim_params['speed_factor']
+
+    # ---------------------------------------------------------------------------
+    def get_sec_since_midnight(self):
+        days_since_epoch = (self.datetime_now - self.datetime_epoch).days
+        sec_since_midnight = (
+            (self.datetime_now - self.datetime_epoch).seconds
+            + timedelta(days=days_since_epoch).total_seconds()
+        )
+        return sec_since_midnight
+
+    # ---------------------------------------------------------------------------
+    def loop_main(self):
+        self.log.info([['g', ' - starting ClockSim.loop_main ...']])
+
+        while self.can_loop():
+            sleep(self.loop_sleep_sec)
+            self.update_once()
+
+        self.log.info([['c', ' - ending ClockSim.loop_main ...']])
+
+        return
+
+    # ---------------------------------------------------------------------------
+    def loop_active_heartbeat(self):
+        self.log.info([['g', ' - starting ClockSim.loop_active_heartbeat ...']])
+
+        while self.can_loop():
+            sleep(self.loop_active_expire)
+            self.set_active_instance()
+
+        self.log.info([['c', ' - ending ClockSim.loop_active_heartbeat ...']])
+        
+        return
+
     # ---------------------------------------------------------------------------
     def pubsub_sim_params(self):
         self.log.info([['g', ' - starting ClockSim.pubsub_sim_params ...']])
@@ -366,7 +573,7 @@ class ClockSim(ThreadManager):
             sleep(0.1)
 
         # listen to changes on the channel and do stuff
-        while self.can_loop(self.interrupt_sig):
+        while self.can_loop():
             sleep(self.pubsub_sleep_sec)
             
             msg = self.redis.get_pubsub(pubsub_tag, packed=True)
@@ -381,41 +588,9 @@ class ClockSim(ThreadManager):
 
                 self.set_speed_factor(data_in=data_out)
 
+        self.log.info([['c', ' - ending ClockSim.pubsub_sim_params ...']])
+
         return
-
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
-    def get_night_duration_sec(self):
-        return self.night_duration_sec
-
-    def get_night_start_sec(self):
-        return self.night_start_sec
-
-    def get_night_end_sec(self):
-        return self.night_end_sec
-
-    # ---------------------------------------------------------------------------
-    # the global function for the current system time
-    # ---------------------------------------------------------------------------
-    def get_time_now_sec(self):
-        # print('----', self.datetime_now, datetime_to_secs(self.datetime_now))
-        return int(datetime_to_secs(self.datetime_now))
-
-    # ---------------------------------------------------------------------------
-    # beginig of the astronomical night
-    # ---------------------------------------------------------------------------
-    def get_astro_night_start_sec(self):
-        # print('-++-', self.night_start_sec)
-        return int(self.night_start_sec)
-
-    # ---------------------------------------------------------------------------
-    # time range for plotting (current night, or previous night if we are
-    # currently at daytime)
-    # ---------------------------------------------------------------------------
-    def get_time_series_start_time_sec(self):
-        # print('-??-', self.time_series_start_time_sec)
-        return int(self.time_series_start_time_sec)
 
 
 # ---------------------------------------------------------------------------
@@ -428,6 +603,7 @@ def get_clock_sim_data(parent):
         ['n_nights', int],
         ['night_start_sec', float],
         ['night_end_sec', float],
+        ['time_series_start_time_sec', float],
     ]
     for key in red_keys:
         parent.redis.pipe.get('clock_sim_' + key[0])
@@ -444,3 +620,4 @@ def get_clock_sim_data(parent):
                 for i in range(len(red_keys)))
 
     return data
+
