@@ -101,7 +101,7 @@ class WeatherMonitoring(BaseWidget):
                     self.redis.pipe.z_get(
                         'inst_health;' + self.tel_ids[index] + ';' + key
                     )
-            data = self.redis.pipe.execute(packed_score=True)
+            data = self.redis.pipe.execute()
             n_ele = sum([len(v) for k, v in keys_now.items()])
             if len(data) != n_ele:
                 print keys_now
@@ -127,8 +127,7 @@ class WeatherMonitoring(BaseWidget):
                                 'y': x[0]['data']['value'],
                             })
                     data_out[index].append({
-                        'id':
-                        self.tel_ids[index] + ';' + key,
+                        'id': self.tel_ids[index] + ';' + key,
                         'data': innerData
                     })
 

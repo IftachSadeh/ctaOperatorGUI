@@ -10,20 +10,13 @@ from socketio import socketio_manage
 from ctaGuiUtils.py.LogParser import LogParser
 # base-class for all widgets which use sockets
 from ctaGuiFront.py.utils.SocketManager import SocketManager
-# 
+#
 from ctaGuiFront.py.utils.security import USERS, check_password
 
 
-
-
-
-# ---------------------------------------------------------------------------
-#
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------
 class ViewManager():
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def __init__(self, base_config, *args, **kwargs):
         self.log = LogParser(base_config=base_config, title=__name__)
         self.log.info([['y', " - ViewManager - "], ['g', base_config.site_type]])
@@ -42,8 +35,8 @@ class ViewManager():
     # socketio_service
     # ------------------------------------------------------------------
     def socket_view(self, request):
-        print('--+--'*30)
-        
+        print('--+--' * 30)
+
         socks = dict()
         socks["/" + "index"] = SocketManager
         socks["/" + "view_refresh_all"] = SocketManager
@@ -53,26 +46,22 @@ class ViewManager():
             if not ('/' + widget_name) in socks:
                 socks['/' + widget_name] = SocketManager
 
-        print('-=-'*30)
+        print('-=-' * 30)
         print(list(request.environ.keys()))
-        print('--+--'*30)
+        print('--+--' * 30)
         # print(request.environ)
         # print(request.environ['socketio'])
         # socketio_manage(request.environ, socks, request=request)
 
-        print('----'*30)
+        print('----' * 30)
 
         return Response('')
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def get_display_user_id(self, request):
         user_id = request.authenticated_userid
         return ('' if user_id is None else user_id)
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def get_display_user_group(self, request):
         user_group = ''

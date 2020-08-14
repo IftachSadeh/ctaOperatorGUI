@@ -117,7 +117,7 @@ class CommentSched(BaseWidget):
     def get_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_events")
-        redis_data = self.redis.pipe.execute(packed=True)
+        redis_data = self.redis.pipe.execute()
 
         CommentSched.external_events = redis_data
 
@@ -126,7 +126,7 @@ class CommentSched(BaseWidget):
     def get_clock_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_clock_events")
-        redis_data = self.redis.pipe.execute(packed=True)
+        redis_data = self.redis.pipe.execute()
 
         CommentSched.external_clock_events = redis_data
 
@@ -156,7 +156,7 @@ class CommentSched(BaseWidget):
             for key in keys_now:
                 self.redis.pipe.get('obs_block_ids_' + key)
 
-            data = self.redis.pipe.execute(packed=True)
+            data = self.redis.pipe.execute()
             obs_block_ids = sum(data, [])  # flatten the list of lists
 
             self.redis.pipe.reset()
@@ -164,7 +164,7 @@ class CommentSched(BaseWidget):
                 self.redis.pipe.get(obs_block_id)
 
             key = keys_now[0]
-            blocks = self.redis.pipe.execute(packed=True)
+            blocks = self.redis.pipe.execute()
             CommentSched.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['start_time_sec'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['start_time_sec'],"%Y-%m-%d %H:%M:%S")).total_seconds())

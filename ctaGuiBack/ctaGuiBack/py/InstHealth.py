@@ -12,11 +12,15 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 
 
 # ------------------------------------------------------------------
-#
-# ------------------------------------------------------------------
 class InstHealth(ServiceManager):
+    """instrument health simulation class, simulating changes to the metrics of instruments
+
+       Only a single active instance is allowed to exist
+    """
+
     lock = Lock()
 
+    # ------------------------------------------------------------------
     def __init__(self, base_config, service_name, interrupt_sig):
         self.class_name = self.__class__.__name__
         super().__init__(class_prefix=self.class_name)
@@ -70,16 +74,14 @@ class InstHealth(ServiceManager):
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup_threads(self):
-        
+
         self.add_thread(target=self.loop_main)
         self.add_thread(target=self.loop_active_heartbeat)
-        
+
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def init(self):
         # self.log.info([['g', ' - inst_health.init() ...']])
@@ -102,9 +104,6 @@ class InstHealth(ServiceManager):
 
             # self.redPipe.hmset('inst_health_s0'+str(id_now), self.inst_health_s0[id_now])
 
-        # ------------------------------------------------------------------
-        #
-        # ------------------------------------------------------------------
         self.inst_health_sub = self.inst_data.get_tel_healths()
 
         # a flat dict with references to each level of the original dict
@@ -130,8 +129,6 @@ class InstHealth(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def set_tel_health_s1(self, id_now):
         self.inst_health_s1[id_now] = {
             'id':
@@ -153,8 +150,6 @@ class InstHealth(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def rand_once(self, rnd_seed=-1, update_frac=None):
         ids = self.rand_s0(rnd_seed=rnd_seed, update_frac=update_frac)
         self.rand_s1(tel_id_in=ids, rnd_seed=rnd_seed)
@@ -162,9 +157,6 @@ class InstHealth(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-
     def rand_s0(self, rnd_seed=-1, update_frac=None):
         if rnd_seed < 0:
             rnd_seed = random.randint(0, 100000)
@@ -232,9 +224,6 @@ class InstHealth(ServiceManager):
         return ids
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-
     def rand_s1(self, tel_id_in=None, rnd_seed=-1):
         rnd_props = [
             'camera',
@@ -308,32 +297,19 @@ class InstHealth(ServiceManager):
                             'time_sec': time_now_sec,
                             'value': val['data']['val'],
                         },
-                        packed_score=True,
                         clip_score=time_min
                     )
 
             self.redis.pipe.execute()
 
-        # # self.redis.z_get('inst_health;Lx03;camera_1', packed_score=True)
-        # data = self.redis.z_get('inst_health;Lx03;camera_1', packed_score=True)
+        # # self.redis.z_get('inst_health;Lx03;camera_1')
+        # data = self.redis.z_get('inst_health;Lx03;camera_1')
         # print('----------->', data)
-        # return
-        # # self.redis.pipe.z_get('inst_health;Lx03;camera_1')
-        # # data = self.redis.pipe.execute(packed_score=True)
-        # print('--->>> 0  ', data )
-        # print('--->>> 0  ', data[0] )
-        # print('--->>> 0  ', data[0][0] )
-        # print('--->>> 0  ', data[0][0][0]['data'] )
-        # print('--->>> 0  ', data[0][0][1] )
-        # # print('--->>> 1  ', data[0][1] )
-        # # print('--->>> 1  ', data[0][2] )
+        # raise Exception('aaaaa aaaaaaaaaa')
 
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-
     def loop_main(self):
         self.log.info([['g', ' - starting InstHealth.loop_main ...']])
         sleep(0.1)

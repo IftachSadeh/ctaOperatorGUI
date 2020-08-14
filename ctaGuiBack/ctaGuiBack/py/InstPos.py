@@ -8,10 +8,13 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 
 
 class InstPos(ServiceManager):
+    """telescope pointing-position simulation class, simulating changes of pointing
+
+       Only a single active instance is allowed to exist
+    """
+
     lock = Lock()
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def __init__(self, base_config, service_name, interrupt_sig):
         self.class_name = self.__class__.__name__
@@ -35,8 +38,6 @@ class InstPos(ServiceManager):
             name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
 
-        # ------------------------------------------------------------------
-        #
         # ------------------------------------------------------------------
         rnd_seed = 10989152934
         self.rnd_gen = Random(rnd_seed)
@@ -62,7 +63,7 @@ class InstPos(ServiceManager):
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup_threads(self):
 
         self.add_thread(target=self.loop_main)
@@ -70,8 +71,6 @@ class InstPos(ServiceManager):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def init(self):
         # self.log.info([['g', ' - InstPos.init() ...']])
@@ -82,24 +81,20 @@ class InstPos(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def update_inst_pos(self):
         min_delta_pos_sqr = pow(0.05, 2)
         frac_delta_pos = 0.25
 
         inst_pos_in = dict()
         if self.redis.exists('inst_pos'):
-            inst_pos_in = self.redis.h_get_all(name='inst_pos', packed=True)
+            inst_pos_in = self.redis.h_get_all(name='inst_pos')
 
-        obs_block_ids = self.redis.get(
-            name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
-        )
+        obs_block_ids = self.redis.get(name=('obs_block_ids_' + 'run'), default_val=[])
 
         for obs_block_id in obs_block_ids:
             self.redis.pipe.get(obs_block_id)
 
-        blocks = self.redis.pipe.execute(packed=True)
+        blocks = self.redis.pipe.execute()
 
         tel_point_pos = dict()
         for n_block in range(len(blocks)):
@@ -150,16 +145,12 @@ class InstPos(ServiceManager):
                     + pos_dif[1] * rnd_scale * self.rnd_gen.random() * frac_delta_pos
                 ]
 
-            self.redis.pipe.h_set(
-                name='inst_pos', key=id_now, data=inst_pos_new, packed=True
-            )
+            self.redis.pipe.h_set(name='inst_pos', key=id_now, data=inst_pos_new)
 
         self.redis.pipe.execute()
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def loop_main(self):
         self.log.info([['g', ' - starting InstPos.loop_main ...']])

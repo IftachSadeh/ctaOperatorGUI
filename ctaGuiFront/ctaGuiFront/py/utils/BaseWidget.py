@@ -1,7 +1,7 @@
-try: 
-    from gevent.coros import BoundedSemaphore 
-except: 
-    from gevent.lock import BoundedSemaphore 
+try:
+    from gevent.coros import BoundedSemaphore
+except:
+    from gevent.lock import BoundedSemaphore
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
 
@@ -57,7 +57,6 @@ class BaseWidget():
             wgt = self.redis.h_get(
                 name='all_widgets',
                 key=self.widget_id,
-                packed=True,
             )
             if self.n_icon == -1:
                 self.n_icon = wgt['n_icon']

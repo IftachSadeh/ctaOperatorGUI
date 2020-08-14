@@ -50,7 +50,6 @@ class ObsBlockControl(BaseWidget):
             wgt = self.redis.h_get(
                 name='all_widgets',
                 key=self.widget_id,
-                packed=True,
             )
             self.widget_state = wgt["widget_state"]
             self.widget_state["focus_id"] = ""
@@ -117,7 +116,7 @@ class ObsBlockControl(BaseWidget):
             for key in keys_now:
                 self.redis.pipe.get('obs_block_ids_' + key)
 
-            data = self.redis.pipe.execute(packed=True)
+            data = self.redis.pipe.execute()
             obs_block_ids = sum(data, [])  # flatten the list of lists
 
             self.redis.pipe.reset()
@@ -125,7 +124,7 @@ class ObsBlockControl(BaseWidget):
                 self.redis.pipe.get(obs_block_id)
 
             key = keys_now[0]
-            blocks = self.redis.pipe.execute(packed=True)
+            blocks = self.redis.pipe.execute()
             ObsBlockControl.blocks[key] = sorted(
                 blocks,
                 cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])

@@ -338,7 +338,7 @@ class PlotsDash(BaseWidget):
         for index in range(len(self.tel_ids)):
             for key in self.tel_key:
                 self.redis.pipe.z_get('inst_health;' + self.tel_ids[index] + ';' + key)
-            data = self.redis.pipe.execute(packed_score=True)
+            data = self.redis.pipe.execute()
             n_ele_now = 0
             for key in self.tel_key:
                 data_now = data[n_ele_now]
@@ -350,8 +350,7 @@ class PlotsDash(BaseWidget):
                             'y': x[0]['data']['value'],
                         })
                 inst_health.append({
-                    'id':
-                    self.tel_ids[index] + '-' + key,
+                    'id': self.tel_ids[index] + '-' + key,
                     'keys': [self.tel_ids[index], key],
                     'data': innerData
                 })
@@ -382,7 +381,7 @@ class PlotsDash(BaseWidget):
         data = {}
         for key in keys_now:
             self.redis.pipe.z_get('inst_health;' + id + ';' + key)
-            data[key] = self.redis.pipe.execute(packed_score=True)
+            data[key] = self.redis.pipe.execute()
         # n_ele = sum([len(v) for v in keys_now])
         # if len(data) != n_ele:
         #     print keys_now
@@ -409,7 +408,7 @@ class PlotsDash(BaseWidget):
     def get_sub_arr_grp(self):
         #print 'get_sub_arr_grp'
         with PlotsDash.lock:
-            sub_arrs = self.redis.get(name="sub_arrs", packed=True, default_val=[])
+            sub_arrs = self.redis.get(name="sub_arrs", default_val=[])
             self.sub_arr_grp = {"id": "sub_arr", "children": sub_arrs}
 
         return

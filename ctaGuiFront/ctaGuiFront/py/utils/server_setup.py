@@ -21,13 +21,12 @@ def setup_app():
     try:
         view_manager = ViewManager(base_config=base_config)
 
-        config = Configurator(
-            settings=settings,
-            root_factory=RootFactory
-        )
+        config = Configurator(settings=settings, root_factory=RootFactory)
 
         authn_policy = AuthTktAuthenticationPolicy(
-            'sosecret', callback=groupfinder, hashalg='sha512',
+            'sosecret',
+            callback=groupfinder,
+            hashalg='sha512',
         )
         authz_policy = ACLAuthorizationPolicy()
         config.set_authentication_policy(authn_policy)
@@ -141,10 +140,6 @@ def setup_app():
     return wsgi_app
 
 
-
-
-
-
 # ------------------------------------------------------------------
 try:
     app_name = 'ctaGuiFront'
@@ -174,11 +169,17 @@ try:
     is_HMI_dev = settings['is_HMI_dev']
     # do we flush redis on startup
     do_flush_redis = settings['do_flush_redis']
+    # all allowed view names
+    all_widgets = settings['all_widgets']
+    # all allowed widget types (class names)
+    allowed_widget_types = settings['allowed_widget_types']
 
     websocket_postfix = '/websockets'
     websocket_route = {
-        'server': '/' + app_prefix + websocket_postfix,
-        'client': 'ws://' + app_host + ':' + str(app_port) + '/' + app_prefix + websocket_postfix,
+        'server':
+        '/' + app_prefix + websocket_postfix,
+        'client':
+        'ws://' + app_host + ':' + str(app_port) + '/' + app_prefix + websocket_postfix,
     }
 
     # ------------------------------------------------------------------
@@ -195,6 +196,8 @@ try:
         allow_panel_sync=allow_panel_sync,
         is_HMI_dev=is_HMI_dev,
         is_simulation=is_simulation,
+        all_widgets=all_widgets,
+        allowed_widget_types=allowed_widget_types,
     )
 
     log = LogParser(
@@ -207,7 +210,7 @@ try:
     log.info([['c', ' - has_acs = '], [('g' if has_acs else 'r'), has_acs]])
 
     settings_log = [['g', ' - server settings:\n']]
-    for k,v in settings.items():
+    for k, v in settings.items():
         settings_log += [['b', str(k)], [': ']]
         settings_log += [['c', str(v)], [',  ']]
     log.info(settings_log)
@@ -222,9 +225,8 @@ try:
     # set the list of telescopes for this particular site and attach it to base_config
     InstData(base_config=base_config)
 
-    # 
+    #
     setattr(AsyncSocketManager, 'base_config', base_config)
-
 
     # ------------------------------------------------------------------
     wsgi_app = setup_app()
@@ -233,4 +235,3 @@ try:
 except Exception as e:
     log.info([['c', e]])
     raise e
-

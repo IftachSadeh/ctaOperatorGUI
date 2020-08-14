@@ -76,11 +76,9 @@ class SubArrGrp(BaseWidget):
                 n_tries += 1
                 sleep(0.5)
 
-        sub_arrs = self.redis.get(name="sub_arrs", packed=True, default_val=[])
-        obs_block_ids = self.redis.get(
-            name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
-        )
-        inst_pos = self.redis.h_get_all(name="inst_pos", packed=True)
+        sub_arrs = self.redis.get(name="sub_arrs", default_val=[])
+        obs_block_ids = self.redis.get(name=('obs_block_ids_' + 'run'), default_val=[])
+        inst_pos = self.redis.h_get_all(name="inst_pos")
 
         data = {
             "tel": [],
@@ -95,7 +93,7 @@ class SubArrGrp(BaseWidget):
         self.redis.pipe.reset()
         for obs_block_id in obs_block_ids:
             self.redis.pipe.get(obs_block_id)
-        blocks = self.redis.pipe.execute(packed=True)
+        blocks = self.redis.pipe.execute()
 
         #
         all_tel_ids = copy.deepcopy(self.tel_ids)

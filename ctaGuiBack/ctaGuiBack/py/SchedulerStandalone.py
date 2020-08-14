@@ -54,12 +54,9 @@ class SchedulerStandalone(ServiceManager):
         )
 
         self.debug = not True
-        self.expire = 86400  # one day
+        self.expire = 86400 * 2  # two days
         # self.expire = 5
 
-        # ------------------------------------------------------------------
-        #
-        # ------------------------------------------------------------------
         self.max_n_obs_block = 4 if self.site_type == 'N' else 7
         self.max_n_obs_block = min(self.max_n_obs_block, floor(len(self.tel_ids) / 4))
 
@@ -84,46 +81,40 @@ class SchedulerStandalone(ServiceManager):
         self.zen_min_max_tel = [0, 70]
         self.zen_min_max_pnt = [0, 20]
 
-        self.phases_exe = dict()
-        self.phases_exe['start'] = [
-            'run_config_mount', 'run_config_camera', 'run_config_DAQ', 'run_config_mirror'
-        ]
-        self.phases_exe['during'] = ['run_take_data']
-        self.phases_exe['finish'] = [
-            'run_finish_mount', 'run_finish_camera', 'run_finish_cleanup'
-        ]
+        self.phases_exe = {
+            'start': [
+                'run_config_mount', 'run_config_camera', 'run_config_DAQ',
+                'run_config_mirror'
+            ],
+            'during': ['run_take_data'],
+            'finish': ['run_finish_mount', 'run_finish_camera', 'run_finish_cleanup'],
+        }
 
-        self.error_rnd_frac = dict()
-        self.error_rnd_frac['E1'] = 0.3
-        self.error_rnd_frac['E2'] = 0.4
-        self.error_rnd_frac['E3'] = 0.5
-        self.error_rnd_frac['E4'] = 0.6
-        self.error_rnd_frac['E5'] = 0.7
-        self.error_rnd_frac['E6'] = 0.8
-        self.error_rnd_frac['E7'] = 0.9
-        self.error_rnd_frac['E8'] = 1
+        self.error_rnd_frac = {
+            'E1': 0.3,
+            'E2': 0.4,
+            'E3': 0.5,
+            'E4': 0.6,
+            'E5': 0.7,
+            'E6': 0.8,
+            'E7': 0.9,
+            'E8': 1,
+        }
 
-        self.phase_rnd_frac = dict()
-        self.phase_rnd_frac['start'] = 0.29
-        self.phase_rnd_frac['finish'] = 0.1
-        self.phase_rnd_frac['cancel'] = 0.06
-        self.phase_rnd_frac['fail'] = 0.1
+        self.phase_rnd_frac = {
+            'start': 0.29,
+            'finish': 0.1,
+            'cancel': 0.06,
+            'fail': 0.1,
+        }
 
         # 1800 = 30 minutes
         self.obs_block_sec = 1800
-
-        # self.time_of_night.reset_night()
-        # # self.duration_scale = self.time_of_night.get_timescale() #  0.035 -> one
-        # # minute instead of 30 for gui testing
-        # self.duration_night = self.time_of_night.get_total_time_seconds(
-        # )  # 28800 -> 8 hour night
-        # self.prev_reset_time = self.time_of_night.get_reset_time()
 
         self.n_init_cycle = -1
         self.n_nights = -1
 
         rnd_seed = get_rnd_seed()
-        # rnd_seed = 10987268332
         self.rnd_gen = Random(rnd_seed)
 
         self.external_clock_events = []
@@ -140,7 +131,7 @@ class SchedulerStandalone(ServiceManager):
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup_threads(self):
 
         self.add_thread(target=self.loop_main)
@@ -149,20 +140,13 @@ class SchedulerStandalone(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def init(self):
-        # self.log.info([['p', ' - SchedulerStandalone.init() ...']])
         debug_tmp = False
         # debug_tmp = True
 
         self.exe_phase = dict()
         self.all_obs_blocks = []
         self.external_events = []
-
-        # self.time_of_night.reset_night()
-        # self.prev_reset_time = self.time_of_night.get_reset_time()
-        # # start_time_sec = self.time_of_night.get_start_time_sec()
 
         self.n_nights = self.clock_sim.get_n_nights()
         night_start_sec = self.clock_sim.get_night_start_sec()
@@ -178,12 +162,6 @@ class SchedulerStandalone(ServiceManager):
 
         tot_sched_duration_sec = night_start_sec
         max_block_duration_sec = night_end_sec - self.obs_block_sec
-        # tot_sched_duration_sec = 0
-        # max_block_duration_sec = self.duration_night - self.obs_block_sec
-
-        # target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
-        # for obs_block_id in obs_block_ids:
-        #     self.redis.pipe.get(obs_block_id)
 
         while True:
             can_break = not ((tot_sched_duration_sec < max_block_duration_sec) and
@@ -200,16 +178,14 @@ class SchedulerStandalone(ServiceManager):
             tel_ids = copy.deepcopy(self.tel_ids)
             n_tels = len(tel_ids)
 
-            # ------------------------------------------------------------------
             # choose number of Scheduling blocks for this part of night (while loop)
-            # ------------------------------------------------------------------
             n_sched_blocks = min(
                 floor(n_tels / self.min_n_tel_block), self.max_n_sched_block
             )
             n_sched_blocks = max(
                 self.rnd_gen.randint(1, n_sched_blocks), self.min_n_sched_block
             )
-            # ---------------------------------------------------------------------
+
             if debug_tmp:
                 precent = (tot_sched_duration_sec - night_start_sec) / night_duration_sec
                 print('--------------------------------------------------------')
@@ -222,9 +198,6 @@ class SchedulerStandalone(ServiceManager):
 
             sched_block_duration_sec = []
 
-            # ------------------------------------------------------------------
-            #
-            # ------------------------------------------------------------------
             for n_sched_block_now in range(n_sched_blocks):
                 sched_block_id = 'sched_block_' + base_name + str(n_sched_block_now)
 
@@ -288,8 +261,9 @@ class SchedulerStandalone(ServiceManager):
                     if is_cycle_done:
                         if debug_tmp:
                             print(
-                                ' - is_cycle_done - n_obs_now / start_time_sec / duration:',
-                                n_obs_now, block_duration_sec, obs_block_sec
+                                ' - is_cycle_done - ',
+                                'n_obs_now / start_time_sec / duration:', n_obs_now,
+                                block_duration_sec, obs_block_sec
                             )
                         break
 
@@ -322,12 +296,12 @@ class SchedulerStandalone(ServiceManager):
                     time['end'] = time['start'] + time['duration']
 
                     exe_state = {'state': 'wait', 'can_run': True}
+
                     metadata = {
                         'n_sched': n_sched_blocks,
                         'n_obs': n_obs_now,
                         'block_name': str(n_sched_blocks) + ' (' + str(n_obs_now) + ')'
                     }
-                    # min int(len(filter(lambda x: 'L' in x, sched_tel_ids)) / 3)
 
                     telescopes = {
                         'large': {
@@ -356,24 +330,22 @@ class SchedulerStandalone(ServiceManager):
                         }
                     }
 
-                    block = dict()
-                    block['sched_block_id'] = sched_block_id
-                    block['obs_block_id'] = obs_block_id
-                    block['time'] = time
-                    block['metadata'] = metadata
-                    block['timestamp'] = get_time('msec')
-                    block['telescopes'] = telescopes
-                    block['exe_state'] = exe_state
-                    block['run_phase'] = []
-                    block['targets'] = targets
-                    block['pointings'] = pointings
-                    block['tel_ids'] = sched_tel_ids
+                    block = {
+                        'sched_block_id': sched_block_id,
+                        'obs_block_id': obs_block_id,
+                        'time': time,
+                        'metadata': metadata,
+                        'timestamp': get_time('msec'),
+                        'telescopes': telescopes,
+                        'exe_state': exe_state,
+                        'run_phase': [],
+                        'targets': targets,
+                        'pointings': pointings,
+                        'tel_ids': sched_tel_ids,
+                    }
 
                     self.redis.pipe.set(
-                        name=block['obs_block_id'],
-                        data=block,
-                        expire=self.expire,
-                        packed=True
+                        name=block['obs_block_id'], data=block, expire=self.expire
                     )
 
                     self.all_obs_blocks.append(block)
@@ -383,17 +355,12 @@ class SchedulerStandalone(ServiceManager):
                 # list of duration of all sched blocks within this cycle
                 if tot_obs_block_duration_sec > 0:  # timedelta(seconds = 0):
                     sched_block_duration_sec += [tot_obs_block_duration_sec]
-            # ------------------------------------------------------------------
 
             # the maximal duration of all blocks within this cycle
             tot_sched_duration_sec += max(sched_block_duration_sec)
 
-        self.redis.pipe.set(
-            name='external_events', data=self.external_events, packed=True
-        )
-        self.redis.pipe.set(
-            name='external_clock_events', data=self.external_clock_events, packed=True
-        )
+        self.redis.pipe.set(name='external_events', data=self.external_events)
+        self.redis.pipe.set(name='external_clock_events', data=self.external_clock_events)
 
         self.redis.pipe.execute()
 
@@ -402,10 +369,10 @@ class SchedulerStandalone(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    # temporary hardcoded dict......
-    # ------------------------------------------------------------------
-
     def get_obs_block_template(self):
+        """temporary hardcoded dict......
+        """
+
         # generated with:
         #   print jsonAcs.encode(jsonAcs.classFactory.defaultValues[sb.ObservationBlock])
 
@@ -478,23 +445,24 @@ class SchedulerStandalone(ServiceManager):
         return template
 
     # ------------------------------------------------------------------
-    # move one from wait to run
-    # ------------------------------------------------------------------
-
     def wait_to_run(self):
+        """move one from wait to run
+        """
+
         # time_now_sec = self.time_of_night.get_current_time()
         time_now_sec = self.clock_sim.get_time_now_sec()
 
         # move to run state
-        # ------------------------------------------------------------------
         wait_blocks = [
             x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'wait')
         ]
 
         has_change = False
         for block in wait_blocks:
-            if time_now_sec < block['time']['start'] - (self.loop_sleep_sec
-                                                        * self.loop_act_rate):
+            time_comp = (
+                block['time']['start'] - (self.loop_sleep_sec * self.loop_act_rate)
+            )
+            if time_now_sec < time_comp:
                 # datetime.strptime(block['start_time_sec'], '%Y-%m-%d %H:%M:%S'):
                 # - deltatime((self.loop_sleep_sec * self.loop_act_rate))
                 continue
@@ -506,15 +474,13 @@ class SchedulerStandalone(ServiceManager):
 
             has_change = True
             self.redis.pipe.set(
-                name=block['obs_block_id'], data=block, expire=self.expire, packed=True
+                name=block['obs_block_id'], data=block, expire=self.expire
             )
 
         if has_change:
             self.redis.pipe.execute()
 
-            # ------------------------------------------------------------------
             # check for blocks which cant begin as their time is already past
-            # ------------------------------------------------------------------
             wait_blocks = [
                 x for x in self.all_obs_blocks if x['exe_state']['state'] == 'wait'
             ]
@@ -553,7 +519,6 @@ class SchedulerStandalone(ServiceManager):
                         name=block['obs_block_id'],
                         data=block,
                         expire=self.expire,
-                        packed=True
                     )
 
             if has_change:
@@ -562,24 +527,11 @@ class SchedulerStandalone(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    # progress run phases
-    # ------------------------------------------------------------------
     def run_phases(self):
-        # time_now_sec = self.time_of_night.get_current_time()
+        """progress run phases
+        """
+
         time_now_sec = self.clock_sim.get_time_now_sec()
-
-        # runs = [ x for x in self.all_obs_blocks if self.exe_phase[x['obs_block_id']] != '' ]
-        # print [ x['obs_block_id'] for x in runs]
-        # if len(runs) == 0:
-        #   return
-
-        # # runs = [ x for x in self.all_obs_blocks if x['exe_state']['state'] == 'run' ]
-        # # n_done = 0
-        # # for block in runs:
-        # #   if self.exe_phase[block['obs_block_id']] == '':
-        # #     n_done += 1
-        # # if n_done == len(runs):
-        # #   return
 
         runs = [x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'run')]
 
@@ -628,7 +580,7 @@ class SchedulerStandalone(ServiceManager):
 
             has_change = True
             self.redis.pipe.set(
-                name=block['obs_block_id'], data=block, expire=self.expire, packed=True
+                name=block['obs_block_id'], data=block, expire=self.expire
             )
 
         if has_change:
@@ -637,9 +589,10 @@ class SchedulerStandalone(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    # move one from run to done
-    # ------------------------------------------------------------------
     def run_to_done(self):
+        """move one from run to done
+        """
+
         # time_now_sec = self.time_of_night.get_current_time()
         time_now_sec = self.clock_sim.get_time_now_sec()
 
@@ -683,7 +636,7 @@ class SchedulerStandalone(ServiceManager):
 
             has_change = True
             self.redis.pipe.set(
-                name=block['obs_block_id'], data=block, expire=self.expire, packed=True
+                name=block['obs_block_id'], data=block, expire=self.expire
             )
 
             self.exe_phase[block['obs_block_id']] = ''
@@ -694,9 +647,10 @@ class SchedulerStandalone(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    # update the exeStatus lists in redis
-    # ------------------------------------------------------------------
     def update_exe_statuses(self):
+        """update the exeStatus lists in redis
+        """
+
         blocks_run = []
         obs_block_ids = {'wait': [], 'run': [], 'done': [], 'cancel': [], 'fail': []}
 
@@ -711,7 +665,7 @@ class SchedulerStandalone(ServiceManager):
                     blocks_run += [block]
 
         for key, val in obs_block_ids.items():
-            self.redis.pipe.set(name='obs_block_ids_' + key, data=val, packed=True)
+            self.redis.pipe.set(name='obs_block_ids_' + key, data=val)
 
         self.redis.pipe.execute()
 
@@ -720,17 +674,15 @@ class SchedulerStandalone(ServiceManager):
         return
 
     # # ------------------------------------------------------------------
-    # #
-    # # ------------------------------------------------------------------
     # def update_sub_arrs(self, blocks=None):
     #     if blocks is None:
     #         obs_block_ids = self.redis.get(
-    #             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+    #             name=('obs_block_ids_' + 'run'), default_val=[]
     #         )
     #         for obs_block_id in obs_block_ids:
     #             self.redis.pipe.get(obs_block_id)
 
-    #         blocks = self.redis.pipe.execute(packed=True)
+    #         blocks = self.redis.pipe.execute()
 
     #     #
     #     sub_arrs = []
@@ -769,13 +721,11 @@ class SchedulerStandalone(ServiceManager):
     #     # for now - a simple/stupid solution, where we write the sub-arrays and publish each
     #     # time, even if the content is actually the same ...
     #     # ------------------------------------------------------------------
-    #     self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
+    #     self.redis.set(name='sub_arrs', data=sub_arrs)
     #     self.redis.publish(channel='sub_arrs')
 
     #     return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def external_add_new_redis_blocks(self):
         if not self.redis.exists('obs_block_update'):
@@ -784,26 +734,26 @@ class SchedulerStandalone(ServiceManager):
         # for key in self.all_obs_blocks[0]:
         #     self.log.info([['g', key, self.all_obs_blocks[0][key]]])
         self.redis.pipe.get('obs_block_update')
-        obs_block_update = self.redis.pipe.execute(packed=True)[0]
+        obs_block_update = self.redis.pipe.execute()[0]
         # self.log.info([['g', obs_block_update]])
         self.log.info([['g', len(obs_block_update), len(self.all_obs_blocks)]])
 
         total = 0
-        for i in range(len(obs_block_update)):
-            if self.redis.exists(obs_block_update[i]['obs_block_id']):
+        for n_block in range(len(obs_block_update)):
+            if self.redis.exists(obs_block_update[n_block]['obs_block_id']):
                 # for x in self.all_obs_blocks:
-                #     if x['obs_block_id'] == obs_block_update[i]['obs_block_id']:
+                #     if x['obs_block_id'] == obs_block_update[n_block]['obs_block_id']:
                 #         current = [x][0]
 
                 current = [
                     x for x in self.all_obs_blocks
-                    if x['obs_block_id'] == obs_block_update[i]['obs_block_id']
+                    if x['obs_block_id'] == obs_block_update[n_block]['obs_block_id']
                 ]
                 if len(current) == 0:
-                    current = obs_block_update[i]
+                    current = obs_block_update[n_block]
                     self.all_obs_blocks.append(current)
-                    # for key in obs_block_update[i]:
-                    #     self.log.info([['g', key, obs_block_update[i][key]]])
+                    # for key in obs_block_update[n_block]:
+                    #     self.log.info([['g', key, obs_block_update[n_block][key]]])
                 else:
                     current = current[0]
                 if current['exe_state']['state'] not in ['wait', 'run']:
@@ -812,20 +762,18 @@ class SchedulerStandalone(ServiceManager):
                 total += 1
 
                 self.redis.pipe.set(
-                    name=obs_block_update[i]['obs_block_id'],
-                    data=obs_block_update[i],
+                    name=obs_block_update[n_block]['obs_block_id'],
+                    data=obs_block_update[n_block],
                     expire=self.expire,
-                    packed=True
                 )
-                current = obs_block_update[i]
+                current = obs_block_update[n_block]
 
             else:
-                self.all_obs_blocks.append(obs_block_update[i])
+                self.all_obs_blocks.append(obs_block_update[n_block])
                 self.redis.pipe.set(
-                    name=obs_block_update[i]['obs_block_id'],
-                    data=obs_block_update[i],
+                    name=obs_block_update[n_block]['obs_block_id'],
+                    data=obs_block_update[n_block],
                     expire=self.expire,
-                    packed=True
                 )
 
         self.update_exe_statuses()
@@ -834,14 +782,12 @@ class SchedulerStandalone(ServiceManager):
         #     self.log.info([['g', block['metadata']['block_name'] + ' ' + exe_state]])
 
         self.redis.pipe.delete('obs_block_update')
-        self.redis.pipe.execute(packed=True)
+        self.redis.pipe.execute()
 
         self.log.info([['g', total, len(obs_block_update), len(self.all_obs_blocks)]])
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def loop_main(self):
         self.log.info([['g', ' - starting SchedulerStandalone.loop_main ...']])
@@ -867,8 +813,6 @@ class SchedulerStandalone(ServiceManager):
                         x for x in self.all_obs_blocks
                         if (x['exe_state']['state'] == 'run')
                     ]
-                    # print('wait_blocks',wait_blocks)
-                    # print('runs',runs)
 
                     if len(wait_blocks) + len(runs) == 0:
                         self.init()
@@ -883,5 +827,3 @@ class SchedulerStandalone(ServiceManager):
         self.log.info([['c', ' - ending SchedulerStandalone.loop_main ...']])
 
         return
-
-

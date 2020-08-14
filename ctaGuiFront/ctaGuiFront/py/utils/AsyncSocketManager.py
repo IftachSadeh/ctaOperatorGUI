@@ -530,45 +530,45 @@ class AsyncSocketManager:
             )
 
             # register the user_name if needed (this list is never cleaned up)
-            user_ids = self.redis.l_get('user_ids', packed=True)
+            user_ids = self.redis.l_get('user_ids')
             if self.user_id not in user_ids:
                 self.redis.r_push(
-                    name='user_ids', data=self.user_id, packed=True
+                    name='user_ids', data=self.user_id
                 )
 
             # register the sess_id in all lists
             # heartbeat should be first to avoid cleanup racing conditions!
             self.redis.set(
-                name='server_sess_heartbeat', expire=(int(self.sess_expire) * 10), packed=True
+                name='server_sess_heartbeat', expire=(int(self.sess_expire) * 10)
             )
             self.redis.set(
-                name='server_sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10), packed=True,
+                name='server_sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10),
             )
 
             # global and local lists session ids
 
-            all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
+            all_sess_ids = self.redis.l_get('all_sess_ids')
             if self.sess_id not in all_sess_ids:
                 self.redis.r_push(
-                    name='all_sess_ids', data=self.sess_id, packed=True
+                    name='all_sess_ids', data=self.sess_id
                 )
 
-            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
+            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
             if self.sess_id not in all_sess_ids:
                 self.redis.r_push(
-                    name=self.server_name+';all_sess_ids', data=self.sess_id, packed=True
+                    name=self.server_name+';all_sess_ids', data=self.sess_id
                 )
 
             if not self.redis.h_exists(name='sync_groups', key=self.user_id):
                 self.redis.h_set(
-                    name='sync_groups', key=self.user_id, data=[], packed=True
+                    name='sync_groups', key=self.user_id, data=[]
                 )
 
             # list of all sessions for this user
-            all_user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=True)
+            all_user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
             if self.sess_id not in all_user_sess_ids:
                 self.redis.r_push(
-                    name='user_sess_ids;' + self.user_id, data=self.sess_id, packed=True
+                    name='user_sess_ids;' + self.user_id, data=self.sess_id
                 )
 
             self.init_common_loops()
@@ -600,20 +600,20 @@ class AsyncSocketManager:
 
             test_connection_sess = 0
             if test_connection_sess:
-                all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
+                all_sess_ids = self.redis.l_get('all_sess_ids')
                 print('all_sess_ids \t\t\t', all_sess_ids)
 
                 print('heartbeat \t\t\t', 'shared', '  -->  ', self.redis.exists('server_sess_heartbeat'))
                 for s in all_sess_ids:
                     print('heartbeat \t\t\t', s, '  -->  ', self.redis.exists('server_sess_heartbeat;' + s))
-                all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
+                all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
                 print('server_name;all_sess_ids \t', all_sess_ids)
 
-                user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=True)
+                user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
                 print('user_sess_ids \t\t\t', user_sess_ids)
 
                 sync_groups = self.redis.h_get(
-                    name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                    name='sync_groups', key=self.user_id, default_val=[]
                 )
                 print('sync_groups \t\t\t', sync_groups)
 
@@ -986,20 +986,20 @@ class AsyncSocketManager:
         test_connection_sess = 0
         if test_connection_sess:
             print('-'*70)
-            all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
+            all_sess_ids = self.redis.l_get('all_sess_ids')
             print('all_sess_ids \t\t', all_sess_ids)
 
             print('heartbeat \t\t\t', 'shared', '  -->  ', self.redis.exists('server_sess_heartbeat'))
             for s in all_sess_ids:
                 print('heartbeat \t\t', s, self.redis.exists('server_sess_heartbeat;' + s))
-            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
+            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
             print('server_name;all_sess_ids \t\t', all_sess_ids)
 
-            user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=True)
+            user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
             print('user_sess_ids \t\t', user_sess_ids)
 
             sync_groups = self.redis.h_get(
-                name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                name='sync_groups', key=self.user_id, default_val=[]
             )
             print('sync_groups \t\t', sync_groups)
             print('+'*70)
@@ -1080,20 +1080,20 @@ class AsyncSocketManager:
                     test_connection_sess = 0
                     if test_connection_sess:
                         print('-'*70)
-                        all_sess_ids = self.redis.l_get('all_sess_ids', packed=True)
+                        all_sess_ids = self.redis.l_get('all_sess_ids')
                         print('all_sess_ids \t\t', all_sess_ids)
 
                         print('heartbeat \t\t\t', 'shared', '  -->  ', self.redis.exists('server_sess_heartbeat'))
                         for s in all_sess_ids:
                             print('heartbeat \t\t', s, self.redis.exists('server_sess_heartbeat;' + s))
-                        all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids', packed=True)
+                        all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
                         print('server_name;all_sess_ids \t\t', all_sess_ids)
 
-                        user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id, packed=True)
+                        user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
                         print('user_sess_ids \t\t', user_sess_ids)
 
                         sync_groups = self.redis.h_get(
-                            name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                            name='sync_groups', key=self.user_id, default_val=[]
                         )
                         print('sync_groups \t\t', sync_groups)
                         print('+'*70)
@@ -1431,7 +1431,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #         # ------------------------------------------------------------------
     #         if not self.redis.h_exists(name='sync_groups', key=self.user_id):
     #             self.redis.h_set(
-    #                 name='sync_groups', key=self.user_id, data=[], packed=True
+    #                 name='sync_groups', key=self.user_id, data=[]
     #             )
 
     #         # ------------------------------------------------------------------
@@ -1568,7 +1568,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                             break
 
                         all_widgets = self.redis.h_m_get(
-                            name='all_widgets', key=widget_ids, packed=True, filter=True
+                            name='all_widgets', key=widget_ids, filter=True
                         )
                         n_icons = [x['n_icon'] for x in all_widgets]
 
@@ -1588,7 +1588,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
                 # register the new widget
                 self.redis.h_set(
-                    name='all_widgets', key=widget_id, data=widget_now, packed=True
+                    name='all_widgets', key=widget_id, data=widget_now
                 )
                 self.redis.r_push(name='user_widgets;' + self.user_id, data=widget_id)
                 self.redis.r_push(name='sess_widgets;' + self.sess_id, data=widget_id)
@@ -1605,7 +1605,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
                 if n_sync_group == 0:
                     sync_groups = self.redis.h_get(
-                        name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                        name='sync_groups', key=self.user_id, default_val=[]
                     )
 
                     # ------------------------------------------------------------------
@@ -1641,7 +1641,6 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                         name='sync_groups',
                         key=self.user_id,
                         data=sync_groups,
-                        packed=True
                     )
 
             if n_sync_group != -1:
@@ -1679,12 +1678,10 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #     return allow
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def update_sync_group(self):
         widget_ids = []
         with __old_SocketManager__.lock:
-            all_widgets = self.redis.h_get_all(name='all_widgets', packed=True)
+            all_widgets = self.redis.h_get_all(name='all_widgets')
             for widget_id, widget_now in all_widgets.items():
                 if widget_now['n_icon'] == -1 and widget_id in __old_SocketManager__.widget_inits:
                     widget_ids.append(widget_id)
@@ -1694,8 +1691,6 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def on_sync_state_send(self, data_in):
         if not self.check_panel_sync():
@@ -1711,7 +1706,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                 return
 
             sync_groups = self.redis.h_get(
-                name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                name='sync_groups', key=self.user_id, default_val=[]
             )
 
             for sync_group in sync_groups:
@@ -1732,7 +1727,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                             all_sync_ids.append(id_now)
 
             self.redis.h_set(
-                name='sync_groups', key=self.user_id, data=sync_groups, packed=True
+                name='sync_groups', key=self.user_id, data=sync_groups
             )
         data = {
             'widget_id': data_in['widget_id'],
@@ -1745,8 +1740,6 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def on_set_active_widget(self, data):
         active_widget = self.redis.h_get(
@@ -1796,8 +1789,6 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def add_widget_tread(self, opt_in=None):
         if 'is_group_asy_func' not in opt_in:
             opt_in['is_group_asy_func'] = True
@@ -1841,8 +1832,6 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def widget_asy_func_func(self, opt_in=None):
         widget = opt_in['widget']
@@ -1889,8 +1878,6 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def pubsub_socket_evt_widgets(self, asy_func_info):
         self.log.info([['y', ' - starting shared_asy_func('],
                        ['g', 'pubsub_socket_evt_widgets'], ['y', ')']])
@@ -1903,7 +1890,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
         while self.is_valid_asy_func(asy_func_info):
             sleep(0.1)
 
-            msg = self.redis.get_pubsub('socket_event_widgets', packed=True)
+            msg = self.redis.get_pubsub('socket_event_widgets')
             if msg is None:
                 continue
 
@@ -1969,12 +1956,10 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
             'widget_ids': widget_ids
         }
 
-        self.redis.publish(channel='socket_event_widgets', message=message, packed=True)
+        self.redis.publish(channel='socket_event_widgets', message=message)
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def socket_evt_session(self, widget_id='', event_name=None, data=None):
         data = {} if data is None else data
@@ -2120,7 +2105,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
             # remove the widgets which belong to this session
             widget_ids = self.redis.l_get('sess_widgets;' + self.sess_id)
             sync_groups = self.redis.h_get(
-                name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                name='sync_groups', key=self.user_id, default_val=[]
             )
 
             for widget_id in widget_ids:
@@ -2138,7 +2123,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                 self.clear_asy_func_group(widget_id)
 
             self.redis.h_set(
-                name='sync_groups', key=self.user_id, data=sync_groups, packed=True
+                name='sync_groups', key=self.user_id, data=sync_groups
             )
 
             # ------------------------------------------------------------------
@@ -2362,7 +2347,7 @@ class ClockSimDecorator():
 
     # ------------------------------------------------------------------
     async def ask_sim_clock_sim_params(self, data_in=None):
-        data = self.redis.get('clock_sim_sim_params', packed=True)
+        data = self.redis.get('clock_sim_sim_params')
         await self.socket_manager.emit_to_queue(event_name='get_sim_clock_sim_params', data=data,)
 
         return
@@ -2374,7 +2359,6 @@ class ClockSimDecorator():
         self.redis.publish(
             channel='clock_sim_set_sim_params',
             message=data_pubsub,
-            packed=True,
         )
 
         return
@@ -2399,7 +2383,7 @@ class ClockSimDecorator():
             if msg is None:
                 continue
 
-            all_sess_ids = self.redis.l_get(self.socket_manager.server_name+';all_sess_ids', packed=True,)
+            all_sess_ids = self.redis.l_get(self.socket_manager.server_name+';all_sess_ids',)
             all_sess_ids = [
                 s for s in all_sess_ids if s in managers.keys()
 
@@ -2489,7 +2473,7 @@ if 0:
 
 
         def get_pubsub():
-            msg = self.redis.get_pubsub(pubsub_tag, packed=True)
+            msg = self.redis.get_pubsub(pubsub_tag)
             return msg
 
         loop = asyncio.get_event_loop()
@@ -2505,7 +2489,7 @@ if 0:
 
 
             print('qqqqqqqqqqqqqqqq')
-            data = self.redis.get('clock_sim_sim_params', packed=True)
+            data = self.redis.get('clock_sim_sim_params')
             await self.socket_manager.emit('get_sim_clock_sim_params', data)
 
 
@@ -2514,7 +2498,7 @@ if 0:
 
             # async with asyncio_lock:
             #     # get the full data structure
-            #     data = self.redis.get('clock_sim_sim_params', packed=True)
+            #     data = self.redis.get('clock_sim_sim_params')
             #     emit_data = {'data': data}
 
             # # send the updated value to all sessions

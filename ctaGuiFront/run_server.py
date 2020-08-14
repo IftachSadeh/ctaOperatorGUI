@@ -8,8 +8,8 @@ settings = parse_args(app_name='ctaGuiFront')
 
 app = 'ctaGuiFront.py.utils.server_setup:app'
 
-conf = { 
-    'host': str(settings['app_host']), 
+conf = {
+    'host': str(settings['app_host']),
     'port': int(settings['app_port']),
     'workers': int(settings['app_workers']),
 }
@@ -33,7 +33,7 @@ reload_dirs += [
 ]
 if is_dev:
     conf.update({
-        'reload': True,  
+        'reload': True,
         'reload_dirs': reload_dirs,
     })
 
@@ -43,8 +43,4 @@ if is_dev:
 # see: https://www.uvicorn.org/
 # ------------------------------------------------------------------
 if __name__ == "__main__":
-    uvicorn.run(
-        app, **conf
-    )
-
-
+    uvicorn.run(app, **conf)

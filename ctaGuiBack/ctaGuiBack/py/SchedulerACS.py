@@ -28,8 +28,14 @@ if has_acs:
 
 # ------------------------------------------------------------------
 class SchedulerACS(ServiceManager):
+    """scheduler interface class, simulating the execution of scheduling blocks
+
+       Only a single active instance is allowed to exist
+    """
+
     lock = Lock()
 
+    # ------------------------------------------------------------------
     def __init__(self, base_config, service_name, interrupt_sig):
         self.class_name = self.__class__.__name__
         super().__init__(class_prefix=self.class_name)
@@ -96,9 +102,7 @@ class SchedulerACS(ServiceManager):
             base_config=self.base_config, interrupt_sig=self.interrupt_sig
         )
 
-        # ------------------------------------------------------------------
         # temporary hack to be consistent with SchedulerStandalone
-        # ------------------------------------------------------------------
         self.external_events = []
         self.external_clock_events = []
         external_generate_clock_events(self)
@@ -106,7 +110,7 @@ class SchedulerACS(ServiceManager):
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup_threads(self):
 
         self.add_thread(target=self.loop_main)
@@ -114,8 +118,6 @@ class SchedulerACS(ServiceManager):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def reset_blocks(self):
         debug_tmp = False
@@ -276,25 +278,15 @@ class SchedulerACS(ServiceManager):
 
                 obs_block_ids[state].append(obs_block_id)
 
-                self.redis.pipe.set(
-                    name=obs_block_id, data=block, expire=self.expire, packed=True
-                )
+                self.redis.pipe.set(name=obs_block_id, data=block, expire=self.expire)
 
+        self.redis.pipe.set(name='obs_block_ids_' + 'wait', data=obs_block_ids['wait'])
+        self.redis.pipe.set(name='obs_block_ids_' + 'run', data=obs_block_ids['run'])
+        self.redis.pipe.set(name='obs_block_ids_' + 'done', data=obs_block_ids['done'])
         self.redis.pipe.set(
-            name='obs_block_ids_' + 'wait', data=obs_block_ids['wait'], packed=True
+            name='obs_block_ids_' + 'cancel', data=obs_block_ids['cancel']
         )
-        self.redis.pipe.set(
-            name='obs_block_ids_' + 'run', data=obs_block_ids['run'], packed=True
-        )
-        self.redis.pipe.set(
-            name='obs_block_ids_' + 'done', data=obs_block_ids['done'], packed=True
-        )
-        self.redis.pipe.set(
-            name='obs_block_ids_' + 'cancel', data=obs_block_ids['cancel'], packed=True
-        )
-        self.redis.pipe.set(
-            name='obs_block_ids_' + 'fail', data=obs_block_ids['fail'], packed=True
-        )
+        self.redis.pipe.set(name='obs_block_ids_' + 'fail', data=obs_block_ids['fail'])
 
         self.redis.pipe.execute()
 
@@ -303,19 +295,17 @@ class SchedulerACS(ServiceManager):
         return
 
     # # ------------------------------------------------------------------
-    # #
-    # # ------------------------------------------------------------------
     # def update_sub_arrs(self, blocks=None):
     #     # inst_pos = self.redis.h_get_all(name='inst_pos')
 
     #     if blocks is None:
     #         obs_block_ids = self.redis.get(
-    #             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+    #             name=('obs_block_ids_' + 'run'), default_val=[]
     #         )
     #         for obs_block_id in obs_block_ids:
     #             self.redis.pipe.get(obs_block_id)
 
-    #         blocks = self.redis.pipe.execute(packed=True)
+    #         blocks = self.redis.pipe.execute()
 
     #     # sort so last is first in the list (latest sub-array defined gets the telescope)
     #     blocks = sorted(
@@ -354,16 +344,18 @@ class SchedulerACS(ServiceManager):
     #     # for now - a simple/stupid solution, where we write the sub-arrays and publish each
     #     # time, even if the content is actually the same ...
     #     # ------------------------------------------------------------------
-    #     self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
+    #     self.redis.set(name='sub_arrs', data=sub_arrs)
     #     self.redis.publish(channel='sub_arrs')
 
     #     return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def loop_main(self):
         self.log.info([['g', ' - starting SchedulerACS.loop_main ...']])
+
+        print(' -- SchedulerACS.loop_main has not been verified, since no acs ...')
+        print(' -- SchedulerACS.loop_main has not been verified, since no acs ...')
+        print(' -- SchedulerACS.loop_main has not been verified, since no acs ...')
 
         self.redis.pipe.set(name='obs_block_ids_' + 'wait', data='')
         self.redis.pipe.set(name='obs_block_ids_' + 'run', data='')
@@ -384,5 +376,3 @@ class SchedulerACS(ServiceManager):
         self.log.info([['c', ' - ending SchedulerACS.loop_main ...']])
 
         return
-
-

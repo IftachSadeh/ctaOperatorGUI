@@ -3,10 +3,10 @@ from gevent import sleep
 from random import Random
 from math import ceil
 import importlib
-try: 
-    from gevent.coros import BoundedSemaphore 
-except: 
-    from gevent.lock import BoundedSemaphore 
+try:
+    from gevent.coros import BoundedSemaphore
+except:
+    from gevent.lock import BoundedSemaphore
 from socketio.namespace import BaseNamespace
 from socketio.mixins import BroadcastMixin
 
@@ -122,15 +122,11 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def on_set_online_state(self, data):
         # print 'set_online_state',data
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def on_join_session(self, ses_id_now):
         self.user_id = self.request.authenticated_userid
@@ -187,12 +183,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             SocketManager.sess_endpoints[self.sess_id] = self.ns_name
 
             # ------------------------------------------------------------------
-            #
-            # ------------------------------------------------------------------
             if not self.redis.h_exists(name='sync_groups', key=self.user_id):
-                self.redis.h_set(
-                    name='sync_groups', key=self.user_id, data=[], packed=True
-                )
+                self.redis.h_set(name='sync_groups', key=self.user_id, data=[])
 
             # ------------------------------------------------------------------
             # list of all sessions for this user
@@ -250,8 +242,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         # ------------------------------------------------------------------
         self.on_join_session_()
 
-        # ------------------------------------------------------------------
-        #
         # ------------------------------------------------------------------
         self.init_user_sync_loops()
 
@@ -328,7 +318,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                             break
 
                         all_widgets = self.redis.h_m_get(
-                            name='all_widgets', key=widget_ids, packed=True, filter=True
+                            name='all_widgets', key=widget_ids, filter=True
                         )
                         n_icons = [x['n_icon'] for x in all_widgets]
 
@@ -347,9 +337,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                 widget_now['widget_state'] = dict()
 
                 # register the new widget
-                self.redis.h_set(
-                    name='all_widgets', key=widget_id, data=widget_now, packed=True
-                )
+                self.redis.h_set(name='all_widgets', key=widget_id, data=widget_now)
                 self.redis.r_push(name='user_widgets;' + self.user_id, data=widget_id)
                 self.redis.r_push(name='sess_widgets;' + self.sess_id, data=widget_id)
 
@@ -365,7 +353,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
                 if n_sync_group == 0:
                     sync_groups = self.redis.h_get(
-                        name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                        name='sync_groups', key=self.user_id, default_val=[]
                     )
 
                     # ------------------------------------------------------------------
@@ -401,7 +389,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                         name='sync_groups',
                         key=self.user_id,
                         data=sync_groups,
-                        packed=True
                     )
 
             if n_sync_group != -1:
@@ -423,8 +410,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
 
     def init_user_sync_loops(self):
         return
@@ -440,12 +425,10 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         return allow
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def update_sync_group(self):
         widget_ids = []
         with SocketManager.lock:
-            all_widgets = self.redis.h_get_all(name='all_widgets', packed=True)
+            all_widgets = self.redis.h_get_all(name='all_widgets')
             for widget_id, widget_now in all_widgets.items():
                 if widget_now['n_icon'] == -1 and widget_id in SocketManager.widget_inits:
                     widget_ids.append(widget_id)
@@ -455,8 +438,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def on_sync_state_send(self, data_in):
         if not self.check_panel_sync():
@@ -472,7 +453,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                 return
 
             sync_groups = self.redis.h_get(
-                name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                name='sync_groups', key=self.user_id, default_val=[]
             )
 
             for sync_group in sync_groups:
@@ -492,9 +473,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                                 and id_now not in all_sync_ids):
                             all_sync_ids.append(id_now)
 
-            self.redis.h_set(
-                name='sync_groups', key=self.user_id, data=sync_groups, packed=True
-            )
+            self.redis.h_set(name='sync_groups', key=self.user_id, data=sync_groups)
         data = {
             'widget_id': data_in['widget_id'],
             'type': data_in['type'],
@@ -506,8 +485,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def on_set_active_widget(self, data):
         active_widget = self.redis.h_get(
@@ -557,8 +534,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def add_widget_tread(self, opt_in=None):
         if 'is_group_thread' not in opt_in:
             opt_in['is_group_thread'] = True
@@ -602,8 +577,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def widget_thread_func(self, opt_in=None):
         widget = opt_in['widget']
@@ -650,8 +623,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def pubsub_socket_evt_widgets(self, thread_info):
         self.log.info([['y', ' - starting shared_thread('],
                        ['g', 'pubsub_socket_evt_widgets'], ['y', ')']])
@@ -664,7 +635,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         while self.check_thread(thread_info):
             sleep(0.1)
 
-            msg = self.redis.get_pubsub('socket_event_widgets', packed=True)
+            msg = self.redis.get_pubsub('socket_event_widgets')
             if msg is None:
                 continue
 
@@ -730,12 +701,10 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             'widget_ids': widget_ids
         }
 
-        self.redis.publish(channel='socket_event_widgets', message=message, packed=True)
+        self.redis.publish(channel='socket_event_widgets', message=message)
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def socket_evt_session(self, widget_id='', event_name=None, data=None):
         data = {} if data is None else data
@@ -785,8 +754,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             return -1
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def get_thread_id(self, thread_group, thread_tag):
         if thread_group in SocketManager.thread_sigs:
             for ele_now in SocketManager.thread_sigs[thread_group]:
@@ -795,8 +762,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         return -1
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def check_thread(self, thread_info):
         thread_id = thread_info['id']
@@ -881,7 +846,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             # remove the widgets which belong to this session
             widget_ids = self.redis.l_get('sess_widgets;' + self.sess_id)
             sync_groups = self.redis.h_get(
-                name='sync_groups', key=self.user_id, packed=True, default_val=[]
+                name='sync_groups', key=self.user_id, default_val=[]
             )
 
             for widget_id in widget_ids:
@@ -898,9 +863,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
                 self.clear_threads_type(widget_id)
 
-            self.redis.h_set(
-                name='sync_groups', key=self.user_id, data=sync_groups, packed=True
-            )
+            self.redis.h_set(name='sync_groups', key=self.user_id, data=sync_groups)
 
             # ------------------------------------------------------------------
             # remove this session from the general registry
@@ -924,8 +887,6 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     def on_join_session_(self):
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def cleanup_session(self, sess_id=None):
         if sess_id is None:
@@ -1058,8 +1019,6 @@ class SocketDecorator():
 
 
 # ------------------------------------------------------------------
-#
-# ------------------------------------------------------------------
 class ClockSimDecorator():
     def __init__(self, socket_manager, *args, **kwargs):
         self.socket_manager = socket_manager
@@ -1093,12 +1052,10 @@ class ClockSimDecorator():
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def on_get_sim_clock_sim_params(self, data_in):
         sess_id = data_in['sess_id']
 
-        data = self.redis.get('clock_sim_sim_params', packed=True)
+        data = self.redis.get('clock_sim_sim_params')
         emit_data = {'data': data}
 
         # send the requested data back to the same session
@@ -1111,22 +1068,17 @@ class ClockSimDecorator():
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def on_set_sim_clock_sim_params(self, data_in):
         data_pubsub = data_in['data']
 
         self.redis.publish(
             channel='clock_sim_set_sim_params',
             message=data_pubsub,
-            packed=True,
         )
 
         return
 
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def update_sim_params(self, thread_info):
         self.log.info([
             ['y', ' - starting shared_thread('],
@@ -1140,12 +1092,12 @@ class ClockSimDecorator():
             sleep(0.1)
 
         while self.socket_manager.check_thread(thread_info):
-            msg = self.redis.get_pubsub(pubsub_tag, packed=True)
+            msg = self.redis.get_pubsub(pubsub_tag)
             if msg is None:
                 continue
 
             # get the full data structure
-            data = self.redis.get('clock_sim_sim_params', packed=True)
+            data = self.redis.get('clock_sim_sim_params')
             emit_data = {'data': data}
 
             # send the updated value to all sessions

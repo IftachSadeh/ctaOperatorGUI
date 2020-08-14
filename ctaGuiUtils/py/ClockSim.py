@@ -13,18 +13,20 @@ from ctaGuiUtils.py.utils import date_to_string
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------
 class ClockSim(ServiceManager):
     """clock simulation class, simulating the procession of a night
 
        Only a single active instance is allowed to exist. Multiple passive instances 
        are allowed. A passive instance only serves as an interface for the clock via redis
     """
-    
+
     lock = Lock()
 
-    # ---------------------------------------------------------------------------
-    def __init__(self, base_config, service_name, is_passive, interrupt_sig=None, *args, **kwargs):
+    # ------------------------------------------------------------------
+    def __init__(
+        self, base_config, service_name, is_passive, interrupt_sig=None, *args, **kwargs
+    ):
         self.class_name = self.__class__.__name__
         super().__init__(class_prefix=self.class_name)
 
@@ -48,15 +50,14 @@ class ClockSim(ServiceManager):
         if not is_passive:
             with ClockSim.lock:
                 self.setup_active_instance()
-        
+
         return
 
-
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup_active_instance(self):
         """setup the active instance of the class
         """
-        
+
         # make sure this is the only active instance
         self.init_active_instance()
 
@@ -81,7 +82,7 @@ class ClockSim(ServiceManager):
         #   60*10 --> every 1 real sec goes to 10 simulated min
         self.speed_factor = 30
         # self.speed_factor = 10
-        
+
         self.datetime_epoch = self.base_config.datetime_epoch
 
         self.init_sim_params_from_redis = True
@@ -109,20 +110,19 @@ class ClockSim(ServiceManager):
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup_threads(self):
         """register threads to be run after this and all other services have
            been initialised
         """
-        
+
         self.add_thread(target=self.loop_main)
         self.add_thread(target=self.pubsub_sim_params)
         self.add_thread(target=self.loop_active_heartbeat)
 
         return
 
-
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def check_passive(self):
         """check if this is an active or passive instance
         
@@ -162,42 +162,42 @@ class ClockSim(ServiceManager):
 
         return self.is_passive
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_time_now_sec(self):
         datetime_now = self.get_datetime_now()
         time_now_sec = int(datetime_to_secs(datetime_now))
 
         return time_now_sec
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_is_night_now(self):
         if self.check_passive():
             return self.redis.get('clock_sim_is_night_now')
 
         return self.is_night_now
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_n_nights(self):
         if self.check_passive():
             return self.redis.get('clock_sim_n_nights')
 
         return self.n_nights
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_night_start_sec(self):
         if self.check_passive():
             return self.redis.get('clock_sim_night_start_sec')
 
         return self.night_start_sec
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_night_end_sec(self):
         if self.check_passive():
             return self.redis.get('clock_sim_night_end_sec')
 
         return self.night_end_sec
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_time_series_start_time_sec(self):
         if self.check_passive():
             start_time_sec = self.redis.get('clock_sim_time_series_start_time_sec')
@@ -206,7 +206,7 @@ class ClockSim(ServiceManager):
 
         return int(start_time_sec)
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_datetime_now(self):
         if self.check_passive():
             time_now_sec = self.redis.get('clock_sim_time_now_sec')
@@ -214,7 +214,7 @@ class ClockSim(ServiceManager):
 
         return self.datetime_now
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def is_night_time_now(self):
         time_now_sec = self.get_time_now_sec()
         is_night = (
@@ -223,44 +223,41 @@ class ClockSim(ServiceManager):
         )
         return is_night
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_night_duration_sec(self):
         return (self.get_night_end_sec() - self.get_night_start_sec())
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_astro_night_start_sec(self):
         # beginig of the astronomical night
         return int(self.get_night_start_sec())
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_sim_params(self):
         if self.check_passive():
-            sim_params = self.redis.get(
-                name='clock_sim_sim_params',
-                packed=True,
-            )
+            sim_params = self.redis.get(name='clock_sim_sim_params')
         else:
             sim_params = self.sim_params
 
         return sim_params
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_speed_factor(self):
         sim_params = self.get_sim_params()
         return sim_params['speed_factor']
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_sec_since_midnight(self):
         days_since_epoch = (self.datetime_now - self.datetime_epoch).days
         sec_since_midnight = ((self.datetime_now - self.datetime_epoch).seconds
                               + timedelta(days=days_since_epoch).total_seconds())
         return sec_since_midnight
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def init_night_times(self):
         """reset the night
         """
-        
+
         self.n_nights = 0
         self.datetime_now = None
 
@@ -274,14 +271,12 @@ class ClockSim(ServiceManager):
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def update_once(self):
         """single update, to be run as part of a loop
         """
-        
-        self.datetime_now += timedelta(
-            seconds=self.loop_sleep_sec * self.speed_factor
-        )
+
+        self.datetime_now += timedelta(seconds=self.loop_sleep_sec * self.speed_factor)
 
         if self.debug_datetime_now:
             self.log.info([
@@ -323,11 +318,11 @@ class ClockSim(ServiceManager):
         )
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def set_night_times(self):
         """reset the night
         """
-        
+
         night_start_hours = self.rnd_gen.randint(18, 19)
         night_start_minutes = self.rnd_gen.randint(0, 59)
         night_end_hours = self.rnd_gen.randint(4, 5)
@@ -387,7 +382,7 @@ class ClockSim(ServiceManager):
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def update_n_night(self):
         sec_since_midnight = self.get_sec_since_midnight()
         days_since_epoch = (self.datetime_now - self.datetime_epoch).days
@@ -401,7 +396,7 @@ class ClockSim(ServiceManager):
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def need_data_update(self, update_opts):
         """check if a service needs to run an update, where
            updates only happen after min_wait of simulation time
@@ -426,21 +421,18 @@ class ClockSim(ServiceManager):
 
         return need_update
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def set_sim_speed(self, data_in, from_redis=False):
         """set parameters which determine the lenght of the night, the
            real-time duration, given a speed factor, the delay between nights, etc.
         """
-        
+
         speed_factor = data_in['speed_factor']
         is_skip_daytime = data_in['is_skip_daytime']
         is_short_night = data_in['is_short_night']
 
         if from_redis:
-            red_data = self.redis.get(
-                name='clock_sim_sim_params',
-                packed=True,
-            )
+            red_data = self.redis.get(name='clock_sim_sim_params')
 
             if red_data is not None:
                 speed_factor = red_data['speed_factor']
@@ -486,7 +478,6 @@ class ClockSim(ServiceManager):
         }
         self.redis.set(
             name='clock_sim_sim_params',
-            packed=True,
             data=self.sim_params,
         )
 
@@ -494,12 +485,11 @@ class ClockSim(ServiceManager):
 
         return
 
-
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def loop_main(self):
         """main loop running in its own thread, updating the night
         """
-        
+
         self.log.info([['g', ' - starting ClockSim.loop_main ...']])
 
         while self.can_loop():
@@ -511,11 +501,11 @@ class ClockSim(ServiceManager):
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def pubsub_sim_params(self):
         """loop running in its own thread, reacting to pubsub events
         """
-        
+
         self.log.info([['g', ' - starting ClockSim.pubsub_sim_params ...']])
 
         # setup the channel once
@@ -527,7 +517,7 @@ class ClockSim(ServiceManager):
         while self.can_loop():
             sleep(self.pubsub_sleep_sec)
 
-            msg = self.redis.get_pubsub(pubsub_tag, packed=True)
+            msg = self.redis.get_pubsub(pubsub_tag)
             if msg is None:
                 continue
 
@@ -544,7 +534,7 @@ class ClockSim(ServiceManager):
         return
 
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def get_clock_sim_data(parent):
     """convenience function, setting up a request from redis to
        get the current night parameters
@@ -560,7 +550,6 @@ def get_clock_sim_data(parent):
             the current parameters of the night
     """
 
-    
     red_keys = [
         ['time_now_sec', float],
         ['is_night_now', bool],
@@ -575,9 +564,11 @@ def get_clock_sim_data(parent):
     clock_sim = parent.redis.pipe.execute()
 
     if len(clock_sim) != len(red_keys):
-        parent.log.warning([[
-            'r', ' - ', parent.widget_name, ' - could not get clock_sim - '
-        ], ['p', str(clock_sim)], ['r', ' - will use fake range ...'],])
+        parent.log.warning([
+            ['r', ' - ', parent.widget_name, ' - could not get clock_sim - '],
+            ['p', str(clock_sim)],
+            ['r', ' - will use fake range ...'],
+        ])
         clock_sim = [0 for i in range(len(red_keys))]
 
     data = dict((red_keys[i][0], red_keys[i][1](clock_sim[i]))

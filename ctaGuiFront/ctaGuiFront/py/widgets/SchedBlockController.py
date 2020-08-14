@@ -139,7 +139,7 @@ class SchedBlockController(BaseWidget):
     def get_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_events")
-        redis_data = self.redis.pipe.execute(packed=True)
+        redis_data = self.redis.pipe.execute()
 
         SchedBlockController.external_events = redis_data
 
@@ -148,7 +148,7 @@ class SchedBlockController(BaseWidget):
     def get_clock_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_clock_events")
-        redis_data = self.redis.pipe.execute(packed=True)
+        redis_data = self.redis.pipe.execute()
 
         SchedBlockController.external_clock_events = redis_data
 
@@ -176,11 +176,11 @@ class SchedBlockController(BaseWidget):
         self.redis.pipe.reset()
 
         SchedBlockController.target_ids = self.redis.get(
-            name='target_ids', packed=True, default_val=[]
+            name='target_ids', default_val=[]
         )
         for id in SchedBlockController.target_ids:
             self.redis.pipe.get(id)
-        SchedBlockController.targets = self.redis.pipe.execute(packed=True)
+        SchedBlockController.targets = self.redis.pipe.execute()
         return
 
     # ------------------------------------------------------------------
@@ -192,7 +192,7 @@ class SchedBlockController(BaseWidget):
             for key in keys_now:
                 self.redis.pipe.get('obs_block_ids_' + key)
 
-            data = self.redis.pipe.execute(packed=True)
+            data = self.redis.pipe.execute()
             obs_block_ids = sum(data, [])  # flatten the list of lists
 
             self.redis.pipe.reset()
@@ -200,7 +200,7 @@ class SchedBlockController(BaseWidget):
                 self.redis.pipe.get(obs_block_id)
 
             key = keys_now[0]
-            blocks = self.redis.pipe.execute(packed=True)
+            blocks = self.redis.pipe.execute()
             SchedBlockController.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['start_time_sec'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['start_time_sec'],"%Y-%m-%d %H:%M:%S")).total_seconds())
@@ -231,12 +231,11 @@ class SchedBlockController(BaseWidget):
                         name=data[key][i]["obs_block_id"],
                         data=data[key][i],
                         expire=self.expire,
-                        packed=True
                     )
                 else:
                     new_blocks.append(data[key][i])
         for key, val in obs_block_ids.items():
-            self.redis.pipe.set(name='obs_block_ids_' + key, data=val, packed=True)
+            self.redis.pipe.set(name='obs_block_ids_' + key, data=val)
 
         self.redis.pipe.execute()
         print new_blocks

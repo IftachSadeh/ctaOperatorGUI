@@ -51,7 +51,7 @@ class SetupServer():
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def deep_module_reload(self, is_verb):
         """collect all modules from the project and reload them (used for development purposes)
         """
@@ -81,7 +81,7 @@ class SetupServer():
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_manager(self):
         """reload the manager class
         """
@@ -93,7 +93,7 @@ class SetupServer():
 
         return manager
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def run_service(self, service_name, interrupt_sig):
         """reload and run the manager class for a given service
         """
@@ -113,7 +113,7 @@ class SetupServer():
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def run_server(self):
         """run the services, watching for file changes (for development) in order to reload
         """

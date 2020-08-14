@@ -6,13 +6,11 @@ from ctaGuiUtils.py.utils import get_rnd
 
 
 # ------------------------------------------------------------------
-# common functions
-# ------------------------------------------------------------------
 def get_rnd_targets(self, night_duration_sec, block_duration_sec):
     target_ids_now = []
     targets = []
 
-    target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
+    target_ids = self.redis.get(name='target_ids', default_val=[])
 
     n_rnd_targets = max(1, int(self.rnd_gen.random() * 3))
 
@@ -25,14 +23,10 @@ def get_rnd_targets(self, night_duration_sec, block_duration_sec):
         if not (target_ids[n_id] in target_ids_now):
             target_ids_now.append(target_ids[n_id])
 
-            targets.append(
-                self.redis.get(name=target_ids[n_id], packed=True, default_val={})
-            )
+            targets.append(self.redis.get(name=target_ids[n_id], default_val={}))
     return targets
 
 
-# ------------------------------------------------------------------
-#
 # ------------------------------------------------------------------
 def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_obs_now):
     pointings = []
@@ -71,19 +65,15 @@ def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_ob
 
 
 # ------------------------------------------------------------------
-#
-# ------------------------------------------------------------------
 def update_sub_arrs(self, blocks=None):
     # inst_pos = self.redis.h_get_all(name='inst_pos')
 
     if blocks is None:
-        obs_block_ids = self.redis.get(
-            name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
-        )
+        obs_block_ids = self.redis.get(name=('obs_block_ids_' + 'run'), default_val=[])
         for obs_block_id in obs_block_ids:
             self.redis.pipe.get(obs_block_id)
 
-        blocks = self.redis.pipe.execute(packed=True)
+        blocks = self.redis.pipe.execute()
 
     #
     sub_arrs = []
@@ -109,27 +99,21 @@ def update_sub_arrs(self, blocks=None):
         # add the telescope list for this block
         sub_arrs.append({'id': pnt_id, 'N': pointing_name, 'children': tels})
 
-    # ------------------------------------------------------------------
     # now take care of all free telescopes
-    # ------------------------------------------------------------------
     tels = []
     for id_now in all_tel_ids:
         tels.append({'id': id_now})
 
     sub_arrs.append({'id': self.no_sub_arr_name, 'children': tels})
 
-    # ------------------------------------------------------------------
     # for now - a simple/stupid solution, where we write the sub-arrays and publish each
     # time, even if the content is actually the same ...
-    # ------------------------------------------------------------------
-    self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
+    self.redis.set(name='sub_arrs', data=sub_arrs)
     self.redis.publish(channel='sub_arrs')
 
     return
 
 
-# ------------------------------------------------------------------
-#
 # ------------------------------------------------------------------
 def external_generate_events(self):
     time_now_sec = self.clock_sim.get_time_now_sec()
@@ -169,62 +153,68 @@ def external_generate_events(self):
 
         self.external_events.append(new_event)
 
-    self.redis.set(name='external_events', data=self.external_events, packed=True)
+    self.redis.set(name='external_events', data=self.external_events)
 
     return
 
 
 # ------------------------------------------------------------------
-#
-# ------------------------------------------------------------------
 def external_generate_clock_events(self):
-    new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 16, 21, 42).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['end_date'] = ''
-    new_event['icon'] = 'moon.svg'
-    new_event['name'] = 'Moonrise'
-    new_event['comment'] = ''
-    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    self.log.warn([[
+        'r',
+        ' - FIXME - external_generate_clock_events should be updated to use ClockSim ...'
+    ]])
+
+    new_event = {
+        'start_date': datetime(2018, 9, 16, 21, 42).strftime('%Y-%m-%d %H:%M:%S'),
+        'end_date': '',
+        'icon': 'moon.svg',
+        'name': 'Moonrise',
+        'comment': '',
+        'id': 'CE' + str(self.rnd_gen.randint(0, 100000000)),
+    }
     self.external_clock_events.append(new_event)
 
-    new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 16, 23, 7).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['end_date'] = datetime(2018, 9, 17, 4, 30).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['icon'] = 'rain.svg'
-    new_event['name'] = 'Raining'
-    new_event['comment'] = ''
-    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    new_event = {
+        'start_date': datetime(2018, 9, 16, 23, 7).strftime('%Y-%m-%d %H:%M:%S'),
+        'end_date': datetime(2018, 9, 17, 4, 30).strftime('%Y-%m-%d %H:%M:%S'),
+        'icon': 'rain.svg',
+        'name': 'Raining',
+        'comment': '',
+        'id': 'CE' + str(self.rnd_gen.randint(0, 100000000)),
+    }
     self.external_clock_events.append(new_event)
 
-    new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 17, 1, 3).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['end_date'] = datetime(2018, 9, 17, 2, 0).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['icon'] = 'storm.svg'
-    new_event['name'] = 'Storm'
-    new_event['comment'] = ''
-    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    new_event = {
+        'start_date': datetime(2018, 9, 17, 1, 3).strftime('%Y-%m-%d %H:%M:%S'),
+        'end_date': datetime(2018, 9, 17, 2, 0).strftime('%Y-%m-%d %H:%M:%S'),
+        'icon': 'storm.svg',
+        'name': 'Storm',
+        'comment': '',
+        'id': 'CE' + str(self.rnd_gen.randint(0, 100000000)),
+    }
     self.external_clock_events.append(new_event)
 
-    new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 17, 1, 28).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['end_date'] = datetime(2018, 9, 17, 2, 30).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['icon'] = 'handshake.svg'
-    new_event['name'] = 'Collab'
-    new_event['comment'] = ''
-    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    new_event = {
+        'start_date': datetime(2018, 9, 17, 1, 28).strftime('%Y-%m-%d %H:%M:%S'),
+        'end_date': datetime(2018, 9, 17, 2, 30).strftime('%Y-%m-%d %H:%M:%S'),
+        'icon': 'handshake.svg',
+        'name': 'Collab',
+        'comment': '',
+        'id': 'CE' + str(self.rnd_gen.randint(0, 100000000)),
+    }
     self.external_clock_events.append(new_event)
 
-    new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 17, 5, 21).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['end_date'] = ''
-    new_event['icon'] = 'sun.svg'
-    new_event['name'] = 'Sunrise'
-    new_event['comment'] = ''
-    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    new_event = {
+        'start_date': datetime(2018, 9, 17, 5, 21).strftime('%Y-%m-%d %H:%M:%S'),
+        'end_date': '',
+        'icon': 'sun.svg',
+        'name': 'Sunrise',
+        'comment': '',
+        'id': 'CE' + str(self.rnd_gen.randint(0, 100000000)),
+    }
     self.external_clock_events.append(new_event)
 
-    self.redis.set(
-        name='external_clock_events', data=self.external_clock_events, packed=True
-    )
+    self.redis.set(name='external_clock_events', data=self.external_clock_events)
 
     return

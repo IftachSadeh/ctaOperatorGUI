@@ -1,9 +1,9 @@
 import gevent
 from gevent import sleep
-try: 
-    from gevent.coros import BoundedSemaphore 
-except: 
-    from gevent.lock import BoundedSemaphore 
+try:
+    from gevent.coros import BoundedSemaphore
+except:
+    from gevent.lock import BoundedSemaphore
 from ctaGuiUtils.py.utils import flatten_dict
 from ctaGuiUtils.py.LogParser import LogParser
 
@@ -23,8 +23,6 @@ class ArrZoomer():
         's_1': dict(),
     }
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def __init__(self, parent):
         ArrZoomer.log = LogParser(
@@ -122,8 +120,6 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def setup(self, *args):
         self.n_icon = self.parent.n_icon
 
@@ -131,7 +127,6 @@ class ArrZoomer():
             wgt = self.redis.h_get(
                 name='all_widgets',
                 key=self.widget_id,
-                packed=True,
             )
 
         self.zoom_state = wgt['widget_state']
@@ -190,8 +185,6 @@ class ArrZoomer():
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def back_from_offline(self):
         # with ArrZoomer.lock:
@@ -278,8 +271,6 @@ class ArrZoomer():
             return data
 
         # ------------------------------------------------------------------
-        #
-        # ------------------------------------------------------------------
         opt_in = {
             'widget': self,
             'data_func': get_init_data,
@@ -291,8 +282,6 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def set_widget_state(self, *args):
         data = args[0]
 
@@ -302,8 +291,6 @@ class ArrZoomer():
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def init_tel_health(self):
         self.tel_health = dict()
@@ -434,8 +421,6 @@ class ArrZoomer():
             }
 
         # ------------------------------------------------------------------
-        #
-        # ------------------------------------------------------------------
         self.socket_manager.socket_event_widgets(
             event_name='arr_zoomer_get_data_s1',
             data=emit_data_s1,
@@ -448,8 +433,6 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def set_send_data(self):
         ArrZoomer.send_data['s_0'] = {
             'sess_id': [],
@@ -457,10 +440,7 @@ class ArrZoomer():
         }
         ArrZoomer.send_data['s_1'] = dict()
 
-        all_widgets = self.redis.h_get_all(
-            name='all_widgets',
-            packed=True,
-        )
+        all_widgets = self.redis.h_get_all(name='all_widgets', )
 
         for widget_id, widget_now in all_widgets.items():
             if widget_now['widget_name'] != self.widget_name:
@@ -492,16 +472,12 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def update_data_once(self):
         # get the current set of widgest which need an update
         with self.socket_manager.lock:
             with ArrZoomer.lock:
                 self.set_send_data()
 
-        # ------------------------------------------------------------------
-        #
         # ------------------------------------------------------------------
         prop_s1 = dict()
         for zoom_target in ArrZoomer.send_data['s_1']:
@@ -548,8 +524,6 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def update_data(self, thread_id):
         if not self.do_data_updates:
             return
@@ -570,13 +544,10 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def get_sub_arr_grp(self):
         with ArrZoomer.lock:
             sub_arrs = self.redis.get(
                 name='sub_arrs',
-                packed=True,
                 default_val=[],
             )
             self.sub_arr_grp = {
@@ -586,8 +557,6 @@ class ArrZoomer():
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def update_sub_arr(self, thread_id):
         n_sec_sleep = 5

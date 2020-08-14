@@ -6,6 +6,7 @@ def hash_password(pw):
     pwhash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
     return pwhash.decode('utf8')
 
+
 USERS = {
     'user0': hash_password('xxx'),
     'user1': hash_password('xxx'),
@@ -18,6 +19,7 @@ GROUPS = {
     'user2': ['group:permit_2'],
     'guest': ['group:permit_1'],
 }
+
 
 # ------------------------------------------------------------------
 # define the fctory that sets user privliges
@@ -52,9 +54,7 @@ def check_password(pw, hashed_pw):
     except:
         return False
 
+
 def groupfinder(userid, request):
     if userid in USERS:
         return GROUPS.get(userid, [])
-
-
-

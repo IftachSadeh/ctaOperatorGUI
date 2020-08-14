@@ -26,9 +26,6 @@
 // document.getElementById('topRightMenuTog').setAttribute("style","");
 
 
-
-
-
 // ---------------------------------------------------------------------------
 /**
  * general manager for sockets
@@ -94,13 +91,13 @@ function SocketManager() {
         function setup_websocket() {
             ws = new WebSocket(window.WEBSOCKET_ROUTE)
 
-            // 
+            //
             ws.onopen = function(event) {
-                // console.log(' -ZZZ- onopen - ')                
+                // console.log(' -ZZZ- onopen - ')
                 return
             }
 
-            // 
+            //
             ws.onmessage = function(event) {
                 try {
                     if (!event.data) {
@@ -144,7 +141,7 @@ function SocketManager() {
                 // try to reconnect the session
                 setTimeout(function() {
                     setup_websocket()
-                }, 500) 
+                }, 500)
                 // window.location.reload()
 
                 return
@@ -289,7 +286,9 @@ function SocketManager() {
             let test_log = 0
             if (test_log) {
                 this_top.socket.server_log({
-                    data: {ssssssssss: 1},
+                    data: {
+                        ssssssssss: 1,
+                    },
                     is_verb: true,
                     log_level: LOG_LEVELS.INFO,
                 })
@@ -304,7 +303,9 @@ function SocketManager() {
 
             if (test_log) {
                 this_top.socket.server_log({
-                    data: {ssssssssss: 1},
+                    data: {
+                        ssssssssss: 1,
+                    },
                     is_verb: true,
                     log_level: LOG_LEVELS.ERROR,
                 })
@@ -353,7 +354,7 @@ function SocketManager() {
         })
 
 
-        // 
+        //
         this_top.socket.on('reload_session', function(data_in) {
             setTimeout(function() {
                 window.location.reload()
@@ -546,7 +547,6 @@ function SocketManager() {
     this_top.setup_socket = setup_socket
 
 
-
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
@@ -577,7 +577,7 @@ function SocketManager() {
 
         this_con_state_top.user_btn = user_btn
 
-        // 
+        //
         function set_server_con_state(state) {
             let is_con = false
             if (state == this_top.con_states.CONNECTED) {
@@ -616,14 +616,14 @@ function SocketManager() {
         }
         this_con_state_top.set_server_con_state = set_server_con_state
 
-        // 
+        //
         let server_con_state = this_top.con_states.NOT_CONNECTED
         function get_server_con_state() {
             return server_con_state
         }
         this_con_state_top.get_server_con_state = get_server_con_state
 
-        // 
+        //
         function set_user_con_state_opts(is_con) {
             if (is_con) {
                 user_tog.style = 'opacity: 1;'
@@ -637,7 +637,7 @@ function SocketManager() {
         }
         this_con_state_top.set_user_con_state_opts = set_user_con_state_opts
 
-        // 
+        //
         let check_heartbeat = false
         function set_check_heartbeat(is_con) {
             // console.log(' -ZZZ- set_check_heartbeat ', is_con)
@@ -1188,7 +1188,7 @@ window.sock = new SocketManager()
 // // in case we disconnect (internet is off or server is down)
 // this_top.socket.on('disconnect', function() {
 //     console.log('disconnect',this_top.is_reload)
-//     if (!this_top.is_reload) {  
+//     if (!this_top.is_reload) {
 //         this_top.con_stat.set_server_con_state(this_top.con_states.NOT_CONNECTED)
 //         this_top.con_stat.set_user_con_state_opts(false)
 //     }

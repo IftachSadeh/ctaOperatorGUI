@@ -21,16 +21,19 @@ if has_acs:
 
 
 # ------------------------------------------------------------------
-#
-# ------------------------------------------------------------------
 class MockSched(ServiceManager):
-    has_active = False
+    """scheduler interface class, used by SchedulerACS
+
+       Only a single active instance is allowed to exist
+    """
+
     lock = Lock()
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def __init__(self, base_config, interrupt_sig):
+    def __init__(self, base_config, service_name, interrupt_sig):
+        self.class_name = self.__class__.__name__
+        super().__init__(class_prefix=self.class_name)
+
         self.log = LogParser(base_config=base_config, title=__name__)
         self.log.info([['y', ' - MockSched - ']])
 
@@ -44,22 +47,11 @@ class MockSched(ServiceManager):
             return
         # ------------------------------------------------------------------
 
-        if MockSched.has_active:
-            raise Exception('Can not instantiate MockSched more than once...')
-        else:
-            MockSched.has_active = True
-
-        # if MockSched.has_active:
-        #     self.log.info([['wr', (' - has_active -') * 5]])
-        #     return
-        # MockSched.has_active = True
-
-        # ------------------------------------------------------------------
-
         self.site_type = self.base_config.site_type
         self.clock_sim = self.base_config.clock_sim
         self.inst_data = self.base_config.inst_data
 
+        self.service_name = service_name
         self.interrupt_sig = interrupt_sig
 
         self.tel_ids = self.inst_data.get_inst_ids()
@@ -115,25 +107,27 @@ class MockSched(ServiceManager):
         # rnd_seed = 10987268332
         self.rnd_gen = Random(rnd_seed)
 
+        # make sure this is the only active instance
+        self.init_active_instance()
+
         self.setup_threads()
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup_threads(self):
+
         self.add_thread(target=self.loop_main)
+        self.add_thread(target=self.loop_active_heartbeat)
+
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def get_blocks(self):
         with MockSched.lock:
             self.set_active_sched_blocks(has_lock=True)
             return copy.deepcopy(self.acs_blocks)
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def cancel_sched_blocks(self, sched_block_id):
         class MyVoid(ACS__POA.CBvoid):
@@ -155,8 +149,6 @@ class MockSched(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def cancel_zombie_sched_blocks(self, sched_block_ids=None):
         if sched_block_ids is None:
             try:
@@ -177,8 +169,6 @@ class MockSched(ServiceManager):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def init_block_cycle(self):
         with MockSched.lock:
@@ -839,8 +829,6 @@ class MockSched(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def submit_one_block(self, sched_block):
         with MockSched.lock:
             obs_block_id = sched_block.observation_blocks[0].id
@@ -969,16 +957,14 @@ class MockSched(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def loop_main(self):
         self.log.info([['g', ' - starting MockSched.loop_main ...']])
 
         self.submit_block_cycle()
 
-        print(' -- self.loop_act_rate has not been verified, since no acs ...')
-        print(' -- self.loop_act_rate has not been verified, since no acs ...')
-        print(' -- self.loop_act_rate has not been verified, since no acs ...')
+        print(' -- MockSched.loop_main has not been verified, since no acs ...')
+        print(' -- MockSched.loop_main has not been verified, since no acs ...')
+        print(' -- MockSched.loop_main has not been verified, since no acs ...')
 
         n_loop = 0
         while self.can_loop():

@@ -72,6 +72,45 @@ def parse_args(app_name):
     try:
         module_names = ['ctaGuiBack', 'ctaGuiFront', 'ctaGuiUtils']
 
+        # list here all views, which use the shared view function
+        # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
+        all_widgets = [
+            'view102',
+            'view000',
+            'view_refresh_all',
+            'view200',
+            'view201',
+            'view202',
+            'view203',
+            'view204',
+            'view205',
+            'view206',
+            'view207',
+        ]
+
+        # for safety, make sure registered widgets can be requested by the client
+        # e.g., expect a module file named 'AAA.py', containing a class AAA
+        allowed_widget_types = {
+            'synced': [
+                'ArrZoomerView',
+                'PlotsDash',
+                'SubArrGrp',
+                'telPntSky',
+                'SchedBlocks',
+                'NightSched',
+                'inst_pos_0',
+                'ObsBlockControl',
+                'EmptyExample',
+                'CommentSched',
+                'SchedBlockController',
+                'SchedBlockInspector',
+                'WeatherMonitoring',
+            ],
+            'not_synced': [
+                'PanelSync',
+            ]
+        }
+
         pwd = os.getcwd()
         sqlite = 'sqlite:////' + os.path.join(pwd, (app_name + '.db'))
         # 'sqlite://///Users/sadeh/test/ctaOperatorGUI/ctaGuiFront/ctaGuiFront.db',
@@ -88,6 +127,8 @@ def parse_args(app_name):
             'pyramid.reload_templates': 'true',
             'sqlalchemy.url': sqlite,
             'module_names': module_names,
+            'all_widgets': all_widgets,
+            'allowed_widget_types': allowed_widget_types,
         }
 
         if input_args['site_type'] == 'N':

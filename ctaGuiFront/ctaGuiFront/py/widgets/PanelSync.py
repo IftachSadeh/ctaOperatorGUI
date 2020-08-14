@@ -115,7 +115,6 @@ class PanelSync(BaseWidget):
                 name='sync_groups',
                 key=self.socket_manager.user_id,
                 data=sync_groups,
-                packed=True
             )
 
         self.update_sync_groups(ignore_id=self.widget_id)
@@ -133,9 +132,7 @@ class PanelSync(BaseWidget):
         sess_widgets = [[], []]
         with self.socket_manager.lock:
             widget_ids = self.redis.l_get('user_widgets;' + self.socket_manager.user_id)
-            all_widgets = self.redis.h_m_get(
-                name='all_widgets', key=widget_ids, packed=True
-            )
+            all_widgets = self.redis.h_m_get(name='all_widgets', key=widget_ids)
 
             for n_widget in range(len(widget_ids)):
                 widget_id = widget_ids[n_widget]
@@ -175,9 +172,7 @@ class PanelSync(BaseWidget):
     def panel_sync_get_groups(self):
         with self.socket_manager.lock:
             widget_ids = self.redis.l_get('user_widgets;' + self.socket_manager.user_id)
-            all_widgets = self.redis.h_m_get(
-                name='all_widgets', key=widget_ids, packed=True
-            )
+            all_widgets = self.redis.h_m_get(name='all_widgets', key=widget_ids)
 
             all_sync_widgets = []
             for n_widget in range(len(widget_ids)):
@@ -196,10 +191,7 @@ class PanelSync(BaseWidget):
             children_0 = []
 
             sync_groups = self.redis.h_get(
-                name='sync_groups',
-                key=self.socket_manager.user_id,
-                packed=True,
-                default_val=[]
+                name='sync_groups', key=self.socket_manager.user_id, default_val=[]
             )
 
             for sync_group in sync_groups:
@@ -255,7 +247,6 @@ class PanelSync(BaseWidget):
                     name='sync_groups',
                     key=self.socket_manager.user_id,
                     data=sync_groups,
-                    packed=True
                 )
 
         all_groups = {

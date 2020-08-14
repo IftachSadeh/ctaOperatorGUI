@@ -19,13 +19,15 @@ from ctaGuiBack.py.SchedulerACS import SchedulerACS
 from ctaGuiBack.py.SchedulerStandalone import SchedulerStandalone
 from ctaGuiUtils.py.RedisManager import RedisManager
 
+from ctaGuiUtils.py.Serialisation import Serialisation
 
-# ---------------------------------------------------------------------------
+
+# ------------------------------------------------------------------
 class Manager():
     """class for running asynchronous services
     """
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def __init__(self):
         self.class_name = self.__class__.__name__
 
@@ -80,7 +82,7 @@ class Manager():
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def cleanup_services(self, service_name, is_verb=False):
         """graceful exit of services
         """
@@ -93,17 +95,16 @@ class Manager():
                 ['b', ' ...'],
             ])
 
-
         # service_manager = ServiceManager()
         # service_manager.unset_active_instance(parent=self, class_prefix=service_name)
         ServiceManager.unset_active_instance(parent=self, class_prefix=service_name)
-        
+
         # if service_name == 'clock_sim_service':
         #     pass
 
         return
 
-    # ---------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def run_service(self, service_name, interrupt_sig):
         """run services in individual processes
         """
@@ -193,7 +194,6 @@ class Manager():
         # all service classes inherit from ServiceManager, which keeps track of
         # all thread.  after initialising all classes, start the threads (blocking action)
         ServiceManager.run_threads()
-
 
         # after interrupt_sig has released the block from outside
         # of this process, do some cleanup
