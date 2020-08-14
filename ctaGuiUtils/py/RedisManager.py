@@ -196,7 +196,8 @@ class RedisBase(object):
         except Exception as e:
             if self.log:
                 self.log.error([
-                    ['r', ' - could not do redis.r_push() for ', str(name)],
+                    ['r', ' - could not do redis.r_push() for ',
+                     str(name)],
                     ['r', '\n', e],
                 ])
             raise e
@@ -319,33 +320,34 @@ class RedisBase(object):
 
 #     async def set(self, *arg, **kwargs):
 #         return self.redis_base.set(*arg, **kwargs)
-    
+
 #     async def h_set(self, *arg, **kwargs):
 #         return self.redis_base.h_set(*arg, **kwargs)
-    
+
 #     async def h_del(self, *arg, **kwargs):
 #         return self.redis_base.h_del(*arg, **kwargs)
-    
+
 #     async def h_get(self, *arg, **kwargs):
 #         return self.redis_base.h_get(*arg, **kwargs)
-    
+
 #     async def h_m_get(self, *arg, **kwargs):
 #         return self.redis_base.h_m_get(*arg, **kwargs)
-    
+
 #     async def r_push(self, *arg, **kwargs):
 #         return self.redis_base.r_push(*arg, **kwargs)
-    
+
 #     async def l_rem(self, *arg, **kwargs):
 #         return self.redis_base.l_rem(*arg, **kwargs)
-    
+
 #     async def z_add(self, *arg, **kwargs):
 #         return self.redis_base.z_add(*arg, **kwargs)
-    
+
 #     async def expire(self, *arg, **kwargs):
 #         return self.redis_base.expire(*arg, **kwargs)
-    
+
 #     async def delete(self, *arg, **kwargs):
 #         return self.redis_base.delete(*arg, **kwargs)
+
 
 # ------------------------------------------------------------------
 #
@@ -589,7 +591,9 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_pubsub(self, key=None, timeout=0, packed=True, ignore_subscribe_messages=True):
+    def get_pubsub(
+        self, key=None, timeout=0, packed=True, ignore_subscribe_messages=True
+    ):
         msg = None
 
         try:
@@ -644,21 +648,22 @@ class RedisManager(RedisBase):
 
 #     async def get(self, *arg, **kwargs):
 #         return self.redis_mngr.get(*arg, **kwargs)
-    
+
 #     async def h_get_all(self, *arg, **kwargs):
 #         return self.redis_mngr.h_get_all(*arg, **kwargs)
-    
+
 #     async def z_get(self, *arg, **kwargs):
 #         return self.redis_mngr.z_get(*arg, **kwargs)
-    
+
 #     async def l_get(self, *arg, **kwargs):
 #         return self.redis_mngr.l_get(*arg, **kwargs)
-    
+
 #     async def exists(self, *arg, **kwargs):
 #         return self.redis_mngr.exists(*arg, **kwargs)
-    
+
 #     async def h_exists(self, *arg, **kwargs):
 #         return self.redis_mngr.h_exists(*arg, **kwargs)
+
 
 # ------------------------------------------------------------------
 #
@@ -786,15 +791,16 @@ class RedisPipeManager(RedisBase):
 
 #     async def get(self, *arg, **kwargs):
 #         return self.redis_pipe.get(*arg, **kwargs)
-    
+
 #     async def z_get(self, *arg, **kwargs):
 #         return self.redis_pipe.z_get(*arg, **kwargs)
-    
+
 #     async def execute(self, *arg, **kwargs):
 #         return self.redis_pipe.execute(*arg, **kwargs)
-    
+
 #     async def reset(self, *arg, **kwargs):
 #         return self.redis_pipe.reset(*arg, **kwargs)
+
 
 # ------------------------------------------------------------------
 #
@@ -808,7 +814,7 @@ def unpack_object(data_in, log=None):
                 data = unpackb(data_in, encoding="utf-8")
             except Exception as e:
                 if data_in == b'':
-                    data = '' 
+                    data = ''
                 else:
                     raise e
         elif isinstance(data_in, list):
@@ -855,9 +861,6 @@ def is_empty(data):
         return (data is None or data == '')
 
 
-
-
-
 # import inspect
 # def add_async_attrs():
 #     class AsyncDecorator():
@@ -870,7 +873,7 @@ def is_empty(data):
 #     #     print('aaaaaaaa')
 #     #     return 99
 #     # setattr(RedisBase, 'async_'+ 'a', a)
-    
+
 #     for redis_cls in [RedisBase, RedisManager, RedisPipeManager]:
 #         a = inspect.getmembers(redis_cls)
 #         for f in a:
@@ -882,7 +885,6 @@ def is_empty(data):
 #             if name.startswith('async_'):
 #                 continue
 #             # print(name, ' \t\t\t', func)
-
 
 #             async def async_func(self, *arg, **kwargs):
 #                 print('111111111111')
@@ -914,6 +916,5 @@ def is_empty(data):
 #     return
 
 #             # getattr(SocketManager.widget_inits[widget_id], 'update_sync_groups')()
-
 
 # add_async_attrs()

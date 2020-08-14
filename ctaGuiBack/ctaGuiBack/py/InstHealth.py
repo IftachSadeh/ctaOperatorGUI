@@ -5,7 +5,7 @@ from random import Random
 from time import sleep
 from threading import Lock
 
-from ctaGuiUtils.py.ThreadManager import ThreadManager
+from ctaGuiUtils.py.ServiceManager import ServiceManager
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.utils import flatten_dict
 from ctaGuiUtils.py.RedisManager import RedisManager
@@ -14,27 +14,24 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-class InstHealth(ThreadManager):
-    has_active = False
+class InstHealth(ServiceManager):
     lock = Lock()
 
-    def __init__(self, base_config, interrupt_sig):
+    def __init__(self, base_config, service_name, interrupt_sig):
+        self.class_name = self.__class__.__name__
+        super().__init__(class_prefix=self.class_name)
+
         self.log = LogParser(base_config=base_config, title=__name__)
         # self.log.info([['y', ' - InstHealth - ']])
-
-        if InstHealth.has_active:
-            raise Exception('Can not instantiate InstHealth more than once...')
-        else:
-            InstHealth.has_active = True
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
         self.clock_sim = self.base_config.clock_sim
         self.inst_data = self.base_config.inst_data
 
+        self.service_name = service_name
         self.interrupt_sig = interrupt_sig
 
-        self.class_name = self.__class__.__name__
         self.redis = RedisManager(
             name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
@@ -65,16 +62,21 @@ class InstHealth(ThreadManager):
         self.loop_act_rate = max(int(5 / self.loop_sleep_sec), 1)
 
         self.init()
-        
+
+        # make sure this is the only active instance
+        self.init_active_instance()
+
         self.setup_threads()
 
         return
 
     # ---------------------------------------------------------------------------
     def setup_threads(self):
+        
         self.add_thread(target=self.loop_main)
+        self.add_thread(target=self.loop_active_heartbeat)
+        
         return
-
 
     # ------------------------------------------------------------------
     #
@@ -234,7 +236,15 @@ class InstHealth(ThreadManager):
     # ------------------------------------------------------------------
 
     def rand_s1(self, tel_id_in=None, rnd_seed=-1):
-        rnd_props = ['camera', 'mirror', 'mount', 'daq', 'aux', 'inst_0', 'inst_1',]
+        rnd_props = [
+            'camera',
+            'mirror',
+            'mount',
+            'daq',
+            'aux',
+            'inst_0',
+            'inst_1',
+        ]
 
         if rnd_seed < 0:
             rnd_seed = random.randint(0, 100000)
@@ -347,5 +357,5 @@ class InstHealth(ThreadManager):
                 rnd_seed += 1
 
         self.log.info([['c', ' - ending InstHealth.loop_main ...']])
-        
+
         return

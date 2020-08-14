@@ -1,19 +1,7 @@
-import uvicorn
-# from ctaGuiUtils.py.server_args import parse_args
-from ctaGuiBack.py.server_setup import setup_server
+from ctaGuiBack.py.server_setup import SetupServer
 
-is_dev = True
-# is_dev = False
-
-# settings = parse_args(app_name='ctaGuiBack')
-
-# app = 'ctaGuiBack.py.server_setup:app'
-
-# conf = { 
-#     'host': str(settings['app_host']), 
-#     'port': int(settings['app_port']),
-#     'workers': int(settings['app_workers']),
-# }
+# the name of the package
+app_name = 'ctaGuiBack'
 
 # defined the directories to watch for changes (development purpose only)
 reload_dirs = []
@@ -32,26 +20,37 @@ reload_dirs += [
     base_dir + 'py',
     base_dir + 'acs',
 ]
-# if is_dev:
-#     conf.update({
-#         'reload': True,  
-#         'reload_dirs': reload_dirs,
-#     })
 
-# ------------------------------------------------------------------
-# see: https://docs.python.org/3/library/asyncio.html
-# see: https://asgi.readthedocs.io/en/latest/specs/main.html
-# see: https://www.uvicorn.org/
+# the list of services to run, and their configurations
+services = [
+    {
+        'name': 'flush_redis_service',
+        'is_blocking': True
+    },
+    {
+        'name': 'clock_sim_service',
+        'is_blocking': False
+    },
+    {
+        'name': 'inst_health_service',
+        'is_blocking': False
+    },
+    {
+        'name': 'inst_pos_service',
+        'is_blocking': False
+    },
+    {
+        'name': 'scheduler_service',
+        'is_blocking': False
+    },
+]
+
 # ------------------------------------------------------------------
 if __name__ == "__main__":
-    # uvicorn.run(
-    #     app, **conf
-    # )
+    setup_server = SetupServer(
+        app_name=app_name,
+        reload_dirs=reload_dirs,
+        services=services,
+    )
 
-    setup_server(reload_dirs=reload_dirs)
-
-
-
-
-
-
+    setup_server.run_server()

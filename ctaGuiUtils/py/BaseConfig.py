@@ -23,7 +23,7 @@ class BaseConfig():
     # rnd_seed = get_rnd_seed()
     rnd_seed = 9897324
     rnd_gen = Random(rnd_seed)
-    
+
     rnd_seed = (datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds()
     rnd_seed = int(float(str(rnd_seed * 1e6)[-10:]))
     rnd_gen_unique = Random(rnd_seed)

@@ -6,7 +6,7 @@ import random
 from random import Random
 import copy
 
-from ctaGuiUtils.py.ThreadManager import ThreadManager
+from ctaGuiUtils.py.ServiceManager import ServiceManager
 from ctaGuiUtils.py.utils import get_rnd, get_time, get_rnd_seed
 from ctaGuiUtils.py.utils import has_acs
 from ctaGuiUtils.py.LogParser import LogParser
@@ -23,7 +23,7 @@ if has_acs:
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-class MockSched(ThreadManager):
+class MockSched(ServiceManager):
     has_active = False
     lock = Lock()
 
@@ -997,82 +997,17 @@ class MockSched(ThreadManager):
         return
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if False:
-    print('the following is the code before 20200812, upgrades not tested sonce no acs available...')
+    print(
+        'the following is the code before 20200812, upgrades not tested sonce no acs available...'
+    )
 
 # import gevent
 # from gevent import sleep
-# try: 
-#     from gevent.coros import BoundedSemaphore 
-# except: 
-#     from gevent.lock import BoundedSemaphore 
+# try:
+#     from gevent.coros import BoundedSemaphore
+# except:
+#     from gevent.lock import BoundedSemaphore
 
 # from math import floor
 # import random
@@ -1090,7 +1025,6 @@ if False:
 #     from Acspy.Clients.SimpleClient import PySimpleClient
 #     import sb
 #     # import jsonAcs
-
 
 # # ------------------------------------------------------------------
 # #
@@ -2044,13 +1978,3 @@ if False:
 #             sleep(self.loop_sleep)
 
 #         return
-
-
-
-
-
-
-
-
-
-

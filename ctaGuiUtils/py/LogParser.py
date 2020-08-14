@@ -1,5 +1,7 @@
 import logging
+import logging.config as config
 from threading import Lock
+
 
 # ------------------------------------------------------------------
 #
@@ -19,7 +21,13 @@ class LogParser():
     #
     # ------------------------------------------------------------------
     def __init__(
-        self, base_config, title='', do_parse_msg=True, use_colors=True, log_level=None, log_file=None,
+        self,
+        base_config,
+        title='',
+        do_parse_msg=True,
+        use_colors=True,
+        log_level=None,
+        log_file=None,
     ):
         self.base_config = base_config
         if self.base_config is None:
@@ -28,11 +36,11 @@ class LogParser():
         else:
             self.use_log_title = self.base_config.use_log_title
             self.add_msg_ele_space = self.base_config.add_msg_ele_space
-        
+
         self.do_parse_msg = do_parse_msg
 
         self.log_file = log_file
-        
+
         if log_level is None:
             self.log_level = self.base_config.log_level
         else:
@@ -49,34 +57,34 @@ class LogParser():
         self.base_title = title
         self.title = (
             self.colors['c'](
-                '' if (title == '') else
-                ((' [' + title + ']' if self.use_log_title else ''))
+                '' if (title == ''
+                       ) else ((' [' + title + ']' if self.use_log_title else ''))
             )
         )
 
         return
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def set_logging_config(self):
         if LogParser.logging_config is not None:
             return
-        
+
         if self.log_file is None:
             raise Exception('trying to configure logging without log_file')
 
-        LogParser.logging_config = { 
+        LogParser.logging_config = {
             'version': 1,
             'disable_existing_loggers': False,
-            'formatters': { 
-                'standard': { 
+            'formatters': {
+                'standard': {
                     'format': '[%(asctime)s %(levelname)-5.5s] %(message)s',
                     'datefmt': '%d/%m, %H:%M:%S',
                 },
             },
             'handlers': {
-                'console': { 
+                'console': {
                     # 'level': 'INFO',
                     'formatter': 'standard',
                     'class': 'logging.StreamHandler',
@@ -107,13 +115,12 @@ class LogParser():
                     # 'level': 'INFO',
                     'propagate': False,
                 },
-            } 
+            }
         }
-        
-        logging.config.dictConfig(config=LogParser.logging_config)
+
+        config.dictConfig(config=LogParser.logging_config)
 
         return
-    
 
     # ------------------------------------------------------------------
     #
@@ -251,12 +258,12 @@ class LogParser():
             return '' if (str(msg) == '') else col_white_on_black + str(msg) + col_def
 
         def red_on_black(msg):
-            return '' if (str(msg) == ''
-                          ) else col_white_on_black + col_red + str(msg) + col_def
+            return '' if (str(msg)
+                          == '') else col_white_on_black + col_red + str(msg) + col_def
 
         def blue_on_black(msg):
-            return '' if (str(msg) == ''
-                          ) else col_white_on_black + col_blue + str(msg) + col_def
+            return '' if (str(msg)
+                          == '') else col_white_on_black + col_blue + str(msg) + col_def
 
         def yellow_on_black(msg):
             return '' if (str(msg) == ''
@@ -266,8 +273,8 @@ class LogParser():
             return '' if (str(msg) == '') else col_white_on_red + str(msg) + col_def
 
         def yellow_on_red(msg):
-            return '' if (str(msg) == ''
-                          ) else col_white_on_red + col_yellow + str(msg) + col_def
+            return '' if (str(msg)
+                          == '') else col_white_on_red + col_yellow + str(msg) + col_def
 
         def white_on_yellow(msg):
             return '' if (str(msg) == '') else col_white_on_yellow + str(msg) + col_def

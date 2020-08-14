@@ -10,7 +10,7 @@ class MockTarget():
     # ------------------------------------------------------------------
     def __init__(self, base_config):
         self.log = LogParser(base_config=base_config, title=__name__)
-        self.log.info([['y', " - MockTarget - "]])
+        self.log.info([['g', ' - starting MockTarget ...']])
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
@@ -31,13 +31,13 @@ class MockTarget():
         self.zen_min_max_tel = [0, 70]
 
         self.init()
+
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def init(self):
-        self.log.info([['g', " - MockTarget.init() ..."]])
         self.create_target()
         return
 

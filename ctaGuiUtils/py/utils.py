@@ -183,7 +183,7 @@ def get_rnd_seed():
 def get_rnd(n_digits=2, out_type=int, is_unique_seed=False):
     n_digits = max(n_digits, 1)
     rnd_min = pow(10, n_digits - 1)
-    rnd_max = pow(10, n_digits)  - 1
+    rnd_max = pow(10, n_digits) - 1
 
     if is_unique_seed:
         output = BaseConfig.rnd_gen_unique.randint(rnd_min, rnd_max)
@@ -238,22 +238,28 @@ def format_float_to_string(x):
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-from ctaGuiUtils.py.ThreadManager import ThreadManager
-class time_of_night(ThreadManager):
-    has_active = False
+from ctaGuiUtils.py.ServiceManager import ServiceManager
 
-    def __init__(self, base_config, interrupt_sig, end_time_sec=None, timescale=None, *args, **kwargs):
-        # super(time_of_night, self).__init__(base_config, *args, **kwargs)
-        
+
+class time_of_night(ServiceManager):
+    def __init__(
+        self,
+        base_config,
+        service_name,
+        interrupt_sig,
+        end_time_sec=None,
+        timescale=None,
+        *args,
+        **kwargs
+    ):
+        self.class_name = self.__class__.__name__
+        super().__init__(class_prefix=self.class_name)
+
         self.log = LogParser(base_config=base_config, title=__name__)
 
-        if time_of_night.has_active:
-            raise ValueError('Can not instantiate time_of_night more than once...')
-        else:
-            time_of_night.has_active = True
-
         self.base_config = base_config
-        
+
+        self.service_name = service_name
         self.interrupt_sig = interrupt_sig
 
         # 28800 -> 8 hour night
@@ -265,7 +271,6 @@ class time_of_night(ThreadManager):
         #   self.timescale /= 2
         # self.timescale /= 20
 
-        self.class_name = self.__class__.__name__
         self.redis = RedisManager(
             name=self.class_name, port=base_config.redis_port, log=self.log
         )
@@ -274,7 +279,7 @@ class time_of_night(ThreadManager):
 
         # sleep duration for thread loops
         self.loop_sleep_sec = 1
-        
+
         # range in seconds of time-series data to be stored for eg monitoring points
         self.epoch = datetime.utcfromtimestamp(0)
         self.time_series_n_seconds = 60 * 30
@@ -282,13 +287,19 @@ class time_of_night(ThreadManager):
 
         self.reset_night()
 
+        # make sure this is the only active instance
+        self.init_active_instance()
+
         self.setup_threads()
 
         return
 
     # ---------------------------------------------------------------------------
     def setup_threads(self):
+
         self.add_thread(target=self.loop_main)
+        self.add_thread(target=self.loop_active_heartbeat)
+
         return
 
     # ---------------------------------------------------------------------------
@@ -368,7 +379,7 @@ class time_of_night(ThreadManager):
     def loop_main(self):
         self.log.info([['g', ' - starting time_of_night.loop_main ...']])
 
-        while self.can_loop():            
+        while self.can_loop():
             self.time_now_sec += self.loop_sleep_sec / self.timescale
             if self.time_now_sec > self.end_time_sec:
                 self.reset_night()
