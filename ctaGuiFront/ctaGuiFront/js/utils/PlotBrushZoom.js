@@ -5,152 +5,10 @@
 /* global get_color_theme */
 /* global deep_copy */
 
-window.PlotBrushZoom = function(opt_in) {
+window.PlotBrushZoom = function() {
     let color_theme = get_color_theme('bright_grey')
     let reserved = {
-        main: {
-            g: undefined,
-            box: {
-                x: 0,
-                y: 0,
-                w: 0,
-                h: 0,
-            },
-        },
-        axis: [
-            {
-                id: 'top',
-                enabled: true,
-                main: {
-                    g: undefined,
-                    box: {
-                        x: 0,
-                        y: 0,
-                        w: 0,
-                        h: 0,
-                        marg: 0,
-                    },
-                    type: 'top',
-                    attr: {
-                        text: {
-                            enabled: true,
-                            size: 14,
-                            stroke: color_theme.medium.stroke,
-                            fill: color_theme.medium.stroke,
-                        },
-                        path: {
-                            enabled: true,
-                            stroke: color_theme.medium.stroke,
-                            fill: color_theme.medium.stroke,
-                        },
-                    },
-                },
-                axis: undefined,
-                scale: undefined,
-                domain: [ 0, 1000 ],
-                range: [ 0, 0 ],
-                brush: {
-                    zoom: true,
-                    brush: true,
-                },
-            },
-            {
-                id: 'bottom',
-                enabled: true,
-                main: {
-                    g: undefined,
-                    box: {
-                        x: 0,
-                        y: 0,
-                        w: 0,
-                        h: 0,
-                        marg: 0,
-                    },
-                    type: 'bottom',
-                    attr: {
-                        text: {
-                            enabled: true,
-                            size: 14,
-                            stroke: color_theme.medium.stroke,
-                            fill: color_theme.medium.stroke,
-                        },
-                        path: {
-                            enabled: true,
-                            stroke: color_theme.medium.stroke,
-                            fill: color_theme.medium.stroke,
-                        },
-                    },
-                },
-                axis: undefined,
-                scale: undefined,
-                domain: [ 0, 1000 ],
-                range: [ 0, 0 ],
-                brush: {
-                    zoom: true,
-                    brush: true,
-                },
-            },
-        ],
-        content: {
-            main: {
-                g: undefined,
-                box: {
-                    x: 0,
-                    y: 0,
-                    w: 0,
-                    h: 0,
-                    marg: 0,
-                },
-            },
-        },
-        focus: {
-            enabled: true,
-            main: {
-                g: undefined,
-                box: {
-                    x: 0,
-                    y: 0,
-                    w: 0,
-                    h: 0,
-                    marg: 0,
-                },
-                attr: {
-                    fill: '#999999',
-                    stroke: '#000000',
-                },
-            },
-        },
-        brush: {
-            position: {
-                x: 0,
-                y: 0,
-            },
-            callback: () => {},
-        },
-        zoom: {
-            coef: {
-                x: 1,
-                y: 1,
-            },
-            callback: () => {},
-        },
     }
-    reserved = opt_in
-
-    function set_style(opt_in) {
-        if (!is_def(opt_in)) {
-            opt_in = {
-            }
-        }
-
-        reserved.style = {
-        }
-
-        reserved.style.hasOutline = is_def(opt_in.hasOutline)
-            ? opt_in.hasOutline
-            : false
-    }
-    this.set_style = set_style
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {
             reserved[opt_in.tag] = opt_in.data
@@ -166,27 +24,195 @@ window.PlotBrushZoom = function(opt_in) {
         return reserved[type]
     }
 
+    function set_style(opt_in) {
+        if (!is_def(opt_in)) {
+            opt_in = {
+            }
+        }
+
+        reserved.axis.style = {
+        }
+
+        reserved.axis.style.hasOutline = is_def(opt_in.hasOutline)
+            ? opt_in.hasOutline
+            : false
+    }
+    this.set_style = set_style
     function init(opt_in) {
-        reserved.main.g.attr(
+        reserved = opt_in
+        reserved.g.attr(
             'transform',
-            'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')'
+            'translate(' + reserved.box.x + ',' + reserved.box.y + ')'
         )
 
+        init_default()
+        setup_profile()
+
         init_clipping()
-        initFocus()
-        initContent()
-        // initBrush()
+        init_axis_brush_boxes()
+        initAzerty()
         init_zoom()
         initAxis()
-    // setupZoomBrush()
+
     }
     this.init = init
+    function get_structure() {
+        return {
+            id: reserved.id,
+            location: reserved.location,
+            type: reserved.type,
+            profile: reserved.profile,
+            domain: reserved.domain,
+        }
+    }
+    this.get_structure = get_structure
+
+    function init_default() {
+        let reserved_default = {
+            g: undefined,
+            id: undefined,
+            location: undefined,
+            type: 'linear',
+            profile: 'default',
+            box: {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+                marg: 0,
+            },
+            domain: {
+                context: [ 0, 100 ],
+                focus: [ 0, 100 ],
+            },
+            range: [ 0, 0 ],
+            clipping: {
+                max_characters: 5,
+                enabled: false,
+            },
+            axis: {
+                profile: 'focus',
+                visibility: false,
+                track: 'a1',
+                orientation: 'out',
+                text_rotation: true,
+                ticks_min_max: true,
+                style: {
+                    text: {
+                        visible: true,
+                        size: 11,
+                        stroke: colorPalette.medium.stroke,
+                        fill: colorPalette.medium.stroke,
+                    },
+                    path: {
+                        visible: true,
+                        stroke: colorPalette.medium.stroke,
+                        fill: colorPalette.medium.stroke,
+                    },
+                    axis: {
+                        visible: true,
+                        tickSize: 0,
+                    },
+                },
+            },
+            azerty: {
+                profile: 'focus',
+                visibility: false,
+                track: 'b1',
+                style: {
+                    fill: '#AAAAAA',
+                    opacity: 0.5,
+                    stroke: 'none',
+                },
+            },
+            brush: {
+                enabled: true,
+                coef: {
+                    x: 0,
+                    y: 0,
+                },
+                callback: function() {
+                    console.log('callback function brush')
+                },
+            },
+            zoom: {
+                enabled: true,
+                coef: {
+                    kx: 1,
+                    ky: 1,
+                    x: 0,
+                    y: 0,
+                },
+                callback: function() {
+                    console.log('callback function zoom')
+                },
+            },
+        }
+        reserved = window.merge_obj(reserved_default, reserved)
+    }
+    function setup_profile() {
+        if (reserved.profile === 'default') {
+            return
+        }
+
+        switch (reserved.profile) {
+        case 'focus':
+            reserved.azerty = window.merge_obj(
+                reserved.azerty,
+                {
+                    visibility: false,
+                })
+            reserved.axis = window.merge_obj(
+                reserved.axis,
+                {
+                    visibility: true,
+                    track: 'a1',
+                    orientation: 'out',
+                    zoom: true,
+                })
+            break
+        case 'context':
+            reserved.azerty = window.merge_obj(
+                reserved.azerty,
+                {
+                    visibility: true,
+                    zoom: true,
+                })
+            reserved.axis = window.merge_obj(
+                reserved.axis,
+                {
+                    visibility: true,
+                    track: 'a1',
+                    orientation: 'out',
+                    zoom: false,
+                })
+            break
+        case 'hybrid':
+            reserved.azerty = window.merge_obj(
+                reserved.azerty,
+                {
+                    visibility: true,
+                    zoom: true,
+                })
+            reserved.axis = window.merge_obj(
+                reserved.axis,
+                {
+                    visibility: true,
+                    track: 'a1',
+                    orientation: 'out',
+                    zoom: true,
+                })
+            break
+        default:
+
+        }
+    }
 
     function init_clipping() {
         if (!reserved.clipping.enabled) {
             return
         }
-        reserved.clipping.g = reserved.main.g.append('g')
+        reserved.clipping.g = reserved.g.append('g')
         reserved.clipping.g
             .append('defs')
             .append('svg:clipPath')
@@ -195,312 +221,176 @@ window.PlotBrushZoom = function(opt_in) {
             .attr('id', 'clip-rect')
             .attr('x', '0')
             .attr('y', '0')
-            .attr('width', reserved.main.box.w)
-            .attr('height', reserved.main.box.h)
+            .attr('width', reserved.box.w)
+            .attr('height', reserved.box.h)
         reserved.clipping.clipBody = reserved.clipping.g
             .append('g')
             .attr('clip-path', 'url(#clip)')
-        reserved.main.g = reserved.clipping.clipBody.append('g')
+        reserved.g = reserved.clipping.clipBody.append('g')
     }
-    function initAxis() {
-        for (let i = 0; i < reserved.axis.length; i++) {
-            if (!reserved.axis[i].enabled) {
-                return
+    function init_axis_brush_boxes() {
+        function left_boxes() {
+            reserved.boxes.a1 = {
+                x: reserved.box.w,
+                y: 0,
+                w: 0,
+                h: reserved.box.h,
             }
+            reserved.boxes.a2 = {
+                x: reserved.box.w,
+                y: 0,
+                w: 0,
+                h: reserved.box.h,
+            }
+            // reserved.boxes.a3 = {
+            //     x: 0,
+            //     y: 0,
+            //     w: 0,
+            //     h: reserved.box.h,
+            // }
+            reserved.boxes.b1 = {
+                x: reserved.box.w,
+                y: 0,
+                w: reserved.box.w,
+                h: reserved.box.h,
+            }
+            // reserved.boxes.b2 = {
+            //     x: 0,
+            //     y: 0,
+            //     w: reserved.box.w ,
+            //     h: reserved.box.h,
+            // }
+        }
+        function right_boxes() {
+            reserved.boxes.a1 = {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: reserved.box.h,
+            }
+            reserved.boxes.a2 = {
+                x: reserved.box.w,
+                y: 0,
+                w: 0,
+                h: reserved.box.h,
+            }
+            // reserved.boxes.a3 = {
+            //     x: reserved.box.w,
+            //     y: 0,
+            //     w: 0,
+            //     h: reserved.box.h,
+            // }
+            reserved.boxes.b1 = {
+                x: 0,
+                y: 0,
+                w: reserved.box.w,
+                h: reserved.box.h,
+            }
+            // reserved.boxes.b2 = {
+            //     x: reserved.box.w ,
+            //     y: 0,
+            //     w: reserved.box.w ,
+            //     h: reserved.box.h,
+            // }
+        }
+        function top_boxes() {
+            reserved.boxes.a1 = {
+                x: 0,
+                y: reserved.box.h,
+                w: reserved.box.w,
+                h: 0,
+            }
+            reserved.boxes.a2 = {
+                x: 0,
+                y: 0,
+                w: reserved.box.w,
+                h: 0,
+            }
+            // reserved.boxes.a3 = {
+            //     x: 0,
+            //     y: 0,
+            //     w: reserved.box.w,
+            //     h: 0,
+            // }
+            reserved.boxes.b1 = {
+                x: 0,
+                y: 0,
+                w: reserved.box.w,
+                h: reserved.box.h,
+            }
+            // reserved.boxes.b2 = {
+            //     x: 0,
+            //     y: 0,
+            //     w: reserved.box.w,
+            //     h: reserved.box.h ,
+            // }
+        }
+        function bottom_boxes() {
+            reserved.boxes.a1 = {
+                x: 0,
+                y: 0,
+                w: reserved.box.w,
+                h: 0,
+            }
+            reserved.boxes.a2 = {
+                x: 0,
+                y: reserved.box.h,
+                w: reserved.box.w,
+                h: 0,
+            }
+            // reserved.boxes.a3 = {
+            //     x: 0,
+            //     y: reserved.box.h,
+            //     w: reserved.box.w,
+            //     h: 0,
+            // }
+            reserved.boxes.b1 = {
+                x: 0,
+                y: 0,
+                w: reserved.box.w,
+                h: reserved.box.h,
+            }
+            // reserved.boxes.b2 = {
+            //     x: 0,
+            //     y: reserved.box.h ,
+            //     w: reserved.box.w,
+            //     h: reserved.box.h ,
+            // }
+        }
 
-            reserved.axis[i].scale = d3
-                .scaleTime()
-                .range(reserved.axis[i].range)
-                .domain(reserved.axis[i].domain)
-            if (reserved.axis[i].main.type === 'top') {
-                reserved.axis[i].axis = d3.axisTop(reserved.axis[i].scale)
-            }
-            if (reserved.axis[i].main.type === 'bottom') {
-                reserved.axis[i].axis = d3.axisBottom(reserved.axis[i].scale)
-            }
-            // if (reserved.axis[i].main.type === 'left') d3.axisTop(reserved.axis[i].scale)
-            // if (reserved.axis[i].main.type === 'right') d3.axisTop(reserved.axis[i].scale)
-            reserved.axis[i].axis.tickFormat(d3.timeFormat('%H:%M'))
-            reserved.axis[i].main.g = reserved.main.g.append('g')
-            if (reserved.axis[i].main.type === 'top') {
-                reserved.axis[i].main.g.attr(
-                    'transform',
-                    'translate('
-            + reserved.axis[i].main.box.x
-            + ','
-            + (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h)
-            + ')'
-                )
-            }
-            if (reserved.axis[i].main.type === 'bottom') {
-                reserved.axis[i].main.g.attr(
-                    'transform',
-                    'translate('
-            + reserved.axis[i].main.box.x
-            + ','
-            + reserved.axis[i].main.box.y
-            + ')'
-                )
-            }
-            if (!reserved.axis[i].showAxis) {
-                continue
-            }
-            reserved.axis[i].main.g
-                .attr('class', 'axis')
-                .call(reserved.axis[i].axis)
-                .style('pointer-events', 'none')
-                .style('user-select', 'none')
-            reserved.axis[i].main.g.style('opacity', 1)
+        reserved.boxes = {
+        }
+
+        if (reserved.location === 'left') {
+            left_boxes()
+        }
+        else if (reserved.location === 'right') {
+            right_boxes()
+        }
+        else if (reserved.location === 'top') {
+            top_boxes()
+        }
+        else if (reserved.location === 'bottom') {
+            bottom_boxes()
         }
     }
-    function addAxis(axis) {
-        if (!axis.enabled) {
+
+    function initAzerty() {
+        if (!reserved.azerty.visibility) {
             return
         }
-
-        reserved.axis.push(axis)
-        axis.scale = d3
-            .scaleTime()
-            .range(axis.range)
-            .domain(axis.domain)
-        if (axis.main.type === 'top') {
-            axis.axis = d3.axisTop(axis.scale)
-        }
-        if (axis.main.type === 'bottom') {
-            axis.axis = d3.axisBottom(axis.scale)
-        }
-        axis.axis.tickFormat(d3.timeFormat('%H:%M'))
-        axis.g = main.g
-            .append('g')
-            .attr(
-                'transform',
-                'translate(' + axis.main.box.x + ',' + axis.main.box.y + ')'
-            )
-        axis.g.attr('class', 'axis').call(axis.axis)
-        axis.g.style('opacity', 1)
-    }
-    this.addAxis = addAxis
-    function removeAxis(axis) {}
-    function getAxis(id) {
-        for (let index = 0; index < reserved.axis.length; index++) {
-            if (reserved.axis[index].id === id) {
-                return reserved.axis[index]
-            }
-        }
-    }
-    this.getAxis = getAxis
-    function updateAxis(axis) {
-        let index = 0
-        for (index; index < reserved.axis.length; index++) {
-            if (reserved.axis[index].id === axis.id) {
-                if (axis.range) {
-                    reserved.axis[index].range = axis.range
-                }
-                if (axis.domain) {
-                    reserved.axis[index].domain = axis.domain
-                }
-                break
-            }
-        }
-
-        applyZoomBrush(reserved.axis[index])
-
-        if (!reserved.axis[index].enabled) {
-            return
-        }
-        let minTxtSize = reserved.axis[index].main.attr.text.size
-            ? reserved.axis[index].main.attr.text.size
-            : reserved.main.box.w * 0.04
-        // console.log(reserved.axis[index].domain, reserved.axis[index].range);
-        reserved.axis[index].axis.scale(reserved.axis[index].scale)
-        reserved.axis[index].axis.ticks(5)
-        reserved.axis[index].axis.tickSize(4)
-        if (!reserved.axis[index].showAxis) {
-            return
-        }
-        reserved.axis[index].main.g.call(reserved.axis[index].axis)
-        reserved.axis[index].main.g
-            .select('path')
-            .attr('stroke-width', 0.5)
-            .attr('stroke', reserved.axis[index].main.attr.path.stroke)
-            .attr('opacity', reserved.axis[index].main.attr.path.enabled ? 1 : 0)
-        reserved.axis[index].main.g
-            .selectAll('g.tick')
-            .selectAll('line')
-            .attr('stroke-width', 0.5)
-            .attr('stroke', reserved.axis[index].main.attr.path.stroke)
-            .attr('opacity', reserved.axis[index].main.attr.path.enabled ? 1 : 0)
-        reserved.axis[index].main.g
-            .selectAll('g.tick')
-            .selectAll('text')
-            .attr('stroke', reserved.axis[index].main.attr.text.stroke)
-            .attr('stroke-width', 0.2)
-            .attr('fill', reserved.axis[index].main.attr.text.fill)
-            .style('font-size', minTxtSize + 'px')
-            .attr('opacity', reserved.axis[index].main.attr.text.enabled ? 1 : 0)
-    }
-    this.updateAxis = updateAxis
-    function updateAxes() {
-        for (let i = 0; i < reserved.axis.length; i++) {
-            updateAxis(reserved.axis[i])
-        }
-    }
-
-    function initContent() {
-        if (!reserved.content.enabled) {
-            return
-        }
-        reserved.content.main.g = reserved.main.g
-            .append('g')
-            .attr(
-                'transform',
-                'translate('
-          + reserved.content.main.box.x
-          + ','
-          + reserved.content.main.box.y
-          + ')'
-            )
-
-        reserved.content.main.g
-            .append('rect')
-            .attr('id', 'brush')
-            .attr('transform', function() {
-                let scale = {
-                    x: reserved.zoom.coef.kx,
-                    y: reserved.zoom.coef.ky,
-                }
-                let trans = {
-                    x: reserved.zoom.coef.x,
-                    y: reserved.zoom.coef.y,
-                }
-                return (
-                    'translate('
-          + trans.x
-          + ','
-          + trans.y
-          + ') '
-          + 'scale('
-          + scale.x
-          + ','
-          + scale.y
-          + ')'
-                )
-            })
-            .attr('x', 0)
-            .attr('y', -10)
-            .attr('width', reserved.content.main.box.w)
-            .attr('height', reserved.content.main.box.h + 20)
-            .attr('fill', reserved.content.main.attr.fill)
-            .attr('opacity', 0)
-            .on('mouseover', function(d) {
-                d3.select(this).style('cursor', 'crosshair')
-            })
-            .on('mouseout', function(d) {
-                d3.select(this).style('cursor', 'default')
-            })
-        // .attr('stroke', reserved.focus.main.attr.stroke)
-        // .attr('stroke-width', 0.4)
-
-        reserved.content.main.g.on('wheel', function() {
-            d3.event.preventDefault()
-        })
-    }
-
-    // function initBrush () {
-    //   let brushStart = function () {
-    //     reserved.brush.isInBrush = true
-    //   }
-    //   let brushDuring = function () {
-    //     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return // ignore brush-by-zoom
-    //     // console.log('brushDuring');
-    //     console.log('brushduring');
-    //     let s = d3.event.selection || reserved.brush.scale.x.range()
-    //     reserved.brush.coef = d3.event.selection
-    //
-    //     // Update Top Axis
-    //     reserved.brush.scale.x.domain(s.map(reserved.brush.scale.x.invert, reserved.brush.scale.x))
-    //     reserved.brush.domain = reserved.brush.scale.x.domain()
-    //
-    //     let k = reserved.brush.box.w / (s[1] - s[0])
-    //     let x = -s[0]
-    //     let t = d3.zoomIdentity.scale(k).translate(x, 0)
-    //     $.each(reserved.brush.zoom.sel, function (selName, selFunc) {
-    //       selFunc().call(reserved.brush.zoom.fun.transform, t)
-    //     })
-    //
-    //     updateFocus()
-    //     updateAxes()
-    //     // if (locker.are_free(lockers.zoom_during)) {
-    //     //   locker.add({ id: lock_zoom.all, override: true })
-    //     //   locker.add({ id: lock_zoom.during, override: true })
-    //     //
-    //     //   if (d3.event.sourceEvent) {
-    //     //     let s = d3.event.selection || reserved.brush.scale.x.range()
-    //     //
-    //     //     // Update Top Axis
-    //     //     reserved.brush.scale.x.domain(s.map(reserved.brush.scale.x.invert, reserved.brush.scale.x))
-    //     //     reserved.brush.domain = reserved.brush.scale.x.domain()
-    //     //     updateFocus()
-    //     //     updateAxes()
-    //     //
-    //     //     // Keep Track of brush position to prevent jump when zoom
-    //     //     let k = reserved.brush.box.w / (s[1] - s[0])
-    //     //     let x = -s[0]
-    //     //     let t = d3.zoomIdentity.scale(k).translate(x, 0)
-    //     //     $.each(reserved.brush.zoom.sel, function (selName, selFunc) {
-    //     //       selFunc().call(reserved.brush.zoom.fun.transform, t)
-    //     //     })
-    //     //   }
-    //     //
-    //     //   locker.remove({ id: lock_zoom.during })
-    //     // }
-    //   }
-    //   let brushEnd = function () {
-    //     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return // ignore brush-by-zoom
-    //
-    //     // // check if we are zoomed out (full range shown)
-    //     // if (reserved.brush.domain) {
-    //     //   let is_same0 = reserved.brush.domain[0] - reserved.brush.scale.x.domain()[0] <= 0
-    //     //   let is_same1 = reserved.brush.domain[1] - reserved.brush.scale.x.domain()[1] >= 0
-    //     //   if (is_same0 && is_same1) reserved.brush.domain = null
-    //     // }
-    //     // updateTopAxis()
-    //
-    //     reserved.brush.isInBrush = false
-    //     // locker.remove({
-    //     //   id: lock_zoom.all,
-    //     //   override: true,
-    //     //   delay: times.anim
-    //     // })
-    //   }
-    //
-    //   reserved.brush.fun = d3
-    //     .brushX()
-    //     .extent([[0, 0], [reserved.focus.main.box.w, reserved.focus.main.box.h]])
-    //   reserved.brush.fun
-    //     .on('start', brushStart)
-    //     .on('brush', brushDuring)
-    //     .on('end', brushEnd)
-    //   reserved.focus.g.select('rect#brush')
-    //     .call(reserved.brush.fun)
-    // }
-
-    function initFocus() {
-        if (!reserved.focus.enabled) {
-            return
-        }
-        reserved.focus.main.g = reserved.main.g
+        reserved.azerty.g = reserved.g
             .append('g')
             .attr(
                 'transform',
                 'translate('
-          + reserved.focus.main.box.x
+          + reserved.boxes[reserved.azerty.track].x
           + ','
-          + reserved.focus.main.box.y
+          + reserved.boxes[reserved.azerty.track].y
           + ')'
             )
 
-        reserved.focus.main.g
+        reserved.azerty.g
             .append('rect')
             .attr('id', 'brush')
             .attr('transform', function() {
@@ -527,22 +417,28 @@ window.PlotBrushZoom = function(opt_in) {
             })
             .attr('x', 0)
             .attr('y', 0)
-            .attr('width', reserved.focus.main.box.w)
-            .attr('height', reserved.focus.main.box.h)
-            .attr('fill', reserved.focus.main.attr.fill)
-            .attr('opacity', reserved.focus.main.attr.opacity)
-            .attr('stroke', reserved.focus.main.attr.stroke)
+            .attr('width', reserved.boxes[reserved.azerty.track].w)
+            .attr('height', reserved.boxes[reserved.azerty.track].h)
+            .attr('fill', reserved.azerty.style.fill)
+            .attr('opacity', reserved.azerty.style.opacity)
+            .attr('stroke', reserved.azerty.style.stroke)
             .attr('stroke-width', 0.4)
+            .on('mouseover', function() {
+                d3.select(this).style('cursor', 'crosshair')
+            })
+            .on('mouseout', function() {
+                d3.select(this).style('cursor', 'default')
+            })
 
-        reserved.focus.main.g.on('wheel', function() {
+        reserved.azerty.g.on('wheel', function() {
             d3.event.preventDefault()
         })
     }
-    function updateFocus() {
-        if (!reserved.focus.enabled) {
+    function updateAzerty() {
+        if (!reserved.azerty.visibility || !reserved.azerty.zoom) {
             return
         }
-        reserved.focus.main.g.select('rect#brush').attr('transform', function() {
+        reserved.azerty.g.select('rect#brush').attr('transform', function() {
             let scale = {
                 x: reserved.zoom.coef.kx,
                 y: reserved.zoom.coef.ky,
@@ -567,7 +463,7 @@ window.PlotBrushZoom = function(opt_in) {
     }
 
     function init_zoom() {
-        let zoom = {
+        reserved.zoom.meta = {
             kx: {
                 min: 1,
                 max: 20,
@@ -584,284 +480,523 @@ window.PlotBrushZoom = function(opt_in) {
             },
             x: {
                 min: 0,
-                max: reserved.focus.main.box.w,
+                max: reserved.box.w,
                 now: 0,
             },
             y: {
                 min: 0,
-                max: reserved.focus.main.box.h,
+                max: reserved.box.h,
                 now: 0,
             },
         }
-        let drag = {
+        reserved.brush.meta = {
             x: 0,
             y: 0,
         }
         function computeZoomFactorkx() {
-            reserved.zoom.coef.kx = 1 / zoom.kx.now
+            reserved.zoom.coef.kx = 1 / reserved.zoom.meta.kx.now
 
-            let ratio = [ zoom.kx.point[0] / zoom.x.max, 0 ]
+            let ratio = [ reserved.zoom.meta.kx.point[0] / reserved.zoom.meta.x.max, 0 ]
             let offset = {
                 x:
-          (zoom.x.max
-            - zoom.x.max * (1 / zoom.kx.now)
-            - (zoom.x.max - zoom.x.max * (1 / zoom.kx.previous)))
+          (reserved.zoom.meta.x.max
+            - reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.now)
+            - (reserved.zoom.meta.x.max
+            - reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.previous)))
           * ratio[0],
             }
 
-            reserved.zoom.coef.x = reserved.zoom.coef.x + offset.x + drag.x
+            reserved.zoom.coef.x = reserved.zoom.coef.x + offset.x + reserved.brush.meta.x
             if (reserved.zoom.coef.x < 0) {
                 reserved.zoom.coef.x = 0
             }
-            let right = reserved.zoom.coef.x + zoom.x.max * (1 / zoom.kx.now)
-            if (right > zoom.x.max) {
-                reserved.zoom.coef.x = reserved.zoom.coef.x - (right - zoom.x.max)
+            let right
+            = reserved.zoom.coef.x
+            + reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.now)
+            if (right > reserved.zoom.meta.x.max) {
+                reserved.zoom.coef.x
+                = reserved.zoom.coef.x - (right - reserved.zoom.meta.x.max)
             }
         }
         function computeZoomFactorky() {
-            reserved.zoom.coef.ky = 1 / zoom.ky.now
+            reserved.zoom.coef.ky = 1 / reserved.zoom.meta.ky.now
 
-            let ratio = [ 0, zoom.ky.point[1] / zoom.y.max ]
+            let ratio = [ 0, reserved.zoom.meta.ky.point[1] / reserved.zoom.meta.y.max ]
             let offset = {
                 y:
-          (zoom.y.max
-            - zoom.y.max * (1 / zoom.ky.now)
-            - (zoom.y.max - zoom.y.max * (1 / zoom.ky.previous)))
-          * ratio[1],
+                (reserved.zoom.meta.y.max
+                - reserved.zoom.meta.y.max * (1 / reserved.zoom.meta.ky.now)
+                - (reserved.zoom.meta.y.max
+                - reserved.zoom.meta.y.max
+                * (1 / reserved.zoom.meta.ky.previous)))
+                * ratio[1],
             }
 
-            reserved.zoom.coef.y = reserved.zoom.coef.y + offset.y + drag.y
+            reserved.zoom.coef.y = reserved.zoom.coef.y + offset.y + reserved.brush.meta.y
             if (reserved.zoom.coef.y < 0) {
                 reserved.zoom.coef.y = 0
             }
-            let bottom = reserved.zoom.coef.y + zoom.y.max * (1 / zoom.ky.now)
-            if (bottom > zoom.y.max) {
-                reserved.zoom.coef.y = reserved.zoom.coef.y - (bottom - zoom.y.max)
+            let bottom
+            = reserved.zoom.coef.y
+            + reserved.zoom.meta.y.max
+            * (1 / reserved.zoom.meta.ky.now)
+            if (bottom > reserved.zoom.meta.y.max) {
+                reserved.zoom.coef.y
+                = reserved.zoom.coef.y - (bottom - reserved.zoom.meta.y.max)
             }
         }
         function computeDragFactor() {
-            reserved.zoom.coef.x = reserved.zoom.coef.x + drag.x
+            reserved.zoom.coef.x = reserved.zoom.coef.x + reserved.brush.meta.x
             if (reserved.zoom.coef.x < 0) {
                 reserved.zoom.coef.x = 0
             }
-            let right = reserved.zoom.coef.x + zoom.x.max * (1 / zoom.kx.now)
-            if (right > zoom.x.max) {
-                reserved.zoom.coef.x = reserved.zoom.coef.x - (right - zoom.x.max)
+            let right
+            = reserved.zoom.coef.x
+            + reserved.zoom.meta.x.max
+            * (1 / reserved.zoom.meta.kx.now)
+            if (right > reserved.zoom.meta.x.max) {
+                reserved.zoom.coef.x
+                = reserved.zoom.coef.x - (right - reserved.zoom.meta.x.max)
             }
 
-            reserved.zoom.coef.y = reserved.zoom.coef.y + drag.y
+            reserved.zoom.coef.y = reserved.zoom.coef.y + reserved.brush.meta.y
             if (reserved.zoom.coef.y < 0) {
                 reserved.zoom.coef.y = 0
             }
-            let bottom = reserved.zoom.coef.y + zoom.y.max * (1 / zoom.ky.now)
-            if (bottom > zoom.y.max) {
-                reserved.zoom.coef.y = reserved.zoom.coef.y - (bottom - zoom.y.max)
+            let bottom
+            = reserved.zoom.coef.y
+            + reserved.zoom.meta.y.max
+            * (1 / reserved.zoom.meta.ky.now)
+            if (bottom > reserved.zoom.meta.y.max) {
+                reserved.zoom.coef.y
+                = reserved.zoom.coef.y - (bottom - reserved.zoom.meta.y.max)
             }
         }
-        // let zoom_start = function (ele) {
-        //   reserved.zoom.isInZoom = true
-        // }
-        // let zoom_during = function (ele) {
-        //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return // ignore zoom-by-brush
-        //   // if (reserved.zoom.coef.k - d3.event.transform.k !== 0) {
-        //   //   reserved.zoom.coef.k = d3.event.transform.k
-        //   //   reserved.zoom.coef.x = d3.event.transform.x
-        //   //   reserved.zoom.coef.y = d3.event.transform.y
-        //   //
-        //   //   let tot = (reserved.focus.main.box.w - (reserved.focus.main.box.w * (1 / reserved.zoom.coef.k)))
-        //   //   let ratio = 1 - (-(reserved.zoom.coef.x / reserved.zoom.coef.k) / tot)
-        //   //   console.log((reserved.zoom.coef.x / reserved.zoom.coef.k), tot, ratio, -tot * ratio);
-        //   //   reserved.zoom.coef.x = (-tot * ratio) * reserved.zoom.coef.k
-        //   // } else {
-        //   //   reserved.zoom.coef.k = d3.event.transform.k
-        //   //   reserved.zoom.coef.x = d3.event.transform.x
-        //   //   reserved.zoom.coef.y = d3.event.transform.y
-        //   // // }
-        //   // console.log(d3.event.transform);
-        //   // let copy = d3.zoomIdentity
-        //   // copy.x = d3.event.transform.x
-        //   // copy.y = d3.event.transform.y
-        //   // copy.k = d3.event.transform.k
-        //   // let inv = 1 / copy.k
-        //   // let ratio = copy.x / (reserved.focus.main.box.w - (reserved.focus.main.box.w * copy.k))
-        //   // let offset = reserved.focus.main.box.w - (reserved.focus.main.box.w * inv)
-        //   // console.log(inv, ratio, offset);
-        //   //
-        //   // reserved.zoom.coef.k = inv
-        //   // reserved.zoom.coef.y = copy.y
-        //   // reserved.zoom.coef.x = offset * (1 - Math.abs(ratio))
-        //
-        //   // reserved.zoom.coef.k = d3.event.transform.k
-        //   // reserved.zoom.coef.x = d3.event.transform.x
-        //   // reserved.zoom.coef.y = d3.event.transform.y
-        //
-        //   updateFocus()
-        //   updateAxes()
-        //
-        //   // reserved.brush.g.brush.call(
-        //   //   reserved.brush.brush.move,
-        //   //   reserved.brush.scale.x.range().map(trans.invertX, trans)
-        //   // )
-        //
-        //   // reserved.brush.in_user_zoom = is_def(d3.event.sourceEvent)
-        //
-        //   // if (locker.are_free(lockers.zoom_during)) {
-        //   //   locker.add({ id: lock_zoom.all, override: true })
-        //   //   locker.add({ id: lock_zoom.during, override: true })
-        //   //
-        //   //   // Update top Axis
-        //   //   let trans = d3.event.transform
-        //   //   reserved.brush.domain = trans.rescaleX(reserved.brush.scale.x).domain()
-        //   //   reserved.brush.scale.x.domain(reserved.brush.domain)
-        //   //   updateTopAxis()
-        //   //
-        //   //   // Update Grey Brush Position and Size
-        //   //   reserved.brush.g.brush.call(
-        //   //     reserved.brush.brush.move,
-        //   //     reserved.brush.scale.x.range().map(trans.invertX, trans)
-        //   //   )
-        //   //
-        //   //   locker.remove({ id: lock_zoom.during })
-        //   // }
-        // }
-        // let zoom_end = function (ele) {
-        //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return // ignore zoom-by-brush
-        //
-        //   // let trans = d3.event.transform
-        //   // let srcClass = d3.select(ele).attr('class')
-        //   //
-        //   // reserved.brush.zoom.trans[srcClass] = trans
-        //
-        //   // check if we are zoomed out (full range shown)
-        //   // if (reserved.brush.domain) {
-        //   //   let is_same0 = reserved.brush.domain[0] - reserved.brush.scale.x.domain()[0] <= 0
-        //   //   let is_same1 = reserved.brush.domain[1] - reserved.brush.scale.x.domain()[1] >= 0
-        //   //   if (is_same0 && is_same1) reserved.brush.domain = null
-        //   // }
-        //   // updateAxis()
-        //   reserved.zoom.isInZoom = false
-        //   // locker.remove({
-        //   //   id: lock_zoom.all,
-        //   //   override: true,
-        //   //   delay: times.anim
-        //   // })
-        //
-        //   // let sel = Object.keys(reserved.brush.zoom.sel).filter(function (d) {
-        //   //   return reserved.brush.zoom.trans[d] !== trans
-        //   // })
-        //
-        //   // doDomainTrans({ trans: trans, sel: sel })
-        // }
 
-        // reserved.zoom.fun = d3
-        //   .zoom()
-        //   .scaleExtent([1, 20])
-        //   .translateExtent([[0, 0], [reserved.focus.main.box.w, reserved.focus.main.box.h]])
-        //   .extent([[0, 0], [reserved.focus.main.box.w, reserved.focus.main.box.h]])
-        // reserved.zoom.fun
-        //   .on('start', function (d) {
-        //     zoom_start(this)
-        //   })
-        //   .on('zoom', function (d) {
-        //     zoom_during(this)
-        //   })
-        //   .on('end', function (d) {
-        //     zoom_end(this)
-        //   })
-        reserved.content.main.g
+        reserved.g
             .on('wheel', function() {
                 d3.event.preventDefault()
-                if (d3.event.ctrlKey) {
-                    zoom.ky.point = d3.mouse(d3.select(this).node())
+                if (reserved.location === 'left'
+                || reserved.location === 'right') { // d3.event.ctrlKey
+                    reserved.zoom.meta.ky.point = d3.mouse(d3.select(this).node())
 
                     let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
 
-                    zoom.ky.previous = zoom.ky.now
+                    reserved.zoom.meta.ky.previous = reserved.zoom.meta.ky.now
 
-                    zoom.ky.now += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
-                    if (zoom.ky.now < zoom.ky.min) {
-                        zoom.ky.now = zoom.ky.min
+                    reserved.zoom.meta.ky.now
+                    += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+                    if (reserved.zoom.meta.ky.now < reserved.zoom.meta.ky.min) {
+                        reserved.zoom.meta.ky.now = reserved.zoom.meta.ky.min
                     }
-                    if (zoom.ky.now > zoom.ky.max) {
-                        zoom.ky.now = zoom.ky.max
+                    if (reserved.zoom.meta.ky.now > reserved.zoom.meta.ky.max) {
+                        reserved.zoom.meta.ky.now = reserved.zoom.meta.ky.max
                     }
                     computeZoomFactorky()
                 }
                 else {
-                    zoom.kx.point = d3.mouse(d3.select(this).node())
+                    reserved.zoom.meta.kx.point = d3.mouse(d3.select(this).node())
 
                     let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
 
-                    zoom.kx.previous = zoom.kx.now
+                    reserved.zoom.meta.kx.previous = reserved.zoom.meta.kx.now
 
-                    zoom.kx.now += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
-                    if (zoom.kx.now < zoom.kx.min) {
-                        zoom.kx.now = zoom.kx.min
+                    reserved.zoom.meta.kx.now
+                    += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+                    if (reserved.zoom.meta.kx.now < reserved.zoom.meta.kx.min) {
+                        reserved.zoom.meta.kx.now = reserved.zoom.meta.kx.min
                     }
-                    if (zoom.kx.now > zoom.kx.max) {
-                        zoom.kx.now = zoom.kx.max
+                    if (reserved.zoom.meta.kx.now > reserved.zoom.meta.kx.max) {
+                        reserved.zoom.meta.kx.now = reserved.zoom.meta.kx.max
                     }
                     computeZoomFactorkx()
                 }
 
-                updateFocus()
-                updateAxes()
+                update()
                 reserved.zoom.callback()
             })
             .call(
                 d3
                     .drag()
-                    .on('start', function(d) {})
-                    .on('drag', function(d) {
-                        drag.x = d3.event.dx
-                        drag.y = d3.event.dy
+                    .on('start', function() {})
+                    .on('drag', function() {
+                        reserved.brush.meta.x = d3.event.dx
+                        reserved.brush.meta.y = d3.event.dy
 
                         computeDragFactor()
-                        updateFocus()
-                        updateAxes()
+                        update()
                         reserved.zoom.callback()
                     })
-                    .on('end', function(d) {
-                        drag.x = 0
-                        drag.y = 0
+                    .on('end', function() {
+                        reserved.brush.meta.x = 0
+                        reserved.brush.meta.y = 0
                     })
             )
-    // .call(reserved.zoom.fun)
     }
+    function get_brush_zoom_factor() {
+        return {
+            brush: reserved.brush,
+            zoom: reserved.zoom,
+        }
+    }
+    this.get_brush_zoom_factor = get_brush_zoom_factor
+    function set_brush_zoom_factor(new_brush_zoom_factor) {
+        reserved.zoom.coef = new_brush_zoom_factor.zoom.coef
+        reserved.zoom.meta = new_brush_zoom_factor.zoom.meta
 
-    function update_data(opt_in) {
-        return
-        if (opt_in.axis) {
-            if (opt_in.axis.top) {
-                updateAxis('top', opt_in.axis.top)
+        reserved.brush.coef = new_brush_zoom_factor.brush.coef
+        reserved.brush.meta = new_brush_zoom_factor.brush.meta
+
+        update()
+    }
+    this.set_brush_zoom_factor = set_brush_zoom_factor
+    function set_brush_zoom_factor_horizontal(new_brush_zoom_factor) {
+        reserved.zoom.coef.x = new_brush_zoom_factor.zoom.coef.x
+        reserved.zoom.coef.kx = new_brush_zoom_factor.zoom.coef.kx
+        reserved.zoom.meta.x = new_brush_zoom_factor.zoom.meta.x
+        reserved.zoom.meta.kx = new_brush_zoom_factor.zoom.meta.kx
+
+        reserved.brush.coef.x = new_brush_zoom_factor.brush.coef.x
+        reserved.brush.meta.x = new_brush_zoom_factor.brush.meta.x
+
+        update()
+    }
+    this.set_brush_zoom_factor_horizontal = set_brush_zoom_factor_horizontal
+    function set_brush_zoom_factor_vertical(new_brush_zoom_factor) {
+        reserved.zoom.coef.y = new_brush_zoom_factor.zoom.coef.y
+        reserved.zoom.coef.ky = new_brush_zoom_factor.zoom.coef.ky
+        reserved.zoom.meta.y = new_brush_zoom_factor.zoom.meta.y
+        reserved.zoom.meta.ky = new_brush_zoom_factor.zoom.meta.ky
+
+        reserved.brush.coef.y = new_brush_zoom_factor.brush.coef.y
+        reserved.brush.meta.y = new_brush_zoom_factor.brush.meta.y
+
+        update()
+    }
+    this.set_brush_zoom_factor_vertical = set_brush_zoom_factor_vertical
+
+    function compute_overlap(axis, all_ticks, key) {
+        let begin = [ 1 ]
+        let end = [ 1 ]
+
+        for (let i = 1; i < Math.floor(all_ticks.length * 0.5); i++) {
+            // COMPUTE START OF ARRAY
+            let prev_text = d3.select(all_ticks[i - 1]).select('text')
+            let previous = [
+                d3.select(all_ticks[i - 1]).data(),
+                prev_text.node().getBBox()[key],
+            ]
+            let actual_text = d3.select(all_ticks[i]).select('text')
+            let actual = [
+                d3.select(all_ticks[i]).data(),
+                actual_text.node().getBBox()[key],
+            ]
+            if ((previous[1] + actual[1]) * 0.5
+            > Math.abs(axis.scale(previous[0]) - axis.scale(actual[0]))) {
+                begin.push(0)
             }
-            if (opt_in.axis.bottom) {
-                updateAxis('bottom', opt_in.axis.bottom)
+            else {
+                begin.push(1)
+            }
+
+            // COMPUTE END OF ARRAY
+            actual_text = d3.select(all_ticks[all_ticks.length - i - 1]).select('text')
+            actual = [
+                d3.select(all_ticks[all_ticks.length - i - 1]).data(),
+                actual_text.node().getBBox()[key],
+            ]
+            prev_text = d3.select(all_ticks[all_ticks.length - i]).select('text')
+            previous = [
+                d3.select(all_ticks[all_ticks.length - i]).data(),
+                prev_text.node().getBBox()[key],
+            ]
+            if ((previous[1] + actual[1]) * 0.5
+            > Math.abs(axis.scale(previous[0]) - axis.scale(actual[0]))) {
+                end = [ 0 ].concat(end)
+            }
+            else {
+                end = [ 1 ].concat(end)
             }
         }
-        updateBrush()
+        if (all_ticks.length % 2 === 1) {
+            return begin.concat([ 1 ]).concat(end)
+        }
+        return begin.concat(end)
     }
-    this.update_data = update_data
-    function applyZoomBrush(axis) {
-        axis.scale.domain(axis.domain).range(axis.range)
-        // .nice()
+    function format_ticks_linear(axis) {
+        let minTxtSize = reserved.axis.style.text.size
+            ? reserved.axis.style.text.size
+            : reserved.box.w * 0.04
+        let all_ticks = axis.g.selectAll('g.tick')._groups[0]
+        let overlap_array = []
+        if (reserved.location === 'left' || reserved.location === 'right') {
+            overlap_array = compute_overlap(axis, all_ticks, 'height')
+        }
+        else {
+            overlap_array = compute_overlap(axis, all_ticks, 'width')
+        }
+        axis.g
+            .selectAll('g.tick')
+            .each(function(d, i) {
+                let line = d3.select(this).select('line')
+                let text = d3.select(this).select('text')
+                line.attr('stroke-width', 0.6)
+                    .attr('stroke', reserved.axis.style.path.stroke)
+                    .attr('opacity', reserved.axis.style.path.visible ? 1 : 0)
+                text.attr('stroke', reserved.axis.style.text.stroke)
+                    .attr('stroke-width', 0.6)
+                    .attr('fill', reserved.axis.style.text.fill)
+                    .style('font-size', minTxtSize + 'px')
+                    .style('opacity', overlap_array[i])
+            })
+    }
+    function format_ticks_band(axis) {
+        let percent_before_rotate = 0.66
 
-        let newDomain = deep_copy(axis.domain)
-        if (axis.main.type === 'top' || axis.main.type === 'bottom') {
-            newDomain[0] = axis.scale.invert(reserved.zoom.coef.x)
-            newDomain[1] = axis.scale.invert(
-                reserved.zoom.coef.x + reserved.focus.main.box.w * reserved.zoom.coef.kx
+        let rotate = false
+        let minTxtSize = reserved.axis.style.text.size
+            ? reserved.axis.style.text.size
+            : reserved.box.w * 0.04
+        let max = axis.g.selectAll('g.tick').size()
+        let all_ticks = axis.g.selectAll('g.tick')._groups[0]
+        let overlap_array = []
+        if (reserved.location === 'left' || reserved.location === 'right') {
+            overlap_array = compute_overlap(axis, all_ticks, 'height')
+            if (reserved.type === 'band') {
+                console.log(axis.g.selectAll('g.tick>text').nodes().map(function(t){
+                    return t.innerHTML
+                }).reduce((a, b) => a + (b.length < reserved.clipping.max_characters), 0))
+                if (axis.g.selectAll('g.tick>text').nodes().map(function(t){
+                    return t.innerHTML
+                }).reduce((a, b) => a + (b.length < reserved.clipping.max_characters), 0)
+                / max < percent_before_rotate ) {
+                    rotate = true
+                }
+            }
+        }
+        else {
+            let overlap_array_width = compute_overlap(axis, all_ticks, 'width')
+            if (overlap_array_width.reduce((a, b) => a + b, 0)
+              / max < percent_before_rotate ) {
+                overlap_array = compute_overlap(axis, all_ticks, 'height')
+                rotate = true
+            }
+            else {
+                overlap_array = overlap_array_width
+            }
+        }
+        axis.g
+            .selectAll('g.tick')
+            .each(function(d, i) {
+                let line = d3.select(this).select('line')
+                let text = d3.select(this).select('text')
+                line.attr('stroke-width', 0.6)
+                    .attr('stroke', reserved.axis.style.path.stroke)
+                    .attr('opacity', reserved.axis.style.path.visible ? 1 : 0)
+                text.attr('stroke', reserved.axis.style.text.stroke)
+                    .attr('stroke-width', 0.6)
+                    .attr('fill', reserved.axis.style.text.fill)
+                    .style('font-size', minTxtSize + 'px')
+                    .style('opacity', 1)
+                    .text(function() {
+                        if (overlap_array[i]) {
+                            return d.substring(0, reserved.clipping.max_characters)
+                              + (d.length > reserved.clipping.max_characters
+                                  ? ' [+]'
+                                  : '')
+                        }
+                        return d.substring(0, 8) + ' [+]'
+                    })
+                if (rotate) {
+                    if (reserved.location === 'left') {
+                        text.attr('x', minTxtSize)
+                            .attr('transform', 'rotate(70)')
+                            .style('text-anchor', 'end')
+                    }
+                    if (reserved.location === 'right') {
+                        text.attr('x', minTxtSize)
+                            .attr('transform', 'rotate(70)')
+                            .style('text-anchor', 'start')
+                    }
+                    if (reserved.location === 'bottom') {
+                        text.attr('y', minTxtSize)
+                            .attr('transform', 'rotate(20)')
+                            .style('text-anchor', 'start')
+                    }
+                    else if (reserved.location === 'top') {
+                        text.attr('y', -minTxtSize)
+                            .attr('transform', 'rotate(20)')
+                            .style('text-anchor', 'end')
+                    }
+                }
+
+            })
+    }
+    function core_axis(axis) {
+
+        axis.axis.scale(axis.scale)
+        if (axis.ticks_min_max && reserved.type !== 'band') {
+            if (reserved.location === 'left' || reserved.location === 'right') {
+                axis.axis.tickValues(
+                    [ axis.scale.invert(reserved.box.h) ]
+                        .concat(axis.scale.ticks(8))
+                        .concat([ axis.scale.invert(0) ]))
+            }
+            else {
+                axis.axis.tickValues(
+                    [ axis.scale.invert(0) ]
+                        .concat(axis.scale.ticks(8))
+                        .concat([ axis.scale.invert(reserved.box.w) ]))
+            }
+
+        }
+
+        axis.g.call(axis.axis)
+
+        axis.g
+            .select('path')
+            .attr('stroke-width', 0.6)
+            .attr('stroke', reserved.axis.style.path.stroke)
+            .attr('opacity', reserved.axis.style.path.visible ? 1 : 0)
+
+        if (reserved.type === 'linear') {
+            format_ticks_linear(axis)
+        }
+        else if (reserved.type === 'time') {
+            format_ticks_linear(axis)
+        }
+        else if (reserved.type === 'band') {
+            format_ticks_band(axis)
+        }
+
+        if (!axis.visibility) {
+            axis.g.style('visibility', 'hidden')
+            return
+        }
+        axis.g.style('visibility', 'visible')
+    }
+    function initAxis() {
+        add_axis(reserved.axis)
+    }
+    function add_axis(axis) {
+        // if (!axis.enabled) {
+        //     return
+        // }
+
+        if (reserved.type === 'time') {
+            axis.scale = d3.scaleLinear()
+        }
+        else if (reserved.type === 'line') {
+            axis.scale = d3.scaleLinear()
+        }
+        else if (reserved.type === 'band') {
+            axis.scale = d3.scaleBand()
+        }
+        else {
+            axis.scale = d3.scaleLinear()
+        }
+
+        axis.scale
+            .range(reserved.range)
+            .domain(reserved.domain)
+
+        if (reserved.location === 'top') {
+            if (axis.orientation === 'in') {
+                axis.axis = d3.axisBottom(axis.scale)
+            }
+            if (axis.orientation === 'out') {
+                axis.axis = d3.axisTop(axis.scale)
+            }
+        }
+        else if (reserved.location === 'bottom') {
+            if (axis.orientation === 'in') {
+                axis.axis = d3.axisTop(axis.scale)
+            }
+            if (axis.orientation === 'out') {
+                axis.axis = d3.axisBottom(axis.scale)
+            }
+        }
+        else if (reserved.location === 'left') {
+            if (axis.orientation === 'in') {
+                axis.axis = d3.axisRight(axis.scale)
+            }
+            if (axis.orientation === 'out') {
+                axis.axis = d3.axisLeft(axis.scale)
+            }
+        }
+        else if (reserved.location === 'right') {
+            if (axis.orientation === 'in') {
+                axis.axis = d3.axisLeft(axis.scale)
+            }
+            if (axis.orientation === 'out') {
+                axis.axis = d3.axisRight(axis.scale)
+            }
+        }
+
+        if (reserved.type === 'time') {
+            axis.axis.tickFormat(d3.timeFormat('%H:%M'))
+        }
+
+        axis.g = reserved.g.append('g')
+        axis.g.attr(
+            'transform',
+            'translate('
+        + reserved.boxes[axis.track].x
+        + ','
+        + reserved.boxes[axis.track].y
+        + ')'
+        )
+        axis.g
+            .attr('class', 'axis')
+            .call(axis.axis)
+            .style('pointer-events', 'none')
+            .style('user-select', 'none')
+        axis.g.style('opacity', 1)
+
+        core_axis(axis)
+    }
+    function get_axis() {
+        return reserved.axis
+    }
+    this.get_axis = get_axis
+    function update_axis(opt_in) {
+        reserved = window.merge_obj(reserved, opt_in)
+        applyZoomBrush()
+        core_axis(reserved.axis)
+        updateAzerty()
+    }
+    this.update_axis = update_axis
+
+    function update() {
+        applyZoomBrush()
+
+        if (reserved.axis.zoom) {
+            core_axis(reserved.axis)
+        }
+        if (reserved.azerty.zoom) {
+            updateAzerty()
+        }
+    }
+    this.update = update
+
+    function applyZoomBrush() {
+        reserved.axis.scale.domain(reserved.domain).range(reserved.range)
+
+        let newDomain = deep_copy(reserved.domain)
+        if (reserved.location === 'top'
+        || reserved.location === 'bottom') {
+            newDomain[0] = reserved.axis.scale.invert(reserved.zoom.coef.x)
+            newDomain[1] = reserved.axis.scale.invert(
+                reserved.zoom.coef.x + reserved.box.w * reserved.zoom.coef.kx
             )
         }
-        else if (axis.main.type === 'left' || axis.main.type === 'right') {
-            newDomain[0] = axis.scale.invert(reserved.zoom.coef.y)
-            newDomain[1] = axis.scale.invert(
-                reserved.zoom.coef.y + reserved.focus.main.box.h * reserved.zoom.coef.ky
+        else if (reserved.location === 'left'
+        || reserved.location === 'right') {
+            newDomain[1] = reserved.axis.scale.invert(reserved.zoom.coef.y)
+            newDomain[0] = reserved.axis.scale.invert(
+                reserved.zoom.coef.y + reserved.box.h * reserved.zoom.coef.ky
             )
         }
-        if (axis.brush.zoom) {
-            axis.scale.domain(newDomain)
-        }
+        reserved.axis.scale.domain(newDomain)
     }
-    function updateBrush() {}
 }

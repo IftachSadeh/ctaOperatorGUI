@@ -1152,7 +1152,7 @@ let sort_by_func = window.sort_by_func
 // ------------------------------------------------------------------
 window.Locker = function(opt_init) {
     this.id = 'locker_' + unique()
-    
+
     let counters = {
     }
     let default_cntr = 'common'
@@ -2371,7 +2371,7 @@ window.do_zoom_to_target = function(opt_in) {
         if (opt_in.is_static) {
             return ''
         }
-    
+
         if (is_def(opt_in.func_during)) {
             opt_in.func_during()
         }
@@ -2411,13 +2411,65 @@ window.this_trans = function(me) {
 // ------------------------------------------------------------------
 // deep copy an object or array
 // ------------------------------------------------------------------
-window.merge_obj = function(obj, src) {
-    for (let key in src) {
-        if (src.hasOwnProperty(key)) {
-            obj[key] = src[key]
-        }
+// window.merge_obj = function(obj, src) {
+//     for (let key in src) {
+//         if (src.hasOwnProperty(key)) {
+//             obj[key] = src[key]
+//         }
+//     }
+//     return obj
+// }
+function isObject(item) {
+    return (item && typeof item === 'object' && !Array.isArray(item))
+}
+// window.merge_obj = function (target, ...sources) {
+//   let merge_object = Object.assign({}, target)
+//     function inner_merge() {
+//       if (!sources.length) return target
+//       const source = sources.shift()
+//
+//       if (isObject(target) && isObject(source)) {
+//           for (const key in source) {
+//               if (isObject(source[key])) {
+//                   if (!target[key]) Object.assign(target, { [key]: {} })
+//                   merge_obj(target[key], source[key])
+//               } else {
+//                   if (!target[key]) Object.assign(target, { [key]: source[key] })
+//               }
+//           }
+//       }
+//
+//       return merge_obj(merge_object, ...sources)
+//     }
+//     inner_merge()
+//     return merge_object
+// }
+
+window.merge_obj = function (sources, overwrite) {
+    let merge_object = {}
+
+    function inner_merge(obj, sources, overwrite) {
+      for (let key in overwrite) {
+          if (isObject(overwrite[key])) {
+            obj[key] = {}
+            inner_merge(obj[key], isObject(sources[key]) ? sources[key] : {}, overwrite[key])
+          } else {
+            obj[key] = overwrite[key]
+          }
+      }
+      for (let key in sources) {
+          if (!overwrite.hasOwnProperty(key)) {
+              if (isObject(sources[key])) {
+                obj[key] = {}
+                inner_merge(obj[key], sources[key], {})
+              } else {
+                obj[key] = sources[key]
+              }
+          }
+      }
     }
-    return obj
+    inner_merge(merge_object, sources, overwrite)
+    return merge_object
 }
 
 window.deep_copy = function(obj_in) {
@@ -2642,7 +2694,7 @@ window.add_switch_btn = function(opt_in) {
     input.id = input_id
     input.type = 'checkbox'
     input.checked = checked
-    
+
     let span = label.appendChild(
         document.createElement('span')
     )
@@ -2654,7 +2706,7 @@ window.add_switch_btn = function(opt_in) {
     if (is_def(tooltip)) {
         let tooltip_text = tooltip.text
         let class_list = tooltip.class_list
-        
+
         top_div.classList.add('tooltip')
         let span = top_div.appendChild(
             document.createElement('span')
@@ -2671,7 +2723,7 @@ window.add_switch_btn = function(opt_in) {
 
 
 // ------------------------------------------------------------------
-// 
+//
 // ------------------------------------------------------------------
 window.add_click_btn = function(opt_in) {
     let main_div = opt_in.main_div
@@ -2691,7 +2743,7 @@ window.add_click_btn = function(opt_in) {
     let i = top_div.appendChild(
         document.createElement('i')
     )
-    
+
     i.classList.add(
         'fa',
         icon,
@@ -2711,7 +2763,7 @@ window.add_click_btn = function(opt_in) {
     if (is_def(tooltip)) {
         let tooltip_text = tooltip.text
         let class_list = tooltip.class_list
-        
+
         top_div.classList.add('tooltip')
         let span = top_div.appendChild(
             document.createElement('span')
@@ -2739,7 +2791,7 @@ window.add_status_indicator = function(opt_in) {
         document.createElement('div')
     )
     top_div.id = top_div_id
-    
+
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
@@ -2760,7 +2812,7 @@ window.add_status_indicator = function(opt_in) {
     if (is_def(tooltip)) {
         let tooltip_text = tooltip.text
         let class_list = tooltip.class_list
-        
+
         top_div.classList.add('tooltip')
         let span = top_div.appendChild(
             document.createElement('span')
@@ -2813,7 +2865,7 @@ window.add_slider = function(opt_in) {
         let text_id = input_text.id
         let text_size = input_text.size
         let is_before = input_text.is_before
-        
+
         let text_container
         if (is_before) {
             text_container = main_div.insertBefore(
@@ -2843,7 +2895,7 @@ window.add_slider = function(opt_in) {
     // if (is_def(hover_ranges)) {
     //     // let tooltip_text = tooltip.text
     //     // let class_list = tooltip.class_list
-        
+
     //     top_div.classList.add('tooltip')
 
     //     let range_min = top_div.appendChild(
@@ -2868,7 +2920,7 @@ window.add_slider = function(opt_in) {
     if (is_def(tooltip)) {
         let tooltip_text = tooltip.text
         let class_list = tooltip.class_list
-        
+
         top_div.classList.add('tooltip')
         let span = top_div.appendChild(
             document.createElement('span')
@@ -2888,7 +2940,7 @@ window.add_slider = function(opt_in) {
 // ------------------------------------------------------------------
 window.add_flex_line = function(opt_in) {
     let main_div = opt_in.main_div
-    
+
     let div_top = main_div.appendChild(
         document.createElement('div')
     )
@@ -2898,7 +2950,7 @@ window.add_flex_line = function(opt_in) {
         document.createElement('div')
     )
     div_left.classList.add('floating-div-content-line')
-    
+
     let div_flex = div_top.appendChild(
         document.createElement('div')
     )
@@ -2933,7 +2985,7 @@ window.add_accordion_div = function(opt_in) {
         document.createElement('div')
     )
     title_div.style = 'display: flex;'
-    
+
     let content_div = top_div.appendChild(
         document.createElement('div')
     )

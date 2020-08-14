@@ -1320,7 +1320,7 @@ let main_sched_blockController = function(opt_in) {
         this.init_data = init_data
 
         function update_data() {
-            let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+            let axisTop = brushZoom.get_axis().axis.scale().domain()
             let current_time = {
                 date: new Date(shared.data.server.time_of_night.date_now),
                 time: shared.data.server.time_of_night.now,
@@ -1797,7 +1797,7 @@ let main_sched_blockController = function(opt_in) {
                 },
             })
 
-            let axisTop = brushZoom.getAxis('top')
+            let axisTop = brushZoom.get_axis()
             reserved.g.append('rect')
                 .attr('id', 'cloak')
                 .attr('x', 0)
@@ -1817,8 +1817,8 @@ let main_sched_blockController = function(opt_in) {
                 tel_ids.push(data_now.id)
             })
 
-            let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let newWidth = brushZoom.getAxis('top').scale(new Date(shared.data.server.time_of_night.date_now))
+            let axisTop = brushZoom.get_axis().axis.scale().domain()
+            let newWidth = brushZoom.get_axis().scale(new Date(shared.data.server.time_of_night.date_now))
             if (newWidth < 0) {
                 newWidth = 0
             }
@@ -1839,6 +1839,7 @@ let main_sched_blockController = function(opt_in) {
                 date: axisTop[1],
                 time: shared.data.server.time_of_night.end,
             }
+            console.log(get_blocksData())
             blockQueue.update_data({
                 time: {
                     current_time: current_time,
@@ -1861,7 +1862,7 @@ let main_sched_blockController = function(opt_in) {
                 date: new Date(shared.data.server.time_of_night.date_now),
                 time: shared.data.server.time_of_night.now,
             }
-            let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+            let axisTop = brushZoom.get_axis().axis.scale().domain()
             console.log(axisTop)
             let start_time_sec = {
                 date: axisTop[0],
@@ -2014,167 +2015,198 @@ let main_sched_blockController = function(opt_in) {
                 .attr('stroke-width', 0.4)
                 .attr('stroke-dasharray', [ 0, brushBox.w, brushBox.h * 0.7, brushBox.w, brushBox.h * 0.7 ])
 
-            brushZoom = new PlotBrushZoom({
-                main: {
-                    g: reserved.g,
-                    box: brushBox,
-                },
-                clipping: {
-                    enabled: false,
-                },
-                axis: [
-                    {
-                        id: 'top',
-                        enabled: true,
-                        showAxis: true,
-                        main: {
-                            g: undefined,
-                            box: {
-                                x: 0,
-                                y: brushBox.h * 0.2,
-                                w: brushBox.w,
-                                h: brushBox.h * 0.2,
-                                marg: 0,
-                            },
-                            type: 'bottom',
-                            attr: {
-                                text: {
-                                    enabled: false,
-                                    size: 14,
-                                    stroke: color_theme.medium.stroke,
-                                    fill: color_theme.medium.stroke,
-                                },
-                                path: {
-                                    enabled: false,
-                                    stroke: color_theme.medium.stroke,
-                                    fill: color_theme.medium.stroke,
-                                },
-                            },
-                        },
-                        axis: undefined,
-                        scale: undefined,
-                        domain: [ 0, 1000 ],
-                        range: [ 0, brushBox.w ],
-                        brush: {
-                            zoom: true,
-                            brush: true,
-                        },
-                    },
-                    {
-                        id: 'middle',
-                        enabled: true,
-                        showAxis: true,
-                        main: {
-                            g: undefined,
-                            box: {
-                                x: 0,
-                                y: brushBox.h * 0.95,
-                                w: brushBox.w,
-                                h: brushBox.h * 0.0,
-                                marg: 0,
-                            },
-                            type: 'top',
-                            attr: {
-                                text: {
-                                    enabled: true,
-                                    size: 10,
-                                    stroke: color_theme.medium.stroke,
-                                    fill: color_theme.medium.stroke,
-                                },
-                                path: {
-                                    enabled: false,
-                                    stroke: color_theme.medium.background,
-                                    fill: color_theme.medium.background,
-                                },
-                            },
-                        },
-                        axis: undefined,
-                        scale: undefined,
-                        domain: [ 0, 1000 ],
-                        range: [ 0, brushBox.w ],
-                        brush: {
-                            zoom: false,
-                            brush: false,
-                        },
-                    },
-                    {
-                        id: 'bottom',
-                        enabled: true,
-                        showAxis: true,
-                        main: {
-                            g: undefined,
-                            box: {
-                                x: 0,
-                                y: brushBox.h * 0.6,
-                                w: brushBox.w,
-                                h: brushBox.h * 0.2,
-                                marg: 0,
-                            },
-                            type: 'top',
-                            attr: {
-                                text: {
-                                    enabled: false,
-                                    size: 14,
-                                    stroke: color_theme.medium.stroke,
-                                    fill: color_theme.medium.stroke,
-                                },
-                                path: {
-                                    enabled: true,
-                                    stroke: color_theme.medium.stroke,
-                                    fill: color_theme.medium.stroke,
-                                },
-                            },
-                        },
-                        axis: undefined,
-                        scale: undefined,
-                        domain: [ 0, 1000 ],
-                        range: [ 0, brushBox.w ],
-                        brush: {
-                            zoom: false,
-                            brush: false,
-                        },
-                    },
-                ],
-                content: {
-                    enabled: true,
-                    main: {
-                        g: undefined,
-                        box: {
-                            x: 0,
-                            y: brushBox.h * 0.15,
-                            w: brushBox.w,
-                            h: brushBox.h * 0.65,
-                            marg: 0,
-                        },
-                        attr: {
-                            fill: colorPalette.medium.background,
-                        },
-                    },
-                },
-                focus: {
-                    enabled: true,
-                    main: {
-                        g: undefined,
-                        box: {
-                            x: 0,
-                            y: brushBox.h * 0.15,
-                            w: brushBox.w,
-                            h: brushBox.h * 0.65,
-                            marg: 0,
-                        },
-                        attr: {
-                            fill: colorPalette.darker.background,
-                            opacity: 1,
-                            stroke: colorPalette.darker.background,
-                        },
-                    },
-                },
+            brushZoom = new PlotBrushZoom()
+            // {
+            //     main: {
+            //         g: reserved.g,
+            //         box: brushBox,
+            //     },
+            //     clipping: {
+            //         enabled: false,
+            //     },
+            //     axis: [
+            //         {
+            //             id: 'top',
+            //             enabled: true,
+            //             showAxis: true,
+            //             main: {
+            //                 g: undefined,
+            //                 box: {
+            //                     x: 0,
+            //                     y: brushBox.h * 0.2,
+            //                     w: brushBox.w,
+            //                     h: brushBox.h * 0.2,
+            //                     marg: 0,
+            //                 },
+            //                 type: 'bottom',
+            //                 attr: {
+            //                     text: {
+            //                         enabled: false,
+            //                         size: 14,
+            //                         stroke: color_theme.medium.stroke,
+            //                         fill: color_theme.medium.stroke,
+            //                     },
+            //                     path: {
+            //                         enabled: false,
+            //                         stroke: color_theme.medium.stroke,
+            //                         fill: color_theme.medium.stroke,
+            //                     },
+            //                 },
+            //             },
+            //             axis: undefined,
+            //             scale: undefined,
+            //             domain: [ 0, 1000 ],
+            //             range: [ 0, brushBox.w ],
+            //             brush: {
+            //                 zoom: true,
+            //                 brush: true,
+            //             },
+            //         },
+            //         {
+            //             id: 'middle',
+            //             enabled: true,
+            //             showAxis: true,
+            //             main: {
+            //                 g: undefined,
+            //                 box: {
+            //                     x: 0,
+            //                     y: brushBox.h * 0.95,
+            //                     w: brushBox.w,
+            //                     h: brushBox.h * 0.0,
+            //                     marg: 0,
+            //                 },
+            //                 type: 'top',
+            //                 attr: {
+            //                     text: {
+            //                         enabled: true,
+            //                         size: 10,
+            //                         stroke: color_theme.medium.stroke,
+            //                         fill: color_theme.medium.stroke,
+            //                     },
+            //                     path: {
+            //                         enabled: false,
+            //                         stroke: color_theme.medium.background,
+            //                         fill: color_theme.medium.background,
+            //                     },
+            //                 },
+            //             },
+            //             axis: undefined,
+            //             scale: undefined,
+            //             domain: [ 0, 1000 ],
+            //             range: [ 0, brushBox.w ],
+            //             brush: {
+            //                 zoom: false,
+            //                 brush: false,
+            //             },
+            //         },
+            //         {
+            //             id: 'bottom',
+            //             enabled: true,
+            //             showAxis: true,
+            //             main: {
+            //                 g: undefined,
+            //                 box: {
+            //                     x: 0,
+            //                     y: brushBox.h * 0.6,
+            //                     w: brushBox.w,
+            //                     h: brushBox.h * 0.2,
+            //                     marg: 0,
+            //                 },
+            //                 type: 'top',
+            //                 attr: {
+            //                     text: {
+            //                         enabled: false,
+            //                         size: 14,
+            //                         stroke: color_theme.medium.stroke,
+            //                         fill: color_theme.medium.stroke,
+            //                     },
+            //                     path: {
+            //                         enabled: true,
+            //                         stroke: color_theme.medium.stroke,
+            //                         fill: color_theme.medium.stroke,
+            //                     },
+            //                 },
+            //             },
+            //             axis: undefined,
+            //             scale: undefined,
+            //             domain: [ 0, 1000 ],
+            //             range: [ 0, brushBox.w ],
+            //             brush: {
+            //                 zoom: false,
+            //                 brush: false,
+            //             },
+            //         },
+            //     ],
+            //     content: {
+            //         enabled: true,
+            //         main: {
+            //             g: undefined,
+            //             box: {
+            //                 x: 0,
+            //                 y: brushBox.h * 0.15,
+            //                 w: brushBox.w,
+            //                 h: brushBox.h * 0.65,
+            //                 marg: 0,
+            //             },
+            //             attr: {
+            //                 fill: colorPalette.medium.background,
+            //             },
+            //         },
+            //     },
+            //     focus: {
+            //         enabled: true,
+            //         main: {
+            //             g: undefined,
+            //             box: {
+            //                 x: 0,
+            //                 y: brushBox.h * 0.15,
+            //                 w: brushBox.w,
+            //                 h: brushBox.h * 0.65,
+            //                 marg: 0,
+            //             },
+            //             attr: {
+            //                 fill: colorPalette.darker.background,
+            //                 opacity: 1,
+            //                 stroke: colorPalette.darker.background,
+            //             },
+            //         },
+            //     },
+            //     brush: {
+            //         coef: {
+            //             x: 0,
+            //             y: 0,
+            //         },
+            //         callback: () => {},
+            //     },
+            //     zoom: {
+            //         coef: {
+            //             kx: 1,
+            //             ky: 1,
+            //             x: 0,
+            //             y: 0,
+            //         },
+            //         callback: function() {
+            //             svg_blocks_queue_server.update_data()
+            //         },
+            //     },
+            // }
+            brushZoom.init({
+                g: reserved.g,
+                box: brushBox,
+
+                domain: [ 0, 100 ],
+                id: 'brush',
+                location: 'bottom',
+                profile: 'context',
+                range: [ 0, brushBox.w ],
+                type: 'time',
                 brush: {
                     coef: {
                         x: 0,
                         y: 0,
                     },
                     callback: () => {},
+                    enabled: true,
                 },
                 zoom: {
                     coef: {
@@ -2186,9 +2218,9 @@ let main_sched_blockController = function(opt_in) {
                     callback: function() {
                         svg_blocks_queue_server.update_data()
                     },
+                    enabled: true,
                 },
             })
-            brushZoom.init()
         }
         this.init_data = init_data
 
@@ -2216,16 +2248,7 @@ let main_sched_blockController = function(opt_in) {
                 time: Number(shared.data.server.time_of_night.end),
             }
 
-            brushZoom.updateAxis({
-                id: 'top',
-                domain: [ start_time_sec.date, end_time_sec.date ],
-            })
-            brushZoom.updateAxis({
-                id: 'middle',
-                domain: [ start_time_sec.date, end_time_sec.date ],
-            })
-            brushZoom.updateAxis({
-                id: 'bottom',
+            brushZoom.update_axis({
                 domain: [ start_time_sec.date, end_time_sec.date ],
             })
         }
@@ -2302,14 +2325,14 @@ let main_sched_blockController = function(opt_in) {
         this.focus = focus
 
         function drawTargets() {
-            let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+            let axisTop = brushZoom.get_axis().axis.scale().domain()
             let start_time_sec = {
-                date: axisTop[0].getTime(),
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+                date: axisTop[0],
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0]) / -1000,
             }
             let end_time_sec = {
-                date: axisTop[1].getTime(),
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+                date: axisTop[1],
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1]) / -1000,
             }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])
@@ -2844,14 +2867,14 @@ let main_sched_blockController = function(opt_in) {
 
             let curve = computeTelsCurve(block)
 
-            let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+            let axisTop = brushZoom.get_axis().axis.scale().domain()
             let start_time_sec = {
-                date: axisTop[0].getTime(),
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+                date: axisTop[0],
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0]) / -1000,
             }
             let end_time_sec = {
-                date: axisTop[1].getTime(),
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+                date: axisTop[1],
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1]) / -1000,
             }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])

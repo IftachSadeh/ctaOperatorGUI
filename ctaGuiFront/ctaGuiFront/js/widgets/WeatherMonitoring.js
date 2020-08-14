@@ -519,7 +519,7 @@ let main_weather_monitoring = function(opt_in) {
 
         svgPL.init_data()
 
-        svgPlotDisplay.init_data()
+        // svgPlotDisplay.init_data()
     }
     this.init_data = init_data
     function update_dataOnce(data_in) {
@@ -544,7 +544,7 @@ let main_weather_monitoring = function(opt_in) {
         createUrgentList()
 
         svg_measured_data.update_data()
-        svgPlotDisplay.update_data()
+        // svgPlotDisplay.update_data()
         svgFMDate.update_data()
         svgFMSupervision.update_data()
 
@@ -616,13 +616,13 @@ let main_weather_monitoring = function(opt_in) {
         for (let i = 0; i < shared.data.length; i++) {
             if (shared.data[i].id === data.id) {
                 shared.data.splice(i, 1)
-                svgPlotDisplay.unbindData(data)
+                // svgPlotDisplay.unbindData(data)
                 svg_measured_data.unselectMeasure(data.id)
                 return
             }
         }
         shared.data.push(data)
-        svgPlotDisplay.bindData(data)
+        // svgPlotDisplay.bindData(data)
         svg_measured_data.selectMeasure(data.id)
     }
     function linearRegression(x, y) {
@@ -1176,12 +1176,12 @@ let main_weather_monitoring = function(opt_in) {
                         y: 0,
                     },
                     callback: function() {
-                        plot.updateAxis({
-                            id: 'bottom',
-                            domain: brush.getAxis('top').scale.domain(),
-                            range: [ 0, plotbox.w ],
-                        })
-                        plot.update_data()
+                        // plot.updateAxis({
+                        //     id: 'bottom',
+                        //     domain: brush.getAxis('top').scale.domain(),
+                        //     range: [ 0, plotbox.w ],
+                        // })
+                        // plot.update_data()
                     },
                 },
             })
@@ -1241,30 +1241,30 @@ let main_weather_monitoring = function(opt_in) {
                 date: new Date(shared.server.time_of_night.date_now),
                 time: Number(shared.server.time_of_night.now),
             }
-            plot.updateAxis({
-                id: 'bottom',
-                domain: [ start_time_sec.date, end_time_sec.date ],
-                range: [ 0, plotbox.w ],
-            })
-            plot.updateAxis({
-                id: 'left',
-                domain: [ 0, 100 ],
-                range: [ plotbox.h, 0 ],
-            })
-            plot.updateAxis({
-                id: 'right',
-                domain: [ 0, 100 ],
-                range: [ plotbox.h, 0 ],
-            })
-
-            brush.updateAxis({
-                id: 'top',
-                domain: [ start_time_sec.date, end_time_sec.date ],
-            })
-            brush.updateAxis({
-                id: 'middle',
-                domain: [ start_time_sec.date, end_time_sec.date ],
-            })
+            // plot.updateAxis({
+            //     id: 'bottom',
+            //     domain: [ start_time_sec.date, end_time_sec.date ],
+            //     range: [ 0, plotbox.w ],
+            // })
+            // plot.updateAxis({
+            //     id: 'left',
+            //     domain: [ 0, 100 ],
+            //     range: [ plotbox.h, 0 ],
+            // })
+            // plot.updateAxis({
+            //     id: 'right',
+            //     domain: [ 0, 100 ],
+            //     range: [ plotbox.h, 0 ],
+            // })
+            //
+            // brush.updateAxis({
+            //     id: 'top',
+            //     domain: [ start_time_sec.date, end_time_sec.date ],
+            // })
+            // brush.updateAxis({
+            //     id: 'middle',
+            //     domain: [ start_time_sec.date, end_time_sec.date ],
+            // })
         }
         this.update_data = update_data
 
@@ -3361,16 +3361,16 @@ let main_weather_monitoring = function(opt_in) {
                     date: new Date(shared.server.time_of_night.date_now),
                     time: Number(shared.server.time_of_night.now),
                 }
-                plot.updateAxis({
-                    id: 'bottom',
-                    domain: [ start_time_sec.date, end_time_sec.date ],
-                    range: [ 0, opt_in.box.w ],
-                })
-                plot.updateAxis({
-                    id: 'left',
-                    domain: [ 0, 100 ],
-                    range: [ opt_in.box.h, 0 ],
-                })
+                // plot.updateAxis({
+                //     id: 'bottom',
+                //     domain: [ start_time_sec.date, end_time_sec.date ],
+                //     range: [ 0, opt_in.box.w ],
+                // })
+                // plot.updateAxis({
+                //     id: 'left',
+                //     domain: [ 0, 100 ],
+                //     range: [ opt_in.box.h, 0 ],
+                // })
 
                 let data = shared.server.measures[Math.floor((Math.random() * 11))]
                 // plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
@@ -3587,7 +3587,7 @@ let main_weather_monitoring = function(opt_in) {
                 // ------------------------------------------------------------------
                 function get_sync_state(data_sync_in) {
                     arr_zoomer_base.get_sync_tel_focus(data_sync_in)
-                    
+
                     if (data_sync_in.type == 'sync_arr_zoomer_prop') {
                         // check if this came from myself (even for the same widget_id one
                         // can have multiple zoomers, but arr_zoomer_id is completely unique)
@@ -3646,30 +3646,30 @@ let main_weather_monitoring = function(opt_in) {
                 date: new Date(shared.server.time_of_night.date_now),
                 time: Number(shared.server.time_of_night.now),
             }
-            plot.updateAxis({
-                id: 'bottom',
-                domain: [ start_time_sec.date, end_time_sec.date ],
-                range: [ 0, plotbox.w ],
-            })
-            plot.updateAxis({
-                id: 'left',
-                domain: [ 0, 100 ],
-                range: [ plotbox.h, 0 ],
-            })
-            plot.updateAxis({
-                id: 'right',
-                domain: [ 0, 100 ],
-                range: [ plotbox.h, 0 ],
-            })
-
-            brush.updateAxis({
-                id: 'top',
-                domain: [ start_time_sec.date, end_time_sec.date ],
-            })
-            brush.updateAxis({
-                id: 'middle',
-                domain: [ start_time_sec.date, end_time_sec.date ],
-            })
+            // plot.updateAxis({
+            //     id: 'bottom',
+            //     domain: [ start_time_sec.date, end_time_sec.date ],
+            //     range: [ 0, plotbox.w ],
+            // })
+            // plot.updateAxis({
+            //     id: 'left',
+            //     domain: [ 0, 100 ],
+            //     range: [ plotbox.h, 0 ],
+            // })
+            // plot.updateAxis({
+            //     id: 'right',
+            //     domain: [ 0, 100 ],
+            //     range: [ plotbox.h, 0 ],
+            // })
+            //
+            // brush.updateAxis({
+            //     id: 'top',
+            //     domain: [ start_time_sec.date, end_time_sec.date ],
+            // })
+            // brush.updateAxis({
+            //     id: 'middle',
+            //     domain: [ start_time_sec.date, end_time_sec.date ],
+            // })
         }
         this.update_data = update_data
 
