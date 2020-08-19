@@ -1,18 +1,13 @@
-try:
-    from gevent.coros import BoundedSemaphore
-except:
-    from gevent.lock import BoundedSemaphore
+# try:
+#     from gevent.coros import BoundedSemaphore
+# except:
+#     from gevent.lock import BoundedSemaphore
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
 # ------------------------------------------------------------------
-# BaseWidget
-# ------------------------------------------------------------------
 class BaseWidget():
-    # privat lock for this widget type
-    lock = BoundedSemaphore(1)
-
     # all session ids for this user/widget
     widget_group_sess = dict()
 
@@ -20,9 +15,6 @@ class BaseWidget():
     #
     # ------------------------------------------------------------------
     def __init__(self, widget_id='', socket_manager=None, *args, **kwargs):
-        # ------------------------------------------------------------------
-        # standard initialisations
-        # ------------------------------------------------------------------
         self.log = LogParser(base_config=socket_manager.base_config, title=__name__)
 
         # the id of this instance
@@ -53,13 +45,9 @@ class BaseWidget():
     #
     # ------------------------------------------------------------------
     def setup(self, *args):
-        with self.socket_manager.lock:
-            wgt = self.redis.h_get(
-                name='all_widgets',
-                key=self.widget_id,
-            )
-            if self.n_icon == -1:
-                self.n_icon = wgt['n_icon']
+        wgt = self.redis.h_get(name='ws;widget_infos', key=self.widget_id)
+        if self.n_icon == -1:
+            self.n_icon = wgt['n_icon']
 
         # override the global logging variable with a
         # name corresponding to the current session id

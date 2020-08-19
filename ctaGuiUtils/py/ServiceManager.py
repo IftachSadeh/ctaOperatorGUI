@@ -14,7 +14,7 @@ class ServiceManager():
         #     return
 
         # sleep duration for heartbeat loop of active instance
-        self.active_expire_sec = 1
+        self.active_expire_sec = 5
         self.loop_active_expire_sec = self.active_expire_sec * 0.25
         self.active_instance_name = self.get_active_name(class_prefix)
 
@@ -122,7 +122,7 @@ class ServiceManager():
 
         # set the heartbeat (uninitialised state) for a long expiration
         # to allow the heartbeat thread to start later
-        active_init_expire = 1000
+        active_init_expire = self.active_expire_sec * 100
         self.set_active_instance(has_init=False, expire=active_init_expire)
 
         return

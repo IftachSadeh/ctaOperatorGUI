@@ -40,12 +40,12 @@ class SubArrGrp(BaseWidget):
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.send_init_widget(opt_in=opt_in)
+        self.socket_manager.send_widget_init_data(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates
         # to all sessions in the group
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.add_widget_tread(opt_in=opt_in)
+        self.socket_manager.add_widget_loop(opt_in=opt_in)
 
         return
 

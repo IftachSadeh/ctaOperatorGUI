@@ -17,11 +17,11 @@ class RedisBase(object):
 
     # ------------------------------------------------------------------
     def pack(self, data):
-        return Serialisation.pack_obj(data, log=self.log)
+        return Serialisation.pack(data, log=self.log)
 
     # ------------------------------------------------------------------
     def unpack(self, data):
-        return Serialisation.unpack_obj(data, log=self.log)
+        return Serialisation.unpack(data, log=self.log)
 
     # ------------------------------------------------------------------
     def is_empty(self, data):
@@ -53,7 +53,9 @@ class RedisBase(object):
             if (name is None) or (key is None):
                 raise Exception('redis.h_set(): name/key is None', name, key)
 
-            if data is not None:
+            if data is None:
+                data = ''
+            else:
                 data = self.pack(data)
             out = self.base.hset(name, key, data)
 
@@ -78,11 +80,31 @@ class RedisBase(object):
         return out
 
     # ------------------------------------------------------------------
+    def h_get_keys(self, name=None, default_val=[]):
+        try:
+            if name is None:
+                raise Exception('redis.h_get_keys(): name is None', name)
+
+            data = self.base.hkeys(name)
+
+            if self.is_empty(data):
+                data = default_val
+            else:
+                data = self.unpack(data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.h_get_keys(): '], ['o', name, key]])
+            raise e
+
+        return data
+
+    # ------------------------------------------------------------------
     def h_get(self, name=None, key=None, default_val=None):
         try:
             if (name is None) or (key is None):
                 raise Exception('redis.h_get(): name/key is None', name, key)
 
+            # return value for this key
             data = self.base.hget(name, key)
 
             if self.is_empty(data):
@@ -176,7 +198,7 @@ class RedisBase(object):
 
         except Exception as e:
             self.log.error([['r', 'redis.z_add(): '],
-                            ['o', name, score, data, clip_score]])
+                            ['o', name, score, data, clip_score],])
             raise e
 
         return out
@@ -208,6 +230,23 @@ class RedisBase(object):
             raise e
 
         return out
+
+    # ------------------------------------------------------------------
+    def scan(self, cursor=0, match=None, count=None, _type=None):
+        try:
+            # if name is None:
+            #     raise Exception('redis.set(): name is None')
+
+            data = self.base.scan(cursor=cursor, match=match, count=count, _type=_type)
+            out = self.unpack(data)
+
+
+        except Exception as e:
+            self.log.error([['r', 'redis.set(): '], ['o', cursor, match, count, _type]])
+            raise e
+
+        return out
+
 
 
 # ------------------------------------------------------------------

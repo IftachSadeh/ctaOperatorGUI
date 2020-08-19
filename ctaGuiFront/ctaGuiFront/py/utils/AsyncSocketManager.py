@@ -20,12 +20,13 @@ from ctaGuiFront.py.utils.security import USERS
 
 import asyncio
 from asgiref.wsgi import WsgiToAsgi
+from aioredlock import Aioredlock
+
 from random import Random
 import json
 rnd_seed = get_rnd_seed()
 rnd_gen = Random(rnd_seed)
 
-asyncio_lock = asyncio.Lock()
 
 # ------------------------------------------------------------------
 class ExtendedWsgiToAsgi(WsgiToAsgi):
@@ -150,29 +151,38 @@ def extend_app_to_asgi(wsgi_app, websocket_route):
 
 # ------------------------------------------------------------------
 class AsyncSocketManager:
-    server_name = None
+    """WebSocket manager class
+
+       connection life-cycle:
+       - client loads web-page and socket is created
+       (e.g.,: ws = new WebSocket(window.WEBSOCKET_ROUTE))
+       - client sends 'websocket.connect' message
+       - server sends 'initial_connect' message with basic metadata, including
+       the proposed sess_id. if this is a fresh session, the client registers this sess_id,
+       otherwise, it retains its previous sess_id. initialisation has began
+       - client sends 'sess_setup_begin' message, including the final sess_id
+       - server logs the new sess_id or restores the existing one
+       - server starts sending heartbeat_ping messages to the client, and the client
+       responds with heartbeat_pong messages (communication delays are teste on both ends)
+       - client sends 'sess_setup_finalised' message
+       - server sets self.has_init_sess=True, and initialisation is complete
+       - while in the initialisation phase, any other message (except
+       for 'client_log' and heartbeat ping/posng messages) is put in a queue. the
+       queue is only proccessed after initialisation
+    """
+    
+    server_id = None
     n_server_sess = 0
 
-    # common dictionaries for all instances of
-    # the class (keeping track of all sessions etc.)
-    # sess_endpoints = dict()
-    asy_func_sigs = dict()
+    # common dictionaries for all instances of the class (keeping track of all sessions etc.)
     managers = dict()
     widget_inits = dict()
-
-    # n_apps = 0
-    # def add_app(self):
-    #     AsyncSocketManager.n_apps += 1
-    # def rm_app(self):
-    #     AsyncSocketManager.n_apps -= 1
-    # def n_app(self):
-    #     return AsyncSocketManager.n_apps
 
     # ------------------------------------------------------------------
     def __init__(self, sync_send, *args, **kwargs):
         
-        if AsyncSocketManager.server_name is None:
-            AsyncSocketManager.server_name = (
+        if AsyncSocketManager.server_id is None:
+            AsyncSocketManager.server_id = (
                 'svr_' + str(self.base_config.app_port)
                 + '_' + get_rnd(n_digits=6, out_type=str, is_unique_seed=True)
             )
@@ -189,6 +199,7 @@ class AsyncSocketManager:
         self.user_group_id = ''
         self.sess_name = ''
         self.log_send_packet = False
+        self.basic_widget_sleep_sec = 1
         self.sess_expire = 10
         self.cleanup_sleep = 60
         # self.max_sess_valid_time_sec = 20
@@ -214,7 +225,8 @@ class AsyncSocketManager:
         #     # how much delay is considered ok for a disconnected session
         #     'max_interval_slow_msec': 6000,
         # }
-        self.asy_func_loops = []
+        self.async_loops = []
+        self.loop_group_prefix = 'ws;loop;'
 
         self.asyncio_queue = asyncio.Queue()
 
@@ -231,15 +243,33 @@ class AsyncSocketManager:
             name=self.__class__.__name__, port=self.redis_port, log=self.log
         )
 
+        # redis lock
+        self.redis_lock_retry_max_sec = 10
+        redis_lock_delay_min, redis_lock_delay_max = 0.01, 0.1
+        redis_lock_count = ceil(self.redis_lock_retry_max_sec / redis_lock_delay_min)
+        
+        self.redis_lock = Aioredlock(
+            redis_connections=[{'host': 'localhost', 'port': self.redis_port}], retry_count=redis_lock_count, retry_delay_min=redis_lock_delay_min, retry_delay_max=redis_lock_delay_max,
+        )
+
         self.inst_data = self.base_config.inst_data
 
         try:
             SocketDecorator(self)
         except Exception as e:
-            # print(e)
             raise e
 
         return
+
+    # ------------------------------------------------------------------
+    async def is_redis_locked(self, lock_name):
+        return await self.redis_lock.is_locked(lock_name)
+
+    # ------------------------------------------------------------------
+    def get_redis_lock(self, lock_name):
+        lock = self.redis_lock.lock(lock_name, lock_timeout=self.redis_lock_retry_max_sec,)
+        return lock
+
 
     # ------------------------------------------------------------------
     def spawn(self, func, *args, **kwargs):
@@ -262,14 +292,22 @@ class AsyncSocketManager:
         return data
 
     # ------------------------------------------------------------------
-    async def emit(self, event_name, data={}):
+    async def emit(self, event_name, data={}, metadata=None):
         data_out = {
             'event_name': event_name,
             'sess_id': self.sess_id,
             'n_server_msg': self.n_server_msg,
             'send_time_msec': get_time('msec'),
-            'data': data,
         }
+        if metadata is not None:
+            data_out.update(metadata)
+        data_out['data'] = data
+        # # print(data)
+        # print('+'*90)
+        # print(event_name)
+        # print(data_out)
+        # print('-'*140)
+
         self.n_server_msg += 1
 
         if self.is_sess_open:
@@ -278,30 +316,36 @@ class AsyncSocketManager:
         return
 
     # ------------------------------------------------------------------
-    async def emit_to_queue(self, asy_func=None, event_name=None, data={}):
+    async def emit_to_queue(self, asy_func=None, event_name=None, data={}, metadata=None):
         if asy_func is None and event_name is None:
             raise Exception('trying to use emit_to_queue without asy_func/event_name', data)
         
-        if 'sess_id' not in data:
-            data['sess_id'] = self.sess_id
+        # if 'sess_id' not in data:
+        #     data['sess_id'] = self.sess_id
         
         if asy_func is not None:
-            await self.asyncio_queue.put({'asy_func':asy_func, 'data': data,})
+            # if 'sess_id' not in data:
+            #     data['sess_id'] = self.sess_id
+            data_put = {'asy_func':asy_func, 'data': data,}
+            if metadata is not None:
+                data_put['metadata'] = metadata
+
+            await self.asyncio_queue.put(data_put)
         
         elif event_name is not None:
-            data['event_name'] = event_name
-            await self.asyncio_queue.put({'asy_func':self.emit(event_name, data), 'data': data,})
+            # data['event_name'] = event_name
+            await self.asyncio_queue.put({'asy_func':self.emit(event_name=event_name, data=data, metadata=metadata), 'data': data,})
 
         return
 
 
     # ------------------------------------------------------------------
-    async def receive_queue_loop(self, asy_func_info):
+    async def receive_queue_loop(self, loop_info):
         """process the received event queue
         
             Parameters
             ----------
-            asy_func_info : dict
+            loop_info : dict
                 metadata needed to determine when is the loop should continue
         """
 
@@ -330,7 +374,7 @@ class AsyncSocketManager:
                         event_func(queue_item['data'])
             return
 
-        while self.is_valid_asy_func(asy_func_info):
+        while self.get_loop_state(loop_info):
             for _ in range(self.asyncio_queue.qsize()):
                 if self.is_valid_session():
                     self.spawn(await_queue_item)
@@ -347,13 +391,65 @@ class AsyncSocketManager:
         return
 
 
+    # ------------------------------------------------------------------
+    def verify_sess_event(self, data):
+        """verify that an event may be executed
+        
+            Parameters
+            ----------
+            data : dict
+                client data and metadata related to the asy_func to be executed
+        """
 
+        try:
+            if not self.has_init_sess:
+                raise Exception('events not coming in order - has not init session...', data)
+            
+            if isinstance(data, dict):
+                if ('sess_id' in data.keys()) and (data['sess_id'] != self.sess_id):
+                    raise Exception('mismatch in sess_id...', data)
 
+            if not self.is_valid_session():
+                raise Exception('not a valid session', data)
 
+        except Exception as e:
+            raise e
+
+        return
 
     # ------------------------------------------------------------------
-    def is_asyncio_locked(self):
-        return asyncio_lock.locked()
+    def is_valid_session(self, sess_id=None):
+        """check if a session belongs to this server, and has a heartbeat
+        
+            Parameters
+            ----------
+            sess_id : int
+                the session id to check
+        
+            Returns
+            -------
+            bool
+                is the session valid
+        """
+
+        if not self.has_init_sess:
+            return False
+        
+        if sess_id is None:
+            sess_id = self.sess_id
+
+        sess_ids = self.redis.l_get('ws;server_sess_ids;'+self.server_id)
+        if sess_id in sess_ids:
+            if self.redis.exists('ws;sess_heartbeat;' + sess_id):
+                return True
+
+        return False
+
+
+
+
+
+
 
 
     # ------------------------------------------------------------------
@@ -438,6 +534,28 @@ class AsyncSocketManager:
         return
 
     # ------------------------------------------------------------------
+    def set_sess_state(self, state):
+        self.is_sess_open = state
+        return
+    
+    # ------------------------------------------------------------------
+    async def websocket_disconnect(self):
+        """local cleanup for the current server session upon disconnection
+        """
+
+        self.log.info([['c', ' - websocket_disconnect '], ['p', self.sess_id]])
+        
+        try:
+            async with await self.get_redis_lock('ws;lock'):
+                await self.cleanup_session(sess_id=self.sess_id)
+
+        except Exception as e:
+            raise e
+
+        return
+
+
+    # ------------------------------------------------------------------
     async def send_initial_connect(self):
         """upon any new connection, send the client initialisation data
         """
@@ -447,9 +565,9 @@ class AsyncSocketManager:
         #     self.log.error([['wr', ' - already connected ?!?!?!?!', self.sess_id]])
         #     raise Exception('already connected ?!?!?', self.sess_id)
 
-        async with asyncio_lock:
+        async with await self.get_redis_lock('ws;lock;' + self.server_id):
             self.sess_id = (
-                self.server_name + '_ses_'
+                self.server_id + '__ses_'
                 +  '{:07d}'.format(AsyncSocketManager.n_server_sess)
             )
             AsyncSocketManager.n_server_sess += 1
@@ -460,7 +578,7 @@ class AsyncSocketManager:
         categorical_types = self.inst_data.get_categorical_types()
 
         data = {
-            'server_name': self.server_name,
+            'server_id': self.server_id,
             'sess_id': self.sess_id,
             'sess_ping': self.sess_ping,
             'tel_ids': tel_ids,
@@ -468,9 +586,42 @@ class AsyncSocketManager:
             'categorical_types': categorical_types,
             'is_simulation': self.is_simulation,
         }
-        await self.emit('initial_connect', data)
+        await self.emit(event_name='initial_connect', data=data)
 
         return
+
+    
+    # ------------------------------------------------------------------
+    async def server_attr_dic_add(self, name, key, value):
+        lock_name = 'ws;lock;' + self.server_id
+        if not await self.is_redis_locked(lock_name):
+            raise Exception('server_attr_dic_add expected to be locked: ', name, key, value, lock_name,)
+
+        attr = getattr(AsyncSocketManager, name)
+        attr[key] = value
+
+        return
+
+    # ------------------------------------------------------------------
+    async def server_attr_dic_rm(self, name, key):
+        lock_name = 'ws;lock;' + self.server_id
+        if not await self.is_redis_locked(lock_name):
+            raise Exception('server_attr_dic_rm expected to be locked: ', name, key, lock_name,)
+
+        attr = getattr(AsyncSocketManager, name)
+        attr.pop(key, None)
+
+        return
+
+    # ------------------------------------------------------------------
+    async def get_server_attr(self, name):
+        lock_name = 'ws;lock;' + self.server_id
+        if not await self.is_redis_locked(lock_name):
+            raise Exception('server_attr_dic_rm expected to be locked: ', name, lock_name,)
+
+        attr = getattr(AsyncSocketManager, name)
+
+        return attr
 
     # ------------------------------------------------------------------
     async def sess_setup_begin(self, data):
@@ -484,7 +635,7 @@ class AsyncSocketManager:
                 client data and metadata related to the event
         """
 
-        async with asyncio_lock:
+        async with await self.get_redis_lock('ws;lock'):
             is_existing_sess = (self.sess_id != data['sess_id'])
 
             # ------------------------------------------------------------------
@@ -493,7 +644,7 @@ class AsyncSocketManager:
             if self.is_HMI_dev:
                 if is_existing_sess:
                     self.sess_id = data['sess_id']
-                    await self.emit('reload_session', data)
+                    await self.emit(event_name='reload_session')
                     return
             # ------------------------------------------------------------------
 
@@ -518,8 +669,6 @@ class AsyncSocketManager:
             self.user_group_id = self.user_group + '_' + self.user_id
             self.sess_name = self.user_group_id + '_' + self.sess_id
 
-            AsyncSocketManager.managers[self.sess_id] = self
-            
             self.log.info([['b', ' - websocket.connected '], ['p', self.sess_id], ['y', '', self.user_id, '/', self.user_group],])
 
             # override the global logging variable with a
@@ -529,50 +678,63 @@ class AsyncSocketManager:
                 title=(str(self.user_id) + '/' + str(self.sess_id) + '/' + __name__),
             )
 
-            # register the user_name if needed (this list is never cleaned up)
-            user_ids = self.redis.l_get('user_ids')
-            if self.user_id not in user_ids:
-                self.redis.r_push(
-                    name='user_ids', data=self.user_id
-                )
+            # keep track of all instances for broadcasting events (cleaned up
+            # as part of cleanup_session())
+            async with await self.get_redis_lock('ws;lock;' + self.server_id):
+                await self.server_attr_dic_add(name='managers', key=self.sess_id, value=self)
 
-            # register the sess_id in all lists
-            # heartbeat should be first to avoid cleanup racing conditions!
+            # register the user_name if needed (cleanup as part of cleanup_server())
+            all_user_ids = self.redis.l_get('ws;all_user_ids')
+            if self.user_id not in all_user_ids:
+                self.redis.r_push(name='ws;all_user_ids', data=self.user_id)
+
+            # register the sess_id for the heartbeat monitor
+            # (expires on its own, inless renewed by server_sess_heartbeat_loop() )
             self.redis.set(
-                name='server_sess_heartbeat', expire=(int(self.sess_expire) * 10)
+                name='ws;server_heartbeat;' + self.server_id, expire=(int(self.sess_expire) * 10),
             )
             self.redis.set(
-                name='server_sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10),
+                name='ws;user_heartbeat;' + self.user_id, expire=(int(self.sess_expire) * 10),
+            )
+            self.redis.set(
+                name='ws;sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 10),
             )
 
-            # global and local lists session ids
+            # registed the server id in the global server list
+            # (cleanup explicitly done as part of cleanup_server())
+            all_server_ids = self.redis.l_get('ws;all_server_ids')
+            if self.server_id not in all_server_ids:
+                self.redis.r_push(name='ws;all_server_ids', data=self.server_id)
 
-            all_sess_ids = self.redis.l_get('all_sess_ids')
+            # registed the session id in the global session list, and in the server
+            # session list (cleanup explicitly done as part of cleanup_session(),
+            # also if loosing heartbeat as part of cleanup_server())
+            all_sess_ids = self.redis.l_get('ws;all_sess_ids')
             if self.sess_id not in all_sess_ids:
-                self.redis.r_push(
-                    name='all_sess_ids', data=self.sess_id
-                )
+                self.redis.r_push(name='ws;all_sess_ids', data=self.sess_id)
 
-            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
-            if self.sess_id not in all_sess_ids:
+            server_sess_ids = self.redis.l_get('ws;server_sess_ids;'+self.server_id)
+            if self.sess_id not in server_sess_ids:
                 self.redis.r_push(
-                    name=self.server_name+';all_sess_ids', data=self.sess_id
-                )
-
-            if not self.redis.h_exists(name='sync_groups', key=self.user_id):
-                self.redis.h_set(
-                    name='sync_groups', key=self.user_id, data=[]
+                    name='ws;server_sess_ids;'+self.server_id, data=self.sess_id
                 )
 
             # list of all sessions for this user
-            all_user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
+            all_user_sess_ids = self.redis.l_get('ws;user_sess_ids;' + self.user_id)
             if self.sess_id not in all_user_sess_ids:
                 self.redis.r_push(
-                    name='user_sess_ids;' + self.user_id, data=self.sess_id
+                    name='ws;user_sess_ids;' + self.user_id, data=self.sess_id
                 )
 
-            self.init_common_loops()
+            # synchronisation groups for users (cleaned up as part of cleanup_server(), when
+            # no more sessions remain alive for this user)
+            if not self.redis.h_exists(name='ws;sync_groups', key=self.user_id):
+                self.redis.h_set(
+                    name='ws;sync_groups', key=self.user_id, data=[]
+                )
 
+            # start up (if not already running) loops for this server / user / session
+            await self.init_common_loops()
 
             # function which may be overloaded, setting up individual
             # properties for a given session-type
@@ -580,43 +742,6 @@ class AsyncSocketManager:
                 self.on_join_session_()
 
             self.init_user_sync_loops()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            # await asyncio.sleep(3)
-
-            test_connection_sess = 0
-            if test_connection_sess:
-                all_sess_ids = self.redis.l_get('all_sess_ids')
-                print('all_sess_ids \t\t\t', all_sess_ids)
-
-                print('heartbeat \t\t\t', 'shared', '  -->  ', self.redis.exists('server_sess_heartbeat'))
-                for s in all_sess_ids:
-                    print('heartbeat \t\t\t', s, '  -->  ', self.redis.exists('server_sess_heartbeat;' + s))
-                all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
-                print('server_name;all_sess_ids \t', all_sess_ids)
-
-                user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
-                print('user_sess_ids \t\t\t', user_sess_ids)
-
-                sync_groups = self.redis.h_get(
-                    name='sync_groups', key=self.user_id, default_val=[]
-                )
-                print('sync_groups \t\t\t', sync_groups)
-
 
         return
 
@@ -626,7 +751,6 @@ class AsyncSocketManager:
     async def sess_setup_finalised(self, data):
         """as the final step within the lock, flag the session as initialised
         """
-
         self.has_init_sess = True
         return
 
@@ -649,9 +773,239 @@ class AsyncSocketManager:
     # is this still needed ?!?!?!?!?!?!?!?!
     # ------------------------------------------------------------------
     def init_user_sync_loops(self):
+        self.log.warn([['g', ' - need init_user_sync_loops ... ?']])
         return
 
     
+
+    # ------------------------------------------------------------------
+    async def cleanup_session(self, sess_id):
+        """clean up a session
+
+           as this is not necessarily self.sess_id, we do not assume that we
+           have the identical self.user_id or self.server_id (as another user
+           # potentially using a different server, might have initiated this function)
+        """
+
+        if sess_id is None:
+            return
+
+        if not await self.is_redis_locked('ws;lock'):
+            raise Exception('cleanup_session expected to be locked ?!?')
+
+        self.log.info([['c', ' - cleanup-session '], ['p', sess_id], ['c', ' ...']])
+
+        # remove the heartbeat for the session
+        self.redis.delete('ws;sess_heartbeat;' + sess_id)
+        
+        # remove the the session from the global list
+        self.redis.l_rem(name='ws;all_sess_ids', data=sess_id)
+        
+        # remove the the session from the server list
+        all_server_ids = self.redis.l_get('ws;all_server_ids')
+        for server_id in all_server_ids:
+            self.redis.l_rem(name='ws;server_sess_ids;'+server_id, data=sess_id)
+
+        # remove the the session from the user list (go over all users until
+        # the right one is found)
+        all_user_ids = self.redis.l_get('ws;all_user_ids')
+        for user_id in all_user_ids:
+            self.redis.l_rem(name='ws;user_sess_ids;' + user_id, data=sess_id)
+
+        await self.set_loop_state(
+            state=False,
+            group='ws;sess;' + sess_id,
+        )
+
+        # remove the session from the manager list if it
+        # exists (if this is the current server)
+        async with await self.get_redis_lock('ws;lock;' + self.server_id):
+            await self.server_attr_dic_rm(name='managers', key=self.sess_id)
+
+        # clean up all widgets for this session
+        sess_widget_ids = self.redis.l_get('ws;sess_widget_ids;' + sess_id)
+        for widget_id in sess_widget_ids:
+            await self.cleanup_widget(widget_ids=widget_id)
+
+        self.on_leave_session_()
+
+
+
+        return
+
+
+    # ------------------------------------------------------------------
+    async def cleanup_loops(self):
+        """clean up zombie loops
+        """
+
+        if not await self.is_redis_locked('ws;lock'):
+            raise Exception('cleanup_widget expected to be locked ?!?')
+
+        all_loop_groups = self.redis.h_get_all('ws;all_loop_groups')
+
+        contexts = []
+        for context in list(all_loop_groups.values()):
+            if context not in contexts:
+                contexts += [context]
+
+        has_context = dict([
+            (c, self.redis.exists(c)) for c in contexts
+        ])
+
+        for group, context in all_loop_groups.items():
+            if not has_context[context]:
+                await self.set_loop_state(state=False, group=group)
+                self.redis.h_del(name='ws;all_loop_groups', key=group)
+
+        return
+    
+    # ------------------------------------------------------------------
+    async def cleanup_widget(self, widget_ids):
+        """clean up a list of input widget ids
+        """
+
+        if not await self.is_redis_locked('ws;lock'):
+            raise Exception('cleanup_widget expected to be locked ?!?')
+
+        if not isinstance(widget_ids, list):
+            widget_ids = [widget_ids]
+
+        self.log.info([['c', ' - cleanup-widget_ids '], ['p', widget_ids]])
+
+        all_user_ids = self.redis.l_get('ws;all_user_ids')
+
+        sync_groups = self.redis.h_get(
+            name='ws;sync_groups', key=self.user_id, default_val=[]
+        )
+        # print(' - sync_groups\n',sync_groups)
+
+        for widget_id in widget_ids:
+            widget_info = self.redis.h_get(name='ws;widget_infos', key=widget_id)
+            self.redis.delete('ws;sess_widget_ids;' + widget_info['sess_id'])
+
+            self.redis.h_del(name='ws;widget_infos', key=widget_id)
+            
+            for user_id in all_user_ids:
+                self.redis.l_rem(name='ws;user_widget_ids;' + user_id, data=widget_id)
+            
+            async with await self.get_redis_lock('ws;lock;' + self.server_id):
+                await self.server_attr_dic_rm(name='widget_inits', key=widget_id)
+
+            await self.set_loop_state(
+                state=False,
+                group='ws;widget_id;' + widget_id,
+            )
+
+            # 
+            for sync_group in sync_groups:
+                for sync_states in sync_group['sync_states']:
+                    rm_elements = []
+                    for sync_type_now in sync_states:
+                        if sync_type_now[0] == widget_id:
+                            rm_elements.append(sync_type_now)
+                    for rm_element in rm_elements:
+                        sync_states.remove(rm_element)
+
+        # print(' + sync_groups\n',sync_groups)
+        self.redis.h_set(
+            name='ws;sync_groups', key=self.user_id, data=sync_groups
+        )
+
+        await self.update_sync_group()
+
+        return
+    
+    # ------------------------------------------------------------------
+    async def cleanup_server(self, server_id):
+        """clean up servers and the corresponding sessions
+        """
+
+        if not await self.is_redis_locked('ws;lock'):
+            raise Exception('cleanup_server expected to be locked ?!?')
+        
+        # cleanup expired sessions (for this particular server)
+        sess_ids = self.redis.l_get('ws;server_sess_ids;' + server_id)
+        for sess_id in sess_ids:
+            if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
+                await self.cleanup_session(sess_id=sess_id)
+
+        # after the cleanup for dead sessions, check if
+        # the heartbeat is still there for the server (if any session at all is alive)
+        if not self.redis.exists('ws;server_heartbeat;' + server_id):
+            self.log.info([['c', ' - cleanup-server '], ['p', server_id], ['c', ' ...']])
+
+            await self.set_loop_state(
+                state=False,
+                group='ws;server;' + server_id,
+            )
+            self.redis.l_rem(name='ws;all_server_ids', data=server_id)
+
+        return
+
+
+    # ------------------------------------------------------------------
+    async def cleanup_users(self):
+        """clean up all user lists in case this use has no more sessions
+           alive (sessions might belong to any server)
+        """
+        
+        if not await self.is_redis_locked('ws;lock'):
+            raise Exception('cleanup_users expected to be locked ?!?')
+
+        all_user_ids = self.redis.l_get('ws;all_user_ids')
+        for user_id in all_user_ids:
+            user_sess_ids = self.redis.l_get('ws;user_sess_ids;' + user_id)
+            if len(user_sess_ids) == 0:
+                self.log.info([['c', ' - cleanup-user '], ['p', user_id], ['c', ' ...']])
+
+                self.redis.l_rem(name='ws;all_user_ids', data=user_id)
+                self.redis.h_del(name='ws;sync_groups', key=user_id)
+        
+                self.redis.h_del(name='ws;active_widget', key=user_id)
+                self.redis.delete(name='ws;user_widget_ids;' + user_id)
+
+
+        return
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # ------------------------------------------------------------------
     def init_asy_func_loops(self):
@@ -663,20 +1017,20 @@ class AsyncSocketManager:
         # session heartbeat (shared between all sessions for this server)
         loops += [
             {
-                'id': None,
-                'group': 'shared_asy_func',
-                'tag': 'server_sess_heartbeat_loop',
+                'id': 'server_sess_heartbeat_loop',
                 'func': self.server_sess_heartbeat_loop,
+                'group': 'ws;server;' + self.server_id,
+                'context': 'ws;server_heartbeat;' + self.server_id,
             },
         ]
         
         # session cleanup (shared between all sessions for this server)
         loops += [
             {
-                'id': None,
-                'group': 'shared_asy_func',
-                'tag': 'cleanup_loop',
+                'id': 'cleanup_loop',
                 'func': self.cleanup_loop,
+                'group': 'ws;server;' + self.server_id,
+                'context': 'ws;server_heartbeat;' + self.server_id,
             },
         ]
 
@@ -703,84 +1057,149 @@ class AsyncSocketManager:
         # client ping/pong heartbeat for a particular session
         loops += [
             {
-                'id': None,
-                'group': self.sess_id,
-                'tag': 'client_sess_heartbeat_loop',
+                'id': 'client_sess_heartbeat_loop',
                 'func': self.client_sess_heartbeat_loop,
+                'group': 'ws;sess;' + self.sess_id,
+                'context': 'ws;sess_heartbeat;' + self.sess_id,
             },
         ]
         
         # received event execution (one instance for each session)
         loops += [
             {
-                'id': None,
-                'group': self.sess_id,
-                'tag': 'receive_queue_loop',
+                'id': 'receive_queue_loop',
                 'func': self.receive_queue_loop,
+                'group': 'ws;sess;' + self.sess_id,
+                'context': 'ws;sess_heartbeat;' + self.sess_id,
             },
         ]
         
         for asy_func in loops:
-            self.add_asy_func_loop(asy_func)
+            self.add_async_loop(loop_info=asy_func)
 
         return
 
     # ------------------------------------------------------------------
-    def add_asy_func_loop(self, asy_func_info):
+    def add_async_loop(self, loop_info):
         has_asy_func = any([
-            asy_func_info['tag'] == c['tag'] for c in self.asy_func_loops
+            (loop_info['group'] == c['group'] and loop_info['id'] == c['id'])
+            for c in self.async_loops
         ])
         if not has_asy_func:
-            self.asy_func_loops += [asy_func_info]
+            self.async_loops += [loop_info]
 
         return
 
     # ------------------------------------------------------------------
-    def init_common_loops(self):
+    async def init_common_loops(self):
         """initialise shared maintenance asy_funcs
         """
 
         self.init_asy_func_loops()
 
-        for asy_func_info in self.asy_func_loops:
-            if self.is_new_asy_func(asy_func_info):
-                asy_func_info['id'] = self.set_asy_func_state(
-                    asy_func_group=asy_func_info['group'], asy_func_tag=asy_func_info['tag'], state=True
+        for loop_info in self.async_loops:
+            if not self.get_loop_state(loop_info):
+                await self.set_loop_state(state=True, loop_info=loop_info)
+                self.spawn(loop_info['func'], loop_info=loop_info)
+
+        return
+
+    # ------------------------------------------------------------------
+    def get_loop_state(self, loop_info):
+        state = self.redis.h_exists(name=self.loop_group_prefix + loop_info['group'], key=loop_info['id'],)
+        return state
+
+    # ------------------------------------------------------------------
+    async def set_loop_state(self, state, loop_info=None, group=None):
+        async with await self.get_redis_lock('ws;lock;' + self.server_id):
+            if state:
+                if loop_info is None:
+                    raise Exception(
+                        'unsupported option for set_loop_state', state, loop_info, group
+                    )
+
+                # validate that this group/id loop has not already been registered
+                has_loop = self.redis.h_exists(
+                    name=self.loop_group_prefix + loop_info['group'], key=loop_info['id'],
                 )
-                self.spawn(asy_func_info['func'], asy_func_info=asy_func_info)
+                if has_loop:
+                    raise Exception('trying to set existing loop', loop_info)
+                
+                # register this group/id loop
+                self.redis.h_set(name=self.loop_group_prefix + loop_info['group'], key=loop_info['id'],)
 
-        return
-
-
-
-
-    # ------------------------------------------------------------------
-    def verify_sess_event(self, data):
-        """verify that an event may be executed
-        
-            Parameters
-            ----------
-            data : dict
-                client data and metadata related to the asy_func to be executed
-        """
-
-        try:
-            if not self.has_init_sess:
-                raise Exception('events not coming in order - has not init session...', data)
+                # register the context (respective heartbeat) for this group, in
+                # order to facilitate cleanup as part of cleanup_loops()
+                self.redis.h_set(
+                    name='ws;all_loop_groups', key=loop_info['group'], data=loop_info['context']
+                )
             
-            if not data['sess_id'] == self.sess_id:
-                raise Exception('mismatch in sess_id...', data)
-
-            if not self.is_valid_session():
-                raise Exception('not a valid session', data)
-
-        except Exception as e:
-            raise e
-
+            else:
+                if int(loop_info is None) + int(group is None) != 1:
+                    raise Exception(
+                        'unsupported option for set_loop_state', state, loop_info, group
+                    )
+                
+                if group is not None:
+                    self.redis.delete(name=self.loop_group_prefix + group)
+                    self.redis.h_del(name='ws;all_loop_groups', key=group)
+                else:
+                    self.redis.h_del(name=self.loop_group_prefix + loop_info['group'], key=loop_info['id'],)
+                
+                # if group is not None:
+                #     self.log.info([['r', ' - clear loop '], ['c', group], ['r', ' ...'],])
+                # else:
+                #     self.log.info([['r', ' - clear loop '], ['c', loop_info['group']], ['r', ' / '], ['c', loop_info['id']], ['r', ' ...'],])
         return
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ------------------------------------------------------------------
-    async def server_sess_heartbeat_loop(self, asy_func_info):
+    async def server_sess_heartbeat_loop(self, loop_info):
         """renew session heartbeat tokens
 
             run in asy_func so long as there are active sessions
@@ -792,51 +1211,57 @@ class AsyncSocketManager:
         
             Parameters
             ----------
-            asy_func_info : dict
+            loop_info : dict
                 metadata needed to determine when is the loop should continue
         """
 
-        self.log.info([['y', ' - starting '],['b', 'server_sess_heartbeat_loop'], ['y', ' by: '], ['c', self.sess_id], ['y', ' for server: '], ['c', self.server_name],])
+        self.log.info([['y', ' - starting '],['b', 'server_sess_heartbeat_loop'], ['y', ' by: '], ['c', self.sess_id], ['y', ' for server: '], ['c', self.server_id],])
 
         sleep_sec = min(1, max(ceil(self.sess_expire * 0.1), 10))
         sess_expire = ceil(max(self.sess_expire, sleep_sec * 5))
+        server_expire = ceil(sess_expire * 2)
+        user_expire = ceil(sess_expire * 1.5)
 
-        # sleep_sec = 2
-        # sess_expire = 4
-        # print('sleep_sec',sleep_sec,sess_expire)
-
-        while self.is_valid_asy_func(asy_func_info):
-            async with asyncio_lock:
-                # sess_ids = self.redis.l_get('all_sess_ids')
-                # print('xxxxxxxx', [[s, self.redis.exists('server_sess_heartbeat;' + s)] for s in sess_ids])
-                
-                sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
+        while self.get_loop_state(loop_info):
+            async with await self.get_redis_lock('ws;lock'):
+                sess_ids = self.redis.l_get('ws;server_sess_ids;'+self.server_id)
                 for sess_id in sess_ids:
-                    if self.redis.exists('server_sess_heartbeat;' + sess_id):
-                        self.redis.expire(
-                            name='server_sess_heartbeat', expire=sess_expire
-                        )
-                        self.redis.expire(
-                            name='server_sess_heartbeat;' + sess_id, expire=sess_expire
-                        )
-                    # else:
-                    #     self.cleanup_session(sess_id)
+                    if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
+                        continue
+
+                    # heartbeat for any session renews the server
+                    self.redis.expire(
+                        name='ws;server_heartbeat;' + self.server_id, expire=server_expire
+                    )
+
+                    # heartbeat for any session renews the user
+                    self.redis.expire(
+                        name='ws;user_heartbeat;' + self.user_id, expire=user_expire
+                    )
+                    
+                    # heartbeat for this session renews itself
+                    self.redis.expire(
+                        name='ws;sess_heartbeat;' + sess_id, expire=sess_expire
+                    )
 
             await asyncio.sleep(sleep_sec)
 
-        self.log.info([['r', ' - ending '],['b', 'server_sess_heartbeat_loop'], ['r', ' by: '], ['c', self.sess_id], ['r', ' for server: '], ['c', self.server_name],])
+        async with await self.get_redis_lock('ws;lock'):
+            await self.cleanup_server(server_id=self.server_id)
+
+        self.log.info([['r', ' - ending '],['b', 'server_sess_heartbeat_loop'], ['r', ' for server: '], ['c', self.server_id],])
 
         return
 
 
     
     # ------------------------------------------------------------------
-    async def client_sess_heartbeat_loop(self, asy_func_info):
+    async def client_sess_heartbeat_loop(self, loop_info):
         """send ping/pong heartbeat message to client to verify the connection
         
             Parameters
             ----------
-            asy_func_info : dict
+            loop_info : dict
                 metadata needed to determine when is the loop should continue
         """
 
@@ -854,12 +1279,12 @@ class AsyncSocketManager:
         interval_now_msec = 0
         sleep_sec = send_interval_msec * 1e-3
         
-        while self.is_valid_asy_func(asy_func_info):
+        while self.get_loop_state(loop_info):
             data = {
                 'ping_interval_msec': interval_now_msec,
             }
             self.sess_ping_time = get_time('msec')
-            await self.emit_to_queue(event_name='heartbeat_ping', data=data)
+            await self.emit(event_name='heartbeat_ping', data=data)
 
             # update the interval between pings
             interval_now_msec = get_time('msec')
@@ -900,322 +1325,108 @@ class AsyncSocketManager:
     
 
     # ------------------------------------------------------------------
-    def is_valid_session(self, sess_id=None):
-        """check if a session belongs to this server, and has a heartbeat
-        
-            Parameters
-            ----------
-            sess_id : int
-                the session id to check
-        
-            Returns
-            -------
-            bool
-                is the session valid
-        """
+    async def cleanup_loop(self, loop_info):
 
-        if not self.has_init_sess:
-            return False
-        
-        if sess_id is None:
-            sess_id = self.sess_id
+        self.log.info([['y', ' - starting '],['b', 'cleanup_loop'], ['y', ' by: '], ['c', self.sess_id], ['y', ' for server: '], ['c', self.server_id],])
 
-        sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
-        if sess_id in sess_ids:
-            if self.redis.exists('server_sess_heartbeat;' + sess_id):
-                return True
-
-        return False
-
-    # ------------------------------------------------------------------
-    def set_sess_state(self, state):
-        self.is_sess_open = state
-        return
-    
-    # ------------------------------------------------------------------
-    async def websocket_disconnect(self):
-        """local cleanup for the current server session upon disconnection
-        """
-
-        self.log.info([['c', ' - websocket_disconnect '], ['p', self.sess_id]])
-        
-        try:
-            async with asyncio_lock:
-                self.cleanup_session(self.sess_id)
-
-        except Exception as e:
-            raise e
-
-        return
-
-    # ------------------------------------------------------------------
-    def cleanup_session(self, sess_id):
-
-        if sess_id is None:
-            return
-
-        self.log.info([['c', ' - cleanup_session '], ['p', sess_id]])
-
-        try:
-            if not self.is_asyncio_locked():
-                raise Exception('got asyncio not locked in set_asy_func_state')
-
-
-            # if self.sess_id in AsyncSocketManager.all_sess_ids:
-            #     AsyncSocketManager.all_sess_ids.remove(self.sess_id)
-    
-            user_ids = self.redis.l_get('user_ids')
-            widget_ids = self.redis.l_get('sess_widgets;' + sess_id)
-            
-            self.redis.delete('server_sess_heartbeat;' + sess_id)
-            self.redis.l_rem(name='all_sess_ids', data=sess_id)
-            self.redis.l_rem(name=self.server_name+';all_sess_ids', data=sess_id)
-
-            for user_id in user_ids:
-                self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
-
-            self.clear_asy_func_group(self.sess_id)
-
-            AsyncSocketManager.managers.pop(self.sess_id, None)
-
-
-
-        except Exception as e:
-            raise e
-
-        test_connection_sess = 0
-        if test_connection_sess:
-            print('-'*70)
-            all_sess_ids = self.redis.l_get('all_sess_ids')
-            print('all_sess_ids \t\t', all_sess_ids)
-
-            print('heartbeat \t\t\t', 'shared', '  -->  ', self.redis.exists('server_sess_heartbeat'))
-            for s in all_sess_ids:
-                print('heartbeat \t\t', s, self.redis.exists('server_sess_heartbeat;' + s))
-            all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
-            print('server_name;all_sess_ids \t\t', all_sess_ids)
-
-            user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
-            print('user_sess_ids \t\t', user_sess_ids)
-
-            sync_groups = self.redis.h_get(
-                name='sync_groups', key=self.user_id, default_val=[]
-            )
-            print('sync_groups \t\t', sync_groups)
-            print('+'*70)
-
-        # return
-
-
-        # # user_ids = self.redis.l_get('user_ids')
-        # widget_ids = self.redis.l_get('sess_widgets;' + sess_id)
-
-        # # for user_id in user_ids:
-        # #     self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
-
-        # for widget_id in widget_ids:
-        #     self.log.info([[
-        #         'b', ' - cleanup_session widget_id (', __old_SocketManager__.server_name, ') '
-        #     ], ['p', widget_id]])
-
-        #     self.redis.h_del(name='all_widgets', key=widget_id)
-        #     if widget_id in __old_SocketManager__.widget_inits:
-        #         __old_SocketManager__.widget_inits.pop(widget_id, None)
-        #     for user_id in user_ids:
-        #         self.redis.l_rem(name='user_widgets;' + user_id, data=widget_id)
-
-        # self.redis.delete('sess_widgets;' + sess_id)
-        # # self.redis.delete('server_sess_heartbeat;' + sess_id)
-        # # self.redis.l_rem(name='all_sess_ids', data=sess_id)
-
-        # if sess_id in __old_SocketManager__.sess_endpoints:
-        #     __old_SocketManager__.sess_endpoints.pop(sess_id, None)
-
-        return
-
-
-    # ------------------------------------------------------------------
-    async def cleanup_loop(self, asy_func_info):
-        """description
-        
-            Parameters
-            ----------
-            name : type
-                description
-        
-            Returns
-            -------
-            type
-                description
-        """
-
-        self.log.info([['y', ' - starting '],['b', 'cleanup_loop'], ['y', ' by: '], ['c', self.sess_id], ['y', ' for server: '], ['c', self.server_name],])
-
-
-        self.cleanup_sleep = 2
-        self.cleanup_sleep = 2
-        self.cleanup_sleep = 2
-        self.cleanup_sleep = 2
-        self.cleanup_sleep = 2
+        self.cleanup_sleep = 5
         self.cleanup_sleep = 2
 
-
-        while self.is_valid_asy_func(asy_func_info):
+        while self.get_loop_state(loop_info):
             await asyncio.sleep(self.cleanup_sleep)
-            async with asyncio_lock:
-                sess_ids = self.redis.l_get('all_sess_ids')
 
-                for sess_id in sess_ids:
-                    if not self.redis.exists('server_sess_heartbeat;' + sess_id):
-                        # do some cleanup for expired session
-                        self.cleanup_session(sess_id)
+            # run the cleanup for this server
+            async with await self.get_redis_lock('ws;lock'):
+                await self.cleanup_server(server_id=self.server_id)
 
-                # after the cleanup for this particular session
-                if not self.redis.exists('server_sess_heartbeat'):
-                    sess_ids = self.redis.l_get('all_sess_ids')
-                    if len(sess_ids) == 0:
-                        self.clear_asy_func_group('shared_asy_func')
+            # run the cleanup for possible zombie sessions
+            async with await self.get_redis_lock('ws;lock'):
+                all_sess_ids = self.redis.l_get('ws;all_sess_ids')
+                for sess_id in all_sess_ids:
+                    if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
+                        await self.cleanup_session(sess_id=sess_id)
 
-                else:
-                    test_connection_sess = 0
-                    if test_connection_sess:
-                        print('-'*70)
-                        all_sess_ids = self.redis.l_get('all_sess_ids')
-                        print('all_sess_ids \t\t', all_sess_ids)
+            # run the cleanup for possible zombie widgets
+            async with await self.get_redis_lock('ws;lock'):
+                widget_infos = self.redis.h_get_all('ws;widget_infos')
+                for widget_id, widget_info in widget_infos.items():
+                    sess_id = widget_info['sess_id']
+                    if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
+                        # explicitly take care of the widget
+                        await self.cleanup_widget(widget_ids=widget_id)
+                        # for good measure, make sure the session is also gone
+                        await self.cleanup_session(sess_id=sess_id)
 
-                        print('heartbeat \t\t\t', 'shared', '  -->  ', self.redis.exists('server_sess_heartbeat'))
-                        for s in all_sess_ids:
-                            print('heartbeat \t\t', s, self.redis.exists('server_sess_heartbeat;' + s))
-                        all_sess_ids = self.redis.l_get(self.server_name+';all_sess_ids')
-                        print('server_name;all_sess_ids \t\t', all_sess_ids)
-
-                        user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
-                        print('user_sess_ids \t\t', user_sess_ids)
-
-                        sync_groups = self.redis.h_get(
-                            name='sync_groups', key=self.user_id, default_val=[]
-                        )
-                        print('sync_groups \t\t', sync_groups)
-                        print('+'*70)
-
-
-
-
-        # some for of cleanup for every group....:
-            # self.clear_asy_func_group('shared_asy_func')
-            # self.clear_asy_func_group(widget_id)
-            # self.clear_asy_func_group(self.sess_name)
-            # self.sess_id
-        self.log.info([['r', ' - ending '],['b', 'cleanup_loop'], ['r', ' by: '], ['c', self.sess_id], ['r', ' for server: '], ['c', self.server_name],])
-
-        return
-
-
-
-
-
-    # ------------------------------------------------------------------
-    def is_new_asy_func(self, asy_func_info):
-        try:
-            # make sure the function which calls this has secured the lock
-            if not self.is_asyncio_locked():
-                raise Exception('got asyncio not locked in set_asy_func_state')
-            asy_func_id = asy_func_info['id']
-            asy_func_group = asy_func_info['group']
-            asy_func_tag = asy_func_info['tag']
-
-            registered_id = self.get_asy_func_id(asy_func_group, asy_func_tag)
-            is_new = (registered_id is None)
-
-            # print('is', self.sess_id, asy_func_tag, asy_func_group, is_new)
-        except Exception as e:
-            raise e
-
-        return is_new
-
-    # ------------------------------------------------------------------
-    def get_asy_func_id(self, asy_func_group, asy_func_tag):
-        if asy_func_group in AsyncSocketManager.asy_func_sigs:
-            for ele_now in AsyncSocketManager.asy_func_sigs[asy_func_group]:
-                if ele_now[0] == asy_func_tag:
-                    return ele_now[1]
-
-        return None
-
-    # ------------------------------------------------------------------
-    def is_valid_asy_func(self, asy_func_info):
-        asy_func_id = asy_func_info['id']
-        asy_func_group = asy_func_info['group']
-        asy_func_tag = asy_func_info['tag']
-
-        registered_id = self.get_asy_func_id(asy_func_group, asy_func_tag)
-        if registered_id is None:
-            return False
-        
-        return (asy_func_id == registered_id)
-
-    # ------------------------------------------------------------------
-    def set_asy_func_state(self, asy_func_group, asy_func_tag, state):
-        """bookkeeping of asy_func and their signal cleanup
-        
-            Parameters
-            ----------
-            name : type
-                description
-        
-            Returns
-            -------
-            type
-                description
-        """
-        
-        try:
-            # make sure the function which calls this has secured the lock
-            if not self.is_asyncio_locked():
-                raise Exception('got asyncio not locked in set_asy_func_state')
+            # run the cleanup for possible zombie servers
+            async with await self.get_redis_lock('ws;lock'):
+                all_server_ids = self.redis.l_get('ws;all_server_ids')
+                for server_id in all_server_ids:
+                    if not self.redis.exists('ws;server_heartbeat;' + server_id):
+                        await self.cleanup_server(server_id=server_id)
             
-            sigs = AsyncSocketManager.asy_func_sigs
-            if state:
-                if asy_func_group not in sigs:
-                    sigs[asy_func_group] = []
+            # run the cleanup for possible zombie loops
+            async with await self.get_redis_lock('ws;lock'):
+                await self.cleanup_loops()
 
-                asy_func_id_now = get_rnd(n_digits=15, out_type=int)
+            # run the cleanup for users who have no active sessions
+            async with await self.get_redis_lock('ws;lock'):
+                await self.cleanup_users()
 
-                for n_ele_now in range(len(sigs[asy_func_group])):
-                    if sigs[asy_func_group][n_ele_now][0] == asy_func_tag:
-                        sigs[asy_func_group][n_ele_now][1] = asy_func_id_now
-                        return asy_func_id_now
+            # sanity checks
+            async with await self.get_redis_lock('ws;lock'):
+                sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
 
-                sigs[asy_func_group].append([
-                    asy_func_tag, asy_func_id_now,
-                ])
+                async with await self.get_redis_lock('ws;lock;' + self.server_id):
+                    managers = await self.get_server_attr('managers')
+                    sess_ids_check = [
+                        s for s in managers.keys() if s not in sess_ids
+                    ]
+                    if len(sess_ids_check) > 0:
+                        raise Exception('mismatch between sess_ids ?', sess_ids, managers.keys())
 
-                return asy_func_id_now
-            else:
-                for n_ele_now in range(len(sigs[asy_func_group])):
-                    if sigs[asy_func_group][n_ele_now][0] == asy_func_tag:
-                        sigs[asy_func_group][n_ele_now][1] = None
+                # after the cleanup for this particular session, check if
+                # the heartbeat is still there for the server / user (if any session at all is alive)
+                if not self.redis.exists('ws;user_heartbeat;' + self.user_id):
+                    user_sess_ids = self.redis.l_get('ws;user_sess_ids;' + self.user_id)
+                    if len(user_sess_ids) > 0:
+                        raise Exception('no heartbeat, but sessions remaining ?!?!', self.user_id, user_sess_ids,)
 
-                return None
-        
-        except Exception as e:
-            raise e
+                if not self.redis.exists('ws;server_heartbeat;' + self.server_id):
+                    server_sess_ids = self.redis.l_get(
+                        'ws;server_sess_ids;' + self.server_id
+                    )
+                    if len(server_sess_ids) > 0:
+                        raise Exception('no heartbeat, but sessions remaining ?!?!', self.server_id, server_sess_ids,)
 
-        return None
+
+            check_all_ws_keys = False
+            # check_all_ws_keys = True
+            if check_all_ws_keys:
+                async with await self.get_redis_lock('ws;lock'):
+                    cursor, scans = 0, []
+                    while True:
+                        # await asyncio.sleep(0.001)
+                        cursor, scan = self.redis.scan(cursor=cursor, count=500, match='ws;*')
+                        if len(scan) > 0:
+                            scans += scan
+                        if cursor == 0:
+                            break
+                    print(' - scans:\n', scans, '\n')
 
 
-
-    # ------------------------------------------------------------------
-    # clean unneeded asy_funcs, assuming we are already in a asy_func
-    # lock, for safe modification of AsyncSocketManager.asy_func_sigs
-    # ------------------------------------------------------------------
-    def clear_asy_func_group(self, asy_func_group):
-        if asy_func_group in AsyncSocketManager.asy_func_sigs:
-            AsyncSocketManager.asy_func_sigs.pop(asy_func_group, None)
-
-            self.log.info([['r', ' - clear_asy_func_group '], ['c', str(asy_func_group)], ['r', ' ...'],])
+        self.log.info([['r', ' - ending '],['b', 'cleanup_loop'], ['r', ' by: '], ['c', self.sess_id], ['r', ' for server: '], ['c', self.server_id],])
 
         return
+
+
+
+
+
+
+
+
+
+
 
     # ------------------------------------------------------------------
     def check_panel_sync(self):
@@ -1227,6 +1438,508 @@ class AsyncSocketManager:
             allow = (self.user_id != 'guest')
 
         return allow
+
+
+
+    # ------------------------------------------------------------------
+    async def widget(self, data_in):
+        """general communication with a widget (will
+           import and instantiate a class if needed)
+        """
+
+        # n_sess_try = 0
+        # while self.sess_id is None:
+        #     n_sess_try += 1
+        #     if n_sess_try >= 20:
+        #         self.log.warning([['rb', ' - ignoring zombie session - on_widget('],
+        #                           ['yb', data_in], ['rb', ') !!!!!!!!']])
+        #         return
+        #     sleep(0.5)
+
+        # basic widget info
+        data = data_in['data']
+        widget_id = data['widget_id']
+
+        # dynamically load the module for the requested widget
+        # (no need for a 'from dynamicLoadWidget import dynWidg_0' statement)
+        # has_widget_id = self.redis.h_exists(name='ws;widget_infos', key=widget_id)
+
+        async with await self.get_redis_lock('ws;lock'):
+            async with await self.get_redis_lock('ws;lock;' + self.server_id):
+                widget_inits = await self.get_server_attr(name='widget_inits')
+
+            has_widget_id = widget_id in widget_inits
+            if not has_widget_id:
+                await self.init_widget(data_in)
+
+        # call the method named args[1] with optional arguments args[2],
+        # equivalent e.g., to widget.method_name(optionalArgs)
+        if 'method_name' in data:
+            async with await self.get_redis_lock('ws;lock;' + self.server_id):
+                widget_inits = await self.get_server_attr(name='widget_inits')
+            async with await self.get_redis_lock('ws;lock;' + self.sess_id):
+                method_func = getattr(widget_inits[widget_id], data['method_name'])
+                if 'method_arg' in data:
+                    await method_func(data['method_arg'])
+                else:
+                    await method_func()
+
+        return
+    
+    
+    # ------------------------------------------------------------------
+    async def init_widget(self, data_in):
+        """importing the class for the widget and registring the id
+        """
+
+        if not await self.is_redis_locked('ws;lock'):
+            raise Exception('init_widget expected to be locked ?!?')
+
+        data = data_in['data']
+        widget_id = data['widget_id']
+        widget_source = 'widgets.' + data['widget_source']
+        widget_name = data['widget_name']
+        n_sync_group = data['n_sync_group'] if 'n_sync_group' in data else 0
+        sync_type = data['sync_type'] if 'sync_type' in data else 0
+
+        if not self.check_panel_sync():
+            n_sync_group = -1
+
+        # the following is equivalent e.g., to:
+        #   from dynamicLoadWidget import dynWidg_0
+        #   widget = dynWidg_0(widget_id=widget_id, __old_SocketManager__=self)
+        # widget_module = __import__(widget_source, globals=globals())
+        widget_module = importlib.import_module(
+            widget_source,
+            package=None,
+        )
+        widget_cls = getattr(widget_module, widget_name)
+
+        async with await self.get_redis_lock('ws;lock;' + self.server_id):
+            widget_inits = await self.get_server_attr(name='widget_inits')
+            widget_inits[widget_id] = widget_cls(widget_id=widget_id, socket_manager=self)
+
+        # make sure the requested widget has been registered as a legitimate class
+        is_not_synced = (widget_name in self.allowed_widget_types['not_synced'])
+        is_synced = widget_name in self.allowed_widget_types['synced']
+        if not (is_not_synced or is_synced):
+            raise Exception(
+                ' - widget_name =', widget_name, ''
+                + 'has not been registered in allowed_widget_types'
+            )
+
+        # if this is not a synced panel, it has no sync group or icon
+        if is_not_synced:
+            n_sync_group = -1
+            n_icon = -1
+        
+        # if it is a synced panel, derive the icon as the next one after all
+        # existing panels
+        if is_synced:
+            n_icon = self.allowed_widget_types['synced'].index(widget_name)
+            while True:
+                user_widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.user_id)
+                if len(user_widget_ids) == 0:
+                    break
+
+                widget_infos = self.redis.h_m_get(
+                    name='ws;widget_infos', key=user_widget_ids, filter=True
+                )
+                n_icons = [x['n_icon'] for x in widget_infos]
+
+                if n_icon in n_icons:
+                    n_icon += len(self.allowed_widget_types['synced'])
+                else:
+                    break
+
+        # bookkeeping and future reference of the class we just loaded
+        # ------------------------------------------------------------------
+        widget_now = dict()
+        widget_now['n_icon'] = n_icon
+        widget_now['user_id'] = self.user_id
+        widget_now['sess_id'] = self.sess_id
+        widget_now['widget_name'] = widget_name
+        widget_now['widget_state'] = dict()
+
+        # register the new widget
+        self.redis.h_set(
+            name='ws;widget_infos', key=widget_id, data=widget_now
+        )
+        self.redis.r_push(
+            name='ws;user_widget_ids;' + self.user_id, data=widget_id
+        )
+        self.redis.r_push(
+            name='ws;sess_widget_ids;' + self.sess_id, data=widget_id
+        )
+
+        # sync group initialization
+        # ------------------------------------------------------------------
+        n_sync_group = min(max(n_sync_group, -1), 0)
+
+        if sync_type > 2 or sync_type < 0:
+            self.log.warning([[
+                'rb', ' - sync_type = ', sync_type, ' too large - on_widget('
+            ], ['yb', data], ['rb', ') !!!!!!!!']])
+            sync_type = min(max(sync_type, 0), 2)
+
+        if n_sync_group == 0:
+            sync_groups = self.redis.h_get(
+                name='ws;sync_groups', key=self.user_id, default_val=[]
+            )
+
+            # ------------------------------------------------------------------
+            # add new empty sync group if needed
+            # ------------------------------------------------------------------
+            group_indices = []
+            if len(sync_groups) > 0:
+                group_indices = [
+                    i for i, x in enumerate(sync_groups) if x['id'] == 'grp_0'
+                ]
+            if len(group_indices) > 0:
+                group_index = group_indices[0]
+            else:
+                group_index = len(sync_groups)
+
+                # the sync_group['id'] must correspond to the pattern defined
+                # by the client for new groups (e.g., 'grp_0') !!!
+                sync_group = dict()
+                sync_group['id'] = 'grp_0'
+                sync_group['title'] = 'Group 0'
+                sync_group['sync_states'] = [[], [], []]
+                sync_group['sync_types'] = dict()
+
+                sync_groups.append(sync_group)
+
+            # add the new widget to the requested sync group and sync state
+            icon_id = 'icn_' + get_rnd(out_type=str)
+            sync_groups[group_index]['sync_states'][sync_type].append([
+                widget_id, icon_id
+            ])
+
+            self.redis.h_set(
+                name='ws;sync_groups',
+                key=self.user_id,
+                data=sync_groups,
+            )
+
+        if n_sync_group != -1:
+            await self.update_sync_group()
+
+        return
+
+
+    # ------------------------------------------------------------------
+    async def update_sync_group(self):
+        if not await self.is_redis_locked('ws;lock'):
+            raise Exception('update_sync_group expected to be locked ?!?')
+
+        async with await self.get_redis_lock('ws;lock;' + self.server_id):
+            widget_inits = await self.get_server_attr(name='widget_inits')
+
+            widget_ids = []
+            widget_infos = self.redis.h_get_all(name='ws;widget_infos')
+            for widget_id, widget_now in widget_infos.items():
+                if widget_id in widget_inits:
+                    if widget_now['n_icon'] == -1:
+                        widget_ids.append(widget_id)
+
+            for widget_id in widget_ids:
+                getattr(widget_inits[widget_id], 'update_sync_groups')()
+
+        return
+
+
+
+    # ------------------------------------------------------------------
+    async def send_widget_init_data(self, opt_in=None):
+        """initial dataset and send to client
+        """
+        
+        widget = opt_in['widget']
+        data_func = (
+            opt_in['data_func'] if 'data_func' in opt_in else lambda: dict()
+        )
+
+        metadata = {
+            'widget_type': widget.widget_name,
+            'widget_id': widget.widget_id,
+            'n_icon': widget.n_icon,
+        }
+        data = data_func()
+
+        await self.emit_to_queue(event_name='init_data', data=data, metadata=metadata)
+
+        return
+
+    # ------------------------------------------------------------------
+    async def add_widget_loop(self, opt_in=None):
+        
+        # =============================================================
+        # =============================================================
+        # =============================================================
+        # =============================================================
+        # cleanup of widget spawns
+        # shared widget spawn ?!?
+        # =============================================================
+        # =============================================================
+        # =============================================================
+        # =============================================================
+
+        widget = opt_in['widget']
+
+        if 'event_name' not in opt_in.keys():
+            opt_in['event_name'] = 'update_data'
+
+        loop_func = (
+            opt_in['loop_func'] if 'loop_func' in opt_in else self.basic_widget_loop
+        )
+        loop_id = (
+            opt_in['loop_id'] if 'loop_id' in opt_in else str(get_time('msec') + rnd_gen.randint(0, 100000))
+        )
+
+
+        if opt_in['loop_group'] == 'widget_id':
+            loop_group = 'ws;widget_id;' + widget.widget_id
+        elif opt_in['loop_group'] == 'widget_name':
+            loop_group = 'ws;widget_name;' + widget.widget_name
+        else:
+            raise Exception('unknown loop_group for: ', opt_in)
+
+        loop_info = {
+            'id': loop_id,
+            'func': loop_func,
+            'group': loop_group,
+            'context': 'ws;sess_heartbeat;' + self.sess_id,
+        }
+
+        if not self.get_loop_state(loop_info):
+            await self.set_loop_state(state=True, loop_info=loop_info)
+            self.spawn(loop_info['func'], loop_info=loop_info, opt_in=opt_in)
+
+        return 
+
+
+        if 0:
+
+
+            if 'is_group_asy_func' not in opt_in:
+                opt_in['is_group_asy_func'] = True
+
+            widget = opt_in['widget']
+
+            asy_func_group = (
+                opt_in['asy_func_group'] if 'asy_func_group' in opt_in else 'update_data'
+            )
+            opt_in['asy_func_group'] = asy_func_group
+
+            asy_func_func = opt_in['asy_func_func'] if 'asy_func_func' in opt_in else None
+            if asy_func_func is None and asy_func_group == 'update_data':
+                asy_func_func = self.widget_asy_func_func
+
+            is_group_asy_func = opt_in['is_group_asy_func']
+
+            with widget.lock:
+                if is_group_asy_func:
+                    if widget.widget_group not in widget.widget_group_sess:
+                        widget.widget_group_sess[widget.widget_group] = []
+
+                    widget.widget_group_sess[widget.widget_group].append(
+                        widget.socket_manager.sess_id
+                    )
+
+                    if self.get_asy_func_id(widget.widget_group, asy_func_group) == -1:
+                        with __old_SocketManager__.lock:
+                            opt_in['asy_func_id'] = self.set_asy_func_state(
+                                widget.widget_group, asy_func_group, True
+                            )
+
+                            gevent.spawn(asy_func_func, opt_in=opt_in)
+                else:
+                    if self.get_asy_func_id(widget.widget_id, asy_func_group) == -1:
+                        with __old_SocketManager__.lock:
+                            opt_in['asy_func_id'] = self.set_asy_func_state(
+                                widget.widget_id, asy_func_group, True
+                            )
+
+                            gevent.spawn(asy_func_func, opt_in=opt_in)
+
+            return
+
+    
+    # ------------------------------------------------------------------
+    async def basic_widget_loop(self, loop_info, opt_in):
+
+        self.log.info([['y', ' - starting '],['b', 'basic_widget_loop'], ['y', ' for widget_id: '], ['c', loop_info['group']], ['b', ' for event_name '], ['c', opt_in['event_name']],])
+
+        widget = opt_in['widget']
+        event_name = opt_in['event_name']
+        sleep_sec = (
+            opt_in['sleep_sec'] if 'sleep_sec' in opt_in else self.basic_widget_sleep_sec
+        )
+
+        # if 'func_args' in opt_in.keys():
+        #     def get_data():
+        #         return opt_in['data_func'](opt_in['func_args'])
+        # else:
+        #     def get_data():
+        #         return opt_in['data_func']()
+
+        sess_widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
+        
+        metadata = {
+            'widget_type': widget.widget_name,
+            'widget_id': widget.widget_id,
+            'sess_widget_ids': sess_widget_ids,
+        }
+
+        while self.get_loop_state(loop_info):
+            async with await self.get_redis_lock('ws;lock'):
+                data = opt_in['data_func']()
+                
+                await self.emit_to_queue(event_name=event_name, data=data, metadata=metadata,)
+
+            await asyncio.sleep(sleep_sec)
+
+        self.log.info([['r', ' - ending '],['b', 'basic_widget_loop'], ['r', ' for widget_id: '], ['c', loop_info['group']], ['r', ' for event_name '], ['c', opt_in['event_name']],])
+
+        return
+
+
+
+
+
+
+
+
+
+
+
+    # ------------------------------------------------------------------
+    async def set_active_widget(self, data_in):
+        data = data_in['data']
+        active_widget = self.redis.h_get(
+            name='ws;active_widget', key=self.user_id, default_val=None
+        )
+
+        if active_widget != data['widget_id']:
+            self.redis.h_set(
+                name='ws;active_widget', key=self.user_id, data=data['widget_id']
+            )
+
+        return
+
+    # ------------------------------------------------------------------
+    async def back_from_offline(self, data):
+        """upon reconnection to an existing session
+        """
+
+        self.log.warn([['r', ' - back_from_offline not implemented ', '!'*90]])
+
+        # if self.sess_id is None:
+        #     return
+
+        # # print 'on_back_from_offline.................'
+        # # first validate that eg the server hasnt been restarted while this session has been offline
+        # sess_ids = self.redis.l_get('ws;all_sess_ids')
+        # server_id = __old_SocketManager__.server_id if self.sess_id in sess_ids else ''
+
+        # self.emit('reconnect', {'server_id': server_id})
+
+        # # now run any widget specific functions
+        # with __old_SocketManager__.lock:
+        #     widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
+        #     for widget_id in widget_ids:
+        #         if widget_id in __old_SocketManager__.widget_inits:
+        #             getattr(__old_SocketManager__.widget_inits[widget_id], 'back_from_offline')()
+
+        return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1260,7 +1973,7 @@ class AsyncSocketManager:
 # ------------------------------------------------------------------
 # ------------------------------------------------------------------
 class __old_SocketManager__(BaseNamespace, BroadcastMixin):
-    # server_name = None
+    # server_id = None
 
     # # common dictionaries for all instances of
     # # the class (keeping track of all sessions etc.)
@@ -1302,20 +2015,20 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
         # ------------------------------------------------------------------
         # add some extra methods, as needed
         # ------------------------------------------------------------------
-        SocketDecorator(self)
+        # SocketDecorator(self)
 
         # # ------------------------------------------------------------------
         # # cleanup the database of old sessions upon restart
         # # ------------------------------------------------------------------
         # with __old_SocketManager__.lock:
-        #     if __old_SocketManager__.server_name is None:
-        #         __old_SocketManager__.server_name = 'server_' + get_rnd(n_digits=10, out_type=str)
+        #     if __old_SocketManager__.server_id is None:
+        #         __old_SocketManager__.server_id = 'server_' + get_rnd(n_digits=10, out_type=str)
 
-                # sess_ids_now = self.redis.l_get('all_sess_ids')
+                # sess_ids_now = self.redis.l_get('ws;all_sess_ids')
                 # for sess_id in sess_ids_now:
                 #   self.cleanup_session(sess_id)
-                # self.redis.delete('user_ids')
-                # self.redis.delete('all_widgets')
+                # self.redis.delete('ws;all_user_ids')
+                # self.redis.delete('ws;widget_infos')
 
         return
 
@@ -1323,14 +2036,14 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # # upon any new connection
     # # ------------------------------------------------------------------
     # def recv_connect(self):
-    #     server_name = __old_SocketManager__.server_name
+    #     server_id = __old_SocketManager__.server_id
     #     tel_ids = self.inst_data.get_inst_ids()
     #     tel_id_to_types = self.inst_data.get_inst_id_to_types()
     #     categorical_types = self.inst_data.get_categorical_types()
 
     #     self.emit(
     #         'initial_connect', {
-    #             'server_name': server_name,
+    #             'server_id': server_id,
     #             'tel_ids': tel_ids,
     #             'tel_id_to_types': tel_id_to_types,
     #             'categorical_types': categorical_types,
@@ -1338,28 +2051,28 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #     )
     #     return
 
-    # ------------------------------------------------------------------
-    # upon reconnection to an existing session
-    # ------------------------------------------------------------------
-    def on_back_from_offline(self):
-        if self.sess_id is None:
-            return
+    # # ------------------------------------------------------------------
+    # # upon reconnection to an existing session
+    # # ------------------------------------------------------------------
+    # def on_back_from_offline(self):
+    #     if self.sess_id is None:
+    #         return
 
-        # print 'on_back_from_offline.................'
-        # first validate that eg the server hasnt been restarted while this session has been offline
-        sess_ids = self.redis.l_get('all_sess_ids')
-        server_name = __old_SocketManager__.server_name if self.sess_id in sess_ids else ''
+    #     # print 'on_back_from_offline.................'
+    #     # first validate that eg the server hasnt been restarted while this session has been offline
+    #     sess_ids = self.redis.l_get('ws;all_sess_ids')
+    #     server_id = __old_SocketManager__.server_id if self.sess_id in sess_ids else ''
 
-        self.emit('reconnect', {'server_name': server_name})
+    #     self.emit('reconnect', {'server_id': server_id})
 
-        # now run any widget specific functions
-        with __old_SocketManager__.lock:
-            widget_ids = self.redis.l_get('sess_widgets;' + self.sess_id)
-            for widget_id in widget_ids:
-                if widget_id in __old_SocketManager__.widget_inits:
-                    getattr(__old_SocketManager__.widget_inits[widget_id], 'back_from_offline')()
+    #     # now run any widget specific functions
+    #     with __old_SocketManager__.lock:
+    #         widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
+    #         for widget_id in widget_ids:
+    #             if widget_id in __old_SocketManager__.widget_inits:
+    #                 getattr(__old_SocketManager__.widget_inits[widget_id], 'back_from_offline')()
 
-        return
+    #     return
 
     # # ------------------------------------------------------------------
     # #
@@ -1398,7 +2111,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #     ])
     #     self.log.debug([
     #         ['b', ' - session details: '],
-    #         ['y', __old_SocketManager__.server_name, ''],
+    #         ['y', __old_SocketManager__.server_id, ''],
     #         ['p', self.user_group_id, ''],
     #         ['y', self.user_id, ''],
     #         ['p', self.user_group_id, ''],
@@ -1408,9 +2121,9 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #     ])
 
     #     with __old_SocketManager__.lock:
-    #         user_ids = self.redis.l_get('user_ids')
-    #         if self.user_id not in user_ids:
-    #             self.redis.r_push(name='user_ids', data=self.user_id)
+    #         all_user_ids = self.redis.l_get('ws;all_user_ids')
+    #         if self.user_id not in all_user_ids:
+    #             self.redis.r_push(name='ws;all_user_ids', data=self.user_id)
 
     #         # ------------------------------------------------------------------
     #         # all session ids in one list (heartbeat should be first to
@@ -1419,7 +2132,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #         self.redis.set(
     #             name='sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 2)
     #         )
-    #         self.redis.r_push(name='all_sess_ids', data=self.sess_id)
+    #         self.redis.r_push(name='ws;all_sess_ids', data=self.sess_id)
 
     #         # ------------------------------------------------------------------
     #         # the socket endpoint type registry for this session
@@ -1429,15 +2142,15 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #         # ------------------------------------------------------------------
     #         #
     #         # ------------------------------------------------------------------
-    #         if not self.redis.h_exists(name='sync_groups', key=self.user_id):
+    #         if not self.redis.h_exists(name='ws;sync_groups', key=self.user_id):
     #             self.redis.h_set(
-    #                 name='sync_groups', key=self.user_id, data=[]
+    #                 name='ws;sync_groups', key=self.user_id, data=[]
     #             )
 
     #         # ------------------------------------------------------------------
     #         # list of all sessions for this user
     #         # ------------------------------------------------------------------
-    #         self.redis.r_push(name='user_sess_ids;' + self.user_id, data=self.sess_id)
+    #         self.redis.r_push(name='ws;user_sess_ids;' + self.user_id, data=self.sess_id)
 
     #     # ------------------------------------------------------------------
     #     # initiate the asy_funcs which does periodic cleanup, heartbeat managment etc.
@@ -1464,12 +2177,12 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #             },
     #         ]
 
-    #         for asy_func_info in asy_funcs:
-    #             if self.is_valid_asy_func(asy_func_info):
-    #                 asy_func_info['id'] = self.set_asy_func_state(
-    #                     asy_func_info['group'], asy_func_info['tag'], True
+    #         for loop_info in asy_funcs:
+    #             if self.is_valid_asy_func(loop_info):
+    #                 loop_info['id'] = self.set_asy_func_state(
+    #                     loop_info['group'], loop_info['tag'], True
     #                 )
-    #                 gevent.spawn(asy_func_info['func'], asy_func_info)
+    #                 gevent.spawn(loop_info['func'], loop_info)
 
     #     # ------------------------------------------------------------------
     #     # transmit the initial data to the client
@@ -1497,169 +2210,169 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
     #    return
 
-    # ------------------------------------------------------------------
-    # general communication with a widget (will import and instantiate a class if needed)
-    # ------------------------------------------------------------------
-    def on_widget(self, data):
-        n_sess_try = 0
-        while self.sess_id is None:
-            n_sess_try += 1
-            if n_sess_try >= 20:
-                self.log.warning([['rb', ' - ignoring zombie session - on_widget('],
-                                  ['yb', data], ['rb', ') !!!!!!!!']])
-                return
-            sleep(0.5)
+    # # ------------------------------------------------------------------
+    # # general communication with a widget (will import and instantiate a class if needed)
+    # # ------------------------------------------------------------------
+    # def on_widget(self, data):
+    #     n_sess_try = 0
+    #     while self.sess_id is None:
+    #         n_sess_try += 1
+    #         if n_sess_try >= 20:
+    #             self.log.warning([['rb', ' - ignoring zombie session - on_widget('],
+    #                               ['yb', data], ['rb', ') !!!!!!!!']])
+    #             return
+    #         sleep(0.5)
 
-        # basic widget info
-        # ------------------------------------------------------------------
-        widget_id = data['widget_id']
-        widget_source = 'widgets.' + data['widget_source']
-        widget_name = data['widget_name']
-        n_sync_group = data['n_sync_group'] if 'n_sync_group' in data else 0
-        sync_type = data['sync_type'] if 'sync_type' in data else 0
+    #     # basic widget info
+    #     # ------------------------------------------------------------------
+    #     widget_id = data['widget_id']
+    #     widget_source = 'widgets.' + data['widget_source']
+    #     widget_name = data['widget_name']
+    #     n_sync_group = data['n_sync_group'] if 'n_sync_group' in data else 0
+    #     sync_type = data['sync_type'] if 'sync_type' in data else 0
 
-        if not self.check_panel_sync():
-            n_sync_group = -1
+    #     if not self.check_panel_sync():
+    #         n_sync_group = -1
 
-        # first make sure the requested widget has been registered as a legitimate class
-        is_panel_sync = (widget_name in self.allowed_widget_types['not_synced'])
-        is_allowed = widget_name in self.allowed_widget_types['synced']
-        if not is_panel_sync and not is_allowed:
-            self.log.critical([
-                ['wr', ' - widget_name =', widget_name, ''],
-                ['wr', 'has not been registered in allowed_widget_types ?!?!'],
-                ['wr', ' --> Will terminate!'],
-            ])
-            raise Exception()
+    #     # first make sure the requested widget has been registered as a legitimate class
+    #     is_not_synced = (widget_name in self.allowed_widget_types['not_synced'])
+    #     is_synced = widget_name in self.allowed_widget_types['synced']
+    #     if not is_not_synced and not is_synced:
+    #         self.log.critical([
+    #             ['wr', ' - widget_name =', widget_name, ''],
+    #             ['wr', 'has not been registered in allowed_widget_types ?!?!'],
+    #             ['wr', ' --> Will terminate!'],
+    #         ])
+    #         raise Exception()
 
-            return
+    #         return
 
-        # ------------------------------------------------------------------
-        # dynamically load the module for the requested widget
-        # (no need for a 'from dynamicLoadWidget import dynWidg_0' statement)
-        # ------------------------------------------------------------------
-        with __old_SocketManager__.lock:
-            has_widget_id = self.redis.h_exists(name='all_widgets', key=widget_id)
+    #     # ------------------------------------------------------------------
+    #     # dynamically load the module for the requested widget
+    #     # (no need for a 'from dynamicLoadWidget import dynWidg_0' statement)
+    #     # ------------------------------------------------------------------
+    #     with __old_SocketManager__.lock:
+    #         has_widget_id = self.redis.h_exists(name='ws;widget_infos', key=widget_id)
 
-        if not has_widget_id:
-            # the following is equivalent e.g., to:
-            #   from dynamicLoadWidget import dynWidg_0
-            #   widget = dynWidg_0(widget_id=widget_id, __old_SocketManager__=self)
-            # widget_module = __import__(widget_source, globals=globals())
-            widget_module = importlib.import_module(
-                widget_source,
-                package=None,
-            )
+    #     if not has_widget_id:
+    #         # the following is equivalent e.g., to:
+    #         #   from dynamicLoadWidget import dynWidg_0
+    #         #   widget = dynWidg_0(widget_id=widget_id, __old_SocketManager__=self)
+    #         # widget_module = __import__(widget_source, globals=globals())
+    #         widget_module = importlib.import_module(
+    #             widget_source,
+    #             package=None,
+    #         )
 
-            with __old_SocketManager__.lock:
-                __old_SocketManager__.widget_inits[widget_id] = getattr(
-                    widget_module, widget_name
-                )(widget_id=widget_id, socket_manager=self)
+    #         with __old_SocketManager__.lock:
+    #             __old_SocketManager__.widget_inits[widget_id] = getattr(
+    #                 widget_module, widget_name
+    #             )(widget_id=widget_id, socket_manager=self)
 
-            with __old_SocketManager__.lock:
-                if is_panel_sync:
-                    n_sync_group = -1
-                    n_icon = -1
-                else:
-                    n_icon = self.allowed_widget_types['synced'].index(widget_name)
-                    while True:
-                        widget_ids = self.redis.l_get('user_widgets;' + self.user_id)
-                        if len(widget_ids) == 0:
-                            break
+    #         with __old_SocketManager__.lock:
+    #             if is_not_synced:
+    #                 n_sync_group = -1
+    #                 n_icon = -1
+    #             else:
+    #                 n_icon = self.allowed_widget_types['synced'].index(widget_name)
+    #                 while True:
+    #                     widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.user_id)
+    #                     if len(widget_ids) == 0:
+    #                         break
 
-                        all_widgets = self.redis.h_m_get(
-                            name='all_widgets', key=widget_ids, filter=True
-                        )
-                        n_icons = [x['n_icon'] for x in all_widgets]
+    #                     widget_infos = self.redis.h_m_get(
+    #                         name='ws;widget_infos', key=widget_ids, filter=True
+    #                     )
+    #                     n_icons = [x['n_icon'] for x in widget_infos]
 
-                        if n_icon in n_icons:
-                            n_icon += len(self.allowed_widget_types['synced'])
-                        else:
-                            break
+    #                     if n_icon in n_icons:
+    #                         n_icon += len(self.allowed_widget_types['synced'])
+    #                     else:
+    #                         break
 
-                # bookkeeping and future reference of the class we just loaded
-                # ------------------------------------------------------------------
-                widget_now = dict()
-                widget_now['n_icon'] = n_icon
-                widget_now['user_id'] = self.user_id
-                widget_now['sess_id'] = self.sess_id
-                widget_now['widget_name'] = widget_name
-                widget_now['widget_state'] = dict()
+    #             # bookkeeping and future reference of the class we just loaded
+    #             # ------------------------------------------------------------------
+    #             widget_now = dict()
+    #             widget_now['n_icon'] = n_icon
+    #             widget_now['user_id'] = self.user_id
+    #             widget_now['sess_id'] = self.sess_id
+    #             widget_now['widget_name'] = widget_name
+    #             widget_now['widget_state'] = dict()
 
-                # register the new widget
-                self.redis.h_set(
-                    name='all_widgets', key=widget_id, data=widget_now
-                )
-                self.redis.r_push(name='user_widgets;' + self.user_id, data=widget_id)
-                self.redis.r_push(name='sess_widgets;' + self.sess_id, data=widget_id)
+    #             # register the new widget
+    #             self.redis.h_set(
+    #                 name='ws;widget_infos', key=widget_id, data=widget_now
+    #             )
+    #             self.redis.r_push(name='ws;user_widget_ids;' + self.user_id, data=widget_id)
+    #             self.redis.r_push(name='ws;sess_widget_ids;' + self.sess_id, data=widget_id)
 
-                # sync group initialization
-                # ------------------------------------------------------------------
-                n_sync_group = min(max(n_sync_group, -1), 0)
+    #             # sync group initialization
+    #             # ------------------------------------------------------------------
+    #             n_sync_group = min(max(n_sync_group, -1), 0)
 
-                if sync_type > 2 or sync_type < 0:
-                    self.log.warning([[
-                        'rb', ' - sync_type = ', sync_type, ' too large - on_widget('
-                    ], ['yb', data], ['rb', ') !!!!!!!!']])
-                    sync_type = min(max(sync_type, 0), 2)
+    #             if sync_type > 2 or sync_type < 0:
+    #                 self.log.warning([[
+    #                     'rb', ' - sync_type = ', sync_type, ' too large - on_widget('
+    #                 ], ['yb', data], ['rb', ') !!!!!!!!']])
+    #                 sync_type = min(max(sync_type, 0), 2)
 
-                if n_sync_group == 0:
-                    sync_groups = self.redis.h_get(
-                        name='sync_groups', key=self.user_id, default_val=[]
-                    )
+    #             if n_sync_group == 0:
+    #                 sync_groups = self.redis.h_get(
+    #                     name='ws;sync_groups', key=self.user_id, default_val=[]
+    #                 )
 
-                    # ------------------------------------------------------------------
-                    # add new empty sync group if needed
-                    # ------------------------------------------------------------------
-                    group_indices = []
-                    if len(sync_groups) > 0:
-                        group_indices = [
-                            i for i, x in enumerate(sync_groups) if x['id'] == 'grp_0'
-                        ]
-                    if len(group_indices) > 0:
-                        group_index = group_indices[0]
-                    else:
-                        group_index = len(sync_groups)
+    #                 # ------------------------------------------------------------------
+    #                 # add new empty sync group if needed
+    #                 # ------------------------------------------------------------------
+    #                 group_indices = []
+    #                 if len(sync_groups) > 0:
+    #                     group_indices = [
+    #                         i for i, x in enumerate(sync_groups) if x['id'] == 'grp_0'
+    #                     ]
+    #                 if len(group_indices) > 0:
+    #                     group_index = group_indices[0]
+    #                 else:
+    #                     group_index = len(sync_groups)
 
-                        # the sync_group['id'] must correspond to the pattern defined by the client
-                        # for new groups (e.g., 'grp_0') !!!
-                        sync_group = dict()
-                        sync_group['id'] = 'grp_0'
-                        sync_group['title'] = 'Group 0'
-                        sync_group['sync_states'] = [[], [], []]
-                        sync_group['sync_types'] = dict()
+    #                     # the sync_group['id'] must correspond to the pattern defined by the client
+    #                     # for new groups (e.g., 'grp_0') !!!
+    #                     sync_group = dict()
+    #                     sync_group['id'] = 'grp_0'
+    #                     sync_group['title'] = 'Group 0'
+    #                     sync_group['sync_states'] = [[], [], []]
+    #                     sync_group['sync_types'] = dict()
 
-                        sync_groups.append(sync_group)
+    #                     sync_groups.append(sync_group)
 
-                    # add the new widget to the requested sync group and sync state
-                    icon_id = 'icn_' + get_rnd(out_type=str)
-                    sync_groups[group_index]['sync_states'][sync_type].append([
-                        widget_id, icon_id
-                    ])
+    #                 # add the new widget to the requested sync group and sync state
+    #                 icon_id = 'icn_' + get_rnd(out_type=str)
+    #                 sync_groups[group_index]['sync_states'][sync_type].append([
+    #                     widget_id, icon_id
+    #                 ])
 
-                    self.redis.h_set(
-                        name='sync_groups',
-                        key=self.user_id,
-                        data=sync_groups,
-                    )
+    #                 self.redis.h_set(
+    #                     name='ws;sync_groups',
+    #                     key=self.user_id,
+    #                     data=sync_groups,
+    #                 )
 
-            if n_sync_group != -1:
-                self.update_sync_group()
+    #         if n_sync_group != -1:
+    #             self.update_sync_group()
 
-        # ------------------------------------------------------------------
-        # call the method named args[1] with optional arguments args[2], equivalent e.g., to:
-        #   widget.method_name(optionalArgs)
-        # ------------------------------------------------------------------
-        if 'method_name' in data and widget_id in __old_SocketManager__.widget_inits:
-            widget_ids = self.redis.l_get('sess_widgets;' + self.sess_id)
-            if 'method_arg' in data:
-                getattr(__old_SocketManager__.widget_inits[widget_id], data['method_name'])(
-                    data['method_arg']
-                )
-            else:
-                getattr(__old_SocketManager__.widget_inits[widget_id], data['method_name'])()
+    #     # ------------------------------------------------------------------
+    #     # call the method named args[1] with optional arguments args[2], equivalent e.g., to:
+    #     #   widget.method_name(optionalArgs)
+    #     # ------------------------------------------------------------------
+    #     if 'method_name' in data and widget_id in __old_SocketManager__.widget_inits:
+    #         widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
+    #         if 'method_arg' in data:
+    #             getattr(__old_SocketManager__.widget_inits[widget_id], data['method_name'])(
+    #                 data['method_arg']
+    #             )
+    #         else:
+    #             getattr(__old_SocketManager__.widget_inits[widget_id], data['method_name'])()
 
-        return
+    #     return
 
     # # ------------------------------------------------------------------
     # #
@@ -1677,19 +2390,19 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
     #     return allow
 
-    # ------------------------------------------------------------------
-    def update_sync_group(self):
-        widget_ids = []
-        with __old_SocketManager__.lock:
-            all_widgets = self.redis.h_get_all(name='all_widgets')
-            for widget_id, widget_now in all_widgets.items():
-                if widget_now['n_icon'] == -1 and widget_id in __old_SocketManager__.widget_inits:
-                    widget_ids.append(widget_id)
+    # # ------------------------------------------------------------------
+    # def update_sync_group(self):
+    #     widget_ids = []
+    #     with __old_SocketManager__.lock:
+    #         widget_infos = self.redis.h_get_all(name='ws;widget_infos')
+    #         for widget_id, widget_now in widget_infos.items():
+    #             if widget_now['n_icon'] == -1 and widget_id in __old_SocketManager__.widget_inits:
+    #                 widget_ids.append(widget_id)
 
-        for widget_id in widget_ids:
-            getattr(__old_SocketManager__.widget_inits[widget_id], 'update_sync_groups')()
+    #     for widget_id in widget_ids:
+    #         getattr(__old_SocketManager__.widget_inits[widget_id], 'update_sync_groups')()
 
-        return
+    #     return
 
     # ------------------------------------------------------------------
     def on_sync_state_send(self, data_in):
@@ -1697,16 +2410,16 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
             return
         if 'widget_id' not in data_in:
             return
-        if not self.redis.h_exists(name='active_widget', key=self.user_id):
+        if not self.redis.h_exists(name='ws;active_widget', key=self.user_id):
             return
         all_sync_ids = []
         with __old_SocketManager__.lock:
-            if self.redis.h_get(name='active_widget',
+            if self.redis.h_get(name='ws;active_widget',
                                 key=self.user_id) != data_in['widget_id']:
                 return
 
             sync_groups = self.redis.h_get(
-                name='sync_groups', key=self.user_id, default_val=[]
+                name='ws;sync_groups', key=self.user_id, default_val=[]
             )
 
             for sync_group in sync_groups:
@@ -1727,7 +2440,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                             all_sync_ids.append(id_now)
 
             self.redis.h_set(
-                name='sync_groups', key=self.user_id, data=sync_groups
+                name='ws;sync_groups', key=self.user_id, data=sync_groups
             )
         data = {
             'widget_id': data_in['widget_id'],
@@ -1740,18 +2453,18 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    def on_set_active_widget(self, data):
-        active_widget = self.redis.h_get(
-            name='active_widget', key=self.user_id, default_val=None
-        )
+    # # ------------------------------------------------------------------
+    # def on_set_active_widget(self, data):
+    #     active_widget = self.redis.h_get(
+    #         name='ws;active_widget', key=self.user_id, default_val=None
+    #     )
 
-        if active_widget != data['widget_id']:
-            self.redis.h_set(
-                name='active_widget', key=self.user_id, data=data['widget_id']
-            )
+    #     if active_widget != data['widget_id']:
+    #         self.redis.h_set(
+    #             name='ws;active_widget', key=self.user_id, data=data['widget_id']
+    #         )
 
-        return
+    #     return
 
     # # ------------------------------------------------------------------
     # # placeholder for overloaded method, to be run as part of on_leave_session
@@ -1759,78 +2472,87 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # def on_leave_session_(self):
     #     return
 
-    # ------------------------------------------------------------------
-    # initial dataset and send to client
-    # ------------------------------------------------------------------
-    def send_init_widget(self, opt_in=None):
-        widget = opt_in['widget']
-        data_func = (opt_in['data_func'] if 'data_func' in opt_in else lambda: dict())
-        asy_func_group = (
-            opt_in['asy_func_group'] if 'asy_func_group' in opt_in else 'init_data'
-        )
+    # # ------------------------------------------------------------------
+    # # initial dataset and send to client
+    # # ------------------------------------------------------------------
+    # def send_widget_init_data(self, opt_in=None):
+    #     widget = opt_in['widget']
+    #     data_func = (opt_in['data_func'] if 'data_func' in opt_in else lambda: dict())
+    #     asy_func_group = (
+    #         opt_in['asy_func_group'] if 'asy_func_group' in opt_in else 'init_data'
+    #     )
 
-        with widget.lock:
-            emit_data = {
-                'widget_type': widget.widget_name,
-                'event_name': asy_func_group,
-                'n_icon': widget.n_icon,
-                'data': data_func()
-            }
+    #     with widget.lock:
+    #         emit_data = {
+    #             'widget_type': widget.widget_name,
+    #             'event_name': asy_func_group,
+    #             'n_icon': widget.n_icon,
+    #             'data': data_func()
+    #         }
 
-            widget.log.info([['y', ' - sending - ('],
-                             ['b', widget.widget_name, asy_func_group], ['y', ','],
-                             ['g', self.sess_id, '/', widget.widget_id], ['y', ')']])
+    #         widget.log.info([['y', ' - sending - ('],
+    #                          ['b', widget.widget_name, asy_func_group], ['y', ','],
+    #                          ['g', self.sess_id, '/', widget.widget_id], ['y', ')']])
 
-            # print('widget.widget_id',widget.widget_id, asy_func_group, emit_data)
-            self.socket_evt_session(
-                widget_id=widget.widget_id, event_name=asy_func_group, data=emit_data
-            )
+    #         # print('widget.widget_id',widget.widget_id, asy_func_group, emit_data)
+    #         self.socket_evt_session(
+    #             widget_id=widget.widget_id, event_name=asy_func_group, data=emit_data
+    #         )
 
-        return
+    #     return
 
-    # ------------------------------------------------------------------
-    def add_widget_tread(self, opt_in=None):
-        if 'is_group_asy_func' not in opt_in:
-            opt_in['is_group_asy_func'] = True
+    # # ------------------------------------------------------------------
+    # def add_widget_loop(self, opt_in=None):
+    #     if 'is_group_asy_func' not in opt_in:
+    #         opt_in['is_group_asy_func'] = True
 
-        widget = opt_in['widget']
+    #     widget = opt_in['widget']
 
-        asy_func_group = opt_in['asy_func_group'
-                              ] if 'asy_func_group' in opt_in else 'update_data'
-        opt_in['asy_func_group'] = asy_func_group
+    #     asy_func_group = opt_in['asy_func_group'
+    #                           ] if 'asy_func_group' in opt_in else 'update_data'
+    #     opt_in['asy_func_group'] = asy_func_group
 
-        asy_func_func = opt_in['asy_func_func'] if 'asy_func_func' in opt_in else None
-        if asy_func_func is None and asy_func_group == 'update_data':
-            asy_func_func = self.widget_asy_func_func
+    #     asy_func_func = opt_in['asy_func_func'] if 'asy_func_func' in opt_in else None
+    #     if asy_func_func is None and asy_func_group == 'update_data':
+    #         asy_func_func = self.widget_asy_func_func
 
-        is_group_asy_func = opt_in['is_group_asy_func']
+    #     is_group_asy_func = opt_in['is_group_asy_func']
 
-        with widget.lock:
-            if is_group_asy_func:
-                if widget.widget_group not in widget.widget_group_sess:
-                    widget.widget_group_sess[widget.widget_group] = []
+    #     with widget.lock:
+    #         if is_group_asy_func:
+    #             if widget.widget_group not in widget.widget_group_sess:
+    #                 widget.widget_group_sess[widget.widget_group] = []
 
-                widget.widget_group_sess[widget.widget_group].append(
-                    widget.socket_manager.sess_id
-                )
+    #             widget.widget_group_sess[widget.widget_group].append(
+    #                 widget.socket_manager.sess_id
+    #             )
 
-                if self.get_asy_func_id(widget.widget_group, asy_func_group) == -1:
-                    with __old_SocketManager__.lock:
-                        opt_in['asy_func_id'] = self.set_asy_func_state(
-                            widget.widget_group, asy_func_group, True
-                        )
+    #             if self.get_asy_func_id(widget.widget_group, asy_func_group) == -1:
+    #                 with __old_SocketManager__.lock:
+    #                     opt_in['asy_func_id'] = self.set_asy_func_state(
+    #                         widget.widget_group, asy_func_group, True
+    #                     )
 
-                        gevent.spawn(asy_func_func, opt_in=opt_in)
-            else:
-                if self.get_asy_func_id(widget.widget_id, asy_func_group) == -1:
-                    with __old_SocketManager__.lock:
-                        opt_in['asy_func_id'] = self.set_asy_func_state(
-                            widget.widget_id, asy_func_group, True
-                        )
+    #                     gevent.spawn(asy_func_func, opt_in=opt_in)
+    #         else:
+    #             if self.get_asy_func_id(widget.widget_id, asy_func_group) == -1:
+    #                 with __old_SocketManager__.lock:
+    #                     opt_in['asy_func_id'] = self.set_asy_func_state(
+    #                         widget.widget_id, asy_func_group, True
+    #                     )
 
-                        gevent.spawn(asy_func_func, opt_in=opt_in)
+    #                     gevent.spawn(asy_func_func, opt_in=opt_in)
 
-        return
+    #     return
+
+
+
+
+
+
+
+
+
 
     # ------------------------------------------------------------------
     def widget_asy_func_func(self, opt_in=None):
@@ -1878,7 +2600,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
         return
 
     # ------------------------------------------------------------------
-    def pubsub_socket_evt_widgets(self, asy_func_info):
+    def pubsub_socket_evt_widgets(self, loop_info):
         self.log.info([['y', ' - starting shared_asy_func('],
                        ['g', 'pubsub_socket_evt_widgets'], ['y', ')']])
 
@@ -1887,7 +2609,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                            ['b', 'socket_event_widgets'], ['y', ' ...']])
             sleep(0.1)
 
-        while self.is_valid_asy_func(asy_func_info):
+        while self.is_valid_asy_func(loop_info):
             sleep(0.1)
 
             msg = self.redis.get_pubsub('socket_event_widgets')
@@ -1901,7 +2623,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
 
             with __old_SocketManager__.lock:
                 if sess_ids is None:
-                    sess_ids = self.redis.l_get('all_sess_ids')
+                    sess_ids = self.redis.l_get('ws;all_sess_ids')
 
                 if self.log_send_packet:
                     self.log.info([[
@@ -1912,14 +2634,14 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
                         (',').join(sess_ids) + ']'
                     ]])
 
-                user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
+                user_sess_ids = self.redis.l_get('ws;user_sess_ids;' + self.user_id)
                 sess_ids = [
                     x for x in sess_ids
                     if (x in self.socket.server.sockets and x in user_sess_ids)
                 ]
 
                 for sess_id in sess_ids:
-                    ids = self.redis.l_get('sess_widgets;' + sess_id)
+                    ids = self.redis.l_get('ws;sess_widget_ids;' + sess_id)
                     if widget_ids is None:
                         data['sess_widget_ids'] = ids
                     else:
@@ -2022,10 +2744,10 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # # ------------------------------------------------------------------
     # #
     # # ------------------------------------------------------------------
-    # def is_valid_asy_func(self, asy_func_info):
-    #     asy_func_id = asy_func_info['id']
-    #     asy_func_group = asy_func_info['group']
-    #     asy_func_tag = asy_func_info['tag']
+    # def is_valid_asy_func(self, loop_info):
+    #     asy_func_id = loop_info['id']
+    #     asy_func_group = loop_info['group']
+    #     asy_func_tag = loop_info['tag']
 
     #     is_valid = (asy_func_id == self.get_asy_func_id(asy_func_group, asy_func_tag))
     #     return is_valid
@@ -2047,7 +2769,7 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # # ------------------------------------------------------------------
     # def on_refreshAll(self, has_lock=False):
     #     def doRefresh():
-    #         sess_ids = self.redis.l_get('all_sess_ids')
+    #         sess_ids = self.redis.l_get('ws;all_sess_ids')
     #         sess_ids = [x for x in sess_ids if x in self.socket.server.sockets]
 
     #         for sess_id in sess_ids:
@@ -2079,68 +2801,68 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
             ['r', ' terminated...'],
         ])
 
-        sess_ids = self.redis.l_get('all_sess_ids')
+        sess_ids = self.redis.l_get('ws;all_sess_ids')
         if (self.sess_name != '') and (self.sess_id in sess_ids):
             self.on_leave_session()
 
         self.disconnect(silent=True)
         return
 
-    # ------------------------------------------------------------------
-    # on leaving the session
-    # ------------------------------------------------------------------
-    def on_leave_session(self):
-        with __old_SocketManager__.lock:
-            sess_ids_now = self.redis.l_get('user_sess_ids;' + self.user_id)
-            self.log.info([
-                ['b', ' - leaving session '],
-                ['y', self.sess_name + ' , ' + self.user_id],
-                ['b', ' where all Ids('],
-                ['g', str(len(sess_ids_now))],
-                ['b', ') = ['],
-                ['p', (',').join(sess_ids_now)],
-                ['b', ']'],
-            ])
+    # # ------------------------------------------------------------------
+    # # on leaving the session
+    # # ------------------------------------------------------------------
+    # def on_leave_session(self):
+    #     with __old_SocketManager__.lock:
+    #         sess_ids_now = self.redis.l_get('ws;user_sess_ids;' + self.user_id)
+    #         self.log.info([
+    #             ['b', ' - leaving session '],
+    #             ['y', self.sess_name + ' , ' + self.user_id],
+    #             ['b', ' where all Ids('],
+    #             ['g', str(len(sess_ids_now))],
+    #             ['b', ') = ['],
+    #             ['p', (',').join(sess_ids_now)],
+    #             ['b', ']'],
+    #         ])
 
-            # remove the widgets which belong to this session
-            widget_ids = self.redis.l_get('sess_widgets;' + self.sess_id)
-            sync_groups = self.redis.h_get(
-                name='sync_groups', key=self.user_id, default_val=[]
-            )
+    #         # remove the widgets which belong to this session
+    #         widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
+    #         sync_groups = self.redis.h_get(
+    #             name='ws;sync_groups', key=self.user_id, default_val=[]
+    #         )
 
-            for widget_id in widget_ids:
-                self.redis.h_del(name='all_widgets', key=widget_id)
+    #         for widget_id in widget_ids:
+    #             self.redis.h_del(name='ws;widget_infos', key=widget_id)
 
-                for sync_group in sync_groups:
-                    for sync_states in sync_group['sync_states']:
-                        rm_elements = []
-                        for sync_type_now in sync_states:
-                            if sync_type_now[0] == widget_id:
-                                rm_elements.append(sync_type_now)
-                        for rm_element in rm_elements:
-                            sync_states.remove(rm_element)
+    #             for sync_group in sync_groups:
+    #                 for sync_states in sync_group['sync_states']:
+    #                     rm_elements = []
+    #                     for sync_type_now in sync_states:
+    #                         if sync_type_now[0] == widget_id:
+    #                             rm_elements.append(sync_type_now)
+    #                     for rm_element in rm_elements:
+    #                         sync_states.remove(rm_element)
 
-                self.clear_asy_func_group(widget_id)
+    #             self.clear_asy_func_group(widget_id)
 
-            self.redis.h_set(
-                name='sync_groups', key=self.user_id, data=sync_groups
-            )
+    #         self.redis.h_set(
+    #             name='ws;sync_groups', key=self.user_id, data=sync_groups
+    #         )
 
-            # ------------------------------------------------------------------
-            # remove this session from the general registry
-            # ------------------------------------------------------------------
-            self.cleanup_session(self.sess_id)
+    #         # ------------------------------------------------------------------
+    #         # remove this session from the general registry
+    #         # ------------------------------------------------------------------
+    #         self.cleanup_session(self.sess_id)
 
-            # ------------------------------------------------------------------
-            # cleanup possible asy_funcs belonging to this specific session
-            # ------------------------------------------------------------------
-            self.clear_asy_func_group(self.sess_name)
+    #         # ------------------------------------------------------------------
+    #         # cleanup possible asy_funcs belonging to this specific session
+    #         # ------------------------------------------------------------------
+    #         self.clear_asy_func_group(self.sess_name)
 
-        self.update_sync_group()
+    #     self.update_sync_group()
 
-        self.on_leave_session_()
+    #     self.on_leave_session_()
 
-        return
+    #     return
 
     # # ------------------------------------------------------------------
     # # placeholder for overloaded method, to be run as part of on_join_session
@@ -2155,30 +2877,30 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     #     if sess_id is None:
     #         return
     #     self.log.info([
-    #         ['b', ' - cleanup_session sessionId(', __old_SocketManager__.server_name, ') '],
+    #         ['b', ' - cleanup_session sessionId(', __old_SocketManager__.server_id, ') '],
     #         ['p', sess_id],
     #     ])
 
-    #     user_ids = self.redis.l_get('user_ids')
-    #     widget_ids = self.redis.l_get('sess_widgets;' + sess_id)
+    #     all_user_ids = self.redis.l_get('ws;all_user_ids')
+    #     widget_ids = self.redis.l_get('ws;sess_widget_ids;' + sess_id)
 
-    #     for user_id in user_ids:
-    #         self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
+    #     for user_id in all_user_ids:
+    #         self.redis.l_rem(name='ws;user_sess_ids;' + user_id, data=sess_id)
 
     #     for widget_id in widget_ids:
     #         self.log.info([[
-    #             'b', ' - cleanup_session widget_id (', __old_SocketManager__.server_name, ') '
+    #             'b', ' - cleanup_session widget_id (', __old_SocketManager__.server_id, ') '
     #         ], ['p', widget_id]])
 
-    #         self.redis.h_del(name='all_widgets', key=widget_id)
+    #         self.redis.h_del(name='ws;widget_infos', key=widget_id)
     #         if widget_id in __old_SocketManager__.widget_inits:
     #             __old_SocketManager__.widget_inits.pop(widget_id, None)
-    #         for user_id in user_ids:
-    #             self.redis.l_rem(name='user_widgets;' + user_id, data=widget_id)
+    #         for user_id in all_user_ids:
+    #             self.redis.l_rem(name='ws;user_widget_ids;' + user_id, data=widget_id)
 
-    #     self.redis.delete('sess_widgets;' + sess_id)
+    #     self.redis.delete('ws;sess_widget_ids;' + sess_id)
     #     self.redis.delete('sess_heartbeat;' + sess_id)
-    #     self.redis.l_rem(name='all_sess_ids', data=sess_id)
+    #     self.redis.l_rem(name='ws;all_sess_ids', data=sess_id)
 
     #     if sess_id in __old_SocketManager__.sess_endpoints:
     #         __old_SocketManager__.sess_endpoints.pop(sess_id, None)
@@ -2188,16 +2910,16 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # # ------------------------------------------------------------------
     # # renew session heartbeat token (run in asy_func) for all active sessions
     # # ------------------------------------------------------------------
-    # def sess_heartbeat(self, asy_func_info):
+    # def sess_heartbeat(self, loop_info):
     #     self.log.info([['y', ' - starting shared_asy_func('], ['g', 'sess_heartbeat'],
-    #                    ['y', ') - ', __old_SocketManager__.server_name]])
+    #                    ['y', ') - ', __old_SocketManager__.server_id]])
 
     #     sleep_sec = max(ceil(self.sess_expire * 0.1), 10)
     #     sess_expire = int(max(self.sess_expire, sleep_sec * 2))
 
-    #     while self.is_valid_asy_func(asy_func_info):
+    #     while self.is_valid_asy_func(loop_info):
     #         with __old_SocketManager__.lock:
-    #             sess_ids = self.redis.l_get('all_sess_ids')
+    #             sess_ids = self.redis.l_get('ws;all_sess_ids')
     #             sess_ids = [x for x in sess_ids if x in self.socket.server.sockets]
 
     #             for sess_id in sess_ids:
@@ -2217,41 +2939,41 @@ class __old_SocketManager__(BaseNamespace, BroadcastMixin):
     # ------------------------------------------------------------------
     # cleanup (run in asy_func) for all the bookkeeping elements
     # ------------------------------------------------------------------
-    def cleanup(self, asy_func_info):
+    def cleanup(self, loop_info):
         self.log.info([['y', ' - starting shared_asy_func('], ['g', 'cleanup'],
-                       ['y', ') - ', __old_SocketManager__.server_name]])
+                       ['y', ') - ', __old_SocketManager__.server_id]])
         sleep(3)
 
-        while self.is_valid_asy_func(asy_func_info):
+        while self.is_valid_asy_func(loop_info):
             with __old_SocketManager__.lock:
-                user_ids = self.redis.l_get('user_ids')
-                sess_ids = self.redis.l_get('all_sess_ids')
+                all_user_ids = self.redis.l_get('ws;all_user_ids')
+                sess_ids = self.redis.l_get('ws;all_sess_ids')
 
                 for sess_id in sess_ids:
                     if not self.redis.exists('sess_heartbeat;' + sess_id):
                         self.cleanup_session(sess_id)
 
-                sess_ids = self.redis.l_get('all_sess_ids')
-                for user_id in user_ids:
-                    sess_ids_now = self.redis.l_get('user_sess_ids;' + user_id)
+                sess_ids = self.redis.l_get('ws;all_sess_ids')
+                for user_id in all_user_ids:
+                    sess_ids_now = self.redis.l_get('ws;user_sess_ids;' + user_id)
                     zombie_ids = [x for x in sess_ids_now if x not in sess_ids]
                     for sess_id in zombie_ids:
-                        self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
+                        self.redis.l_rem(name='ws;user_sess_ids;' + user_id, data=sess_id)
 
                     # just in case, cleanup any remaining widgets
                     if len(sess_ids_now) == len(zombie_ids):
-                        widget_ids = self.redis.l_get('user_widgets;' + user_id)
+                        widget_ids = self.redis.l_get('ws;user_widget_ids;' + user_id)
                         for widget_id in widget_ids:
-                            self.redis.h_del(name='all_widgets', key=widget_id)
+                            self.redis.h_del(name='ws;widget_infos', key=widget_id)
                             if widget_id in __old_SocketManager__.widget_inits:
                                 __old_SocketManager__.widget_inits.pop(widget_id, None)
 
-                        self.redis.delete('user_sess_ids;' + user_id)
-                        self.redis.delete('user_widgets;' + user_id)
-                        self.redis.h_del(name='active_widget', key=user_id)
-                        self.redis.l_rem(name='user_ids', data=user_id)
+                        self.redis.delete('ws;user_sess_ids;' + user_id)
+                        self.redis.delete('ws;user_widget_ids;' + user_id)
+                        self.redis.h_del(name='ws;active_widget', key=user_id)
+                        self.redis.l_rem(name='ws;all_user_ids', data=user_id)
 
-                if not self.redis.exists('user_ids'):
+                if not self.redis.exists('ws;all_user_ids'):
                     break
 
             sleep(self.cleanup_sleep)
@@ -2336,18 +3058,26 @@ class ClockSimDecorator():
             self.clock_sim_update_sim_params,
         )
 
-        self.socket_manager.add_asy_func_loop({
-            'id': None,
-            'group': 'shared_asy_func',
-            'tag': 'clock_sim_update_sim_params_loop',
+        loop_info = {
+            'id': 'clock_sim_update_sim_params_loop',
             'func': self.clock_sim_update_sim_params,
-        })
+            'group': 'ws;server;' + self.socket_manager.server_id,
+            'context': 'ws;server_heartbeat;' + self.socket_manager.server_id,
+        }
+        self.socket_manager.add_async_loop(loop_info=loop_info)
 
         return
 
     # ------------------------------------------------------------------
     async def ask_sim_clock_sim_params(self, data_in=None):
         data = self.redis.get('clock_sim_sim_params')
+        
+        # temporary hack
+        if data is None:
+            self.log.warn([['r', ' - could not get clock_sim_sim_params ...']])
+            # raise Exception('could not get clock_sim_sim_params')
+            return
+        
         await self.socket_manager.emit_to_queue(event_name='get_sim_clock_sim_params', data=data,)
 
         return
@@ -2364,11 +3094,9 @@ class ClockSimDecorator():
         return
 
     # ---------------------------------------------------------------------------
-    async def clock_sim_update_sim_params(self, asy_func_info):
+    async def clock_sim_update_sim_params(self, loop_info):
 
-        self.log.info([['y', ' - starting '],['b', 'clock_sim_sim_params'], ['y', ' for server: '], ['c', self.socket_manager.server_name],])
-
-        managers = self.socket_manager.managers
+        self.log.info([['y', ' - starting '],['b', 'clock_sim_sim_params'], ['y', ' for server: '], ['c', self.socket_manager.server_id],])
 
         # setup the channel once
         pubsub_tag = 'clock_sim_updated_sim_params'
@@ -2376,23 +3104,27 @@ class ClockSimDecorator():
             sleep(0.1)
 
         sleep_sec = 0.1
-        while self.socket_manager.is_valid_asy_func(asy_func_info):
+        while self.socket_manager.get_loop_state(loop_info):
             await asyncio.sleep(sleep_sec)    
 
             msg = self.redis.get_pubsub(key=pubsub_tag)
             if msg is None:
                 continue
 
-            all_sess_ids = self.redis.l_get(self.socket_manager.server_name+';all_sess_ids',)
-            all_sess_ids = [
-                s for s in all_sess_ids if s in managers.keys()
+            # lock the server while getting the sessions, but for the transmition
+            lock_name = 'ws;lock;' + self.socket_manager.server_id
+            async with await self.socket_manager.get_redis_lock(lock_name):
+                managers = await self.socket_manager.get_server_attr('managers')
 
-            ]
+                all_sess_ids = self.redis.l_get('ws;server_sess_ids;'+self.socket_manager.server_id)
+                all_sess_ids = [
+                    s for s in all_sess_ids if s in managers.keys()
+                ]
             for sess_id in all_sess_ids:
                 await managers[sess_id].ask_sim_clock_sim_params()
 
 
-        self.log.info([['r', ' - ending '],['b', 'clock_sim_sim_params'], ['r', ' for server: '], ['c', self.socket_manager.server_name],])
+        self.log.info([['r', ' - ending '],['b', 'clock_sim_sim_params'], ['r', ' for server: '], ['c', self.socket_manager.server_id],])
 
         return
 
@@ -2450,14 +3182,14 @@ if 0:
         def get_pubsub():
             for i in range(5):
                 print('    ------ ', i)
-                print('-->', self.socket_manager.is_valid_asy_func(asy_func_info))
+                print('-->', self.socket_manager.is_valid_asy_func(loop_info))
                 sleep(1)
             return i 
 
         loop = asyncio.get_event_loop()
 
         for i in range(5):
-            if not self.socket_manager.is_valid_asy_func(asy_func_info):
+            if not self.socket_manager.is_valid_asy_func(loop_info):
                 print('done!!!!!!!!!!!!!')
                 break
             blocking_future = loop.run_in_executor(None, get_pubsub)
@@ -2481,7 +3213,7 @@ if 0:
 
         sleep_sec = 0.1
         sleep_sec = 1
-        while self.socket_manager.is_valid_asy_func(asy_func_info):
+        while self.socket_manager.is_valid_asy_func(loop_info):
             # await loop.run_in_executor(None, get_pubsub)
             msg = await loop.run_in_executor(None, get_pubsub)
             if msg is None:

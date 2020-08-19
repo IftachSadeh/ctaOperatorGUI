@@ -1374,7 +1374,7 @@ window.ArrZoomerBase = function(opt_in_top) {
         
         if (data_in.id !== '' && data_in.type === 's11') {
             // console.log('-server- get_data_s1 ',data_in);
-            if (is_def(sock.all_widgets[widget_type].widgets[data_in.widget_id])) {
+            if (is_def(sock.widget_infos[widget_type].widgets[data_in.widget_id])) {
                 this_top.get_data_s1(data_in.widget_id, data_in)
             }
         }
@@ -1388,7 +1388,7 @@ window.ArrZoomerBase = function(opt_in_top) {
             return
         }
 
-        let widgets = sock.all_widgets[widget_type].widgets
+        let widgets = sock.widget_infos[widget_type].widgets
         $.each(widgets, function(widget_id_now, module_now) {
             if (data_in.sess_widget_ids.indexOf(widget_id_now) >= 0) {
                 this_top.update_data(data_in)

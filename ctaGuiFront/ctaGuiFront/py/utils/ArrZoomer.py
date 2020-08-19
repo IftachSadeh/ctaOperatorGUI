@@ -125,7 +125,7 @@ class ArrZoomer():
 
         with self.socket_manager.lock:
             wgt = self.redis.h_get(
-                name='all_widgets',
+                name='ws;widget_infos',
                 key=self.widget_id,
             )
 
@@ -155,7 +155,7 @@ class ArrZoomer():
         if thread_id == -1:
             if self.log_send_packet:
                 ArrZoomer.log.info([['y', ' - starting arr_zoomer_update_data('],
-                                    ['g', self.socket_manager.user_group_id], ['y', ')']])
+                                    ['g', self.socket_manager.user_group_id], ['y', ')'],])
 
             thread_id = self.socket_manager.set_thread_state(
                 self.socket_manager.user_group_id,
@@ -174,7 +174,7 @@ class ArrZoomer():
         if thread_id == -1:
             if self.log_send_packet:
                 ArrZoomer.log.info([['y', ' - starting arr_zoomer_update_sub_arr('],
-                                    ['g', self.socket_manager.user_group_id], ['y', ')']])
+                                    ['g', self.socket_manager.user_group_id], ['y', ')'],])
 
             thread_id = self.socket_manager.set_thread_state(
                 self.socket_manager.user_group_id,
@@ -277,7 +277,7 @@ class ArrZoomer():
             'thread_group': 'arr_zoomer_get_init_data',
         }
 
-        self.socket_manager.send_init_widget(opt_in=opt_in)
+        self.socket_manager.send_widget_init_data(opt_in=opt_in)
 
         return
 
@@ -440,9 +440,9 @@ class ArrZoomer():
         }
         ArrZoomer.send_data['s_1'] = dict()
 
-        all_widgets = self.redis.h_get_all(name='all_widgets', )
+        widget_infos = self.redis.h_get_all(name='ws;widget_infos', )
 
-        for widget_id, widget_now in all_widgets.items():
+        for widget_id, widget_now in widget_infos.items():
             if widget_now['widget_name'] != self.widget_name:
                 continue
             if widget_id not in self.socket_manager.widget_inits:

@@ -13,7 +13,7 @@ class Serialisation():
 
     # ------------------------------------------------------------------
     @classmethod
-    def pack_obj(self, data_in, log=None):
+    def pack(self, data_in, log=None):
         try:
             data = msgpack.packb(data_in)
         except Exception as e:
@@ -21,7 +21,7 @@ class Serialisation():
                 log = self.log
             if log is not None:
                 log.error([
-                    ['r', ' - could not do pack_obj() for ',
+                    ['r', ' - could not do pack() for ',
                      str(data_in)],
                     ['r', '\n', e],
                 ])
@@ -31,7 +31,7 @@ class Serialisation():
 
     # ------------------------------------------------------------------
     @classmethod
-    def unpack_obj(self, data_in, log=None):
+    def unpack(self, data_in, log=None):
         try:
             if isinstance(data_in, str):
                 data = data_in
@@ -49,17 +49,17 @@ class Serialisation():
             elif isinstance(data_in, list):
                 data = []
                 for data_now_0 in data_in:
-                    data += [self.unpack_obj(data_now_0, log)]
+                    data += [self.unpack(data_now_0, log)]
 
             elif isinstance(data_in, dict):
                 data = dict()
                 for k, v in data_in.items():
-                    data[self.unpack_obj(k, log)] = self.unpack_obj(v, log)
+                    data[self.unpack(k, log)] = self.unpack(v, log)
 
             elif isinstance(data_in, tuple):
                 data = ()
                 for v in data_in:
-                    data += (self.unpack_obj(v, log), )
+                    data += (self.unpack(v, log), )
 
             elif isinstance(data_in, (int, float, complex)) or (data_in is None):
                 data = data_in
@@ -72,7 +72,7 @@ class Serialisation():
                 log = self.log
             if log is not None:
                 log.error([
-                    ['r', ' - could not do unpack_obj() for ',
+                    ['r', ' - could not do unpack() for ',
                      str(data_in)],
                     ['r', '\n', e],
                 ])

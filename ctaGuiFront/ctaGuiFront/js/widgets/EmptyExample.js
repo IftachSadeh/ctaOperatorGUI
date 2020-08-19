@@ -189,10 +189,7 @@ let main_empty_example = function(opt_in) {
                 .style('height', '100%')
                 .style('top', '0px')
                 .style('left', '0px')
-            // .attr("viewBox", "0 0 "+svg_dims.w[0]+" "+svg_dims.h[0] * whRatio)
-            // .classed("svgInGridStack_inner", true)
                 .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
-            // .call(com.svg_zoom)
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
@@ -232,7 +229,7 @@ let main_empty_example = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            update_dataOnce(data_in.data)
+            update_data_once(data_in.data)
 
             run_when_ready({
                 pass: function() {
@@ -250,7 +247,7 @@ let main_empty_example = function(opt_in) {
         // -------------------------------------------------------------------
         run_loop.init({
             tag: 'update_data',
-            func: update_dataOnce,
+            func: update_data_once,
             n_keep: 1,
         })
 
@@ -271,7 +268,7 @@ let main_empty_example = function(opt_in) {
         // -------------------------------------------------------------------
         // some random stuff for illustration
         // -------------------------------------------------------------------
-        function update_dataOnce(data_in) {
+        function update_data_once(data_in) {
             if (!locker.are_free([ tag_empty_example + 'update_data' ])) {
                 // console.log('will delay update_data');
                 setTimeout(function() {
@@ -303,7 +300,7 @@ let main_empty_example = function(opt_in) {
             // do random stuff on updates ...
             // -------------------------------------------------------------------
             let tag_circ = 'myCirc'
-            let rnd = Math.max(0.1, Math.min(0.9, data_in.rnd))
+            let rnd = Math.max(0.1, Math.min(0.9, data_in.rnd/100))
             let opac = Math.max(0.1, Math.min(0.9, Math.pow(1 - rnd, 2)))
             let time = data_in.time
 

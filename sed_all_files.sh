@@ -17,7 +17,7 @@ all_files="ctaGuiUtils/py/*py ctaGuiBack/ctaGuiBack/py/*py ctaGuiBack/ctaGuiBack
 # sed -i .sed_bck 's/iteritems/items/g' $all_files
 
 
-grep "external_generate_clock_events" $all_files
+grep "sess_widget_ids" $all_files
 
 
 

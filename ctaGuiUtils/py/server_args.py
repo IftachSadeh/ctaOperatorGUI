@@ -74,7 +74,7 @@ def parse_args(app_name):
 
         # list here all views, which use the shared view function
         # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
-        all_widgets = [
+        widget_infos = [
             'view102',
             'view000',
             'view_refresh_all',
@@ -127,7 +127,7 @@ def parse_args(app_name):
             'pyramid.reload_templates': 'true',
             'sqlalchemy.url': sqlite,
             'module_names': module_names,
-            'all_widgets': all_widgets,
+            'widget_infos': widget_infos,
             'allowed_widget_types': allowed_widget_types,
         }
 

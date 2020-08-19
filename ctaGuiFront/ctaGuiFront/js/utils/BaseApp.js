@@ -48,6 +48,7 @@ $.getScript('/js/utils/common.js', function() {
                         // widgets should all be initialised before this event...
                         // widgets should all be initialised before this event...
                         
+                        // setTimeout(function() {sock.socket.emit('sess_setup_finalised');}, 10000);
                         sock.socket.emit('sess_setup_finalised')
                     },
                     wait: 25,
@@ -470,11 +471,11 @@ function BaseApp() {
 
         // for debugging
         let is_open = false
-        is_open = true
-        is_open = true
-        is_open = true
-        is_open = true
-        is_open = true
+        // is_open = true
+        // is_open = true
+        // is_open = true
+        // is_open = true
+        // is_open = true
         if (is_open) {
             setTimeout(function() {
                 tog_opt_menu()
@@ -841,7 +842,7 @@ function BaseApp() {
         }
 
         socket.on('get_sim_clock_sim_params', function(data_in) {
-            // console.log('dddddddddddd', data_in.data)
+            // console.log('dddddddddddd', data_in)
             update_eles(data_in.data)
         })
 

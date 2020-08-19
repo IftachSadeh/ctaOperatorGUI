@@ -42,7 +42,7 @@ class ViewManager():
         socks["/" + "view_refresh_all"] = SocketManager
         # socks["/"+"view100"] = socket_manager_view100
 
-        for widget_name in self.base_config.all_widgets:
+        for widget_name in self.base_config.widget_infos:
             if not ('/' + widget_name) in socks:
                 socks['/' + widget_name] = SocketManager
 

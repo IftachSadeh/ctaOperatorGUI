@@ -1232,6 +1232,7 @@ let main_panel_sync = function(opt_in) {
                         n_grp = grps.data.children.length
                     }
 
+                    console.log('FIXME - panelsync - group name logic generalise')
                     let new_grp = {
                         id: 'grp' + n_grp,
                         title: 'Group ' + n_grp,

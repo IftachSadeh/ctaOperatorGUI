@@ -5,12 +5,12 @@ app_name = 'ctaGuiBack'
 
 # defined the directories to watch for changes (development purpose only)
 reload_dirs = []
-base_dir = '../ctaGuiFront/ctaGuiFront/'
-reload_dirs += [
-    base_dir + 'js',
-    base_dir + 'py',
-    base_dir + 'templates/',
-]
+# base_dir = '../ctaGuiFront/ctaGuiFront/'
+# reload_dirs += [
+#     base_dir + 'js',
+#     base_dir + 'py',
+#     base_dir + 'templates/',
+# ]
 base_dir = '../ctaGuiUtils/'
 reload_dirs += [
     base_dir + 'py',

@@ -108,7 +108,7 @@ def setup_app():
         perm = 'permit_a'
         # ------------------------------------------------------------------
 
-        for view_name in base_config.all_widgets:
+        for view_name in base_config.widget_infos:
             config.add_route(view_name, '/' + app_prefix + '/' + view_name)
             config.add_view(
                 view_manager.view_common,
@@ -170,7 +170,7 @@ try:
     # do we flush redis on startup
     do_flush_redis = settings['do_flush_redis']
     # all allowed view names
-    all_widgets = settings['all_widgets']
+    widget_infos = settings['widget_infos']
     # all allowed widget types (class names)
     allowed_widget_types = settings['allowed_widget_types']
 
@@ -196,7 +196,7 @@ try:
         allow_panel_sync=allow_panel_sync,
         is_HMI_dev=is_HMI_dev,
         is_simulation=is_simulation,
-        all_widgets=all_widgets,
+        widget_infos=widget_infos,
         allowed_widget_types=allowed_widget_types,
     )
 

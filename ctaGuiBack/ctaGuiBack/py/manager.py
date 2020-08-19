@@ -132,7 +132,7 @@ class Manager():
         )
 
         # for debugging, override the global flag
-        # self.do_flush_redis = True
+        self.do_flush_redis = True
         if service_name == 'flush_redis_service':
             if self.do_flush_redis:
                 self.log.warn([['r', ' - flusing redis ...']])

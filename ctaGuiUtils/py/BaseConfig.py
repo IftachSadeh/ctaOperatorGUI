@@ -43,7 +43,7 @@ class BaseConfig():
         is_HMI_dev,
         is_simulation,
         allow_panel_sync=None,
-        all_widgets=None,
+        widget_infos=None,
         allowed_widget_types=None,
         *args,
         **kwargs
@@ -73,9 +73,9 @@ class BaseConfig():
 
         # list here all views, which use the shared view function
         # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
-        if all_widgets is not None:
-            BaseConfig.all_widgets = all_widgets
+        if widget_infos is not None:
+            BaseConfig.widget_infos = widget_infos
         else:
-            BaseConfig.all_widgets = []
+            BaseConfig.widget_infos = []
 
         return

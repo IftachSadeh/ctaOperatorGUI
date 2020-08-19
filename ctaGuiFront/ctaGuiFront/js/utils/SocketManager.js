@@ -38,7 +38,7 @@ function SocketManager() {
     let init_views = {
     }
     let is_south = window.SITE_TYPE === 'S'
-    let server_name = null
+    // let server_id = null
     let base_app = window.base_app
     let tab_table_title_id = 'table_title'
     let tab_table_main_id = 'table_content'
@@ -51,7 +51,7 @@ function SocketManager() {
 
     this_top.socket = null
     this_top.con_stat = null
-    this_top.all_widgets = {
+    this_top.widget_infos = {
     }
     this_top.widget_table = {
     }
@@ -325,8 +325,13 @@ function SocketManager() {
             this_top.con_stat.set_server_con_state(this_top.con_states.CONNECTED)
             this_top.con_stat.set_user_con_state_opts(true)
             this_top.con_stat.set_check_heartbeat(true)
-            
+
+
+
             if (is_first) {
+                if (is_def(setup_view[widget_name])) {
+                    setup_view[widget_name]()
+                }
                 this_top.has_joined_session = true
             }
             is_first = false
@@ -519,7 +524,7 @@ function SocketManager() {
                 return
             }
 
-            $.each(this_top.all_widgets, function(index_0, ele_0) {
+            $.each(this_top.widget_infos, function(index_0, ele_0) {
                 $.each(ele_0.widgets, function(index1, ele_1) {
                     if (is_def(ele_1.get_sync_state)) {
                         ele_1.get_sync_state(data_in)
@@ -789,16 +794,16 @@ function SocketManager() {
         let widget_func = opt_in.widget_func
         let widget_source = opt_in.widget_source
 
-        let is_first = !is_def(this_top.all_widgets[widget_type])
+        let is_first = !is_def(this_top.widget_infos[widget_type])
 
         if (is_first) {
-            this_top.all_widgets[widget_type] = {
+            this_top.widget_infos[widget_type] = {
                 sock_func: null,
                 widgets: {
                 },
             }
         }
-        let widget_data = this_top.all_widgets[widget_type]
+        let widget_data = this_top.widget_infos[widget_type]
 
         if (!is_def(widget_data.widgets[widget_id])) {
             widget_data.widgets[widget_id] = (
@@ -840,12 +845,12 @@ function SocketManager() {
                         module_now
                     ) {
                         if (data_in.sess_widget_ids.indexOf(widget_id_now) >= 0) {
-                            // make sure we dont sent the same data twice (as it could be modified)
+                            // make sure we dont send the same data twice (as it could be modified)
                             n_wigit_now += 1
                             let data_update
-                = n_wigits === 1 || n_wigit_now === n_wigits
-                    ? data_in
-                    : deep_copy(data_in)
+                                = (n_wigits === 1 || n_wigit_now === n_wigits)
+                                    ? data_in
+                                    : deep_copy(data_in)
 
                             widget_data.widgets[widget_id_now].update_data(
                                 data_update
@@ -917,7 +922,7 @@ function SocketManager() {
 
         // create the table element
         let tab_table_id = unique()
-        let widget_id = unique()
+        let widget_id = 'widg' + unique()
         let main_id = widget_id + 'main'
         let gs_name = tab_table_id + 'tbl'
 

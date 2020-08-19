@@ -34,7 +34,7 @@ class ArrZoomerView(BaseWidget):
 
         # initial dataset and send to client
         opt_in = {'widget': self}
-        self.socket_manager.send_init_widget(opt_in=opt_in)
+        self.socket_manager.send_widget_init_data(opt_in=opt_in)
 
         return
 
