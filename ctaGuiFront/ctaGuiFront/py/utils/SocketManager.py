@@ -313,7 +313,9 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                 else:
                     n_icon = self.allowed_widget_types['synced'].index(widget_name)
                     while True:
-                        widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.user_id)
+                        widget_ids = self.redis.l_get(
+                            'ws;user_widget_ids;' + self.user_id
+                        )
                         if len(widget_ids) == 0:
                             break
 
@@ -338,8 +340,12 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
                 # register the new widget
                 self.redis.h_set(name='ws;widget_infos', key=widget_id, data=widget_now)
-                self.redis.r_push(name='ws;user_widget_ids;' + self.user_id, data=widget_id)
-                self.redis.r_push(name='ws;sess_widget_ids;' + self.sess_id, data=widget_id)
+                self.redis.r_push(
+                    name='ws;user_widget_ids;' + self.user_id, data=widget_id
+                )
+                self.redis.r_push(
+                    name='ws;sess_widget_ids;' + self.sess_id, data=widget_id
+                )
 
                 # sync group initialization
                 # ------------------------------------------------------------------

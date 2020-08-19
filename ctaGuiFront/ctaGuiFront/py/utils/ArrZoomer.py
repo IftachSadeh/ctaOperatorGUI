@@ -154,8 +154,11 @@ class ArrZoomer():
         )
         if thread_id == -1:
             if self.log_send_packet:
-                ArrZoomer.log.info([['y', ' - starting arr_zoomer_update_data('],
-                                    ['g', self.socket_manager.user_group_id], ['y', ')'],])
+                ArrZoomer.log.info([
+                    ['y', ' - starting arr_zoomer_update_data('],
+                    ['g', self.socket_manager.user_group_id],
+                    ['y', ')'],
+                ])
 
             thread_id = self.socket_manager.set_thread_state(
                 self.socket_manager.user_group_id,
@@ -173,8 +176,11 @@ class ArrZoomer():
         )
         if thread_id == -1:
             if self.log_send_packet:
-                ArrZoomer.log.info([['y', ' - starting arr_zoomer_update_sub_arr('],
-                                    ['g', self.socket_manager.user_group_id], ['y', ')'],])
+                ArrZoomer.log.info([
+                    ['y', ' - starting arr_zoomer_update_sub_arr('],
+                    ['g', self.socket_manager.user_group_id],
+                    ['y', ')'],
+                ])
 
             thread_id = self.socket_manager.set_thread_state(
                 self.socket_manager.user_group_id,

@@ -13,7 +13,8 @@ from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiFront.py.utils.ViewManager import ViewManager
 
 from ctaGuiUtils.py.server_args import parse_args
-from ctaGuiFront.py.utils.AsyncSocketManager import AsyncSocketManager, extend_app_to_asgi
+from ctaGuiFront.py.utils.WebsocketManager import extend_app_to_asgi
+from ctaGuiFront.py.utils.WebsocketManager import SocketManager
 
 
 # ------------------------------------------------------------------
@@ -226,7 +227,7 @@ try:
     InstData(base_config=base_config)
 
     #
-    setattr(AsyncSocketManager, 'base_config', base_config)
+    setattr(SocketManager, 'base_config', base_config)
 
     # ------------------------------------------------------------------
     wsgi_app = setup_app()
