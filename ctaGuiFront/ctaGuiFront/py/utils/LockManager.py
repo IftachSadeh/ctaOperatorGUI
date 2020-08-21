@@ -29,12 +29,25 @@ class LockManager():
         self.lock_name_getter = {
             None: lambda: 'None',
             'global': lambda: 'global',
-            # 'global': lambda: 'global' + str(self.server_id),
             'loop_state': lambda: 'loop_state',
             'user': lambda: 'user;' + str(self.user_id),
             'server': lambda: 'server;' + str(self.server_id),
             'sess': lambda: 'sess;' + str(self.sess_id),
         }
+
+        # add all registered widget types as possible locks
+        widget_types = []
+        for values in self.allowed_widget_types.values():
+            widget_types += values
+
+        # the lambda must be executed for the correct value to be taken
+        def build_lambda(name):
+          return (lambda : name)
+
+        for widget_type in widget_types:
+            lock_name = 'widget;' + str(widget_type)
+            self.lock_name_getter[lock_name] = build_lambda(lock_name)
+
 
         # self.counter = 0
         # self.redis_lock_retry_max_sec = 10
@@ -72,8 +85,17 @@ class LockManager():
                 if postfix is None:
                     postfix = self.lock_name_getter[None]()
 
-            except Exception:
-                raise Exception('unknown lock name: ', name)
+            except KeyError as e:
+                keys = [k for k in self.lock_name_getter.keys() if k is not None]
+                self.log.info([
+                    ['r', ' - unknown lock name '],
+                    ['o', name],
+                    ['r', ' --> must be one of: '],
+                    ['y', keys],
+                ])
+                raise e
+            except Exception as e:
+                raise e
         else:
             if not isinstance(postfix, str):
                 raise Exception('unsupported postfix type: ', postfix)
@@ -106,20 +128,16 @@ class LockManager():
 
         return states
 
-    # ------------------------------------------------------------------
-    def validate_locks(self, names):
-        return
-        return
-        return
-        return
-        if not self.is_locked(names=names):
-            lock_states = self.get_lock_states()
-            raise Exception(' - unexpected lock ?!?', names, lock_states)
-        return
+    # # ------------------------------------------------------------------
+    # def validate_locks(self, names):
+    #     if not self.is_locked(names=names):
+    #         lock_states = self.get_lock_states()
+    #         raise Exception(' - unexpected lock ?!?', names, lock_states)
+    #     return
 
     # ------------------------------------------------------------------
-    def get_lock(self, names, can_exist=False):
-        return self.LockContext(parent=self, lock_names=names, can_exist=can_exist)
+    def get_lock(self, names, can_exist=False, debug=None):
+        return self.LockContext(parent=self, lock_names=names, can_exist=can_exist, debug=debug)
 
     # ------------------------------------------------------------------
     class LockContext():
@@ -127,7 +145,7 @@ class LockManager():
         """
 
         # ------------------------------------------------------------------
-        def __init__(self, parent, lock_names, can_exist=False):
+        def __init__(self, parent, lock_names, can_exist=False, debug=None):
             self.parent = parent
             self.log = self.parent.log
             self.redis = self.parent.redis
@@ -141,8 +159,11 @@ class LockManager():
 
             self.can_exist = can_exist
 
-            self.debug = False
-            # self.debug = True
+            self.debug_lock = False
+            # self.debug_lock = True
+            if debug is not None:
+                self.debug_lock = debug
+            
             self.locks = []
 
             return
@@ -195,7 +216,7 @@ class LockManager():
                     'lock_id': lock_id,
                 }]
 
-                if self.debug:
+                if self.debug_lock:
                     self.log.info([['b', ' ++ add  ', lock_id, '  ', name]])
 
             return
@@ -207,6 +228,6 @@ class LockManager():
                 if lock_id == lock['lock_id']:
                     self.redis.delete(name=lock['name'])
 
-                    if self.debug:
+                    if self.debug_lock:
                         self.log.info([['c', ' -- del  ', lock_id, '  ', lock['name']]])
             return

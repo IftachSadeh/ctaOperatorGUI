@@ -25,13 +25,13 @@ class EmptyExample(BaseWidget):
         BaseWidget.setup(self, *args)
 
         # initial dataset and send to client
-        opt_in = {'widget': self, 'data_func': self.get_data}
+        opt_in = {'widget': self, 'data_func': self.get_data, 'loop_id': 'init_data'}
         await self.socket_manager.send_widget_init_data(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates to
         # all sessions in the group
-        opt_in = {'widget': self, 'loop_group': 'widget_id', 'data_func': self.get_data, 'sleep_sec': 5,}
-        # opt_in = {'widget': self, 'loop_group': 'widget_name', 'data_func': self.get_data, 'sleep_sec': 5,}
+        # opt_in = {'widget': self, 'loop_group': 'widget_id', 'data_func': self.get_data, 'sleep_sec': 5,'loop_id': 'update_data'}
+        opt_in = {'widget': self, 'loop_group': 'widget_name', 'data_func': self.get_data, 'sleep_sec': 5, 'loop_id': 'update_data'}
         await self.socket_manager.add_widget_loop(opt_in=opt_in)
 
         return
@@ -47,9 +47,8 @@ class EmptyExample(BaseWidget):
         return
 
     # ------------------------------------------------------------------
-    def get_data(self):
+    async def get_data(self):
         data = {"rnd": get_rnd(), 'time': get_time('msec')}
-
         return data
 
     # ------------------------------------------------------------------

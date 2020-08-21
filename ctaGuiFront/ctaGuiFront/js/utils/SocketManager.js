@@ -63,6 +63,8 @@ function SocketManager() {
 
     this_top.n_client_msg = 0
 
+    this_top.n_wigits = -1
+
     // wrappers for encoding/decoding data for socket communications
     const stringify_replacer = (key, value) => !is_def(value) ? null : value
     function encode_socket_data(data) {
@@ -309,6 +311,10 @@ function SocketManager() {
                     is_verb: true,
                     log_level: LOG_LEVELS.ERROR,
                 })
+            }
+
+            if (is_first) {
+                this_top.n_wigits += 1
             }
 
             if (is_first) {
@@ -987,7 +993,10 @@ function SocketManager() {
 
         // create the table element
         let tab_table_id = unique()
-        let widget_id = 'widg' + unique()
+        let widget_id = (
+            this_top.sess_id + '_widg_'
+            + String(this_top.n_wigits).padStart(3, '0')
+        )
         let main_id = widget_id + 'main'
         let gs_name = tab_table_id + 'tbl'
 

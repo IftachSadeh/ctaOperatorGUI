@@ -78,8 +78,7 @@ class WidgetManager():
         """importing the class for the widget and registring the id
         """
 
-        # make sure the expected lock is set
-        self.validate_locks(names='user')
+        print('lock for init_widget !?')
 
         data = data_in['data']
         widget_id = data['widget_id']
@@ -213,8 +212,9 @@ class WidgetManager():
         return
         return
         return
-        # make sure the expected lock is set
-        self.validate_locks(names='global')
+
+        print('lock for update_sync_group !?')
+
 
         async with self.get_lock('user'):
             widget_inits = await self.get_server_attr(name='widget_inits')
@@ -244,7 +244,7 @@ class WidgetManager():
             'widget_id': widget.widget_id,
             'n_icon': widget.n_icon,
         }
-        data = data_func()
+        data = await data_func()
 
         await self.emit_to_queue(event_name='init_data', data=data, metadata=metadata)
 
@@ -263,37 +263,70 @@ class WidgetManager():
         # =============================================================
         # =============================================================
         # =============================================================
-
+ 
         widget = opt_in['widget']
 
-        if 'event_name' not in opt_in.keys():
-            opt_in['event_name'] = 'update_data'
+        async with self.get_lock('widget;' + widget.widget_name):
+            if 'event_name' not in opt_in.keys():
+                opt_in['event_name'] = 'update_data'
 
-        loop_func = (
-            opt_in['loop_func'] if 'loop_func' in opt_in else self.basic_widget_loop
-        )
-        loop_id = (
-            opt_in['loop_id'] if 'loop_id' in opt_in else
-            str(get_time('msec') + self.rnd_gen.randint(0, 100000))
-        )
+            loop_func = (
+                opt_in['loop_func'] if 'loop_func' in opt_in else self.basic_widget_loop
+            )
+            # loop_id = (
+            #     opt_in['loop_id'] if 'loop_id' in opt_in else
+            #     str(get_time('msec') + self.rnd_gen.randint(0, 1e5))
+            # )
+            loop_id = opt_in['loop_id']
 
-        if opt_in['loop_group'] == 'widget_id':
-            loop_group = 'ws;widget_id;' + widget.widget_id
-        elif opt_in['loop_group'] == 'widget_name':
-            loop_group = 'ws;widget_name;' + widget.widget_name
-        else:
-            raise Exception('unknown loop_group for: ', opt_in)
+            if opt_in['loop_group'] == 'widget_id':
+                loop_group = 'ws;widget_id;' + widget.widget_id
+                heartbeat = self.get_heartbeat_name('sess')
+            elif opt_in['loop_group'] == 'widget_name':
+                loop_group = 'ws;widget_name;' + widget.widget_name
+                heartbeat = self.get_heartbeat_name('widget', widget.widget_name)
+            else:
+                raise Exception('unknown loop_group for: ', opt_in)
 
-        loop_info = {
-            'id': loop_id,
-            'func': loop_func,
-            'group': loop_group,
-            'heartbeat': 'ws;sess_heartbeat;' + self.sess_id,
-        }
+            loop_info = {
+                'id': loop_id,
+                'func': loop_func,
+                'group': loop_group,
+                'heartbeat': heartbeat,
+            }
 
-        if not self.get_loop_state(loop_info):
-            await self.set_loop_state(state=True, loop_info=loop_info)
-            self.spawn(loop_info['func'], loop_info=loop_info, opt_in=opt_in)
+            print('sssss', self.get_loop_state(loop_info), loop_info)
+
+            # =============================================================
+            # =============================================================
+            # =============================================================
+            '''
+                - setup lists for all_server_widget_ids
+                - spawn heatbeat loop like server_sess_heartbeat_loop but for the widget_ids
+                - spawn the data_update loop itself that send the updates to all widgets of this type in this server, and it will live in the context of the heatbeat
+                - cleanup func for individual widget_ids --> will moderate the widget type heartbeat
+                - general widget type heartbeat cleanup if list of widget_ids of a given type is empty
+            '''
+            # =============================================================
+            # =============================================================
+            # =============================================================
+
+
+            
+
+            # if not self.get_loop_state(loop_info):
+            #     # register the widget_name for the heartbeat monitor
+            #     # (expires on its own, inless renewed by server_sess_heartbeat_loop() )
+            #     self.redis.set(
+            #         name=loop_info['heartbeat'],
+            #         expire=(int(self.sess_expire) * 10),
+            #     )
+
+
+
+            if not self.get_loop_state(loop_info):
+                await self.set_loop_state(state=True, loop_info=loop_info)
+                self.spawn(loop_info['func'], loop_info=loop_info, opt_in=opt_in)
 
         return
 
@@ -378,7 +411,8 @@ class WidgetManager():
         print('check lock by user ot sess if widget id/name ?!?!')
         while self.get_loop_state(loop_info):
             async with self.get_lock('user'):
-                data = opt_in['data_func']()
+                # data = opt_in['data_func']()
+                data = await opt_in['data_func']()
 
                 await self.emit_to_queue(
                     event_name=event_name,

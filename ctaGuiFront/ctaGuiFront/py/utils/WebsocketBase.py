@@ -66,7 +66,8 @@ class WebsocketBase():
         #     'max_interval_slow_msec': 6000,
         # }
 
-        self.loop_group_prefix = 'ws;loop;'
+        self.loop_prefix = 'ws;loop;'
+        self.heartbeat_prefix = 'ws;heartbeat;'
 
         self.asyncio_queue = asyncio.Queue()
 
@@ -116,7 +117,7 @@ class WebsocketBase():
     # ------------------------------------------------------------------
     def set_server_id(self):
         WebsocketBase.server_id = (
-            'svr_' + str(self.base_config.app_port) + '_'
+            'serv_' + str(self.base_config.app_port) + '_'
             + get_rnd(n_digits=6, out_type=str, is_unique_seed=True)
         )
 
@@ -130,7 +131,7 @@ class WebsocketBase():
         # this will still protect from multiple inits of a new session...
         async with self.get_lock(names=('server', 'sess')):
             self.sess_id = (
-                self.server_id + '__ses_' + '{:07d}'.format(WebsocketBase.n_server_sess)
+                self.server_id + '_sess_' + '{:06d}'.format(WebsocketBase.n_server_sess)
             )
             WebsocketBase.n_server_sess += 1
             # WebsocketBase.n_server_sess += get_rnd(

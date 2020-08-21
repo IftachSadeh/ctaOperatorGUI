@@ -158,7 +158,7 @@ class SessionManager():
                 # register the user_id for the heartbeat monitor
                 # (expires on its own, inless renewed by server_sess_heartbeat_loop() )
                 self.redis.set(
-                    name='ws;user_heartbeat;' + self.user_id,
+                    name=self.get_heartbeat_name('user'),
                     expire=(int(self.sess_expire) * 10),
                 )
 
@@ -179,7 +179,7 @@ class SessionManager():
                 # register the server_id for the heartbeat monitor
                 # (expires on its own, inless renewed by server_sess_heartbeat_loop() )
                 self.redis.set(
-                    name='ws;server_heartbeat;' + self.server_id,
+                    name=self.get_heartbeat_name('server'),
                     expire=(int(self.sess_expire) * 10),
                 )
 
@@ -192,7 +192,7 @@ class SessionManager():
             # register the sess_id for the heartbeat monitor
             # (expires on its own, inless renewed by server_sess_heartbeat_loop() )
             self.redis.set(
-                name='ws;sess_heartbeat;' + self.sess_id,
+                name=self.get_heartbeat_name('sess'),
                 expire=(int(self.sess_expire) * 10),
             )
 
@@ -279,7 +279,8 @@ class SessionManager():
     # is this still needed ?!?!?!?!?!?!?!?!
     # ------------------------------------------------------------------
     def init_user_sync_loops(self):
-        self.log.warn([['g', ' - need init_user_sync_loops ... ?']])
+        print('need init_user_sync_loops ... ?')
+        # self.log.warn([['g', ' - need init_user_sync_loops ... ?']])
         return
 
     # ------------------------------------------------------------------

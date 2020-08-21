@@ -317,7 +317,7 @@ class ConnectionManager():
 
         sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
         if sess_id in sess_ids:
-            if self.redis.exists('ws;sess_heartbeat;' + sess_id):
+            if self.redis.exists(self.get_heartbeat_name('sess', sess_id)):
                 return True
 
         return False
