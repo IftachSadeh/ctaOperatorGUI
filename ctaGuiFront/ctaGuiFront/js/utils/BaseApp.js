@@ -471,11 +471,13 @@ function BaseApp() {
 
         // for debugging
         let is_open = false
+        
         // is_open = true
         // is_open = true
         // is_open = true
         // is_open = true
         // is_open = true
+        
         if (is_open) {
             setTimeout(function() {
                 tog_opt_menu()

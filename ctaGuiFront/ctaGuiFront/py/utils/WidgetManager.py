@@ -53,9 +53,8 @@ class WidgetManager():
         # dynamically load the module for the requested widget
         # (no need for a 'from dynamicLoadWidget import dynWidg_0' statement)
         # has_widget_id = self.redis.h_exists(name='ws;widget_infos', key=widget_id)
-        async with await self.get_redis_lock('ws;lock'):
-            async with await self.get_redis_lock('ws;lock;' + self.server_id):
-                widget_inits = await self.get_server_attr(name='widget_inits')
+        async with self.get_lock('user'):
+            widget_inits = await self.get_server_attr(name='widget_inits')
 
             has_widget_id = widget_id in widget_inits
             if not has_widget_id:
@@ -64,9 +63,8 @@ class WidgetManager():
         # call the method named args[1] with optional arguments args[2],
         # equivalent e.g., to widget.method_name(optionalArgs)
         if 'method_name' in data:
-            async with await self.get_redis_lock('ws;lock;' + self.server_id):
-                widget_inits = await self.get_server_attr(name='widget_inits')
-            async with await self.get_redis_lock('ws;lock;' + self.sess_id):
+            widget_inits = await self.get_server_attr(name='widget_inits')
+            async with self.get_lock('sess'):
                 method_func = getattr(widget_inits[widget_id], data['method_name'])
                 if 'method_arg' in data:
                     await method_func(data['method_arg'])
@@ -80,8 +78,8 @@ class WidgetManager():
         """importing the class for the widget and registring the id
         """
 
-        if not await self.is_redis_locked('ws;lock'):
-            raise Exception('init_widget expected to be locked ?!?')
+        # make sure the expected lock is set
+        self.validate_locks(names='user')
 
         data = data_in['data']
         widget_id = data['widget_id']
@@ -103,7 +101,7 @@ class WidgetManager():
         )
         widget_cls = getattr(widget_module, widget_name)
 
-        async with await self.get_redis_lock('ws;lock;' + self.server_id):
+        async with self.get_lock('server'):
             widget_inits = await self.get_server_attr(name='widget_inits')
             widget_inits[widget_id] = widget_cls(widget_id=widget_id, socket_manager=self)
 
@@ -211,10 +209,14 @@ class WidgetManager():
 
     # ------------------------------------------------------------------
     async def update_sync_group(self):
-        if not await self.is_redis_locked('ws;lock'):
-            raise Exception('update_sync_group expected to be locked ?!?')
+        return
+        return
+        return
+        return
+        # make sure the expected lock is set
+        self.validate_locks(names='global')
 
-        async with await self.get_redis_lock('ws;lock;' + self.server_id):
+        async with self.get_lock('user'):
             widget_inits = await self.get_server_attr(name='widget_inits')
 
             widget_ids = []
@@ -373,8 +375,9 @@ class WidgetManager():
             'sess_widget_ids': sess_widget_ids,
         }
 
+        print('check lock by user ot sess if widget id/name ?!?!')
         while self.get_loop_state(loop_info):
-            async with await self.get_redis_lock('ws;lock'):
+            async with self.get_lock('user'):
                 data = opt_in['data_func']()
 
                 await self.emit_to_queue(

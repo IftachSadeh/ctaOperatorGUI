@@ -815,7 +815,7 @@ window.inst_health_frac = function(health) {
 // ------------------------------------------------------------------
 
 // ------------------------------------------------------------------
-// transition times (if the window/tab is inactive, check_is_hidden() makes sure all animations
+// transition times (if the window/tab is inactive, flush_hidden_d3() makes sure all animations
 // are flushed, and these times are ignored
 // ------------------------------------------------------------------
 let timescale = 1

@@ -4,6 +4,7 @@ from math import floor
 from datetime import datetime
 from datetime import timedelta
 
+import asyncio
 from time import sleep
 
 from ctaGuiUtils.py.LogParser import LogParser
@@ -66,7 +67,7 @@ def get_time(sec_scale):
     """
 
     if sec_scale == 'sec':
-        scale = 1
+        scale = 0
     elif sec_scale == 'msec':
         scale = 3
     else:
@@ -215,6 +216,12 @@ def format_units(units_in):
 # ------------------------------------------------------------------
 def format_float_to_string(x):
     return str('{0:.4e}'.format(x))
+
+
+# ------------------------------------------------------------------
+def is_coroutine(func): 
+    is_crt = (asyncio.iscoroutine(func) or asyncio.iscoroutinefunction(func))
+    return is_crt
 
 
 # ------------------------------------------------------------------

@@ -141,7 +141,7 @@ function SocketManager() {
                 // try to reconnect the session
                 setTimeout(function() {
                     setup_websocket()
-                }, 500)
+                }, 100)
                 // window.location.reload()
 
                 return
@@ -313,10 +313,11 @@ function SocketManager() {
 
             if (is_first) {
                 this_top.con_stat = new connection_state()
-    
-                check_is_hidden()
-                check_was_offline()
-    
+
+                // periodically flush the d3 timer for hidden windows
+                flush_hidden_d3()
+                // check_was_offline()
+
                 // start the ping/pong heartbeat loop
                 check_ping_delay()
             }
@@ -369,11 +370,22 @@ function SocketManager() {
         // -------------------------------------------------------------------
         // get/send heartbeat ping/pong messages to the server
         // -------------------------------------------------------------------
-        let ping_time_msec = null
-        let ping_latest_delay_msec = 0
+        let ping_time_msec, ping_latest_delay_msec
+        function reset_ping() {
+            ping_time_msec = null
+            ping_latest_delay_msec = 0
+            return
+        }
+        reset_ping()
+        
         this_top.socket.on('heartbeat_ping', function(data_in) {
             // console.log(' - got heartbeat_ping', data_in)
             // if this is not the first ping, check that the delay is within the allowed range
+            if (document.hidden) {
+                reset_ping()
+                return
+            }
+
             if (is_def(ping_time_msec)) {
                 let ping_interval_msec = get_time_msec() - ping_time_msec
                 ping_latest_delay_msec = Math.abs(
@@ -396,6 +408,12 @@ function SocketManager() {
         // -------------------------------------------------------------------
         function check_ping_delay() {
             setTimeout(function() {
+
+                // // let is_offline = this_top.con_stat.is_offline()
+                // if (document.hidden) {
+                //     reset_ping()
+                //     return
+                // }
 
                 // this_top.socket.emit('test_socket_evt', {test: 1})
 
@@ -449,21 +467,23 @@ function SocketManager() {
                 
                 if (prev_state !== state) {
                     // send a log entry to the server
-                    if (state !== this_top.con_states.CONNECTED) {
-                        let level = (
-                            state === this_top.con_states.NOT_CONNECTED
-                                ? LOG_LEVELS.ERROR
-                                : LOG_LEVELS.WARNING
-                        )
-                        this_top.socket.server_log({
-                            data: {
-                                event_name: state,
-                                ping_latest_delay_msec: ping_latest_delay_msec,
-                                ping_total_delay_msec: ping_total_delay_msec,
-                            },
-                            is_verb: true,
-                            log_level: level,
-                        })
+                    if (!document.hidden) {
+                        if (state !== this_top.con_states.CONNECTED) {
+                            let level = (
+                                state === this_top.con_states.NOT_CONNECTED
+                                    ? LOG_LEVELS.ERROR
+                                    : LOG_LEVELS.WARNING
+                            )
+                            this_top.socket.server_log({
+                                data: {
+                                    event_name: state,
+                                    ping_latest_delay_msec: ping_latest_delay_msec,
+                                    ping_total_delay_msec: ping_total_delay_msec,
+                                },
+                                is_verb: true,
+                                log_level: level,
+                            })
+                        }
                     }
 
                     // modify the connection state of the client
@@ -487,34 +507,64 @@ function SocketManager() {
         // then updates on a hidden tab will not go through in
         // real-time (see: https://github.com/d3/d3-timer)
         // -------------------------------------------------------------------
-        function check_is_hidden() {
+        function flush_d3() {
+            d3.timerFlush()
+            return
+        }
+        this_top.flush_d3 = flush_d3
+        
+        // if we are offline, but the user and server are connected, then
+        // this implied document.hidden, and we periodically flush the d3 timer
+        function flush_hidden_d3() {
             setTimeout(function() {
-                if (document.hidden) {
-                    d3.timerFlush()
+                let need_flush = (
+                    this_top.con_stat.is_offline()
+                    && this_top.socket.is_user_state_on
+                    && this_top.socket.is_server_state_on
+                )
+                if (need_flush) {
+                    flush_d3()
                 }
-                check_is_hidden()
+                flush_hidden_d3()
             }, 5000)
         }
 
-        let socket_was_offline = false
-        function check_was_offline() {
-            setTimeout(function() {
-                let is_offline = this_top.con_stat.is_offline()
-                if (is_offline) {
-                    socket_was_offline = true
-                }
+        // function to be registered in state_change_funcs and
+        // run every time this_top.con_stat.is_offline() runs, which includes
+        // every time a window.visibilitychange event happens
+        function hidden_state_change(opt_in) {
+            let is_first = opt_in.is_first
+            let is_offline = opt_in.is_offline
+            let has_changed = opt_in.has_changed
 
-                if (socket_was_offline) {
-                    if (!is_offline) {
-                        socket_was_offline = false
-                        if (is_def(this_top.socket)) {
-                            this_top.socket.emit('back_from_offline')
-                        }
-                    }
+            if (!is_offline && has_changed) {
+                reset_ping()
+            }
+            if (has_changed) {
+                if (is_offline) {
+                    this_top.socket.emit('sess_to_offline')
                 }
-                check_was_offline()
-            }, 500)
+                else if (!is_first) {
+                    this_top.socket.emit('sess_to_online')
+                // this_top.socket.emit('back_from_offline')
+                }
+            }
         }
+        this_top.state_change_funcs.push(hidden_state_change)
+
+        // function connection_debug() {
+        //     setTimeout(function() {
+        //         console.log(' -     ', get_time_msec())
+        //         console.log('sock   ', this_top.socket.connected, this_top.socket.is_ws_open())
+        //         console.log('server ', this_top.socket.is_server_state_on)
+        //         console.log('user   ', this_top.socket.is_user_state_on)
+        //         console.log('hidden ', document.hidden)
+        //         console.log('')
+        //         connection_debug()
+        //     }, 1000)
+        // }
+        // connection_debug()
+
 
         // -------------------------------------------------------------------
         // run the respective sync-state function for each widget
@@ -557,9 +607,10 @@ function SocketManager() {
     // -------------------------------------------------------------------
     function connection_state(is_connect) {
         let this_con_state_top = this
-        let is_server_on = false
-        let is_user_on = true
         let off_opacity = '40%'
+        
+        this_top.socket.is_server_state_on = false
+        this_top.socket.is_user_state_on = true
 
         let server_btn = base_app.get_connection_stat_div(true, '_btn')
         let user_btn = base_app.get_connection_stat_div(false, '_btn')
@@ -613,9 +664,16 @@ function SocketManager() {
                 console.error('unrecognised connection state ?!?!?!')
             }
 
+            // just in case, explicitly check the ws status (though its possible
+            // that is_con will be false and is_ws_open() will be true, eg in case
+            // the server is frozen)
+            if (!this_top.socket.is_ws_open()) {
+                is_con = false
+            }
+
             server_con_state = state
-            is_server_on = is_con
             this_top.socket.connected = is_con
+            this_top.socket.is_server_state_on = is_con
 
             return
         }
@@ -657,10 +715,11 @@ function SocketManager() {
         this_con_state_top.do_check_heartbeat = do_check_heartbeat
 
         user_btn.addEventListener('change', function(e) {
-            is_user_on = e.target.checked
+            this_top.socket.is_user_state_on = e.target.checked
             return
         })
 
+        let is_first = true
         let has_changed = null
         function is_offline() {
             let is_offline_now = false
@@ -670,7 +729,7 @@ function SocketManager() {
             else if (document.hidden) {
                 is_offline_now = true
             }
-            else if (!is_server_on || !is_user_on) {
+            else if (!this_top.socket.is_server_state_on || !this_top.socket.is_user_state_on) {
                 is_offline_now = true
             }
 
@@ -678,16 +737,22 @@ function SocketManager() {
             has_changed = (has_changed !== is_offline_now)
             $.each(this_top.state_change_funcs, function(_, func) {
                 func({
+                    is_first: is_first,
                     is_offline: is_offline_now,
                     has_changed: has_changed,
                 })
             })
+            is_first = false
             has_changed = is_offline_now
 
             // console.log('-is_offline-',is_offline_now, this_top.socket.connected)
             return is_offline_now
         }
         this_con_state_top.is_offline = is_offline
+
+        // add a listener, so that every time the visibility changes,
+        // we run all the state_change_funcs functions (including socket event)
+        document.addEventListener('visibilitychange', is_offline, false)
 
         return
     }

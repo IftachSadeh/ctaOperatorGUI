@@ -1,6 +1,4 @@
-import json
-import traceback
-from math import ceil
+import asyncio
 from random import Random
 
 from ctaGuiUtils.py.utils import get_time
@@ -9,374 +7,20 @@ from ctaGuiUtils.py.utils import get_rnd_seed
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
 
-from ctaGuiFront.py.utils.SessionManager import SessionManager
-from ctaGuiFront.py.utils.Housekeeping import Housekeeping
-from ctaGuiFront.py.utils.AsyncLoops import AsyncLoops
-from ctaGuiFront.py.utils.WidgetManager import WidgetManager
+# from ctaGuiFront.py.utils.AsyncLoops import AsyncLoops
+from ctaGuiFront.py.utils.LockManager import LockManager
+# from ctaGuiFront.py.utils.Housekeeping import Housekeeping
+# from ctaGuiFront.py.utils.WidgetManager import WidgetManager
+# from ctaGuiFront.py.utils.WidgetManager import WidgetManager
+# from ctaGuiFront.py.utils.SessionManager import SessionManager
+# from ctaGuiFront.py.utils.ConnectionManager import ConnectionManager
 
-import asyncio
-from asgiref.wsgi import WsgiToAsgi
-from aioredlock import Aioredlock
 
 
-# ------------------------------------------------------------------
-class ExtendedWsgiToAsgi(WsgiToAsgi):
-    """Extends the WsgiToAsgi wrapper to include an ASGI consumer protocol router
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.protocol_router = {
-            'http': {},
-            'websocket': {},
-        }
 
-        # # print(args[0].__dict__.keys())
-        # self.request = args[0]
-        # # print(self.request.authenticated_userid)
-        return
-
-    async def __call__(self, scope, *args, **kwargs):
-        protocol = scope['type']
-        path = scope['path']
-
-        try:
-            consumer = self.protocol_router[protocol][path]
-        except KeyError:
-            consumer = None
-        if consumer is not None:
-            await consumer(scope, *args, **kwargs)
-        try:
-            if scope['type'] == 'http':
-                await super().__call__(scope, *args, **kwargs)
-        except Exception as e:
-            raise e
-
-    def route(self, rule, *args, **kwargs):
-        try:
-            protocol = kwargs['protocol']
-        except KeyError:
-            raise Exception('You must define a protocol type for an ASGI handler')
-
-        def _route(func):
-            self.protocol_router[protocol][rule] = func
-
-        return _route
 
 
 # ------------------------------------------------------------------
-def extend_app_to_asgi(wsgi_app, websocket_route):
-
-    app = ExtendedWsgiToAsgi(wsgi_app)
-
-    # see: https://asgi.readthedocs.io/en/latest/specs/www.html
-    @app.route(websocket_route['server'], protocol='websocket')
-    async def hello_websocket(scope, receive, send):
-        try:
-            log = LogParser(base_config=SocketManager.base_config, title=__name__)
-        except Exception as e:
-            raise e
-
-        try:
-            async_manager = SocketManager(sync_send=send)
-        except Exception as e:
-            log.error([['r', e]])
-            raise e
-
-        try:
-            while True:
-                try:
-                    message = await receive()
-                except Exception as e:
-                    traceback.print_tb(e.__traceback__)
-                    raise e
-
-                if message["type"] == "websocket.connect":
-                    try:
-                        # blocking connect event
-                        await send({"type": "websocket.accept"})
-                        await async_manager.send_initial_connect()
-                    except Exception as e:
-                        log.error([['r', e]])
-                        traceback.print_tb(e.__traceback__)
-
-                elif message["type"] == "websocket.receive":
-                    text = message.get("text")
-                    if text:
-                        text = json.loads(text)
-
-                        try:
-                            # non-blocking receive events
-                            asyncio.ensure_future(async_manager.receive(data=text))
-                        except Exception as e:
-                            traceback.print_tb(e.__traceback__)
-                            log.error([['r', e]])
-
-                elif message["type"] == "websocket.disconnect":
-                    try:
-                        # blocking disconnect event
-                        await async_manager.sess_disconnected()
-                    except Exception as e:
-                        traceback.print_tb(e.__traceback__)
-                        log.error([['r', e]])
-
-                    break
-                else:
-                    raise Exception('unknown message type ', message)
-
-        except Exception as e:
-            log.error([['r', e]])
-            raise e
-
-    return app
-
-
-# ------------------------------------------------------------------
-class WebsocketManager():
-    # ------------------------------------------------------------------
-    def spawn(self, func, *args, **kwargs):
-        # try:
-        #     self.async_loop = asyncio.get_running_loop()
-        #     if not (self.async_loop and self.async_loop.is_running()):
-        #         raise RuntimeError
-        # except RuntimeError:
-        #     raise Exception('no running event loop ?!?')
-        # self.async_loop.create_task(func())
-
-        return asyncio.ensure_future(func(*args, **kwargs))
-
-    # ------------------------------------------------------------------
-    def websocket_data_dump(self, data):
-        data = {
-            'type': 'websocket.send',
-            'text': json.dumps(data),
-        }
-        return data
-
-    # ------------------------------------------------------------------
-    async def emit(self, event_name, data={}, metadata=None):
-        async with await self.get_redis_lock('ws;lock;' + self.server_id):
-            data_out = {
-                'event_name': event_name,
-                'sess_id': self.sess_id,
-                'n_server_msg': self.n_server_msg,
-                'send_time_msec': get_time('msec'),
-            }
-            self.n_server_msg += 1
-
-        if metadata is not None:
-            data_out.update(metadata)
-        data_out['data'] = data
-
-        if self.is_sess_open:
-            await self.sync_send(self.websocket_data_dump(data_out))
-
-        return
-
-    # ------------------------------------------------------------------
-    async def emit_to_queue(self, asy_func=None, event_name=None, data={}, metadata=None):
-        if asy_func is None and event_name is None:
-            raise Exception(
-                'trying to use emit_to_queue without asy_func/event_name', data
-            )
-
-        if asy_func is not None:
-            data_put = {
-                'asy_func': asy_func,
-                'data': data,
-            }
-            if metadata is not None:
-                data_put['metadata'] = metadata
-
-            await self.asyncio_queue.put(data_put)
-
-        elif event_name is not None:
-            asy_func = self.emit(event_name=event_name, data=data, metadata=metadata)
-            data_put = {
-                'asy_func': asy_func,
-                'data': data,
-            }
-            await self.asyncio_queue.put(data_put)
-
-        return
-
-    # ------------------------------------------------------------------
-    async def receive_queue_loop(self, loop_info):
-        """process the received event queue
-        
-            Parameters
-            ----------
-            loop_info : dict
-                metadata needed to determine when is the loop should continue
-        """
-
-        self.log.info([
-            ['y', ' - starting '],
-            ['b', 'receive_queue_loop'],
-            ['y', ' for session: '],
-            ['c', self.sess_id],
-        ])
-
-        # proccess an item from the queue
-        async def await_queue_item():
-            queue_item = self.asyncio_queue.get_nowait()
-
-            # verify that the session has initialised, that we have the right sess_id, etc.
-            self.verify_sess_event(queue_item['data'])
-
-            # check if this if this is a regular function or a coroutine object/function
-            if queue_item is not None:
-                if 'asy_func' in queue_item:
-                    event_func = queue_item['asy_func']
-
-                    if self.is_coroutine(event_func):
-                        await event_func
-                    else:
-                        event_func(queue_item['data'])
-            return
-
-        # while the queue is to be processed
-        while self.get_loop_state(loop_info):
-            for _ in range(self.asyncio_queue.qsize()):
-                if self.is_valid_session():
-                    self.spawn(await_queue_item)
-
-            await asyncio.sleep(self.valid_loop_sleep_sec)
-
-        # attempt to cancel all remaining tasks before finishing
-        for _ in range(self.asyncio_queue.qsize()):
-            self.spawn(await_queue_item).cancel()
-
-        self.log.info([
-            ['r', ' - ending '],
-            ['b', 'receive_queue_loop'],
-            ['r', ' for session: '],
-            ['c', self.sess_id],
-        ])
-
-        return
-
-    # ------------------------------------------------------------------
-    def verify_sess_event(self, data):
-        """verify that an event may be executed
-        
-            Parameters
-            ----------
-            data : dict
-                client data and metadata related to the asy_func to be executed
-        """
-
-        try:
-            if not self.has_init_sess:
-                raise Exception(
-                    'events not coming in order - has not init session...', data
-                )
-
-            if isinstance(data, dict):
-                if ('sess_id' in data.keys()) and (data['sess_id'] != self.sess_id):
-                    raise Exception('mismatch in sess_id...', data)
-
-            if not self.is_valid_session():
-                raise Exception('not a valid session', data)
-
-        except Exception as e:
-            raise e
-
-        return
-
-    # ------------------------------------------------------------------
-    def is_valid_session(self, sess_id=None):
-        """check if a session belongs to this server, and has a heartbeat
-        
-            Parameters
-            ----------
-            sess_id : int
-                the session id to check
-        
-            Returns
-            -------
-            bool
-                is the session valid
-        """
-
-        if not self.has_init_sess:
-            return False
-
-        if sess_id is None:
-            sess_id = self.sess_id
-
-        sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
-        if sess_id in sess_ids:
-            if self.redis.exists('ws;sess_heartbeat;' + sess_id):
-                return True
-
-        return False
-
-    # ------------------------------------------------------------------
-    async def receive(self, data):
-        """receive an event from the client and execute it
-        
-            Parameters
-            ----------
-            data : dict
-                input data fof the received function
-        """
-
-        try:
-            event_name = data['event_name']
-        except Exception:
-            self.log.error([
-                ['p', '\n'],
-                ['r', '-' * 20, 'event name undefined in input:'],
-                ['p', '\n', self.sess_id, ''],
-                ['y', data, '\n'],
-                ['r', '-' * 100],
-            ])
-            return
-        try:
-            event_func = getattr(self, event_name)
-        except Exception:
-            self.log.error([
-                ['p', '\n'],
-                ['r', '-' * 20, 'event name undefined as func:'],
-                ['p', '', event_name, ''],
-                ['r', '-' * 20],
-                ['p', '\n', self.sess_id, ''],
-                ['y', data, '\n'],
-                ['r', '-' * 100],
-            ])
-            return
-
-        # check that events are received in the expected order, where the
-        # initial connection and any logging messages get executed immediately
-        # and any other events get put in an ordered queue for execution
-        try:
-            if event_name in ['client_log']:
-                event_func(data)
-
-            elif event_name in ['sess_setup_begin', 'sess_setup_finalised']:
-                await event_func(data)
-
-            else:
-                # check if this if this is a regular function or a coroutine object/function
-                if asyncio.iscoroutine(event_func) or asyncio.iscoroutinefunction(
-                        event_func):
-                    await self.asyncio_queue.put({
-                        'asy_func': event_func(data),
-                        'data': data,
-                    })
-                else:
-                    await self.asyncio_queue.put({
-                        'asy_func': event_func,
-                        'data': data,
-                    })
-
-        except Exception as e:
-            self.log.error([['r', e]])
-            raise e
-
-        return
-
-
 class SocketBase():
     """common dictionaries for all instances of the
        class (keeping track of all sessions etc.)
@@ -389,41 +33,12 @@ class SocketBase():
     widget_inits = dict()
 
 
-class SocketManager(
-        SocketBase,
-        WebsocketManager,
-        SessionManager,
-        WidgetManager,
-        AsyncLoops,
-        Housekeeping,
-):
-    """WebSocket manager class
-
-       connection life-cycle:
-       - client loads web-page and socket is created
-       (e.g.,: ws = new WebSocket(window.WEBSOCKET_ROUTE))
-       - client sends 'websocket.connect' message
-       - server sends 'initial_connect' message with basic metadata, including
-       the proposed sess_id. if this is a fresh session, the client registers this sess_id,
-       otherwise, it retains its previous sess_id. initialisation has began
-       - client sends 'sess_setup_begin' message, including the final sess_id
-       - server logs the new sess_id or restores the existing one
-       - server starts sending heartbeat_ping messages to the client, and the client
-       responds with heartbeat_pong messages (communication delays are teste on both ends)
-       - client sends 'sess_setup_finalised' message
-       - server sets self.has_init_sess=True, and initialisation is complete
-       - while in the initialisation phase, any other message (except
-       for 'client_log' and heartbeat ping/posng messages) is put in a queue. the
-       queue is only proccessed after initialisation
-    """
-
     # ------------------------------------------------------------------
-    def __init__(self, sync_send, *args, **kwargs):
-
+    def __init__(self, ws_send, *args, **kwargs):
         if SocketBase.server_id is None:
             self.set_server_id()
 
-        self.sync_send = sync_send
+        self.ws_send = ws_send
 
         self.sess_id = None
         # self.sess_id = str(get_time('msec') + self.rnd_gen.randint(1000000, (1000000 * 10) -1))
@@ -479,20 +94,8 @@ class SocketManager(
             name=self.__class__.__name__, port=self.redis_port, log=self.log
         )
 
-        # redis lock
-        self.redis_lock_retry_max_sec = 10
-        redis_lock_delay_min, redis_lock_delay_max = 0.01, 0.1
-        redis_lock_count = ceil(self.redis_lock_retry_max_sec / redis_lock_delay_min)
-
-        self.redis_lock = Aioredlock(
-            redis_connections=[{
-                'host': 'localhost',
-                'port': self.redis_port
-            }],
-            retry_count=redis_lock_count,
-            retry_delay_min=redis_lock_delay_min,
-            retry_delay_max=redis_lock_delay_max,
-        )
+        # # after setting up redis, initialise the lock manager
+        # LockManager.__init__(self)
 
         rnd_seed = get_rnd_seed()
         self.rnd_gen = Random(rnd_seed)
@@ -507,16 +110,9 @@ class SocketManager(
         return
 
     # ------------------------------------------------------------------
-    async def server_attr_dic_add(self, name, key, value):
-        lock_name = 'ws;lock;' + self.server_id
-        if not await self.is_redis_locked(lock_name):
-            raise Exception(
-                'server_attr_dic_add expected to be locked: ',
-                name,
-                key,
-                value,
-                lock_name,
-            )
+    async def add_server_attr(self, name, key, value):
+        # make sure the expected lock is set
+        await self.validate_locks(names='server')
 
         attr = getattr(SocketBase, name)
         attr[key] = value
@@ -524,15 +120,9 @@ class SocketManager(
         return
 
     # ------------------------------------------------------------------
-    async def server_attr_dic_rm(self, name, key):
-        lock_name = 'ws;lock;' + self.server_id
-        if not await self.is_redis_locked(lock_name):
-            raise Exception(
-                'server_attr_dic_rm expected to be locked: ',
-                name,
-                key,
-                lock_name,
-            )
+    async def remove_server_attr(self, name, key):
+        # make sure the expected lock is set
+        await self.validate_locks(names='server')
 
         attr = getattr(SocketBase, name)
         attr.pop(key, None)
@@ -541,34 +131,12 @@ class SocketManager(
 
     # ------------------------------------------------------------------
     async def get_server_attr(self, name):
-        lock_name = 'ws;lock;' + self.server_id
-        if not await self.is_redis_locked(lock_name):
-            raise Exception(
-                'server_attr_dic_rm expected to be locked: ',
-                name,
-                lock_name,
-            )
+        # make sure the expected lock is set
+        await self.validate_locks(names='server')
 
         attr = getattr(SocketBase, name)
 
         return attr
-
-    # ------------------------------------------------------------------
-    async def is_redis_locked(self, lock_name):
-        return await self.redis_lock.is_locked(lock_name)
-
-    # ------------------------------------------------------------------
-    def get_redis_lock(self, lock_name):
-        lock = self.redis_lock.lock(
-            lock_name,
-            lock_timeout=self.redis_lock_retry_max_sec,
-        )
-        return lock
-
-    # ------------------------------------------------------------------
-    def is_coroutine(self, func):
-        is_crt = (asyncio.iscoroutine(func) or asyncio.iscoroutinefunction(func))
-        return is_crt
 
     # ------------------------------------------------------------------
     def set_server_id(self):
@@ -580,12 +148,13 @@ class SocketManager(
         return
 
     # ------------------------------------------------------------------
-    def set_sess_id(self):
-        self.sess_id = (
-            self.server_id + '__ses_' + '{:07d}'.format(SocketBase.n_server_sess)
-        )
-        SocketBase.n_server_sess += 1
-        # SocketBase.n_server_sess += get_rnd(n_digits=4, out_type=int, is_unique_seed=True)
+    async def set_sess_id(self):
+        async with self.get_locks(names='server'):
+            self.sess_id = (
+                self.server_id + '__ses_' + '{:07d}'.format(SocketBase.n_server_sess)
+            )
+            SocketBase.n_server_sess += 1
+            # SocketBase.n_server_sess += get_rnd(n_digits=4, out_type=int, is_unique_seed=True)
 
         return
 
@@ -1679,6 +1248,41 @@ class __old_SocketManager__():
         return
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ------------------------------------------------------------------
 # add some functionality to the socket_manager for specific tasks, which
 # can easily be turned off via flags
@@ -1737,7 +1341,7 @@ class ClockSimDecorator():
             'group': 'ws;server;' + self.socket_manager.server_id,
             'heartbeat': 'ws;server_heartbeat;' + self.socket_manager.server_id,
         }
-        self.socket_manager.add_async_loop(loop_info=loop_info)
+        self.socket_manager.async_loops += [loop_info]
 
         return
 
@@ -1793,14 +1397,14 @@ class ClockSimDecorator():
                 continue
 
             # lock the server while getting the sessions, but for the transmition
-            lock_name = 'ws;lock;' + self.socket_manager.server_id
-            async with await self.socket_manager.get_redis_lock(lock_name):
+            async with self.socket_manager.get_locks(names='server'):
                 managers = await self.socket_manager.get_server_attr('managers')
 
                 all_sess_ids = self.redis.l_get(
                     'ws;server_sess_ids;' + self.socket_manager.server_id
                 )
-                all_sess_ids = [s for s in all_sess_ids if s in managers.keys()]
+            
+            all_sess_ids = [s for s in all_sess_ids if s in managers.keys()]
             for sess_id in all_sess_ids:
                 await managers[sess_id].ask_sim_clock_sim_params()
 

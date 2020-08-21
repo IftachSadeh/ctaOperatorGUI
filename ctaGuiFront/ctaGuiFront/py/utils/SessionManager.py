@@ -23,6 +23,7 @@ class SessionManager():
     # ------------------------------------------------------------------
     def set_sess_state(self, state):
         self.is_sess_open = state
+        self.is_sess_offline = not state
         return
 
     # ------------------------------------------------------------------
@@ -35,7 +36,7 @@ class SessionManager():
         self.set_sess_state(state=False)
 
         try:
-            async with await self.get_redis_lock('ws;lock'):
+            async with self.get_lock('sess'):
                 await self.cleanup_session(sess_id=self.sess_id)
 
         except Exception as e:
@@ -48,12 +49,7 @@ class SessionManager():
         """upon any new connection, send the client initialisation data
         """
 
-        # # temporary hack - make sure the lifecycle is understood - this should only happen once...
-        # if self.sess_id is not None:
-        #     self.log.error([['wr', ' - already connected ?!?!?!?!', self.sess_id]])
-        #     raise Exception('already connected ?!?!?', self.sess_id)
-        async with await self.get_redis_lock('ws;lock;' + self.server_id):
-            self.set_sess_id()
+        await self.set_sess_id()
 
         self.set_sess_state(state=True)
 
@@ -86,24 +82,26 @@ class SessionManager():
                 client data and metadata related to the event
         """
 
-        async with await self.get_redis_lock('ws;lock'):
-            is_existing_sess = (self.sess_id != data['sess_id'])
+        is_existing_sess = (self.sess_id != data['sess_id'])
 
-            # ------------------------------------------------------------------
-            # for development, its conveniet to reload if the server was restarted, but
-            # for deployment, the same session can simply be restored
-            if self.is_HMI_dev:
-                if is_existing_sess:
-                    self.sess_id = data['sess_id']
-                    await self.emit(event_name='reload_session')
-                    return
-            # ------------------------------------------------------------------
-
+        # ------------------------------------------------------------------
+        # for development, its conveniet to reload if the server was restarted, but
+        # for deployment, the same session can simply be restored
+        if self.is_HMI_dev:
             if is_existing_sess:
                 self.sess_id = data['sess_id']
-                self.log.info([['p', ' - restoring existing session: '],
-                               ['c', self.sess_id]])
+                await self.emit(event_name='reload_session')
+                return
+        # ------------------------------------------------------------------
 
+        if is_existing_sess:
+            self.sess_id = data['sess_id']
+            self.log.info([
+                ['p', ' - restoring existing session: '],
+                ['c', self.sess_id],
+            ])
+
+        async with self.get_lock('sess'):
             # get and validate the user id
             self.user_id = str(data['data']['display_user_id'])
             if self.user_id == 'None':
@@ -136,71 +134,78 @@ class SessionManager():
 
             # keep track of all instances for broadcasting events (cleaned up
             # as part of cleanup_session())
-            async with await self.get_redis_lock('ws;lock;' + self.server_id):
-                await self.server_attr_dic_add(
-                    name='managers', key=self.sess_id, value=self
-                )
+            await self.add_server_attr(name='managers', key=self.sess_id, value=self)
 
             # register the user_name if needed (cleanup as part of cleanup_server())
-            all_user_ids = self.redis.l_get('ws;all_user_ids')
-            if self.user_id not in all_user_ids:
-                self.redis.r_push(name='ws;all_user_ids', data=self.user_id)
+            async with self.get_lock('global'):
+                # registed the server id in the global server list
+                # (cleanup explicitly done as part of cleanup_server())
+                all_server_ids = self.redis.l_get('ws;all_server_ids')
+                if self.server_id not in all_server_ids:
+                    self.redis.r_push(name='ws;all_server_ids', data=self.server_id)
+
+                all_user_ids = self.redis.l_get('ws;all_user_ids')
+                if self.user_id not in all_user_ids:
+                    self.redis.r_push(name='ws;all_user_ids', data=self.user_id)
+
+                # registed the session id in the global session list, and in the server
+                # session list (cleanup explicitly done as part of cleanup_session(),
+                # also if loosing heartbeat as part of cleanup_server())
+                all_sess_ids = self.redis.l_get('ws;all_sess_ids')
+                if self.sess_id not in all_sess_ids:
+                    self.redis.r_push(name='ws;all_sess_ids', data=self.sess_id)
+
+                # register the user_id for the heartbeat monitor
+                # (expires on its own, inless renewed by server_sess_heartbeat_loop() )
+                self.redis.set(
+                    name='ws;user_heartbeat;' + self.user_id,
+                    expire=(int(self.sess_expire) * 10),
+                )
+
+            async with self.get_lock('user'):
+                # list of all sessions for this user
+                user_sess_ids = self.redis.l_get('ws;user_sess_ids;' + self.user_id)
+                if self.sess_id not in user_sess_ids:
+                    self.redis.r_push(
+                        name='ws;user_sess_ids;' + self.user_id, data=self.sess_id
+                    )
+
+                # synchronisation groups for users (cleaned up as part of
+                # cleanup_server(), when no more sessions remain alive for this user)
+                if not self.redis.h_exists(name='ws;sync_groups', key=self.user_id):
+                    self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=[])
+
+            async with self.get_lock('server'):
+                # register the server_id for the heartbeat monitor
+                # (expires on its own, inless renewed by server_sess_heartbeat_loop() )
+                self.redis.set(
+                    name='ws;server_heartbeat;' + self.server_id,
+                    expire=(int(self.sess_expire) * 10),
+                )
+
+                server_sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
+                if self.sess_id not in server_sess_ids:
+                    self.redis.r_push(
+                        name='ws;server_sess_ids;' + self.server_id, data=self.sess_id
+                    )
 
             # register the sess_id for the heartbeat monitor
             # (expires on its own, inless renewed by server_sess_heartbeat_loop() )
-            self.redis.set(
-                name='ws;server_heartbeat;' + self.server_id,
-                expire=(int(self.sess_expire) * 10),
-            )
-            self.redis.set(
-                name='ws;user_heartbeat;' + self.user_id,
-                expire=(int(self.sess_expire) * 10),
-            )
             self.redis.set(
                 name='ws;sess_heartbeat;' + self.sess_id,
                 expire=(int(self.sess_expire) * 10),
             )
 
-            # registed the server id in the global server list
-            # (cleanup explicitly done as part of cleanup_server())
-            all_server_ids = self.redis.l_get('ws;all_server_ids')
-            if self.server_id not in all_server_ids:
-                self.redis.r_push(name='ws;all_server_ids', data=self.server_id)
+        # start up (if not already running) loops for this server / user / session
+        # async with self.get_lock(('user', 'server', 'sess')):
+        await self.init_common_loops()
 
-            # registed the session id in the global session list, and in the server
-            # session list (cleanup explicitly done as part of cleanup_session(),
-            # also if loosing heartbeat as part of cleanup_server())
-            all_sess_ids = self.redis.l_get('ws;all_sess_ids')
-            if self.sess_id not in all_sess_ids:
-                self.redis.r_push(name='ws;all_sess_ids', data=self.sess_id)
+        # function which may be overloaded, setting up individual
+        # properties for a given session-type
+        if not is_existing_sess:
+            self.on_join_session_()
 
-            server_sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
-            if self.sess_id not in server_sess_ids:
-                self.redis.r_push(
-                    name='ws;server_sess_ids;' + self.server_id, data=self.sess_id
-                )
-
-            # list of all sessions for this user
-            all_user_sess_ids = self.redis.l_get('ws;user_sess_ids;' + self.user_id)
-            if self.sess_id not in all_user_sess_ids:
-                self.redis.r_push(
-                    name='ws;user_sess_ids;' + self.user_id, data=self.sess_id
-                )
-
-            # synchronisation groups for users (cleaned up as part of cleanup_server(), when
-            # no more sessions remain alive for this user)
-            if not self.redis.h_exists(name='ws;sync_groups', key=self.user_id):
-                self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=[])
-
-            # start up (if not already running) loops for this server / user / session
-            await self.init_common_loops()
-
-            # function which may be overloaded, setting up individual
-            # properties for a given session-type
-            if not is_existing_sess:
-                self.on_join_session_()
-
-            self.init_user_sync_loops()
+        self.init_user_sync_loops()
 
         return
 
@@ -224,11 +229,18 @@ class SessionManager():
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    async def sess_to_online(self, data):
         """upon reconnection to an existing session
         """
 
-        self.log.warn([['r', ' - back_from_offline not implemented ', '!' * 90]])
+        self.log.warn([[
+            'r', ' - sess_to_online not implemented ', self.sess_id, '!' * 90
+        ]])
+
+        self.is_sess_offline = False
+
+        # prevent the ping/pong heartbeat for the first iteration
+        self.sess_ping_time = None
 
         # if self.sess_id is None:
         #     return
@@ -246,6 +258,19 @@ class SessionManager():
         #     for widget_id in widget_ids:
         #         if widget_id in __old_SocketManager__.widget_inits:
         #             getattr(__old_SocketManager__.widget_inits[widget_id], 'back_from_offline')()
+
+        return
+
+    # ------------------------------------------------------------------
+    async def sess_to_offline(self, data):
+        """upon reconnection to an existing session
+        """
+
+        self.is_sess_offline = True
+
+        self.log.warn([[
+            'r', ' - sess_to_offline not implemented ', self.sess_id, '!' * 90
+        ]])
 
         return
 

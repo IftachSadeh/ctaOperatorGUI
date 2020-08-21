@@ -1,21 +1,18 @@
+from pyramid.security import remember
+from pyramid.security import forget
 from pyramid.httpexceptions import HTTPFound
-from pyramid.response import Response
 from pyramid.view import forbidden_view_config
-from pyramid.security import remember, forget
 
-# the socket.io manager
-from socketio import socketio_manage
-
-# import the utils module to allow access to self.app_prefix
 from ctaGuiUtils.py.LogParser import LogParser
-# base-class for all widgets which use sockets
-from ctaGuiFront.py.utils.SocketManager import SocketManager
-#
-from ctaGuiFront.py.utils.security import USERS, check_password
+from ctaGuiFront.py.utils.security import USERS
+from ctaGuiFront.py.utils.security import check_password
 
 
 # ------------------------------------------------------------------
 class ViewManager():
+    """views for given web addresses
+    """
+
     # ------------------------------------------------------------------
     def __init__(self, base_config, *args, **kwargs):
         self.log = LogParser(base_config=base_config, title=__name__)
@@ -26,36 +23,7 @@ class ViewManager():
         self.site_type = base_config.site_type
         self.websocket_route = base_config.websocket_route
 
-        # attach the BaseConfig instance to the socket
-        setattr(SocketManager, 'base_config', self.base_config)
-
         return
-
-    # ------------------------------------------------------------------
-    # socketio_service
-    # ------------------------------------------------------------------
-    def socket_view(self, request):
-        print('--+--' * 30)
-
-        socks = dict()
-        socks["/" + "index"] = SocketManager
-        socks["/" + "view_refresh_all"] = SocketManager
-        # socks["/"+"view100"] = socket_manager_view100
-
-        for widget_name in self.base_config.widget_infos:
-            if not ('/' + widget_name) in socks:
-                socks['/' + widget_name] = SocketManager
-
-        print('-=-' * 30)
-        print(list(request.environ.keys()))
-        print('--+--' * 30)
-        # print(request.environ)
-        # print(request.environ['socketio'])
-        # socketio_manage(request.environ, socks, request=request)
-
-        print('----' * 30)
-
-        return Response('')
 
     # ------------------------------------------------------------------
     def get_display_user_id(self, request):
@@ -76,8 +44,6 @@ class ViewManager():
     # ------------------------------------------------------------------
     def view_login(self, request):
         view_name = "login"
-
-        # forget(request)
 
         # if already logged in, go to the index
         if request.authenticated_userid is not None:
@@ -105,25 +71,28 @@ class ViewManager():
         )
 
     # ------------------------------------------------------------------
-    # logout page with a redirect to the login
-    # ------------------------------------------------------------------
     def view_logout(self, request):
+        """logout page with a redirect to the login
+        """
+
         # forget the current loged-in user
         headers = forget(request)
         # redirect to the login page
         return HTTPFound(location=request.route_url("index"), headers=headers)
 
     # ------------------------------------------------------------------
-    # forbidden view redirects to the login
-    # ------------------------------------------------------------------
     @forbidden_view_config()
     def view_forbidden(self, request):
+        """forbidden view redirects to the login
+        """
+
         return HTTPFound(location=request.route_url("login"))
 
     # ------------------------------------------------------------------
-    # index, empty, not-found
-    # ------------------------------------------------------------------
     def view_index(self, request):
+        """index, empty, not-found
+        """
+
         view_name = "index"
 
         return dict(
@@ -138,12 +107,16 @@ class ViewManager():
         )
 
     # ------------------------------------------------------------------
-    # redirects
-    # ------------------------------------------------------------------
     def view_empty(self, request):
+        """redirects
+        """
+
         return HTTPFound(location=request.route_url("index"))
 
     def view_not_found(self, request):
+        """redirects
+        """
+
         view_name = "not_found"
 
         return dict(
@@ -158,9 +131,10 @@ class ViewManager():
         )
 
     # ------------------------------------------------------------------
-    # now for the widgets
-    # ------------------------------------------------------------------
     def view_common(self, request):
+        """the widgets
+        """
+
         view_name = request.matched_route.name
 
         return dict(

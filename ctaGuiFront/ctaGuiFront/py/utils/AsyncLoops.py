@@ -20,7 +20,7 @@ import asyncio
 class AsyncLoops():
 
     # ------------------------------------------------------------------
-    def init_asy_func_loops(self):
+    def setup_loops(self):
         """define the default set of asy_funcs to run in the background
         """
 
@@ -86,33 +86,41 @@ class AsyncLoops():
             },
         ]
 
-        for asy_func in loops:
-            self.add_async_loop(loop_info=asy_func)
+        if self.is_simulation:
+            loops += [
+                {
+                    'id': 'clock_sim_update_sim_params_loop',
+                    'func': self.clock_sim_update_sim_params,
+                    'group': 'ws;server;' + self.server_id,
+                    'heartbeat': 'ws;server_heartbeat;' + self.server_id,
+                },
+            ]
 
-        return
+        # async_loops = []
+        # for loop_info in loops:
+        #     has_asy_func = any([
+        #         (loop_info['group'] == c['group'] and loop_info['id'] == c['id'])
+        #         for c in async_loops
+        #     ])
+        #     if not has_asy_func:
+        #         async_loops += [loop_info]
 
-    # ------------------------------------------------------------------
-    def add_async_loop(self, loop_info):
-        has_asy_func = any([
-            (loop_info['group'] == c['group'] and loop_info['id'] == c['id'])
-            for c in self.async_loops
-        ])
-        if not has_asy_func:
-            self.async_loops += [loop_info]
+        # return async_loops
 
-        return
+        return loops
 
     # ------------------------------------------------------------------
     async def init_common_loops(self):
         """initialise shared maintenance asy_funcs
         """
 
-        self.init_asy_func_loops()
+        async_loops = self.setup_loops()
 
-        for loop_info in self.async_loops:
-            if not self.get_loop_state(loop_info):
-                await self.set_loop_state(state=True, loop_info=loop_info)
-                self.spawn(loop_info['func'], loop_info=loop_info)
+        async with self.get_lock(names=('server', 'sess')):
+            for loop_info in async_loops:
+                if not self.get_loop_state(loop_info):
+                    await self.set_loop_state(state=True, loop_info=loop_info)
+                    self.spawn(loop_info['func'], loop_info=loop_info)
 
         return
 
@@ -126,7 +134,7 @@ class AsyncLoops():
 
     # ------------------------------------------------------------------
     async def set_loop_state(self, state, loop_info=None, group=None):
-        async with await self.get_redis_lock('ws;lock;' + self.server_id):
+        async with self.get_lock('loop_state'):
             if state:
                 if loop_info is None:
                     raise Exception(
@@ -208,32 +216,27 @@ class AsyncLoops():
         user_expire = ceil(sess_expire * 1.5)
 
         while self.get_loop_state(loop_info):
-            async with await self.get_redis_lock('ws;lock'):
-                sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
-                for sess_id in sess_ids:
-                    if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
-                        continue
+            sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
+            for sess_id in sess_ids:
+                if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
+                    continue
 
-                    # heartbeat for any session renews the server
-                    self.redis.expire(
-                        name='ws;server_heartbeat;' + self.server_id,
-                        expire=server_expire
-                    )
+                # heartbeat for any session renews the server
+                self.redis.expire(
+                    name='ws;server_heartbeat;' + self.server_id, expire=server_expire
+                )
 
-                    # heartbeat for any session renews the user
-                    self.redis.expire(
-                        name='ws;user_heartbeat;' + self.user_id, expire=user_expire
-                    )
+                # heartbeat for any session renews the user
+                self.redis.expire(
+                    name='ws;user_heartbeat;' + self.user_id, expire=user_expire
+                )
 
-                    # heartbeat for this session renews itself
-                    self.redis.expire(
-                        name='ws;sess_heartbeat;' + sess_id, expire=sess_expire
-                    )
+                # heartbeat for this session renews itself
+                self.redis.expire(name='ws;sess_heartbeat;' + sess_id, expire=sess_expire)
 
             await asyncio.sleep(sleep_sec)
 
-        async with await self.get_redis_lock('ws;lock'):
-            await self.cleanup_server(server_id=self.server_id)
+        await self.cleanup_server(server_id=self.server_id)
 
         self.log.info([
             ['r', ' - ending '],
@@ -288,13 +291,10 @@ class AsyncLoops():
             # for now we only produce a log warning in case of these kinds of problems
             if interval_now_msec > max_ping_interval_msec:
                 self.log.warn([
-                    ['y', ' - high server load for '],
+                    ['y', ' - high server load / slow connection for '],
                     ['r', self.sess_id],
-                    [
-                        'y',
-                        ' --> ',
-                    ],
-                    ['o', interval_now_msec],
+                    ['y', ' ? --> '],
+                    ['o', interval_now_msec, ' msec delay'],
                 ])
 
         self.log.info([
@@ -316,6 +316,10 @@ class AsyncLoops():
                 client data and metadata related to the event
         """
 
+        # if eg we are offline or just back from offline
+        if self.sess_ping_time is None or self.is_sess_offline:
+            return
+
         ping_delay = data['send_time_msec'] - self.sess_ping_time
 
         if ping_delay > self.sess_ping['max_interval_good_msec']:
@@ -326,11 +330,7 @@ class AsyncLoops():
             log_func([
                 ['y', ' - ', log_txt],
                 ['r', self.sess_id, '\n'],
-                [
-                    'g',
-                    self.sess_ping_time,
-                    ' --> ',
-                ],
+                ['g', self.sess_ping_time, ' --> '],
                 ['o', data],
             ])
 
@@ -348,70 +348,65 @@ class AsyncLoops():
             ['c', self.server_id],
         ])
 
-        self.cleanup_sleep = 5
-        self.cleanup_sleep = 2
+        # self.cleanup_sleep = 2
 
         while self.get_loop_state(loop_info):
             await asyncio.sleep(self.cleanup_sleep)
 
             # run the cleanup for this server
-            async with await self.get_redis_lock('ws;lock'):
-                await self.cleanup_server(server_id=self.server_id)
+            await self.cleanup_server(server_id=self.server_id)
 
             # run the cleanup for possible zombie sessions
-            async with await self.get_redis_lock('ws;lock'):
-                all_sess_ids = self.redis.l_get('ws;all_sess_ids')
-                for sess_id in all_sess_ids:
-                    if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
-                        await self.cleanup_session(sess_id=sess_id)
+            all_sess_ids = self.redis.l_get('ws;all_sess_ids')
+            for sess_id in all_sess_ids:
+                if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
+                    await self.cleanup_session(sess_id=sess_id)
 
             # run the cleanup for possible zombie widgets
-            async with await self.get_redis_lock('ws;lock'):
-                widget_infos = self.redis.h_get_all('ws;widget_infos')
-                for widget_id, widget_info in widget_infos.items():
-                    sess_id = widget_info['sess_id']
-                    if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
-                        # explicitly take care of the widget
-                        await self.cleanup_widget(widget_ids=widget_id)
-                        # for good measure, make sure the session is also gone
-                        await self.cleanup_session(sess_id=sess_id)
+            widget_infos = self.redis.h_get_all('ws;widget_infos')
+            for widget_id, widget_info in widget_infos.items():
+                sess_id = widget_info['sess_id']
+                if not self.redis.exists('ws;sess_heartbeat;' + sess_id):
+                    # explicitly take care of the widget
+                    await self.cleanup_widget(widget_ids=widget_id)
+                    # for good measure, make sure the session is also gone
+                    await self.cleanup_session(sess_id=sess_id)
 
             # run the cleanup for possible zombie servers
-            async with await self.get_redis_lock('ws;lock'):
-                all_server_ids = self.redis.l_get('ws;all_server_ids')
-                for server_id in all_server_ids:
-                    if not self.redis.exists('ws;server_heartbeat;' + server_id):
-                        await self.cleanup_server(server_id=server_id)
+            all_server_ids = self.redis.l_get('ws;all_server_ids')
+            for server_id in all_server_ids:
+                if not self.redis.exists('ws;server_heartbeat;' + server_id):
+                    await self.cleanup_server(server_id=server_id)
 
             # run the cleanup for possible zombie loops
-            async with await self.get_redis_lock('ws;lock'):
-                await self.cleanup_loops()
+            await self.cleanup_loops()
 
             # run the cleanup for users who have no active sessions
-            async with await self.get_redis_lock('ws;lock'):
-                await self.cleanup_users()
+            await self.cleanup_users()
 
-            # sanity checks
-            async with await self.get_redis_lock('ws;lock'):
-                sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
+            # sanity check: make sure that the local manager has been cleaned
+            sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
 
-                async with await self.get_redis_lock('ws;lock;' + self.server_id):
-                    managers = await self.get_server_attr('managers')
-                    sess_ids_check = [s for s in managers.keys() if s not in sess_ids]
-                    if len(sess_ids_check) > 0:
-                        raise Exception(
-                            'mismatch between sess_ids ?', sess_ids, managers.keys()
-                        )
+            managers = await self.get_server_attr('managers')
+            sess_ids_check = [s for s in managers.keys() if s not in sess_ids]
 
-                # after the cleanup for this particular session, check if
-                # the heartbeat is still there for the server / user (if any session at all is alive)
+            if len(sess_ids_check) > 0:
+                self.log.warn([
+                    ['r', ' - mismatch between sess_ids ?', sess_ids,
+                     managers.keys()],
+                ])
+                for sess_id in sess_ids_check:
+                    await self.cleanup_session(sess_id=sess_id)
+
+            # sanity check: after the cleanup for this particular session, check if the
+            # heartbeat is still there for the server / user (if any session at all is alive)
+            async with self.get_lock('user'):
                 if not self.redis.exists('ws;user_heartbeat;' + self.user_id):
                     user_sess_ids = self.redis.l_get('ws;user_sess_ids;' + self.user_id)
                     if len(user_sess_ids) > 0:
                         raise Exception(
-                            'no heartbeat, but sessions remaining ?!?!',
-                            self.user_id,
-                            user_sess_ids,
+                            'no heartbeat, but sessions remaining ?!?!', self.user_id,
+                            user_sess_ids
                         )
 
                 if not self.redis.exists('ws;server_heartbeat;' + self.server_id):
@@ -420,15 +415,14 @@ class AsyncLoops():
                     )
                     if len(server_sess_ids) > 0:
                         raise Exception(
-                            'no heartbeat, but sessions remaining ?!?!',
-                            self.server_id,
-                            server_sess_ids,
+                            'no heartbeat, but sessions remaining ?!?!', self.server_id,
+                            server_sess_ids
                         )
 
             check_all_ws_keys = False
             # check_all_ws_keys = True
             if check_all_ws_keys:
-                async with await self.get_redis_lock('ws;lock'):
+                async with self.get_lock('global'):
                     cursor, scans = 0, []
                     while True:
                         # await asyncio.sleep(0.001)
