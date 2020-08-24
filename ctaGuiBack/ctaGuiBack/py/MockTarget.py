@@ -19,7 +19,7 @@ class MockTarget():
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, port=self.base_config.redis_port, log=self.log
+            name=self.class_name, base_config=self.base_config, log=self.log
         )
 
         # ------------------------------------------------------------------
@@ -49,6 +49,9 @@ class MockTarget():
 
         self.target_ids = []
         self.targets = []
+
+        pipe = self.redis.get_pipe()
+
         for index in range(n_rnd_targets):
             # if self.redis.exists('inst_pos'):
             #     inst_pos_in = self.redis.h_get_all(name="inst_pos",
@@ -87,11 +90,11 @@ class MockTarget():
             self.target_ids.append("target_" + str(index))
             self.targets.append(target)
 
-            self.redis.pipe.set(name='target_' + str(index), data=target)
+            pipe.set(name='target_' + str(index), data=target)
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
-        self.redis.pipe.set(name='target_ids', data=self.target_ids)
-        self.redis.pipe.execute()
+        pipe.set(name='target_ids', data=self.target_ids)
+        pipe.execute()
 
         return

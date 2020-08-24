@@ -51,6 +51,11 @@ class Serialisation():
                 for data_now_0 in data_in:
                     data += [self.unpack(data_now_0, log)]
 
+            elif isinstance(data_in, set):
+                data = set()
+                for data_now_0 in data_in:
+                    data.add(self.unpack(data_now_0, log))
+
             elif isinstance(data_in, dict):
                 data = dict()
                 for k, v in data_in.items():

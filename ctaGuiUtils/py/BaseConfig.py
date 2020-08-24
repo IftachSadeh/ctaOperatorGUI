@@ -40,7 +40,7 @@ class BaseConfig():
         app_host,
         log_level,
         websocket_route,
-        is_HMI_dev,
+        debug_opts,
         is_simulation,
         allow_panel_sync=None,
         widget_infos=None,
@@ -62,7 +62,7 @@ class BaseConfig():
         self.websocket_route = websocket_route
         self.allow_panel_sync = allow_panel_sync
         self.is_simulation = is_simulation
-        self.is_HMI_dev = is_HMI_dev
+        self.debug_opts = debug_opts
 
         # for safety, make sure registered widgets can be requested by the client
         # e.g., expect a module file named 'AAA.py', containing a class AAA

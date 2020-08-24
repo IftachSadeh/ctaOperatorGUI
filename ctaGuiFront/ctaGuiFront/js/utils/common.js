@@ -1160,7 +1160,7 @@ window.Locker = function(opt_init) {
     // turn a counter on or off
     function add(opt_in) {
         let id = default_cntr
-        let expire = -1
+        let expire_sec = -1
         let override = false
         if (is_def(opt_in)) {
             if (typeof opt_in === 'string') {
@@ -1170,8 +1170,8 @@ window.Locker = function(opt_init) {
                 if (is_def(opt_in.id)) {
                     id = opt_in.id
                 }
-                if (is_def(opt_in.expire)) {
-                    expire = opt_in.expire
+                if (is_def(opt_in.expire_sec)) {
+                    expire_sec = opt_in.expire_sec
                 }
                 if (is_def(opt_in.override)) {
                     override = opt_in.override
@@ -1189,10 +1189,10 @@ window.Locker = function(opt_init) {
             counters[id] = Math.max(0, counters[id] + 1)
         }
 
-        if (expire > 0) {
+        if (expire_sec > 0) {
             remove({
                 id: id,
-                delay: expire,
+                delay: expire_sec,
             })
         }
     // if(id == 'zoom_to_target') console.log('Locker add',id,counters[id]);
@@ -2573,6 +2573,7 @@ window.date_to_string = function(date_in) {
     //        +date_in.getHours()+":"+date_in.getMinutes()+":"+date_in.getSeconds();
 }
 
+// the number of milliseconds elapsed since January 1, 1970 00:00:00 UTC
 window.get_time_msec = function() {
     return Date.now()
 }

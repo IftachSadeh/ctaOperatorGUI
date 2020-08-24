@@ -56,12 +56,12 @@ class SchedulerACS(ServiceManager):
         self.no_sub_arr_name = self.base_config.no_sub_arr_name
 
         self.redis = RedisManager(
-            name=self.class_name, port=self.base_config.redis_port, log=self.log
+            name=self.class_name, base_config=self.base_config, log=self.log
         )
 
         self.debug = not True
-        self.expire = 86400  # one day
-        # self.expire = 5
+        self.expire_sec = 86400  # one day
+        # self.expire_sec = 5
 
         self.MockSched = None
 
@@ -147,6 +147,8 @@ class SchedulerACS(ServiceManager):
 
         blocks_run = []
         active = sched_blocks['active']
+
+        pipe = self.redis.get_pipe()
 
         for sched_blk_id, schBlock in sched_blocks['blocks'].items():
 
@@ -278,17 +280,15 @@ class SchedulerACS(ServiceManager):
 
                 obs_block_ids[state].append(obs_block_id)
 
-                self.redis.pipe.set(name=obs_block_id, data=block, expire=self.expire)
+                pipe.set(name=obs_block_id, data=block, expire_sec=self.expire_sec)
 
-        self.redis.pipe.set(name='obs_block_ids_' + 'wait', data=obs_block_ids['wait'])
-        self.redis.pipe.set(name='obs_block_ids_' + 'run', data=obs_block_ids['run'])
-        self.redis.pipe.set(name='obs_block_ids_' + 'done', data=obs_block_ids['done'])
-        self.redis.pipe.set(
-            name='obs_block_ids_' + 'cancel', data=obs_block_ids['cancel']
-        )
-        self.redis.pipe.set(name='obs_block_ids_' + 'fail', data=obs_block_ids['fail'])
+        pipe.set(name='obs_block_ids_' + 'wait', data=obs_block_ids['wait'])
+        pipe.set(name='obs_block_ids_' + 'run', data=obs_block_ids['run'])
+        pipe.set(name='obs_block_ids_' + 'done', data=obs_block_ids['done'])
+        pipe.set(name='obs_block_ids_' + 'cancel', data=obs_block_ids['cancel'])
+        pipe.set(name='obs_block_ids_' + 'fail', data=obs_block_ids['fail'])
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
         update_sub_arrs(self=self, blocks=blocks_run)
 
@@ -297,15 +297,16 @@ class SchedulerACS(ServiceManager):
     # # ------------------------------------------------------------------
     # def update_sub_arrs(self, blocks=None):
     #     # inst_pos = self.redis.h_get_all(name='inst_pos')
+    #     pipe = self.redis.get_pipe()
 
     #     if blocks is None:
     #         obs_block_ids = self.redis.get(
     #             name=('obs_block_ids_' + 'run'), default_val=[]
     #         )
     #         for obs_block_id in obs_block_ids:
-    #             self.redis.pipe.get(obs_block_id)
+    #             pipe.get(obs_block_id)
 
-    #         blocks = self.redis.pipe.execute()
+    #         blocks = pipe.execute()
 
     #     # sort so last is first in the list (latest sub-array defined gets the telescope)
     #     blocks = sorted(
@@ -357,13 +358,15 @@ class SchedulerACS(ServiceManager):
         print(' -- SchedulerACS.loop_main has not been verified, since no acs ...')
         print(' -- SchedulerACS.loop_main has not been verified, since no acs ...')
 
-        self.redis.pipe.set(name='obs_block_ids_' + 'wait', data='')
-        self.redis.pipe.set(name='obs_block_ids_' + 'run', data='')
-        self.redis.pipe.set(name='obs_block_ids_' + 'done', data='')
-        self.redis.pipe.set(name='obs_block_ids_' + 'cancel', data='')
-        self.redis.pipe.set(name='obs_block_ids_' + 'fail', data='')
+        pipe = self.redis.get_pipe()
 
-        self.redis.pipe.execute()
+        pipe.set(name='obs_block_ids_' + 'wait', data='')
+        pipe.set(name='obs_block_ids_' + 'run', data='')
+        pipe.set(name='obs_block_ids_' + 'done', data='')
+        pipe.set(name='obs_block_ids_' + 'cancel', data='')
+        pipe.set(name='obs_block_ids_' + 'fail', data='')
+
+        pipe.execute()
 
         update_sub_arrs(self=self, blocks=[])
 

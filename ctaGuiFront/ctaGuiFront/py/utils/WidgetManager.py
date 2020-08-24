@@ -53,19 +53,20 @@ class WidgetManager():
         # dynamically load the module for the requested widget
         # (no need for a 'from dynamicLoadWidget import dynWidg_0' statement)
         # has_widget_id = self.redis.h_exists(name='ws;widget_infos', key=widget_id)
-        async with self.get_lock('user'):
+        async with self.locker.locks.acquire('server'):
             widget_inits = await self.get_server_attr(name='widget_inits')
 
-            has_widget_id = widget_id in widget_inits
-            if not has_widget_id:
-                await self.init_widget(data_in)
+        has_widget_id = widget_id in widget_inits
+        if not has_widget_id:
+            await self.init_widget(data_in)
 
         # call the method named args[1] with optional arguments args[2],
         # equivalent e.g., to widget.method_name(optionalArgs)
         if 'method_name' in data:
-            widget_inits = await self.get_server_attr(name='widget_inits')
-            async with self.get_lock('sess'):
+            async with self.locker.locks.acquire('server'):
+                widget_inits = await self.get_server_attr(name='widget_inits')
                 method_func = getattr(widget_inits[widget_id], data['method_name'])
+            async with self.locker.locks.acquire('sess'):
                 if 'method_arg' in data:
                     await method_func(data['method_arg'])
                 else:
@@ -100,7 +101,7 @@ class WidgetManager():
         )
         widget_cls = getattr(widget_module, widget_name)
 
-        async with self.get_lock('server'):
+        async with self.locker.locks.acquire('server'):
             widget_inits = await self.get_server_attr(name='widget_inits')
             widget_inits[widget_id] = widget_cls(widget_id=widget_id, socket_manager=self)
 
@@ -215,8 +216,7 @@ class WidgetManager():
 
         print('lock for update_sync_group !?')
 
-
-        async with self.get_lock('user'):
+        async with self.locker.locks.acquire('server'):
             widget_inits = await self.get_server_attr(name='widget_inits')
 
             widget_ids = []
@@ -263,10 +263,11 @@ class WidgetManager():
         # =============================================================
         # =============================================================
         # =============================================================
- 
+
         widget = opt_in['widget']
 
-        async with self.get_lock('widget;' + widget.widget_name):
+        async with self.locker.locks.acquire(self.get_widget_lock_name(widget.widget_name)
+                                             ):
             if 'event_name' not in opt_in.keys():
                 opt_in['event_name'] = 'update_data'
 
@@ -280,10 +281,16 @@ class WidgetManager():
             loop_id = opt_in['loop_id']
 
             if opt_in['loop_group'] == 'widget_id':
-                loop_group = 'ws;widget_id;' + widget.widget_id
+                loop_group = self.get_loop_group_name(
+                    scope='widget_id',
+                    postfix=widget.widget_id,
+                )
                 heartbeat = self.get_heartbeat_name('sess')
             elif opt_in['loop_group'] == 'widget_name':
-                loop_group = 'ws;widget_name;' + widget.widget_name
+                loop_group = self.get_loop_group_name(
+                    scope='widget_name',
+                    postfix=widget.widget_name,
+                )
                 heartbeat = self.get_heartbeat_name('widget', widget.widget_name)
             else:
                 raise Exception('unknown loop_group for: ', opt_in)
@@ -296,6 +303,7 @@ class WidgetManager():
             }
 
             print('sssss', self.get_loop_state(loop_info), loop_info)
+            # return
 
             # =============================================================
             # =============================================================
@@ -306,23 +314,33 @@ class WidgetManager():
                 - spawn the data_update loop itself that send the updates to all widgets of this type in this server, and it will live in the context of the heatbeat
                 - cleanup func for individual widget_ids --> will moderate the widget type heartbeat
                 - general widget type heartbeat cleanup if list of widget_ids of a given type is empty
+
+                - ALL LOCKS must include server name (also user)
+                - remove global lock
+                - any action accorss servers is not locked, rather it is pubsub, like clocksim
+                - at any new session, first start heartbeat expire_sec, then add to "global"
+                lists --> make sure that any cleanup listens to heartbeat --> thus avoid
+                racing condition of another server deleting the session or user from
+                the global shared redis list before the initialise of the new session can complete
+                - decide what to do with None entry in self.lock_namespace, as in
+                some cases the server_id may not already be defined???? probably not and this
+                was just a sess_id issue....
+                - probably most locks from the cleanup are not needed. the important part is
+                to eg have consistent initialisation, or loop states etc.
+
+                - sync_groups --> set or whatever ??????????/
             '''
             # =============================================================
             # =============================================================
             # =============================================================
-
-
-            
 
             # if not self.get_loop_state(loop_info):
             #     # register the widget_name for the heartbeat monitor
             #     # (expires on its own, inless renewed by server_sess_heartbeat_loop() )
             #     self.redis.set(
             #         name=loop_info['heartbeat'],
-            #         expire=(int(self.sess_expire) * 10),
+            #         expire_sec=(int(self.sess_expire) * 10),
             #     )
-
-
 
             if not self.get_loop_state(loop_info):
                 await self.set_loop_state(state=True, loop_info=loop_info)
@@ -410,15 +428,15 @@ class WidgetManager():
 
         print('check lock by user ot sess if widget id/name ?!?!')
         while self.get_loop_state(loop_info):
-            async with self.get_lock('user'):
-                # data = opt_in['data_func']()
-                data = await opt_in['data_func']()
+            # async with self.locker.locks.acquire('user'):
+            # data = opt_in['data_func']()
+            data = await opt_in['data_func']()
 
-                await self.emit_to_queue(
-                    event_name=event_name,
-                    data=data,
-                    metadata=metadata,
-                )
+            await self.emit_to_queue(
+                event_name=event_name,
+                data=data,
+                metadata=metadata,
+            )
 
             await asyncio.sleep(sleep_sec)
 

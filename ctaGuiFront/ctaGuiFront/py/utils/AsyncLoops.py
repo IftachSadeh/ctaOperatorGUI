@@ -20,6 +20,44 @@ import asyncio
 class AsyncLoops():
 
     # ------------------------------------------------------------------
+    def get_loop_group_name(self, scope, postfix=None):
+        """names for loop groups for different scopes
+           
+           examples:
+           'ws;loop;sess;serv_8090_3565_sess_0001'
+           which defines the scope for all constituents of a session
+           with id 'serv_8090_3565_sess_0001'
+           
+           'ws;loop;server;serv_8090_3565;EmptyExample'
+           which defines the scope for all constituents of a widget
+           of type 'EmptyExample' operating under a server with id 'serv_8090_3565'
+        """
+
+        if scope == 'server':
+            name = self.loop_prefix + 'server;' + self.server_id
+
+        elif scope == 'sess':
+            name = self.loop_prefix + 'sess;' + self.sess_id
+
+        elif scope == 'widget_name':
+            if postfix is None:
+                raise Exception('must provide widget_name as postfix for loop group')
+            name = self.loop_prefix + 'server;' + self.server_id
+
+        elif scope == 'widget_id':
+            if postfix is None:
+                raise Exception('must provide widget_id as postfix for loop group')
+            name = self.loop_prefix + 'sess;' + self.sess_id
+
+        else:
+            raise Exception('unknown scope for heartbeat')
+
+        if postfix is not None:
+            name += ';' + postfix
+
+        return name
+
+    # ------------------------------------------------------------------
     def get_heartbeat_name(self, scope, postfix=None):
         """names for heartbeat monitors for different scopes
            
@@ -32,9 +70,9 @@ class AsyncLoops():
            which defines the scope for all constituents of a widget
            of type 'EmptyExample' operating under a server with id 'serv_8090_530136'
         """
-        
+
         prefix = self.heartbeat_prefix + scope
-        
+
         if scope == 'user':
             if postfix is None:
                 postfix = self.user_id
@@ -54,11 +92,24 @@ class AsyncLoops():
             if postfix is None:
                 raise Exception('must provide widget_name as postfix for heartbeat')
             name = prefix + ';' + self.server_id + ';' + postfix
-        
+
         else:
             raise Exception('unknown scope for heartbeat')
 
         return name
+
+    # ------------------------------------------------------------------
+    def validate_loop_group(self, group):
+        """loop groups must have a "local" scope, in order to
+           avoid blocking by different servers, where
+           self.locker.locks.acquire('loop_state') includes self.server_id
+        """
+
+        # if not any(n in group for n in [self.server_id, self.sess_id]):
+        if not any(n in group for n in [self.server_id]):
+            print('------', group, self.server_id)
+            raise Exception('loop group must include server or session scopes', )
+        return
 
     # ------------------------------------------------------------------
     def setup_loops(self):
@@ -72,7 +123,7 @@ class AsyncLoops():
             {
                 'id': 'server_sess_heartbeat_loop',
                 'func': self.server_sess_heartbeat_loop,
-                'group': self.loop_prefix + 'server;' + self.server_id,
+                'group': self.get_loop_group_name(scope='server'),
                 'heartbeat': self.get_heartbeat_name('server'),
             },
         ]
@@ -82,7 +133,7 @@ class AsyncLoops():
             {
                 'id': 'cleanup_loop',
                 'func': self.cleanup_loop,
-                'group': self.loop_prefix + 'server;' + self.server_id,
+                'group': self.get_loop_group_name(scope='server'),
                 'heartbeat': self.get_heartbeat_name('server'),
             },
         ]
@@ -112,7 +163,7 @@ class AsyncLoops():
             {
                 'id': 'client_sess_heartbeat_loop',
                 'func': self.client_sess_heartbeat_loop,
-                'group': self.loop_prefix + 'sess;' + self.sess_id,
+                'group': self.get_loop_group_name(scope='sess'),
                 'heartbeat': self.get_heartbeat_name('sess'),
             },
         ]
@@ -122,7 +173,7 @@ class AsyncLoops():
             {
                 'id': 'receive_queue_loop',
                 'func': self.receive_queue_loop,
-                'group': self.loop_prefix + 'sess;' + self.sess_id,
+                'group': self.get_loop_group_name(scope='sess'),
                 'heartbeat': self.get_heartbeat_name('sess'),
             },
         ]
@@ -132,7 +183,7 @@ class AsyncLoops():
                 {
                     'id': 'clock_sim_update_sim_params_loop',
                     'func': self.clock_sim_update_sim_params,
-                    'group': self.loop_prefix + 'server;' + self.server_id,
+                    'group': self.get_loop_group_name(scope='server'),
                     'heartbeat': self.get_heartbeat_name('server'),
                 },
             ]
@@ -155,10 +206,10 @@ class AsyncLoops():
 
     # # ------------------------------------------------------------------
     # async def add_async_loop(self, loop_infos):
-    #     if not isinstance(loop_infos, list):
+    #     if not isinstance(loop_infos, (list, set)):
     #         loop_infos = [loop_infos]
-    #     async with self.get_lock('loop_state'):
-    #         async with self.get_lock('sess'):
+    #     async with self.locker.locks.acquire('loop_state'):
+    #         async with self.locker.locks.acquire('sess'):
     #             for loop_info in loop_infos:
     #                 has_asy_func = any([
     #                     (
@@ -171,7 +222,6 @@ class AsyncLoops():
     #                     self.async_loops += [loop_info]
     #     return
 
-
     # ------------------------------------------------------------------
     async def init_common_loops(self):
         """initialise shared maintenance asy_funcs
@@ -179,7 +229,7 @@ class AsyncLoops():
 
         async_loops = self.setup_loops()
 
-        async with self.get_lock(names=('server', 'sess')):
+        async with self.locker.locks.acquire(names=('server', 'sess')):
             for loop_info in async_loops:
                 if not self.get_loop_state(loop_info):
                     await self.set_loop_state(state=True, loop_info=loop_info)
@@ -197,13 +247,14 @@ class AsyncLoops():
 
     # ------------------------------------------------------------------
     async def set_loop_state(self, state, loop_info=None, group=None):
-        async with self.get_lock('loop_state'):
+        async with self.locker.locks.acquire('loop_state'):
             if state:
                 if loop_info is None:
                     raise Exception(
-                        'unsupported option for set_loop_state',
-                        state, loop_info, group
+                        'unsupported option for set_loop_state', state, loop_info, group
                     )
+
+                self.validate_loop_group(loop_info['group'])
 
                 # validate that this group/id loop has not already been registered
                 has_loop = self.redis.h_exists(
@@ -230,8 +281,7 @@ class AsyncLoops():
             else:
                 if int(loop_info is None) + int(group is None) != 1:
                     raise Exception(
-                        'unsupported option for set_loop_state',
-                        state, loop_info, group
+                        'unsupported option for set_loop_state', state, loop_info, group
                     )
 
                 if group is not None:
@@ -257,7 +307,7 @@ class AsyncLoops():
             renewes all sessions which belong to this server
             (registered in redis:('ws;all_sess_ids'))
 
-            sessiosns which are not meaintained by any running server will expire, and
+            sessiosns which are not meaintained by any running server will expire_sec, and
             thier cleanup will be handled by self.cleanup_loop()
         
             Parameters
@@ -281,23 +331,25 @@ class AsyncLoops():
         user_expire = ceil(sess_expire * 1.5)
 
         while self.get_loop_state(loop_info):
-            sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
+            sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.server_id)
             for sess_id in sess_ids:
                 if not self.redis.exists(self.get_heartbeat_name('sess', sess_id)):
                     continue
 
                 # heartbeat for any session renews the server
-                self.redis.expire(
-                    name=self.get_heartbeat_name('server'), expire=server_expire
+                self.redis.expire_sec(
+                    name=self.get_heartbeat_name('server'), expire_sec=server_expire
                 )
 
                 # heartbeat for any session renews the user
-                self.redis.expire(
-                    name=self.get_heartbeat_name('user'), expire=user_expire
+                self.redis.expire_sec(
+                    name=self.get_heartbeat_name('user'), expire_sec=user_expire
                 )
 
                 # heartbeat for this session renews itself
-                self.redis.expire(name=self.get_heartbeat_name('sess', sess_id), expire=sess_expire)
+                self.redis.expire_sec(
+                    name=self.get_heartbeat_name('sess', sess_id), expire_sec=sess_expire
+                )
 
             await asyncio.sleep(sleep_sec)
 
@@ -400,4 +452,3 @@ class AsyncLoops():
             ])
 
         return
-

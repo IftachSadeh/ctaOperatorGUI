@@ -33,7 +33,7 @@ reload_dirs += [
 ]
 if is_dev:
     conf.update({
-        'reload': True,
+        'reload': settings['reload'],
         'reload_dirs': reload_dirs,
     })
 

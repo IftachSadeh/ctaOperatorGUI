@@ -39,7 +39,7 @@ class ClockSim(ServiceManager):
             self.base_config.clock_sim = self
 
         self.redis = RedisManager(
-            name=self.class_name, port=base_config.redis_port, log=self.log
+            name=self.class_name, base_config=base_config, log=self.log
         )
 
         self.service_name = service_name
@@ -47,7 +47,7 @@ class ClockSim(ServiceManager):
         if self.interrupt_sig is None:
             self.interrupt_sig = multiprocessing.Event()
 
-        if not is_passive:
+        if not self.is_passive:
             with ClockSim.lock:
                 self.setup_active_instance()
 

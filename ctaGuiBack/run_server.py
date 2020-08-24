@@ -24,8 +24,12 @@ reload_dirs += [
 # the list of services to run, and their configurations
 services = [
     {
-        'name': 'flush_redis_service',
+        'name': 'redis_flush',
         'is_blocking': True
+    },
+    {
+        'name': 'redis_services',
+        'is_blocking': False
     },
     {
         'name': 'clock_sim_service',

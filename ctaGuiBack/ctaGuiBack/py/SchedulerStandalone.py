@@ -50,12 +50,12 @@ class SchedulerStandalone(ServiceManager):
         self.no_sub_arr_name = self.base_config.no_sub_arr_name
 
         self.redis = RedisManager(
-            name=self.class_name, port=self.base_config.redis_port, log=self.log
+            name=self.class_name, base_config=self.base_config, log=self.log
         )
 
         self.debug = not True
-        self.expire = 86400 * 2  # two days
-        # self.expire = 5
+        self.expire_sec = 86400 * 2  # two days
+        # self.expire_sec = 5
 
         self.max_n_obs_block = 4 if self.site_type == 'N' else 7
         self.max_n_obs_block = min(self.max_n_obs_block, floor(len(self.tel_ids) / 4))
@@ -114,13 +114,15 @@ class SchedulerStandalone(ServiceManager):
         self.n_init_cycle = -1
         self.n_nights = -1
 
+        self.update_name = 'obs_block_update'
+
         rnd_seed = get_rnd_seed()
         self.rnd_gen = Random(rnd_seed)
 
         self.external_clock_events = []
         external_generate_clock_events(self)
 
-        self.redis.pipe.delete('obs_block_update')
+        self.redis.delete(self.update_name)
 
         self.init()
 
@@ -162,6 +164,8 @@ class SchedulerStandalone(ServiceManager):
 
         tot_sched_duration_sec = night_start_sec
         max_block_duration_sec = night_end_sec - self.obs_block_sec
+
+        pipe = self.redis.get_pipe()
 
         while True:
             can_break = not ((tot_sched_duration_sec < max_block_duration_sec) and
@@ -344,8 +348,10 @@ class SchedulerStandalone(ServiceManager):
                         'tel_ids': sched_tel_ids,
                     }
 
-                    self.redis.pipe.set(
-                        name=block['obs_block_id'], data=block, expire=self.expire
+                    pipe.set(
+                        name=block['obs_block_id'],
+                        data=block,
+                        expire_sec=self.expire_sec
                     )
 
                     self.all_obs_blocks.append(block)
@@ -359,10 +365,10 @@ class SchedulerStandalone(ServiceManager):
             # the maximal duration of all blocks within this cycle
             tot_sched_duration_sec += max(sched_block_duration_sec)
 
-        self.redis.pipe.set(name='external_events', data=self.external_events)
-        self.redis.pipe.set(name='external_clock_events', data=self.external_clock_events)
+        pipe.set(name='external_events', data=self.external_events)
+        pipe.set(name='external_clock_events', data=self.external_clock_events)
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
         self.update_exe_statuses()
 
@@ -457,6 +463,8 @@ class SchedulerStandalone(ServiceManager):
             x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'wait')
         ]
 
+        pipe = self.redis.get_pipe()
+
         has_change = False
         for block in wait_blocks:
             time_comp = (
@@ -473,12 +481,10 @@ class SchedulerStandalone(ServiceManager):
             block['run_phase'] = copy.deepcopy(self.phases_exe['start'])
 
             has_change = True
-            self.redis.pipe.set(
-                name=block['obs_block_id'], data=block, expire=self.expire
-            )
+            pipe.set(name=block['obs_block_id'], data=block, expire_sec=self.expire_sec)
 
         if has_change:
-            self.redis.pipe.execute()
+            pipe.execute()
 
             # check for blocks which cant begin as their time is already past
             wait_blocks = [
@@ -515,14 +521,14 @@ class SchedulerStandalone(ServiceManager):
                     self.exe_phase[block['obs_block_id']] = ''
 
                     has_change = True
-                    self.redis.pipe.set(
+                    pipe.set(
                         name=block['obs_block_id'],
                         data=block,
-                        expire=self.expire,
+                        expire_sec=self.expire_sec,
                     )
 
             if has_change:
-                self.redis.pipe.execute()
+                pipe.execute()
 
         return
 
@@ -534,6 +540,8 @@ class SchedulerStandalone(ServiceManager):
         time_now_sec = self.clock_sim.get_time_now_sec()
 
         runs = [x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'run')]
+
+        pipe = self.redis.get_pipe()
 
         has_change = False
         for block in runs:
@@ -579,12 +587,10 @@ class SchedulerStandalone(ServiceManager):
                 self.exe_phase[block['obs_block_id']] = next_phase
 
             has_change = True
-            self.redis.pipe.set(
-                name=block['obs_block_id'], data=block, expire=self.expire
-            )
+            pipe.set(name=block['obs_block_id'], data=block, expire_sec=self.expire_sec)
 
         if has_change:
-            self.redis.pipe.execute()
+            pipe.execute()
 
         return
 
@@ -597,6 +603,8 @@ class SchedulerStandalone(ServiceManager):
         time_now_sec = self.clock_sim.get_time_now_sec()
 
         runs = [x for x in self.all_obs_blocks if x['exe_state']['state'] == 'run']
+
+        pipe = self.redis.get_pipe()
 
         has_change = False
         for block in runs:
@@ -635,14 +643,12 @@ class SchedulerStandalone(ServiceManager):
             block['run_phase'] = []
 
             has_change = True
-            self.redis.pipe.set(
-                name=block['obs_block_id'], data=block, expire=self.expire
-            )
+            pipe.set(name=block['obs_block_id'], data=block, expire_sec=self.expire_sec)
 
             self.exe_phase[block['obs_block_id']] = ''
 
         if has_change:
-            self.redis.pipe.execute()
+            pipe.execute()
 
         return
 
@@ -653,6 +659,8 @@ class SchedulerStandalone(ServiceManager):
 
         blocks_run = []
         obs_block_ids = {'wait': [], 'run': [], 'done': [], 'cancel': [], 'fail': []}
+
+        pipe = self.redis.get_pipe()
 
         for block in self.all_obs_blocks:
             obs_block_id = block['obs_block_id']
@@ -665,9 +673,9 @@ class SchedulerStandalone(ServiceManager):
                     blocks_run += [block]
 
         for key, val in obs_block_ids.items():
-            self.redis.pipe.set(name='obs_block_ids_' + key, data=val)
+            pipe.set(name='obs_block_ids_' + key, data=val)
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
         update_sub_arrs(self=self, blocks=blocks_run)
 
@@ -675,14 +683,15 @@ class SchedulerStandalone(ServiceManager):
 
     # # ------------------------------------------------------------------
     # def update_sub_arrs(self, blocks=None):
+    #     pipe = self.redis.get_pipe()
     #     if blocks is None:
     #         obs_block_ids = self.redis.get(
     #             name=('obs_block_ids_' + 'run'), default_val=[]
     #         )
     #         for obs_block_id in obs_block_ids:
-    #             self.redis.pipe.get(obs_block_id)
+    #             pipe.get(obs_block_id)
 
-    #         blocks = self.redis.pipe.execute()
+    #         blocks = pipe.execute()
 
     #     #
     #     sub_arrs = []
@@ -728,13 +737,15 @@ class SchedulerStandalone(ServiceManager):
 
     # ------------------------------------------------------------------
     def external_add_new_redis_blocks(self):
-        if not self.redis.exists('obs_block_update'):
+        obs_block_update = self.redis.get(self.update_name, default_val=None)
+        if obs_block_update is None:
             return
+
+        pipe = self.redis.get_pipe()
 
         # for key in self.all_obs_blocks[0]:
         #     self.log.info([['g', key, self.all_obs_blocks[0][key]]])
-        self.redis.pipe.get('obs_block_update')
-        obs_block_update = self.redis.pipe.execute()[0]
+
         # self.log.info([['g', obs_block_update]])
         self.log.info([['g', len(obs_block_update), len(self.all_obs_blocks)]])
 
@@ -761,19 +772,19 @@ class SchedulerStandalone(ServiceManager):
 
                 total += 1
 
-                self.redis.pipe.set(
+                pipe.set(
                     name=obs_block_update[n_block]['obs_block_id'],
                     data=obs_block_update[n_block],
-                    expire=self.expire,
+                    expire_sec=self.expire_sec,
                 )
                 current = obs_block_update[n_block]
 
             else:
                 self.all_obs_blocks.append(obs_block_update[n_block])
-                self.redis.pipe.set(
+                pipe.set(
                     name=obs_block_update[n_block]['obs_block_id'],
                     data=obs_block_update[n_block],
-                    expire=self.expire,
+                    expire_sec=self.expire_sec,
                 )
 
         self.update_exe_statuses()
@@ -781,8 +792,8 @@ class SchedulerStandalone(ServiceManager):
         #     exe_state = block['exe_state']['state']
         #     self.log.info([['g', block['metadata']['block_name'] + ' ' + exe_state]])
 
-        self.redis.pipe.delete('obs_block_update')
-        self.redis.pipe.execute()
+        pipe.delete(self.update_name)
+        pipe.execute()
 
         self.log.info([['g', total, len(obs_block_update), len(self.all_obs_blocks)]])
 

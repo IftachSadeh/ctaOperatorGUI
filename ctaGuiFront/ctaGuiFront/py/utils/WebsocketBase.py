@@ -5,6 +5,7 @@ from ctaGuiUtils.py.utils import get_time
 from ctaGuiUtils.py.utils import get_rnd
 from ctaGuiUtils.py.utils import get_rnd_seed
 from ctaGuiUtils.py.LogParser import LogParser
+from ctaGuiUtils.py.LockManager import LockManager
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
@@ -22,9 +23,6 @@ class WebsocketBase():
 
     # ------------------------------------------------------------------
     def __init__(self, ws_send, *args, **kwargs):
-        if WebsocketBase.server_id is None:
-            self.set_server_id()
-
         self.ws_send = ws_send
 
         self.sess_id = None
@@ -44,6 +42,7 @@ class WebsocketBase():
         # self.max_sess_valid_time_sec = 20
         self.sess_ping_time = None
         self.valid_loop_sleep_sec = 0.01
+        self.n_id_digits = 4
 
         # session ping/pong heartbeat
         self.sess_ping = {
@@ -68,6 +67,9 @@ class WebsocketBase():
 
         self.loop_prefix = 'ws;loop;'
         self.heartbeat_prefix = 'ws;heartbeat;'
+        self.get_widget_lock_name = (
+            lambda name: 'ws;widget;' + str(self.server_id) + ';' + str(name)
+        )
 
         self.asyncio_queue = asyncio.Queue()
 
@@ -78,10 +80,9 @@ class WebsocketBase():
         self.site_type = self.base_config.site_type
         self.allow_panel_sync = self.base_config.allow_panel_sync
         self.is_simulation = self.base_config.is_simulation
-        self.is_HMI_dev = self.base_config.is_HMI_dev
 
         self.redis = RedisManager(
-            name=self.__class__.__name__, port=self.redis_port, log=self.log
+            name=self.__class__.__name__, base_config=self.base_config, log=self.log
         )
 
         rnd_seed = get_rnd_seed()
@@ -89,54 +90,116 @@ class WebsocketBase():
 
         self.inst_data = self.base_config.inst_data
 
+        self.locker = self.setup_locker()
+
+        if WebsocketBase.server_id is None:
+            self.set_server_id()
+
         return
 
     # ------------------------------------------------------------------
+    def setup_locker(self):
+        # prefix for all lock names in redis
+        lock_prefix = 'ws;lock;'
+
+        # dynamic lock names, based on the current properties
+        lock_namespace = {
+            'loop_state': lambda: 'loop_state' + str(self.server_id),
+            'server': lambda: 'server;' + str(self.server_id),
+            'sess': lambda: 'sess;' + str(self.server_id) + str(self.sess_id),
+            'sess_redis': lambda: 'sess_redis;' + str(self.server_id) + str(self.sess_id),
+        }
+
+        # add all registered widget types as possible locks
+        widget_types = []
+        for values in self.allowed_widget_types.values():
+            widget_types += values
+
+        # the lambda must be executed for the correct value to be taken
+        def build_lambda(name):
+            return (lambda: name)
+
+        for widget_type in widget_types:
+            lock_name = self.get_widget_lock_name(widget_type)
+            lock_namespace[lock_name] = build_lambda(lock_name)
+
+        # after setting up redis, initialise the lock manager
+        locker = LockManager(
+            log=self.log,
+            redis=self.redis,
+            base_config=self.base_config,
+            lock_namespace=lock_namespace,
+            lock_prefix=lock_prefix,
+            is_passive=True,
+        )
+
+        # name of lock for sess configuration
+        self.sess_config_lock = 'sess_config_lock'
+        # name of lock for cleanup loop
+        self.cleanup_loop_lock = 'cleanup_loop_lock'
+        # maximal time to keep the lock for a session to configure
+        # (init or cleanup), in case nominal cleanup fails
+        self.sess_config_expire_sec = 100
+        # same for the cleanup loop
+        self.cleanup_loop_expire_sec = 100
+
+        return locker
+
+    # ------------------------------------------------------------------
     async def add_server_attr(self, name, key, value):
-        async with self.get_lock('server', can_exist=True):
-            attr = getattr(WebsocketBase, name)
-            attr[key] = value
+        self.locker.locks.validate('server')
+        attr = getattr(WebsocketBase, name)
+        attr[key] = value
 
         return
 
     # ------------------------------------------------------------------
     async def remove_server_attr(self, name, key):
-        async with self.get_lock('server', can_exist=True):
-            attr = getattr(WebsocketBase, name)
-            attr.pop(key, None)
+        self.locker.locks.validate('server')
+        attr = getattr(WebsocketBase, name)
+        attr.pop(key, None)
 
         return
 
     # ------------------------------------------------------------------
     async def get_server_attr(self, name):
-        async with self.get_lock('server', can_exist=True):
-            attr = getattr(WebsocketBase, name)
+        self.locker.locks.validate('server')
+        attr = getattr(WebsocketBase, name)
 
         return attr
 
     # ------------------------------------------------------------------
     def set_server_id(self):
+        """derive a server id
+
+           it is mandatory to have unique ids across servers, and so
+           a randome number generator is used. for deployment,
+           a larger a date/time msec prefix can be used
+        """
+
         WebsocketBase.server_id = (
             'serv_' + str(self.base_config.app_port) + '_'
-            + get_rnd(n_digits=6, out_type=str, is_unique_seed=True)
+            + get_rnd(n_digits=self.n_id_digits, out_type=str, is_unique_seed=True)
         )
 
         return
 
     # ------------------------------------------------------------------
     async def set_sess_id(self):
-        # since the sess_id is undefined, the lock for name='sess' will in practice
-        # be 'ws;lock;sess;None' instead of eg
-        # 'ws;lock;sess;svr_8090_197260__ses_0000002', but
-        # this will still protect from multiple inits of a new session...
-        async with self.get_lock(names=('server', 'sess')):
+        """derive a session id
+
+           in order to make sure we have unique ids across servers, the
+           unique server name is included, supplemented by an incremental
+           counter for sessions for this server
+        """
+
+        id_str = '{:0' + str(self.n_id_digits) + 'd}'
+
+        async with self.locker.locks.acquire('server'):
             self.sess_id = (
-                self.server_id + '_sess_' + '{:06d}'.format(WebsocketBase.n_server_sess)
+                self.server_id + '_sess_' + id_str.format(WebsocketBase.n_server_sess)
             )
             WebsocketBase.n_server_sess += 1
-            # WebsocketBase.n_server_sess += get_rnd(
-            #     n_digits=4, out_type=int, is_unique_seed=True
-            # )
 
         return
 
@@ -180,7 +243,7 @@ class __old_SocketManager__():
         # self.cleanup_sleep = 60
 
         # self.redis = RedisManager(
-        #     name=self.__class__.__name__, port=self.redis_port, log=self.log
+        #     name=self.__class__.__name__, base_config=self.base_config, log=self.log
         # )
 
         # self.inst_data = self.base_config.inst_data
@@ -197,7 +260,7 @@ class __old_SocketManager__():
         #     if __old_SocketManager__.server_id is None:
         #         __old_SocketManager__.server_id = 'server_' + get_rnd(n_digits=10, out_type=str)
 
-        # sess_ids_now = self.redis.l_get('ws;all_sess_ids')
+        # sess_ids_now = self.redis.s_get('ws;all_sess_ids')
         # for sess_id in sess_ids_now:
         #   self.cleanup_session(sess_id)
         # self.redis.delete('ws;all_user_ids')
@@ -233,14 +296,14 @@ class __old_SocketManager__():
 
     #     # print 'on_back_from_offline.................'
     #     # first validate that eg the server hasnt been restarted while this session has been offline
-    #     sess_ids = self.redis.l_get('ws;all_sess_ids')
+    #     sess_ids = self.redis.s_get('ws;all_sess_ids')
     #     server_id = __old_SocketManager__.server_id if self.sess_id in sess_ids else ''
 
     #     self.emit('reconnect', {'server_id': server_id})
 
     #     # now run any widget specific functions
     #     with __old_SocketManager__.lock:
-    #         widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
+    #         widget_ids = self.redis.s_get('ws;sess_widget_ids;' + self.sess_id)
     #         for widget_id in widget_ids:
     #             if widget_id in __old_SocketManager__.widget_inits:
     #                 getattr(__old_SocketManager__.widget_inits[widget_id], 'back_from_offline')()
@@ -294,18 +357,18 @@ class __old_SocketManager__():
     #     ])
 
     #     with __old_SocketManager__.lock:
-    #         all_user_ids = self.redis.l_get('ws;all_user_ids')
+    #         all_user_ids = self.redis.s_get('ws;all_user_ids')
     #         if self.user_id not in all_user_ids:
-    #             self.redis.r_push(name='ws;all_user_ids', data=self.user_id)
+    #             self.redis.s_add(name='ws;all_user_ids', data=self.user_id)
 
     #         # ------------------------------------------------------------------
     #         # all session ids in one list (heartbeat should be first to
     #         # avoid cleanup racing conditions!)
     #         # ------------------------------------------------------------------
     #         self.redis.set(
-    #             name='sess_heartbeat;' + self.sess_id, expire=(int(self.sess_expire) * 2)
+    #             name='sess_heartbeat;' + self.sess_id, expire_sec=(int(self.sess_expire) * 2)
     #         )
-    #         self.redis.r_push(name='ws;all_sess_ids', data=self.sess_id)
+    #         self.redis.s_add(name='ws;all_sess_ids', data=self.sess_id)
 
     #         # ------------------------------------------------------------------
     #         # the socket endpoint type registry for this session
@@ -323,7 +386,7 @@ class __old_SocketManager__():
     #         # ------------------------------------------------------------------
     #         # list of all sessions for this user
     #         # ------------------------------------------------------------------
-    #         self.redis.r_push(name='ws;user_sess_ids;' + self.user_id, data=self.sess_id)
+    #         self.redis.s_add(name='ws;user_sess_ids;' + self.user_id, data=self.sess_id)
 
     #     # ------------------------------------------------------------------
     #     # initiate the asy_funcs which does periodic cleanup, heartbeat managment etc.
@@ -477,7 +540,7 @@ class __old_SocketManager__():
     #                 name='ws;widget_infos', key=widget_id, data=widget_now
     #             )
     #             self.redis.r_push(name='ws;user_widget_ids;' + self.user_id, data=widget_id)
-    #             self.redis.r_push(name='ws;sess_widget_ids;' + self.sess_id, data=widget_id)
+    #             self.redis.s_add(name='ws;sess_widget_ids;' + self.sess_id, data=widget_id)
 
     #             # sync group initialization
     #             # ------------------------------------------------------------------
@@ -537,7 +600,7 @@ class __old_SocketManager__():
     #     #   widget.method_name(optionalArgs)
     #     # ------------------------------------------------------------------
     #     if 'method_name' in data and widget_id in __old_SocketManager__.widget_inits:
-    #         widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
+    #         widget_ids = self.redis.s_get('ws;sess_widget_ids;' + self.sess_id)
     #         if 'method_arg' in data:
     #             getattr(__old_SocketManager__.widget_inits[widget_id], data['method_name'])(
     #                 data['method_arg']
@@ -786,7 +849,7 @@ class __old_SocketManager__():
 
             with __old_SocketManager__.lock:
                 if sess_ids is None:
-                    sess_ids = self.redis.l_get('ws;all_sess_ids')
+                    sess_ids = self.redis.s_get('ws;all_sess_ids')
 
                 if self.log_send_packet:
                     self.log.info([[
@@ -797,14 +860,14 @@ class __old_SocketManager__():
                         (',').join(sess_ids) + ']'
                     ]])
 
-                user_sess_ids = self.redis.l_get('ws;user_sess_ids;' + self.user_id)
+                user_sess_ids = self.redis.s_get('ws;user_sess_ids;' + self.user_id)
                 sess_ids = [
                     x for x in sess_ids
                     if (x in self.socket.server.sockets and x in user_sess_ids)
                 ]
 
                 for sess_id in sess_ids:
-                    ids = self.redis.l_get('ws;sess_widget_ids;' + sess_id)
+                    ids = self.redis.s_get('ws;sess_widget_ids;' + sess_id)
                     if widget_ids is None:
                         data['sess_widget_ids'] = ids
                     else:
@@ -932,7 +995,7 @@ class __old_SocketManager__():
     # # ------------------------------------------------------------------
     # def on_refreshAll(self, has_lock=False):
     #     def doRefresh():
-    #         sess_ids = self.redis.l_get('ws;all_sess_ids')
+    #         sess_ids = self.redis.s_get('ws;all_sess_ids')
     #         sess_ids = [x for x in sess_ids if x in self.socket.server.sockets]
 
     #         for sess_id in sess_ids:
@@ -964,7 +1027,7 @@ class __old_SocketManager__():
             ['r', ' terminated...'],
         ])
 
-        sess_ids = self.redis.l_get('ws;all_sess_ids')
+        sess_ids = self.redis.s_get('ws;all_sess_ids')
         if (self.sess_name != '') and (self.sess_id in sess_ids):
             self.on_leave_session()
 
@@ -976,7 +1039,7 @@ class __old_SocketManager__():
     # # ------------------------------------------------------------------
     # def on_leave_session(self):
     #     with __old_SocketManager__.lock:
-    #         sess_ids_now = self.redis.l_get('ws;user_sess_ids;' + self.user_id)
+    #         sess_ids_now = self.redis.s_get('ws;user_sess_ids;' + self.user_id)
     #         self.log.info([
     #             ['b', ' - leaving session '],
     #             ['y', self.sess_name + ' , ' + self.user_id],
@@ -988,7 +1051,7 @@ class __old_SocketManager__():
     #         ])
 
     #         # remove the widgets which belong to this session
-    #         widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
+    #         widget_ids = self.redis.s_get('ws;sess_widget_ids;' + self.sess_id)
     #         sync_groups = self.redis.h_get(
     #             name='ws;sync_groups', key=self.user_id, default_val=[]
     #         )
@@ -1044,11 +1107,11 @@ class __old_SocketManager__():
     #         ['p', sess_id],
     #     ])
 
-    #     all_user_ids = self.redis.l_get('ws;all_user_ids')
-    #     widget_ids = self.redis.l_get('ws;sess_widget_ids;' + sess_id)
+    #     all_user_ids = self.redis.s_get('ws;all_user_ids')
+    #     widget_ids = self.redis.s_get('ws;sess_widget_ids;' + sess_id)
 
     #     for user_id in all_user_ids:
-    #         self.redis.l_rem(name='ws;user_sess_ids;' + user_id, data=sess_id)
+    #         self.redis.s_rem(name='ws;user_sess_ids;' + user_id, data=sess_id)
 
     #     for widget_id in widget_ids:
     #         self.log.info([[
@@ -1063,7 +1126,7 @@ class __old_SocketManager__():
 
     #     self.redis.delete('ws;sess_widget_ids;' + sess_id)
     #     self.redis.delete('sess_heartbeat;' + sess_id)
-    #     self.redis.l_rem(name='ws;all_sess_ids', data=sess_id)
+    #     self.redis.s_rem(name='ws;all_sess_ids', data=sess_id)
 
     #     if sess_id in __old_SocketManager__.sess_endpoints:
     #         __old_SocketManager__.sess_endpoints.pop(sess_id, None)
@@ -1082,13 +1145,13 @@ class __old_SocketManager__():
 
     #     while self.is_valid_asy_func(loop_info):
     #         with __old_SocketManager__.lock:
-    #             sess_ids = self.redis.l_get('ws;all_sess_ids')
+    #             sess_ids = self.redis.s_get('ws;all_sess_ids')
     #             sess_ids = [x for x in sess_ids if x in self.socket.server.sockets]
 
     #             for sess_id in sess_ids:
     #                 if self.redis.exists('sess_heartbeat;' + sess_id):
-    #                     self.redis.expire(
-    #                         name='sess_heartbeat;' + sess_id, expire=sess_expire
+    #                     self.redis.expire_sec(
+    #                         name='sess_heartbeat;' + sess_id, expire_sec=sess_expire
     #                     )
     #                 else:
     #                     self.cleanup_session(sess_id)
@@ -1109,19 +1172,19 @@ class __old_SocketManager__():
 
         while self.is_valid_asy_func(loop_info):
             with __old_SocketManager__.lock:
-                all_user_ids = self.redis.l_get('ws;all_user_ids')
-                sess_ids = self.redis.l_get('ws;all_sess_ids')
+                all_user_ids = self.redis.s_get('ws;all_user_ids')
+                sess_ids = self.redis.s_get('ws;all_sess_ids')
 
                 for sess_id in sess_ids:
                     if not self.redis.exists('sess_heartbeat;' + sess_id):
                         self.cleanup_session(sess_id)
 
-                sess_ids = self.redis.l_get('ws;all_sess_ids')
+                sess_ids = self.redis.s_get('ws;all_sess_ids')
                 for user_id in all_user_ids:
-                    sess_ids_now = self.redis.l_get('ws;user_sess_ids;' + user_id)
+                    sess_ids_now = self.redis.s_get('ws;user_sess_ids;' + user_id)
                     zombie_ids = [x for x in sess_ids_now if x not in sess_ids]
                     for sess_id in zombie_ids:
-                        self.redis.l_rem(name='ws;user_sess_ids;' + user_id, data=sess_id)
+                        self.redis.s_rem(name='ws;user_sess_ids;' + user_id, data=sess_id)
 
                     # just in case, cleanup any remaining widgets
                     if len(sess_ids_now) == len(zombie_ids):
@@ -1134,7 +1197,7 @@ class __old_SocketManager__():
                         self.redis.delete('ws;user_sess_ids;' + user_id)
                         self.redis.delete('ws;user_widget_ids;' + user_id)
                         self.redis.h_del(name='ws;active_widget', key=user_id)
-                        self.redis.l_rem(name='ws;all_user_ids', data=user_id)
+                        self.redis.s_rem(name='ws;all_user_ids', data=user_id)
 
                 if not self.redis.exists('ws;all_user_ids'):
                     break

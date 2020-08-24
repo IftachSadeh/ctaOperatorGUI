@@ -79,9 +79,10 @@ class ClockSimInterface():
             if msg is None:
                 continue
 
-            managers = await self.sm.get_server_attr('managers')
+            async with self.sm.locker.locks.acquire('server'):
+                managers = await self.sm.get_server_attr('managers')
 
-            all_sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.sm.server_id)
+            all_sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.sm.server_id)
 
             all_sess_ids = [s for s in all_sess_ids if s in managers.keys()]
             for sess_id in all_sess_ids:

@@ -95,7 +95,9 @@ class PanelSync(BaseWidget):
         data = args[0]
 
         with self.socket_manager.lock:
-            widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.socket_manager.user_id)
+            widget_ids = self.redis.l_get(
+                'ws;user_widget_ids;' + self.socket_manager.user_id
+            )
 
             sync_groups = []
             for child_0 in data['data']['children']:
@@ -131,7 +133,9 @@ class PanelSync(BaseWidget):
         # ------------------------------------------------------------------
         sess_widget_ids = [[], []]
         with self.socket_manager.lock:
-            widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.socket_manager.user_id)
+            widget_ids = self.redis.l_get(
+                'ws;user_widget_ids;' + self.socket_manager.user_id
+            )
             widget_infos = self.redis.h_m_get(name='ws;widget_infos', key=widget_ids)
 
             for n_widget in range(len(widget_ids)):
@@ -171,7 +175,9 @@ class PanelSync(BaseWidget):
 
     def panel_sync_get_groups(self):
         with self.socket_manager.lock:
-            widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.socket_manager.user_id)
+            widget_ids = self.redis.l_get(
+                'ws;user_widget_ids;' + self.socket_manager.user_id
+            )
             widget_infos = self.redis.h_m_get(name='ws;widget_infos', key=widget_ids)
 
             all_sync_widgets = []

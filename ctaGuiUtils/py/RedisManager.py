@@ -4,7 +4,7 @@ from ctaGuiUtils.py.Serialisation import Serialisation
 
 
 # ------------------------------------------------------------------
-class RedisBase(object):
+class RedisBase():
     """interface class for the redis database
     """
 
@@ -28,7 +28,12 @@ class RedisBase(object):
         return Serialisation.is_empty_obj(data)
 
     # ------------------------------------------------------------------
-    def set(self, name=None, data=None, expire=None):
+    def flush(self):
+        self.redis.flushall()
+        return
+
+    # ------------------------------------------------------------------
+    def set(self, name=None, data=None, expire_sec=None):
         try:
             if name is None:
                 raise Exception('redis.set(): name is None')
@@ -38,11 +43,11 @@ class RedisBase(object):
             data = self.pack(data)
             out = self.base.set(name, data)
 
-            if expire is not None:
-                out = self.base.expire(name, expire)
+            if expire_sec is not None:
+                out = self.base.expire(name, expire_sec)
 
         except Exception as e:
-            self.log.error([['r', 'redis.set(): '], ['o', name, data, expire]])
+            self.log.error([['r', 'redis.set(): '], ['o', name, data, expire_sec]])
             raise e
 
         return out
@@ -146,12 +151,14 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     def r_push(self, name=None, data=None):
         try:
-            if name is None:
-                raise Exception('redis.r_push(): name is None', name)
+            if (name is None) or (data is None):
+                raise Exception('redis.r_push(): name/data is None', name, data)
+            # if name is None:
+            #     raise Exception('redis.r_push(): name is None', name)
 
-            if data is None:
-                data = ''
-            elif isinstance(data, list):
+            # if data is None:
+            #     data = ''
+            if isinstance(data, list):
                 data = [self.pack(v) for v in data]
             else:
                 data = self.pack(data)
@@ -163,6 +170,84 @@ class RedisBase(object):
             raise e
 
         return out
+
+    # ------------------------------------------------------------------
+    def s_add(self, name=None, data=None, expire_sec=None):
+        try:
+            if (name is None) or (data is None):
+                raise Exception('redis.s_add(): name/data is None', name, data)
+
+            if isinstance(data, list):
+                data = [self.pack(v) for v in data]
+            else:
+                data = self.pack(data)
+
+            out = self.base.sadd(name, data)
+
+            if expire_sec is not None:
+                out = self.base.setex(name, expire_sec, data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.s_add(): '], ['o', name, data]])
+            raise e
+
+        return out
+
+    # ------------------------------------------------------------------
+    def s_get(self, name=None, default_val={}):
+        try:
+            if name is None:
+                raise Exception('redis.s_get(): name is None', name)
+
+            data = self.base.smembers(name=name)
+
+            if self.is_empty(data):
+                data = default_val
+            else:
+                data = self.unpack(data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.s_get(): '], ['o', name]])
+            raise e
+
+        return data
+
+    # ------------------------------------------------------------------
+    def s_rem(self, name=None, data=None):
+        try:
+            if name is None:
+                raise Exception('redis.s_rem(): name is None', name)
+
+            if data is not None:
+                data = self.pack(data)
+
+            out = self.base.srem(name, data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.s_rem(): '], ['o', name, data]])
+            raise e
+
+        return out
+
+    # ------------------------------------------------------------------
+    def s_exists(self, name, data=None):
+        exists = False
+
+        try:
+            if name is None:
+                raise Exception('redis.s_exists(): name is None', name)
+
+            if data is None:
+                exists = self.exists(name)
+            else:
+                data = self.pack(data)
+                exists = self.redis.sismember(name, data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.s_exists(): '], ['o', name]])
+            raise e
+
+        return exists
 
     # ------------------------------------------------------------------
     def l_rem(self, name=None, data=None):
@@ -192,27 +277,31 @@ class RedisBase(object):
 
             # ------------------------------------------------------------------
             # temporary inefficient way to clip the time series.........
-            if (clip_score is not None):
+            if clip_score is not None:
                 out = self.base.zremrangebyscore(name, 0, clip_score)
             # ------------------------------------------------------------------
 
         except Exception as e:
-            self.log.error([['r', 'redis.z_add(): '],
-                            ['o', name, score, data, clip_score],])
+            self.log.error([
+                ['r', 'redis.z_add(): '],
+                ['o', name, score, data, clip_score],
+            ])
             raise e
 
         return out
 
     # ------------------------------------------------------------------
-    def expire(self, name=None, expire=None):
+    def expire_sec(self, name=None, expire_sec=None):
         try:
-            if (name is None) or (expire is None):
-                raise Exception('redis.expire(): name/expire is None', name, expire)
+            if (name is None) or (expire_sec is None):
+                raise Exception(
+                    'redis.expire_sec(): name/expire_sec is None', name, expire_sec
+                )
 
-            out = self.base.expire(name, expire)
+            out = self.base.expire(name, expire_sec)
 
         except Exception as e:
-            self.log.error([['r', 'redis.expire(): '], ['o', name, expire]])
+            self.log.error([['r', 'redis.expire_sec(): '], ['o', name, expire_sec]])
             raise e
 
         return out
@@ -240,7 +329,6 @@ class RedisBase(object):
             data = self.base.scan(cursor=cursor, match=match, count=count, _type=_type)
             out = self.unpack(data)
 
-
         except Exception as e:
             self.log.error([['r', 'redis.set(): '], ['o', cursor, match, count, _type]])
             raise e
@@ -248,22 +336,26 @@ class RedisBase(object):
         return out
 
 
-
 # ------------------------------------------------------------------
 class RedisManager(RedisBase):
 
     # ------------------------------------------------------------------
-    def __init__(self, name='', log=None, port=None, host='localhost'):
+    def __init__(self, name='', log=None, base_config=None, host='localhost'):
         self.name = name
         self.log = log
 
+        port = base_config.redis_port
         self.redis = redis.StrictRedis(host=host, port=port, db=0)
-        self.pipe = RedisPipeManager(name=name, log=log, redis=self.redis)
+        # self.pipe = RedisPipeManager(name=name, log=log, redis=self.redis)
         self.base = self.redis
 
         self.pubsub = dict()
 
         return
+
+    # ------------------------------------------------------------------
+    def get_pipe(self):
+        return RedisPipeManager(name=self.name, log=self.log, redis=self.redis)
 
     # ------------------------------------------------------------------
     def get(self, name=None, default_val=None):
@@ -285,14 +377,20 @@ class RedisManager(RedisBase):
         return data
 
     # ------------------------------------------------------------------
-    def h_get_all(self, name=None):
+    def h_get_all(self, name=None, key=None, default_val=None):
+
         try:
             if name is None:
                 raise Exception('redis.h_get_all(): name is None', name)
 
+            if key is not None:
+                return self.h_get(name=name, key=key, default_val=default_val)
+
             data = self.redis.hgetall(name)
 
-            if not self.is_empty(data):
+            if self.is_empty(data):
+                data = default_val
+            else:
                 data = self.unpack(data)
 
         except Exception as e:

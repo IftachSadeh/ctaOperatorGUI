@@ -8,7 +8,6 @@ from ctaGuiUtils.py.utils import is_coroutine
 from ctaGuiUtils.py.LogParser import LogParser
 
 from ctaGuiFront.py.utils.AsyncLoops import AsyncLoops
-from ctaGuiFront.py.utils.LockManager import LockManager
 from ctaGuiFront.py.utils.Housekeeping import Housekeeping
 from ctaGuiFront.py.utils.WidgetManager import WidgetManager
 from ctaGuiFront.py.utils.WebsocketBase import WebsocketBase
@@ -155,7 +154,8 @@ class ConnectionManager():
 
     # ------------------------------------------------------------------
     async def emit(self, event_name, data={}, metadata=None):
-        async with self.get_lock('server'):
+        # lock in order to prevent racing conditions on self.n_server_msg
+        async with self.locker.locks.acquire('server'):
             data_out = {
                 'event_name': event_name,
                 'sess_id': self.sess_id,
@@ -231,10 +231,13 @@ class ConnectionManager():
         async def await_queue_item():
             queue_item = self.asyncio_queue.get_nowait()
 
-            # verify that the session has initialised, that we have the right sess_id, etc.
-            self.verify_sess_event(queue_item['data'])
+            # verify that the session has initialised, that we
+            # have the right sess_id, etc.
+            if not self.verify_sess_event(queue_item['data']):
+                return
 
-            # check if this if this is a regular function or a coroutine object/function
+            # check if this if this is a regular function or a
+            # coroutine object/function
             if queue_item is not None:
                 if 'asy_func' in queue_item:
                     event_func = queue_item['asy_func']
@@ -276,23 +279,34 @@ class ConnectionManager():
                 client data and metadata related to the asy_func to be executed
         """
 
+        is_ok = True
         try:
             if not self.has_init_sess:
-                raise Exception(
-                    'events not coming in order - has not init session...', data
-                )
+                is_ok = False
+                self.log.warn([
+                    ['r', ' - events not coming in order - has not init session ? '],
+                    ['p', data],
+                ])
 
             if isinstance(data, dict):
                 if ('sess_id' in data.keys()) and (data['sess_id'] != self.sess_id):
-                    raise Exception('mismatch in sess_id...', data)
+                    is_ok = False
+                    self.log.warn([
+                        ['r', ' - mismatch in sess_id ? '],
+                        ['p', self.sess_id, '  -->  ', data],
+                    ])
 
             if not self.is_valid_session():
-                raise Exception('not a valid session', data)
+                is_ok = False
+                self.log.warn([
+                    ['r', ' - not a valid session ? '],
+                    ['p', data],
+                ])
 
         except Exception as e:
             raise e
 
-        return
+        return is_ok
 
     # ------------------------------------------------------------------
     def is_valid_session(self, sess_id=None):
@@ -315,7 +329,7 @@ class ConnectionManager():
         if sess_id is None:
             sess_id = self.sess_id
 
-        sess_ids = self.redis.l_get('ws;server_sess_ids;' + self.server_id)
+        sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.server_id)
         if sess_id in sess_ids:
             if self.redis.exists(self.get_heartbeat_name('sess', sess_id)):
                 return True
@@ -391,7 +405,6 @@ class ConnectionManager():
 # ------------------------------------------------------------------
 class WebsocketManager(
         WebsocketBase,
-        LockManager,
         ConnectionManager,
         SessionManager,
         WidgetManager,
@@ -423,9 +436,6 @@ class WebsocketManager(
 
         # after setting up redis, initialise the lock manager
         WebsocketBase.__init__(self, ws_send, args, kwargs)
-
-        # after setting up redis, initialise the lock manager
-        LockManager.__init__(self)
 
         # conditional class "inheritance"
         if self.is_simulation:

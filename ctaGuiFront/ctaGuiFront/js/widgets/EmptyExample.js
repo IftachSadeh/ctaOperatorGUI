@@ -94,6 +94,12 @@ let main_empty_example = function(opt_in) {
         tag: widget_id,
     })
 
+    // ------------------------------------------------------------------
+    sock.socket.on('update_data_widget_name', function(data_in) {
+        update_data(data_in)
+    })
+
+
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
@@ -246,7 +252,12 @@ let main_empty_example = function(opt_in) {
         //
         // -------------------------------------------------------------------
         run_loop.init({
-            tag: 'update_data',
+            tag: 'update_data_0',
+            func: update_data_once,
+            n_keep: 1,
+        })
+        run_loop.init({
+            tag: 'update_data_1',
             func: update_data_once,
             n_keep: 1,
         })
@@ -259,18 +270,27 @@ let main_empty_example = function(opt_in) {
                 return
             }
 
-            run_loop.push({
-                tag: 'update_data',
-                data: data_in,
-            }) //, time:data_in.emit_time
+            if (data_in.n_circ == 0) {
+                run_loop.push({
+                    tag: 'update_data_0',
+                    data: data_in,
+                })
+            }
+            else if (data_in.n_circ == 1) {
+                run_loop.push({
+                    tag: 'update_data_1',
+                    data: data_in,
+                })
+            }
         }
+        this.update_data = update_data
 
         // -------------------------------------------------------------------
         // some random stuff for illustration
         // -------------------------------------------------------------------
         function update_data_once(data_in) {
             if (!locker.are_free([ tag_empty_example + 'update_data' ])) {
-                // console.log('will delay update_data');
+                // console.log('will delay update_data', data_in)
                 setTimeout(function() {
                     update_data(data_in)
                 }, 10)
@@ -284,7 +304,7 @@ let main_empty_example = function(opt_in) {
             let myMessageData = {
             }
             myMessageData.widget_id = opt_in.widget_id
-            myMessageData.myMessage = 'myMessage' + unique()
+            myMessageData.my_message = 'my_message' + unique() + '_' + data_in.n_circ
 
             let emit_data = {
                 widget_source: widget_source,
@@ -299,8 +319,8 @@ let main_empty_example = function(opt_in) {
             // -------------------------------------------------------------------
             // do random stuff on updates ...
             // -------------------------------------------------------------------
-            let tag_circ = 'myCirc'
-            let rnd = Math.max(0.1, Math.min(0.9, data_in.rnd/100))
+            let tag_circ = 'my_circ' + data_in.n_circ
+            let rnd = Math.max(0.1, Math.min(0.9, data_in.rnd / 100))
             let opac = Math.max(0.1, Math.min(0.9, Math.pow(1 - rnd, 2)))
             let time = data_in.time
 
@@ -327,8 +347,8 @@ let main_empty_example = function(opt_in) {
                 .attr('fill', 'transparent')
                 .attr('stroke', 'transparent')
                 .attr('stroke-width', '3')
-                .attr('cx', svg_dims.w[0] / 2)
-                .attr('cy', svg_dims.h[0] / 2)
+                .attr('cx', svg_dims.w[0] * ((data_in.n_circ == 0) ? 0.35 : 0.75))
+                .attr('cy', svg_dims.h[0] * ((data_in.n_circ == 0) ? 0.35 : 0.6))
                 .merge(circ)
                 .transition('in_out')
                 .duration(times.anim)
@@ -354,7 +374,6 @@ let main_empty_example = function(opt_in) {
 
             locker.remove(tag_empty_example + 'update_data')
         }
-        this.update_data = update_data
     }
 
     let svg_main = new SvgMain()

@@ -25,13 +25,33 @@ class EmptyExample(BaseWidget):
         BaseWidget.setup(self, *args)
 
         # initial dataset and send to client
-        opt_in = {'widget': self, 'data_func': self.get_data, 'loop_id': 'init_data'}
+        opt_in = {
+            'widget': self,
+            'data_func': self.get_data_widget_id,
+            'loop_id': 'init_data'
+        }
         await self.socket_manager.send_widget_init_data(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates to
         # all sessions in the group
-        # opt_in = {'widget': self, 'loop_group': 'widget_id', 'data_func': self.get_data, 'sleep_sec': 5,'loop_id': 'update_data'}
-        opt_in = {'widget': self, 'loop_group': 'widget_name', 'data_func': self.get_data, 'sleep_sec': 5, 'loop_id': 'update_data'}
+        opt_in = {
+            'widget': self,
+            'loop_group': 'widget_id',
+            'data_func': self.get_data_widget_id,
+            'sleep_sec': 6,
+            'loop_id': 'update_data_widget_id',
+            'event_name': 'update_data',
+        }
+        await self.socket_manager.add_widget_loop(opt_in=opt_in)
+
+        opt_in = {
+            'widget': self,
+            'loop_group': 'widget_name',
+            'data_func': self.get_data_widget_name,
+            'sleep_sec': 4,
+            'loop_id': 'update_data_widget_name',
+            'event_name': 'update_data_widget_name',
+        }
         await self.socket_manager.add_widget_loop(opt_in=opt_in)
 
         return
@@ -47,8 +67,13 @@ class EmptyExample(BaseWidget):
         return
 
     # ------------------------------------------------------------------
-    async def get_data(self):
-        data = {"rnd": get_rnd(), 'time': get_time('msec')}
+    async def get_data_widget_id(self):
+        data = {'rnd': get_rnd(), 'time': get_time('msec'), 'n_circ': 0}
+        return data
+
+    # ------------------------------------------------------------------
+    async def get_data_widget_name(self):
+        data = {'rnd': get_rnd(), 'time': get_time('msec'), 'n_circ': 1}
         return data
 
     # ------------------------------------------------------------------
@@ -57,7 +82,7 @@ class EmptyExample(BaseWidget):
     async def send_rnd_message(self, data):
         # self.log.info([
         #     ['y', ' - got event: send_rnd_message('],
-        #     ['g', str(data['myMessage'])], ['y', ")"]
+        #     ['g', str(data['my_message'])], ['y', ")"]
         # ])
 
         return

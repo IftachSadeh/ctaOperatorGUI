@@ -211,7 +211,7 @@ class SchedBlockInspector(BaseWidget):
 
     # data.zoom_target = name of telescope focus on (ex: L_2)
     def sched_block_inspector_push_schedule(self, *args):
-        self.expire = 86400  # one day
+        self.expire_sec = 86400  # one day
         print 'sched_block_inspector_push_schedule'
         data = args[0]['newSchedule']
         self.redis.pipe.reset()
@@ -223,7 +223,7 @@ class SchedBlockInspector(BaseWidget):
         #         if self.redis.exists(data[key][i]["obs_block_id"]):
         #             obs_block_ids[data[key][i]['exe_state']['state']].append(data[key][i]["obs_block_id"])
         #             self.redis.pipe.set(
-        #                 name=data[key][i]["obs_block_id"], data=data[key][i], expire=self.expire)
+        #                 name=data[key][i]["obs_block_id"], data=data[key][i], expire_sec=self.expire_sec)
         #         else:
         #             new_blocks.append(data[key][i])
         # for key, val in obs_block_ids.items():

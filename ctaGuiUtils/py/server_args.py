@@ -20,6 +20,13 @@ def parse_args(app_name):
         default=None,
     )
     parser.add_argument(
+        '--reload',
+        type=str_to_bool,
+        nargs='?',
+        const=True,
+        default='True',
+    )
+    parser.add_argument(
         '--redis_port',
         type=int,
         default=None,
@@ -40,11 +47,9 @@ def parse_args(app_name):
         default=None,
     )
     parser.add_argument(
-        '--is_HMI_dev',
-        type=str_to_bool,
-        nargs='?',
-        const=True,
-        default='True',
+        '--debug_opts',
+        type=str,
+        default=None,
     )
     parser.add_argument(
         '--is_simulation',
@@ -143,6 +148,23 @@ def parse_args(app_name):
             })
         else:
             raise ValueError('must specify --site_type as "N" or "S"')
+
+        # debugging options
+        allowed_debug_opts = {
+            'dev': True,
+            'redis': True,
+            'lock': False,
+        }
+        if input_args['debug_opts'] is None:
+            input_debugs = []
+        else:
+            input_debugs = str(input_args['debug_opts']).split(',')
+
+        settings['debug_opts'] = dict()
+        for debug in allowed_debug_opts.keys():
+            settings['debug_opts'][debug] = (
+                True if (debug in input_debugs) else allowed_debug_opts[debug]
+            )
 
         for k, v in input_args.items():
             if v is not None:

@@ -52,12 +52,12 @@ class SchedulerACS(ThreadManager):
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, port=self.base_config.redis_port, log=self.log
+            name=self.class_name, base_config=self.base_config, log=self.log
         )
 
         self.debug = not True
-        self.expire = 86400  # one day
-        # self.expire = 5
+        self.expire_sec = 86400  # one day
+        # self.expire_sec = 5
 
         self.MockSched = None
 
@@ -139,6 +139,8 @@ class SchedulerACS(ThreadManager):
 
         blocks_run = []
         active = sched_blocks['active']
+
+        pipe = self.redis.get_pipe()
 
         for sched_blk_id, schBlock in sched_blocks['blocks'].items():
 
@@ -270,27 +272,22 @@ class SchedulerACS(ThreadManager):
 
                 obs_block_ids[state].append(obs_block_id)
 
-                self.redis.pipe.set(
-                    name=obs_block_id, data=block, expire=self.expire, packed=True
+                pipe.set(
+                    name=obs_block_id,
+                    data=block,
+                    expire_sec=self.expire_sec,
+                    packed=True
                 )
 
-        self.redis.pipe.set(
-            name='obs_block_ids_' + 'wait', data=obs_block_ids['wait'], packed=True
-        )
-        self.redis.pipe.set(
-            name='obs_block_ids_' + 'run', data=obs_block_ids['run'], packed=True
-        )
-        self.redis.pipe.set(
-            name='obs_block_ids_' + 'done', data=obs_block_ids['done'], packed=True
-        )
-        self.redis.pipe.set(
+        pipe.set(name='obs_block_ids_' + 'wait', data=obs_block_ids['wait'], packed=True)
+        pipe.set(name='obs_block_ids_' + 'run', data=obs_block_ids['run'], packed=True)
+        pipe.set(name='obs_block_ids_' + 'done', data=obs_block_ids['done'], packed=True)
+        pipe.set(
             name='obs_block_ids_' + 'cancel', data=obs_block_ids['cancel'], packed=True
         )
-        self.redis.pipe.set(
-            name='obs_block_ids_' + 'fail', data=obs_block_ids['fail'], packed=True
-        )
+        pipe.set(name='obs_block_ids_' + 'fail', data=obs_block_ids['fail'], packed=True)
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
         update_sub_arrs(self=self, blocks=blocks_run)
 
@@ -302,14 +299,16 @@ class SchedulerACS(ThreadManager):
     # def update_sub_arrs(self, blocks=None):
     #     # inst_pos = self.redis.h_get_all(name='inst_pos')
 
+    #     pipe = self.redis.get_pipe()
+
     #     if blocks is None:
     #         obs_block_ids = self.redis.get(
     #             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
     #         )
     #         for obs_block_id in obs_block_ids:
-    #             self.redis.pipe.get(obs_block_id)
+    #             pipe.get(obs_block_id)
 
-    #         blocks = self.redis.pipe.execute(packed=True)
+    #         blocks = pipe.execute(packed=True)
 
     #     # sort so last is first in the list (latest sub-array defined gets the telescope)
     #     blocks = sorted(
@@ -357,13 +356,15 @@ class SchedulerACS(ThreadManager):
     def loop_main(self):
         self.log.info([['g', ' - starting SchedulerACS.loop_main ...']])
 
-        self.redis.pipe.set(name='obs_block_ids_' + 'wait', data='')
-        self.redis.pipe.set(name='obs_block_ids_' + 'run', data='')
-        self.redis.pipe.set(name='obs_block_ids_' + 'done', data='')
-        self.redis.pipe.set(name='obs_block_ids_' + 'cancel', data='')
-        self.redis.pipe.set(name='obs_block_ids_' + 'fail', data='')
+        pipe = self.redis.get_pipe()
 
-        self.redis.pipe.execute()
+        pipe.set(name='obs_block_ids_' + 'wait', data='')
+        pipe.set(name='obs_block_ids_' + 'run', data='')
+        pipe.set(name='obs_block_ids_' + 'done', data='')
+        pipe.set(name='obs_block_ids_' + 'cancel', data='')
+        pipe.set(name='obs_block_ids_' + 'fail', data='')
+
+        pipe.execute()
 
         update_sub_arrs(self=self, blocks=[])
 
@@ -406,12 +407,12 @@ class SchedulerStandalone(ThreadManager):
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, port=self.base_config.redis_port, log=self.log
+            name=self.class_name, base_config=self.base_config, log=self.log
         )
 
         self.debug = not True
-        self.expire = 86400  # one day
-        # self.expire = 5
+        self.expire_sec = 86400  # one day
+        # self.expire_sec = 5
 
         # ------------------------------------------------------------------
         self.max_n_obs_block = 4 if self.site_type == 'N' else 7
@@ -476,6 +477,8 @@ class SchedulerStandalone(ThreadManager):
         self.n_init_cycle = -1
         self.n_nights = -1
 
+        self.update_name = 'obs_block_update'
+
         rnd_seed = get_rnd_seed()
         # rnd_seed = 10987268332
         self.rnd_gen = Random(rnd_seed)
@@ -483,7 +486,7 @@ class SchedulerStandalone(ThreadManager):
         self.external_clock_events = []
         external_generate_clock_events(self)
 
-        self.redis.pipe.delete('obs_block_update')
+        self.redis.delete(self.update_name)
 
         self.init()
 
@@ -527,9 +530,11 @@ class SchedulerStandalone(ThreadManager):
         # tot_sched_duration_sec = 0
         # max_block_duration_sec = self.duration_night - self.obs_block_sec
 
+        pipe = self.redis.get_pipe()
+
         # target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
         # for obs_block_id in obs_block_ids:
-        #     self.redis.pipe.get(obs_block_id)
+        #     pipe.get(obs_block_id)
 
         while True:
             can_break = not ((tot_sched_duration_sec < max_block_duration_sec) and
@@ -713,10 +718,10 @@ class SchedulerStandalone(ThreadManager):
                     block['pointings'] = pointings
                     block['tel_ids'] = sched_tel_ids
 
-                    self.redis.pipe.set(
+                    pipe.set(
                         name=block['obs_block_id'],
                         data=block,
-                        expire=self.expire,
+                        expire_sec=self.expire_sec,
                         packed=True
                     )
 
@@ -732,14 +737,12 @@ class SchedulerStandalone(ThreadManager):
             # the maximal duration of all blocks within this cycle
             tot_sched_duration_sec += max(sched_block_duration_sec)
 
-        self.redis.pipe.set(
-            name='external_events', data=self.external_events, packed=True
-        )
-        self.redis.pipe.set(
+        pipe.set(name='external_events', data=self.external_events, packed=True)
+        pipe.set(
             name='external_clock_events', data=self.external_clock_events, packed=True
         )
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
         self.update_exe_statuses()
 
@@ -835,6 +838,8 @@ class SchedulerStandalone(ThreadManager):
             x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'wait')
         ]
 
+        pipe = self.redis.get_pipe()
+
         has_change = False
         for block in wait_blocks:
             if time_now_sec < block['time']['start'] - (self.loop_sleep_sec
@@ -849,12 +854,15 @@ class SchedulerStandalone(ThreadManager):
             block['run_phase'] = copy.deepcopy(self.phases_exe['start'])
 
             has_change = True
-            self.redis.pipe.set(
-                name=block['obs_block_id'], data=block, expire=self.expire, packed=True
+            pipe.set(
+                name=block['obs_block_id'],
+                data=block,
+                expire_sec=self.expire_sec,
+                packed=True
             )
 
         if has_change:
-            self.redis.pipe.execute()
+            pipe.execute()
 
             # ------------------------------------------------------------------
             # check for blocks which cant begin as their time is already past
@@ -893,15 +901,15 @@ class SchedulerStandalone(ThreadManager):
                     self.exe_phase[block['obs_block_id']] = ''
 
                     has_change = True
-                    self.redis.pipe.set(
+                    pipe.set(
                         name=block['obs_block_id'],
                         data=block,
-                        expire=self.expire,
+                        expire_sec=self.expire_sec,
                         packed=True
                     )
 
             if has_change:
-                self.redis.pipe.execute()
+                pipe.execute()
 
         return
 
@@ -926,6 +934,8 @@ class SchedulerStandalone(ThreadManager):
         # #   return
 
         runs = [x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'run')]
+
+        pipe = self.redis.get_pipe()
 
         has_change = False
         for block in runs:
@@ -971,12 +981,15 @@ class SchedulerStandalone(ThreadManager):
                 self.exe_phase[block['obs_block_id']] = next_phase
 
             has_change = True
-            self.redis.pipe.set(
-                name=block['obs_block_id'], data=block, expire=self.expire, packed=True
+            pipe.set(
+                name=block['obs_block_id'],
+                data=block,
+                expire_sec=self.expire_sec,
+                packed=True
             )
 
         if has_change:
-            self.redis.pipe.execute()
+            pipe.execute()
 
         return
 
@@ -988,6 +1001,8 @@ class SchedulerStandalone(ThreadManager):
         time_now_sec = self.clock_sim.get_time_now_sec()
 
         runs = [x for x in self.all_obs_blocks if x['exe_state']['state'] == 'run']
+
+        pipe = self.redis.get_pipe()
 
         has_change = False
         for block in runs:
@@ -1026,14 +1041,17 @@ class SchedulerStandalone(ThreadManager):
             block['run_phase'] = []
 
             has_change = True
-            self.redis.pipe.set(
-                name=block['obs_block_id'], data=block, expire=self.expire, packed=True
+            pipe.set(
+                name=block['obs_block_id'],
+                data=block,
+                expire_sec=self.expire_sec,
+                packed=True
             )
 
             self.exe_phase[block['obs_block_id']] = ''
 
         if has_change:
-            self.redis.pipe.execute()
+            pipe.execute()
 
         return
 
@@ -1043,6 +1061,8 @@ class SchedulerStandalone(ThreadManager):
     def update_exe_statuses(self):
         blocks_run = []
         obs_block_ids = {'wait': [], 'run': [], 'done': [], 'cancel': [], 'fail': []}
+
+        pipe = self.redis.get_pipe()
 
         for block in self.all_obs_blocks:
             obs_block_id = block['obs_block_id']
@@ -1055,9 +1075,9 @@ class SchedulerStandalone(ThreadManager):
                     blocks_run += [block]
 
         for key, val in obs_block_ids.items():
-            self.redis.pipe.set(name='obs_block_ids_' + key, data=val, packed=True)
+            pipe.set(name='obs_block_ids_' + key, data=val, packed=True)
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
         update_sub_arrs(self=self, blocks=blocks_run)
 
@@ -1067,14 +1087,15 @@ class SchedulerStandalone(ThreadManager):
     # #
     # # ------------------------------------------------------------------
     # def update_sub_arrs(self, blocks=None):
+    #     pipe = self.redis.get_pipe()
     #     if blocks is None:
     #         obs_block_ids = self.redis.get(
     #             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
     #         )
     #         for obs_block_id in obs_block_ids:
-    #             self.redis.pipe.get(obs_block_id)
+    #             pipe.get(obs_block_id)
 
-    #         blocks = self.redis.pipe.execute(packed=True)
+    #         blocks = pipe.execute(packed=True)
 
     #     #
     #     sub_arrs = []
@@ -1120,13 +1141,15 @@ class SchedulerStandalone(ThreadManager):
 
     # ------------------------------------------------------------------
     def external_add_new_redis_blocks(self):
-        if not self.redis.exists('obs_block_update'):
+        obs_block_update = self.redis.get(self.update_name, default_val=None)
+        if obs_block_update is None:
             return
+
+        pipe = self.redis.get_pipe()
 
         # for key in self.all_obs_blocks[0]:
         #     self.log.info([['g', key, self.all_obs_blocks[0][key]]])
-        self.redis.pipe.get('obs_block_update')
-        obs_block_update = self.redis.pipe.execute(packed=True)[0]
+
         # self.log.info([['g', obs_block_update]])
         self.log.info([['g', len(obs_block_update), len(self.all_obs_blocks)]])
 
@@ -1153,20 +1176,20 @@ class SchedulerStandalone(ThreadManager):
 
                 total += 1
 
-                self.redis.pipe.set(
+                pipe.set(
                     name=obs_block_update[i]['obs_block_id'],
                     data=obs_block_update[i],
-                    expire=self.expire,
+                    expire_sec=self.expire_sec,
                     packed=True
                 )
                 current = obs_block_update[i]
 
             else:
                 self.all_obs_blocks.append(obs_block_update[i])
-                self.redis.pipe.set(
+                pipe.set(
                     name=obs_block_update[i]['obs_block_id'],
                     data=obs_block_update[i],
-                    expire=self.expire,
+                    expire_sec=self.expire_sec,
                     packed=True
                 )
 
@@ -1175,8 +1198,8 @@ class SchedulerStandalone(ThreadManager):
         #     exe_state = block['exe_state']['state']
         #     self.log.info([['g', block['metadata']['block_name'] + ' ' + exe_state]])
 
-        self.redis.pipe.delete('obs_block_update')
-        self.redis.pipe.execute(packed=True)
+        pipe.delete(self.update_name)
+        pipe.execute(packed=True)
 
         self.log.info([['g', total, len(obs_block_update), len(self.all_obs_blocks)]])
 
@@ -1295,14 +1318,16 @@ def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_ob
 def update_sub_arrs(self, blocks=None):
     # inst_pos = self.redis.h_get_all(name='inst_pos')
 
+    pipe = self.redis.get_pipe()
+
     if blocks is None:
         obs_block_ids = self.redis.get(
             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
         )
         for obs_block_id in obs_block_ids:
-            self.redis.pipe.get(obs_block_id)
+            pipe.get(obs_block_id)
 
-        blocks = self.redis.pipe.execute(packed=True)
+        blocks = pipe.execute(packed=True)
 
     #
     sub_arrs = []

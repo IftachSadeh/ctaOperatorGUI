@@ -37,7 +37,7 @@ class InstHealth(ServiceManager):
         self.interrupt_sig = interrupt_sig
 
         self.redis = RedisManager(
-            name=self.class_name, port=self.base_config.redis_port, log=self.log
+            name=self.class_name, base_config=self.base_config, log=self.log
         )
 
         self.tel_ids = self.inst_data.get_inst_ids()
@@ -86,6 +86,8 @@ class InstHealth(ServiceManager):
     def init(self):
         # self.log.info([['g', ' - inst_health.init() ...']])
 
+        pipe = self.redis.get_pipe()
+
         for id_now in self.tel_ids:
             self.inst_health_s0[id_now] = {
                 self.health_tag: 100,
@@ -98,9 +100,7 @@ class InstHealth(ServiceManager):
             }
 
             for key, val in self.inst_health_s0[id_now].items():
-                self.redis.pipe.h_set(
-                    name='inst_health;' + str(id_now), key=key, data=val
-                )
+                pipe.h_set(name='inst_health;' + str(id_now), key=key, data=val)
 
             # self.redPipe.hmset('inst_health_s0'+str(id_now), self.inst_health_s0[id_now])
 
@@ -116,13 +116,13 @@ class InstHealth(ServiceManager):
 
             for key, val in self.inst_health_sub_flat[id_now].items():
                 if 'val' in val['data']:
-                    self.redis.pipe.h_set(
+                    pipe.h_set(
                         name='inst_health;' + str(id_now),
                         key=key,
                         data=val['data']['val']
                     )
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
         self.rand_once(update_frac=1)
 
@@ -180,6 +180,8 @@ class InstHealth(ServiceManager):
         ]
         n_rnd_props = len(rnd_props)
 
+        pipe = self.redis.get_pipe()
+
         for id_now in self.tel_ids:
             if (rnd_gen.random() > update_frac):
                 continue
@@ -213,11 +215,9 @@ class InstHealth(ServiceManager):
             self.inst_health_s1[id_now][self.health_tag] = health_tot
 
             for key, val in self.inst_health_s0[id_now].items():
-                self.redis.pipe.h_set(
-                    name='inst_health;' + str(id_now), key=key, data=val
-                )
+                pipe.h_set(name='inst_health;' + str(id_now), key=key, data=val)
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
         ids = [id_now for id_now in arr_props]
 
@@ -257,6 +257,8 @@ class InstHealth(ServiceManager):
 
         ids = self.tel_ids if (tel_id_in is None) else tel_id_in
 
+        pipe = self.redis.get_pipe()
+
         for id_now in self.tel_ids:
             random.shuffle(rnd_props)
 
@@ -272,12 +274,12 @@ class InstHealth(ServiceManager):
                     # sync with the value in self.inst_health_s0
                     prop_value = self.inst_health_sub[id_now][prop_name]['val']
                     self.inst_health_s0[id_now][prop_name] = prop_value
-                    self.redis.pipe.h_set(
+                    pipe.h_set(
                         name='inst_health;' + str(id_now), key=prop_name, data=prop_value
                     )
                     # if id_now=='Ax00':print id_now,prop_name,prop_value
 
-                self.redis.pipe.execute()
+                pipe.execute()
                 self.set_tel_health_s1(id_now)
 
             time_now_sec = self.clock_sim.get_time_now_sec()
@@ -287,10 +289,8 @@ class InstHealth(ServiceManager):
 
             for key, val in self.inst_health_sub_flat[id_now].items():
                 if 'val' in val['data']:
-                    self.redis.pipe.h_set(
-                        name=base_name, key=key, data=val['data']['val']
-                    )
-                    self.redis.pipe.z_add(
+                    pipe.h_set(name=base_name, key=key, data=val['data']['val'])
+                    pipe.z_add(
                         name=base_name + ';' + key,
                         score=time_now_sec,
                         data={
@@ -300,7 +300,7 @@ class InstHealth(ServiceManager):
                         clip_score=time_min
                     )
 
-            self.redis.pipe.execute()
+            pipe.execute()
 
         # # self.redis.z_get('inst_health;Lx03;camera_1')
         # data = self.redis.z_get('inst_health;Lx03;camera_1')

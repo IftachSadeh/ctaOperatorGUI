@@ -397,7 +397,7 @@ class PlotsDash(BaseWidget):
     def send_rnd_message(self, data):
         # self.log.info([
         #     ['y', ' - got event: send_rnd_message('],
-        #     ['g', str(data['myMessage'])], ['y', ")"]
+        #     ['g', str(data['my_message'])], ['y', ")"]
         # ])
 
         return

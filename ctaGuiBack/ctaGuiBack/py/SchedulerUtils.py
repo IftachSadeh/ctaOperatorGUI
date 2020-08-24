@@ -67,13 +67,14 @@ def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_ob
 # ------------------------------------------------------------------
 def update_sub_arrs(self, blocks=None):
     # inst_pos = self.redis.h_get_all(name='inst_pos')
+    pipe = self.redis.get_pipe()
 
     if blocks is None:
         obs_block_ids = self.redis.get(name=('obs_block_ids_' + 'run'), default_val=[])
         for obs_block_id in obs_block_ids:
-            self.redis.pipe.get(obs_block_id)
+            pipe.get(obs_block_id)
 
-        blocks = self.redis.pipe.execute()
+        blocks = pipe.execute()
 
     #
     sub_arrs = []

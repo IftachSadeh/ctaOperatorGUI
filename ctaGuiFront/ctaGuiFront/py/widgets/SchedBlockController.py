@@ -216,7 +216,7 @@ class SchedBlockController(BaseWidget):
 
     # data.zoom_target = name of telescope focus on (ex: L_2)
     def sched_block_controller_push_queue(self, *args):
-        self.expire = 86400  # one day
+        self.expire_sec = 86400  # one day
         print 'sched_block_controller_push_queue'
         data = args[0]['new_block_queue']['blocks']
         obs_block_ids = {"wait": [], "run": [], "done": [], "cancel": [], "fail": []}
@@ -230,7 +230,7 @@ class SchedBlockController(BaseWidget):
                     self.redis.pipe.set(
                         name=data[key][i]["obs_block_id"],
                         data=data[key][i],
-                        expire=self.expire,
+                        expire_sec=self.expire_sec,
                     )
                 else:
                     new_blocks.append(data[key][i])

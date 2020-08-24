@@ -124,13 +124,13 @@ class LogParser():
         # ------------------------------------------------------------------
         # if the input is a list
         # ------------------------------------------------------------------
-        if isinstance(msg_in, list):
+        if isinstance(msg_in, (list, set)):
             msg = ''
             for msg_now in msg_in:
                 # ------------------------------------------------------------------
                 #  if there is a list of messages
                 # ------------------------------------------------------------------
-                if isinstance(msg_now, list):
+                if isinstance(msg_now, (list, set)):
                     # list with one element
                     if len(msg_now) == 1:
                         if self.add_msg_ele_space and msg != '':

@@ -33,7 +33,7 @@ class SetupServer():
         # logging level
         log_level = settings['log_level']
         # development mode
-        self.is_HMI_dev = settings['is_HMI_dev']
+        self.reload = settings['reload']
 
         self.log = LogParser(
             base_config=None,
@@ -170,7 +170,7 @@ class SetupServer():
                 for multi_proc in multi_procs:
                     multi_proc.join()
 
-                if not self.is_HMI_dev:
+                if not self.reload:
                     raise KeyboardInterrupt
 
             except KeyboardInterrupt:
@@ -190,7 +190,7 @@ class SetupServer():
                 self.log.info([['wr', e]])
                 traceback.print_tb(e.__traceback__)
 
-                if not self.is_HMI_dev:
+                if not self.reload:
                     raise e
                 else:
                     self.log.info([['wr', ' - will retry to run services ...']])

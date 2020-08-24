@@ -334,7 +334,6 @@ function SocketManager() {
             this_top.con_stat.set_check_heartbeat(true)
 
 
-
             if (is_first) {
                 if (is_def(setup_view[widget_name])) {
                     setup_view[widget_name]()
@@ -552,7 +551,7 @@ function SocketManager() {
                 }
                 else if (!is_first) {
                     this_top.socket.emit('sess_to_online')
-                // this_top.socket.emit('back_from_offline')
+                    this_top.socket.emit('back_from_offline')
                 }
             }
         }

@@ -12,12 +12,13 @@ from ctaGuiUtils.py.ClockSim import ClockSim
 from ctaGuiUtils.py.InstData import InstData
 from ctaGuiUtils.py.utils import has_acs
 
+from ctaGuiBack.py.InstPos import InstPos
 from ctaGuiBack.py.MockTarget import MockTarget
 from ctaGuiBack.py.InstHealth import InstHealth
-from ctaGuiBack.py.InstPos import InstPos
+from ctaGuiUtils.py.LockManager import LockManager
 from ctaGuiBack.py.SchedulerACS import SchedulerACS
-from ctaGuiBack.py.SchedulerStandalone import SchedulerStandalone
 from ctaGuiUtils.py.RedisManager import RedisManager
+from ctaGuiBack.py.SchedulerStandalone import SchedulerStandalone
 
 from ctaGuiUtils.py.Serialisation import Serialisation
 
@@ -51,7 +52,7 @@ class Manager():
         # is this a simulation
         is_simulation = settings['is_simulation']
         # development mode
-        is_HMI_dev = settings['is_HMI_dev']
+        debug_opts = settings['debug_opts']
         # do we flush redis on startup
         self.do_flush_redis = settings['do_flush_redis']
 
@@ -65,7 +66,7 @@ class Manager():
             log_level=log_level,
             websocket_route=None,
             allow_panel_sync=None,
-            is_HMI_dev=is_HMI_dev,
+            debug_opts=debug_opts,
             is_simulation=is_simulation,
         )
 
@@ -77,7 +78,7 @@ class Manager():
         )
 
         self.redis = RedisManager(
-            name=self.class_name, port=self.base_config.redis_port, log=self.log
+            name=self.class_name, base_config=self.base_config, log=self.log
         )
 
         return
@@ -131,13 +132,43 @@ class Manager():
             is_passive=True,
         )
 
+        # setup the lock manager
+        # prefix for all lock names in redis
+        lock_prefix = service_name + ';lock;'
+        # dynamic lock names, based on the current properties
+        lock_namespace = {
+            'loop': lambda: 'loop',
+        }
+        # initialise the lock manager
+        self.locker = LockManager(
+            log=self.log,
+            redis=self.redis,
+            base_config=self.base_config,
+            lock_namespace=lock_namespace,
+            lock_prefix=lock_prefix,
+            is_passive=True,
+        )
+
+        # with self.locker.locks.acquire('loop'):
+        #     pass
+
         # for debugging, override the global flag
         self.do_flush_redis = True
-        if service_name == 'flush_redis_service':
+        if service_name == 'redis_flush':
             if self.do_flush_redis:
                 self.log.warn([['r', ' - flusing redis ...']])
-                redis = RedisManager(name='_init_', port=self.redis_port, log=self.log)
-                redis.redis.flushall()
+                self.redis.flush()
+
+        elif service_name == 'redis_services':
+            self.locker = LockManager(
+                log=self.log,
+                redis=self.redis,
+                base_config=self.base_config,
+                lock_namespace=lock_namespace,
+                lock_prefix=lock_prefix,
+                is_passive=False,
+                interrupt_sig=interrupt_sig,
+            )
 
         elif service_name == 'clock_sim_service':
             # ------------------------------------------------------------------

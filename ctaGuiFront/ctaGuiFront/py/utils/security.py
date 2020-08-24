@@ -1,4 +1,5 @@
-from pyramid.security import Allow, Everyone
+from pyramid.security import Allow
+# from pyramid.security import Everyone
 import bcrypt
 
 
@@ -22,20 +23,23 @@ GROUPS = {
 
 
 # ------------------------------------------------------------------
-# define the fctory that sets user privliges
-# see: http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/security.html#protecting-views
-# ------------------------------------------------------------------
 class RootFactory(object):
+    """define the fctory that sets user privliges
+       see: http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/security.html#protecting-views
+    """
+
     __name__ = None
     __parent__ = None
     __acl__ = [
         # every group must have permission to view the index and the sockets
         (Allow, 'group:permit_1', 'permit_all'),
         (Allow, 'group:permit_2', 'permit_all'),
-        # 'group:permit_1' has permission to access pages defined by 'permit_a' and by 'permit_b'
+        # 'group:permit_1' has permission to access pages
+        # defined by 'permit_a' and by 'permit_b'
         (Allow, 'group:permit_1', 'permit_a'),
         (Allow, 'group:permit_1', 'permit_b'),
-        # 'group:permit_2' has permission to access pages defined by 'permit_b' only
+        # 'group:permit_2' has permission to access pages
+        # defined by 'permit_b' only
         (Allow, 'group:permit_2', 'permit_b')
     ]
 
@@ -47,14 +51,16 @@ class RootFactory(object):
         pass
 
 
+# ------------------------------------------------------------------
 def check_password(pw, hashed_pw):
     try:
         expected_hash = hashed_pw.encode('utf8')
         return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
-    except:
+    except Exception:
         return False
 
 
+# ------------------------------------------------------------------
 def groupfinder(userid, request):
     if userid in USERS:
         return GROUPS.get(userid, [])

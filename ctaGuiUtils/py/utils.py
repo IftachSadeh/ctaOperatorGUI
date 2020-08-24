@@ -90,11 +90,11 @@ def traverse_object(data, new_values, module_func=None):
 
     if isinstance(data, dict):
         for k, v in data.items():
-            if isinstance(v, dict) or isinstance(v, list) or isinstance(v, tuple):
+            if isinstance(v, (dict, list, set, tuple)):
                 traverse_object(data=v, new_values=new_values, module_func=module_func)
             else:
                 module_func(data, k, v, new_values)
-    elif isinstance(data, list) or isinstance(data, tuple):
+    elif isinstance(data, (list, set, tuple)):
         for v in data:
             traverse_object(data=v, new_values=new_values, module_func=module_func)
     return
@@ -110,8 +110,7 @@ def flatten_dict(data_in, id='id', child_ids='children', sibling_ids='siblings')
 
         if isinstance(data, dict):
             for key, ele in data.items():
-                if (isinstance(ele, dict) or isinstance(ele, list)
-                        or isinstance(ele, tuple)):
+                if isinstance(ele, (dict, list, set, tuple)):
                     flatten(data=ele, depth=depth)
                 elif key == id:
                     data_out[ele] = {
@@ -124,7 +123,7 @@ def flatten_dict(data_in, id='id', child_ids='children', sibling_ids='siblings')
                     }
                 else:
                     continue
-        elif isinstance(data, list) or isinstance(data, tuple):
+        elif isinstance(data, (list, set, tuple)):
             for ele in data:
                 flatten(data=ele, depth=depth)
 
@@ -219,7 +218,7 @@ def format_float_to_string(x):
 
 
 # ------------------------------------------------------------------
-def is_coroutine(func): 
+def is_coroutine(func):
     is_crt = (asyncio.iscoroutine(func) or asyncio.iscoroutinefunction(func))
     return is_crt
 
@@ -258,7 +257,7 @@ class time_of_night(ServiceManager):
         # self.timescale /= 20
 
         self.redis = RedisManager(
-            name=self.class_name, port=base_config.redis_port, log=self.log
+            name=self.class_name, base_config=base_config, log=self.log
         )
 
         self.n_night = -1
@@ -349,12 +348,14 @@ class time_of_night(ServiceManager):
                 ['g', 'real_reset_time_sec:', self.real_reset_time_sec],
             ])
 
-        self.redis.pipe.set(name='time_of_night_' + 'scale', data=self.timescale)
-        self.redis.pipe.set(name='time_of_night_' + 'start', data=time_now_sec)
-        self.redis.pipe.set(name='time_of_night_' + 'end', data=self.end_time_sec)
-        self.redis.pipe.set(name='time_of_night_' + 'now', data=time_now_sec)
+        pipe = self.redis.get_pipe()
 
-        self.redis.pipe.execute()
+        pipe.set(name='time_of_night_' + 'scale', data=self.timescale)
+        pipe.set(name='time_of_night_' + 'start', data=time_now_sec)
+        pipe.set(name='time_of_night_' + 'end', data=self.end_time_sec)
+        pipe.set(name='time_of_night_' + 'now', data=time_now_sec)
+
+        pipe.execute()
 
         return
 
@@ -380,11 +381,13 @@ class time_of_night(ServiceManager):
 
 # ------------------------------------------------------------------
 def get_time_of_night(parent):
-    parent.redis.pipe.get('time_of_night_' + 'start')
-    parent.redis.pipe.get('time_of_night_' + 'end')
-    parent.redis.pipe.get('time_of_night_' + 'now')
+    pipe = parent.redis.get_pipe()
 
-    time_of_night = parent.redis.pipe.execute()
+    pipe.get('time_of_night_' + 'start')
+    pipe.get('time_of_night_' + 'end')
+    pipe.get('time_of_night_' + 'now')
+
+    time_of_night = pipe.execute()
 
     if len(time_of_night) != 3:
         parent.log.warning([[

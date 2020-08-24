@@ -167,7 +167,7 @@ try:
     # is this a simulation
     is_simulation = settings['is_simulation']
     # development mode
-    is_HMI_dev = settings['is_HMI_dev']
+    debug_opts = settings['debug_opts']
     # do we flush redis on startup
     do_flush_redis = settings['do_flush_redis']
     # all allowed view names
@@ -195,7 +195,7 @@ try:
         log_level=log_level,
         websocket_route=websocket_route,
         allow_panel_sync=allow_panel_sync,
-        is_HMI_dev=is_HMI_dev,
+        debug_opts=debug_opts,
         is_simulation=is_simulation,
         widget_infos=widget_infos,
         allowed_widget_types=allowed_widget_types,
@@ -220,7 +220,7 @@ try:
     # if do_flush_redis:
     #     from ctaGuiUtils.py.RedisManager import RedisManager
     #     log.warn([['wr', ' ---- flusing redis ... ----']])
-    #     _redis = RedisManager(name='_init_', port=redis_port, log=log)
+    #     _redis = RedisManager(name='_init_', base_config=base_config, log=log)
     #     _redis.redis.flushall()
 
     # set the list of telescopes for this particular site and attach it to base_config

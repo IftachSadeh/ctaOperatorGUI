@@ -76,11 +76,11 @@ class ServiceManager():
         return self.redis.get(self.active_instance_name)
 
     # ------------------------------------------------------------------
-    def set_active_instance(self, has_init, expire):
+    def set_active_instance(self, has_init, expire_sec):
         self.redis.set(
             name=self.active_instance_name,
             data=has_init,
-            expire=int(expire),
+            expire_sec=int(expire_sec),
         )
         return
 
@@ -123,7 +123,7 @@ class ServiceManager():
         # set the heartbeat (uninitialised state) for a long expiration
         # to allow the heartbeat thread to start later
         active_init_expire = self.active_expire_sec * 100
-        self.set_active_instance(has_init=False, expire=active_init_expire)
+        self.set_active_instance(has_init=False, expire_sec=active_init_expire)
 
         return
 
@@ -142,7 +142,7 @@ class ServiceManager():
         while self.can_loop():
             self.set_active_instance(
                 has_init=True,
-                expire=self.active_expire_sec,
+                expire_sec=self.active_expire_sec,
             )
 
             sleep(self.loop_active_expire_sec)

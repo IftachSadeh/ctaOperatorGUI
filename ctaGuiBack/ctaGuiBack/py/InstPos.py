@@ -2,9 +2,9 @@ from random import Random
 from time import sleep
 from threading import Lock
 
-from ctaGuiUtils.py.ServiceManager import ServiceManager
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
+from ctaGuiUtils.py.ServiceManager import ServiceManager
 
 
 class InstPos(ServiceManager):
@@ -35,7 +35,7 @@ class InstPos(ServiceManager):
         self.inst_pos_0 = self.base_config.inst_pos_0
 
         self.redis = RedisManager(
-            name=self.class_name, port=self.base_config.redis_port, log=self.log
+            name=self.class_name, base_config=self.base_config, log=self.log
         )
 
         # ------------------------------------------------------------------
@@ -91,10 +91,12 @@ class InstPos(ServiceManager):
 
         obs_block_ids = self.redis.get(name=('obs_block_ids_' + 'run'), default_val=[])
 
-        for obs_block_id in obs_block_ids:
-            self.redis.pipe.get(obs_block_id)
+        pipe = self.redis.get_pipe()
 
-        blocks = self.redis.pipe.execute()
+        for obs_block_id in obs_block_ids:
+            pipe.get(obs_block_id)
+
+        blocks = pipe.execute()
 
         tel_point_pos = dict()
         for n_block in range(len(blocks)):
@@ -145,9 +147,9 @@ class InstPos(ServiceManager):
                     + pos_dif[1] * rnd_scale * self.rnd_gen.random() * frac_delta_pos
                 ]
 
-            self.redis.pipe.h_set(name='inst_pos', key=id_now, data=inst_pos_new)
+            pipe.h_set(name='inst_pos', key=id_now, data=inst_pos_new)
 
-        self.redis.pipe.execute()
+        pipe.execute()
 
         return
 
