@@ -85,6 +85,10 @@ class RedisLock():
 
         return lock_id
 
+    def update_lock_namespace(self, lock_namespace):
+        self.lock_namespace.update(lock_namespace)
+        return
+
     # ------------------------------------------------------------------
     def get_lock_name(self, name, postfix=None):
         if postfix is None:
@@ -442,7 +446,10 @@ class RedisSemaphore(ServiceManager):
 
     # ------------------------------------------------------------------
     def cleanup(self):
-        lock_heartbeats = self.redis.h_get_all(self.resource_lockers)
+        lock_heartbeats = self.redis.h_get_all(
+            self.resource_lockers,
+            default_val={},
+        )
         for name, keys in lock_heartbeats.items():
             for key in keys:
                 lock = self.redis.h_get(name=name, key=key, default_val=None)
@@ -451,6 +458,7 @@ class RedisSemaphore(ServiceManager):
 
                 if lock['expire_msec'] <= 0:
                     continue
+
                 expired = ((get_time('msec') - lock['time']) > lock['expire_msec'])
                 if expired:
                     self.log.warn([
@@ -460,6 +468,7 @@ class RedisSemaphore(ServiceManager):
                         ['o', key],
                         ['r', ' ... should have been cleaned up manually ?!?'],
                     ])
+
                     self.remove(name, key)
 
         return

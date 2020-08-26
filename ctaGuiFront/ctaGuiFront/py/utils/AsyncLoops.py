@@ -32,28 +32,35 @@ class AsyncLoops():
            which defines the scope for all constituents of a widget
            of type 'EmptyExample' operating under a server with id 'serv_8090_3565'
         """
+        prefix = self.loop_prefix + scope
 
-        if scope == 'server':
-            name = self.loop_prefix + 'server;' + self.server_id
+        if scope == 'serv':
+            if postfix is None:
+                postfix = self.serv_id
+
+            name = prefix + ';' + postfix
 
         elif scope == 'sess':
-            name = self.loop_prefix + 'sess;' + self.sess_id
+            if postfix is None:
+                postfix = self.sess_id
 
-        elif scope == 'widget_name':
+            name = prefix + ';' + postfix
+
+        elif scope == 'widget':
             if postfix is None:
                 raise Exception('must provide widget_name as postfix for loop group')
-            name = self.loop_prefix + 'server;' + self.server_id
+            name = prefix + ';' + postfix + ';serv;' + self.serv_id + ';user;' + self.user_id
 
-        elif scope == 'widget_id':
-            if postfix is None:
-                raise Exception('must provide widget_id as postfix for loop group')
-            name = self.loop_prefix + 'sess;' + self.sess_id
+        # elif scope == 'widget_id':
+        #     # if postfix is None:
+        #     #     raise Exception('must provide widget_id as postfix for loop group')
+        #     name = self.loop_prefix + 'sess;' + self.sess_id
 
         else:
             raise Exception('unknown scope for heartbeat')
 
-        if postfix is not None:
-            name += ';' + postfix
+        # if postfix is not None:
+        #     name += ';' + postfix
 
         return name
 
@@ -78,9 +85,9 @@ class AsyncLoops():
                 postfix = self.user_id
             name = prefix + ';' + postfix
 
-        elif scope == 'server':
+        elif scope == 'serv':
             if postfix is None:
-                postfix = self.server_id
+                postfix = self.serv_id
             name = prefix + ';' + postfix
 
         elif scope == 'sess':
@@ -88,10 +95,16 @@ class AsyncLoops():
                 postfix = self.sess_id
             name = prefix + ';' + postfix
 
-        elif scope == 'widget':
-            if postfix is None:
-                raise Exception('must provide widget_name as postfix for heartbeat')
-            name = prefix + ';' + self.server_id + ';' + postfix
+        # elif scope == 'widget':
+        #     # if postfix is None:
+        #     #     raise Exception('must provide widget_name as postfix for heartbeat')
+        #     # name = prefix + ';' + self.serv_id + ';' + postfix
+        #     name = prefix + ';serv;' + self.serv_id + ';user;' + self.user_id
+
+        # elif scope == 'widget_id':
+        #     if postfix is None:
+        #         raise Exception('must provide widget_name as postfix for heartbeat')
+        #     name = prefix + ';' + self.sess_id + ';' + postfix
 
         else:
             raise Exception('unknown scope for heartbeat')
@@ -102,12 +115,12 @@ class AsyncLoops():
     def validate_loop_group(self, group):
         """loop groups must have a "local" scope, in order to
            avoid blocking by different servers, where
-           self.locker.locks.acquire('loop_state') includes self.server_id
+           self.locker.locks.acquire('loop_state') includes self.serv_id
         """
 
-        # if not any(n in group for n in [self.server_id, self.sess_id]):
-        if not any(n in group for n in [self.server_id]):
-            print('------', group, self.server_id)
+        # if not any(n in group for n in [self.serv_id, self.sess_id]):
+        if not any(n in group for n in [self.serv_id]):
+            print('------', group, self.serv_id)
             raise Exception('loop group must include server or session scopes', )
         return
 
@@ -123,8 +136,8 @@ class AsyncLoops():
             {
                 'id': 'server_sess_heartbeat_loop',
                 'func': self.server_sess_heartbeat_loop,
-                'group': self.get_loop_group_name(scope='server'),
-                'heartbeat': self.get_heartbeat_name('server'),
+                'group': self.get_loop_group_name(scope='serv'),
+                'heartbeat': self.get_heartbeat_name(scope='serv'),
             },
         ]
 
@@ -133,8 +146,8 @@ class AsyncLoops():
             {
                 'id': 'cleanup_loop',
                 'func': self.cleanup_loop,
-                'group': self.get_loop_group_name(scope='server'),
-                'heartbeat': self.get_heartbeat_name('server'),
+                'group': self.get_loop_group_name(scope='serv'),
+                'heartbeat': self.get_heartbeat_name(scope='serv'),
             },
         ]
 
@@ -164,7 +177,7 @@ class AsyncLoops():
                 'id': 'client_sess_heartbeat_loop',
                 'func': self.client_sess_heartbeat_loop,
                 'group': self.get_loop_group_name(scope='sess'),
-                'heartbeat': self.get_heartbeat_name('sess'),
+                'heartbeat': self.get_heartbeat_name(scope='sess'),
             },
         ]
 
@@ -174,7 +187,7 @@ class AsyncLoops():
                 'id': 'receive_queue_loop',
                 'func': self.receive_queue_loop,
                 'group': self.get_loop_group_name(scope='sess'),
-                'heartbeat': self.get_heartbeat_name('sess'),
+                'heartbeat': self.get_heartbeat_name(scope='sess'),
             },
         ]
 
@@ -183,8 +196,8 @@ class AsyncLoops():
                 {
                     'id': 'clock_sim_update_sim_params_loop',
                     'func': self.clock_sim_update_sim_params,
-                    'group': self.get_loop_group_name(scope='server'),
-                    'heartbeat': self.get_heartbeat_name('server'),
+                    'group': self.get_loop_group_name(scope='serv'),
+                    'heartbeat': self.get_heartbeat_name(scope='serv'),
                 },
             ]
 
@@ -229,11 +242,10 @@ class AsyncLoops():
 
         async_loops = self.setup_loops()
 
-        async with self.locker.locks.acquire(names=('server', 'sess')):
-            for loop_info in async_loops:
-                if not self.get_loop_state(loop_info):
-                    await self.set_loop_state(state=True, loop_info=loop_info)
-                    self.spawn(loop_info['func'], loop_info=loop_info)
+        for loop_info in async_loops:
+            if not self.get_loop_state(loop_info):
+                await self.set_loop_state(state=True, loop_info=loop_info)
+                self.spawn(loop_info['func'], loop_info=loop_info)
 
         return
 
@@ -248,10 +260,18 @@ class AsyncLoops():
     # ------------------------------------------------------------------
     async def set_loop_state(self, state, loop_info=None, group=None):
         async with self.locker.locks.acquire('loop_state'):
+            # print('+'*80, state)
+            # if loop_info is None:
+            #     print(group)
+            # else:
+            #     print(dict([(k,v) for k,v in loop_info.items() if k != 'func']))
+            # print('-'*120)
+
             if state:
                 if loop_info is None:
                     raise Exception(
-                        'unsupported option for set_loop_state', state, loop_info, group
+                        'unsupported option for set_loop_state',
+                        (state, loop_info, group)
                     )
 
                 self.validate_loop_group(loop_info['group'])
@@ -281,7 +301,8 @@ class AsyncLoops():
             else:
                 if int(loop_info is None) + int(group is None) != 1:
                     raise Exception(
-                        'unsupported option for set_loop_state', state, loop_info, group
+                        'unsupported option for set_loop_state',
+                        (state, loop_info, group)
                     )
 
                 if group is not None:
@@ -322,7 +343,7 @@ class AsyncLoops():
             ['y', ' by: '],
             ['c', self.sess_id],
             ['y', ' for server: '],
-            ['c', self.server_id],
+            ['c', self.serv_id],
         ])
 
         sleep_sec = min(1, max(ceil(self.sess_expire * 0.1), 10))
@@ -331,35 +352,37 @@ class AsyncLoops():
         user_expire = ceil(sess_expire * 1.5)
 
         while self.get_loop_state(loop_info):
-            sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.server_id)
+            sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.serv_id)
             for sess_id in sess_ids:
-                if not self.redis.exists(self.get_heartbeat_name('sess', sess_id)):
+                if not self.redis.exists(self.get_heartbeat_name(scope='sess',
+                                                                 postfix=sess_id)):
                     continue
 
                 # heartbeat for any session renews the server
                 self.redis.expire_sec(
-                    name=self.get_heartbeat_name('server'), expire_sec=server_expire
+                    name=self.get_heartbeat_name(scope='serv'), expire_sec=server_expire
                 )
 
                 # heartbeat for any session renews the user
                 self.redis.expire_sec(
-                    name=self.get_heartbeat_name('user'), expire_sec=user_expire
+                    name=self.get_heartbeat_name(scope='user'), expire_sec=user_expire
                 )
 
                 # heartbeat for this session renews itself
                 self.redis.expire_sec(
-                    name=self.get_heartbeat_name('sess', sess_id), expire_sec=sess_expire
+                    name=self.get_heartbeat_name(scope='sess', postfix=sess_id),
+                    expire_sec=sess_expire
                 )
 
             await asyncio.sleep(sleep_sec)
 
-        await self.cleanup_server(server_id=self.server_id)
+        await self.cleanup_server(serv_id=self.serv_id)
 
         self.log.info([
             ['r', ' - ending '],
             ['b', 'server_sess_heartbeat_loop'],
             ['r', ' for server: '],
-            ['c', self.server_id],
+            ['c', self.serv_id],
         ])
 
         return

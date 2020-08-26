@@ -15,8 +15,8 @@ class WebsocketBase():
        class (keeping track of all sessions etc.)
     """
 
-    server_id = None
-    n_server_sess = 0
+    serv_id = None
+    n_serv_sess = 0
 
     managers = dict()
     widget_inits = dict()
@@ -26,23 +26,23 @@ class WebsocketBase():
         self.ws_send = ws_send
 
         self.sess_id = None
-        # self.sess_id = str(get_time('msec') + self.rnd_gen.randint(1000000, (1000000 * 10) -1))
-        self.n_server_msg = 0
+        self.user_id = None
+        self.sess_name = None
+        self.user_group = None
+        self.user_group_id = None
+
         self.has_init_sess = False
-        self.is_sess_open = False
         self.is_sess_offline = True
-        self.user_id = ''
-        self.user_group = ''
-        self.user_group_id = ''
-        self.sess_name = ''
+        self.is_sess_open = False
         self.log_send_packet = False
+        self.sess_ping_time = None
+
         self.basic_widget_sleep_sec = 1
         self.sess_expire = 10
         self.cleanup_sleep = 60
-        # self.max_sess_valid_time_sec = 20
-        self.sess_ping_time = None
         self.valid_loop_sleep_sec = 0.01
         self.n_id_digits = 4
+        self.n_serv_msg = 0
 
         # session ping/pong heartbeat
         self.sess_ping = {
@@ -67,9 +67,6 @@ class WebsocketBase():
 
         self.loop_prefix = 'ws;loop;'
         self.heartbeat_prefix = 'ws;heartbeat;'
-        self.get_widget_lock_name = (
-            lambda name: 'ws;widget;' + str(self.server_id) + ';' + str(name)
-        )
 
         self.asyncio_queue = asyncio.Queue()
 
@@ -90,10 +87,15 @@ class WebsocketBase():
 
         self.inst_data = self.base_config.inst_data
 
+        if WebsocketBase.serv_id is None:
+            self.set_server_id()
+
+        # setup the locker for this server
         self.locker = self.setup_locker()
 
-        if WebsocketBase.server_id is None:
-            self.set_server_id()
+        # update the lock_namespace (after the session id has been set, maybe
+        # later other session parameters would be needed?)
+        self.update_lock_namespace()
 
         return
 
@@ -104,24 +106,21 @@ class WebsocketBase():
 
         # dynamic lock names, based on the current properties
         lock_namespace = {
-            'loop_state': lambda: 'loop_state' + str(self.server_id),
-            'server': lambda: 'server;' + str(self.server_id),
-            'sess': lambda: 'sess;' + str(self.server_id) + str(self.sess_id),
-            'sess_redis': lambda: 'sess_redis;' + str(self.server_id) + str(self.sess_id),
+            'loop_state':
+            lambda: 'loop_state;serv' + str(self.serv_id),
+            'serv':
+            lambda: 'serv;' + str(self.serv_id),
+            'user':
+            lambda: 'serv;' + str(self.serv_id) + ';user;' + str(self.user_id),
+            'sess':
+            lambda: 'serv;' + str(self.serv_id) + ';sess;' + str(self.sess_id),
+            'sess_redis':
+            lambda: 'redis;serv' + str(self.serv_id) + ';sess' + str(self.sess_id),
         }
 
-        # add all registered widget types as possible locks
-        widget_types = []
-        for values in self.allowed_widget_types.values():
-            widget_types += values
-
-        # the lambda must be executed for the correct value to be taken
-        def build_lambda(name):
-            return (lambda: name)
-
-        for widget_type in widget_types:
-            lock_name = self.get_widget_lock_name(widget_type)
-            lock_namespace[lock_name] = build_lambda(lock_name)
+        self.get_widget_lock_name = (
+            lambda name: 'widget;' + str(name) + ';serv;' + self.serv_id
+        )
 
         # after setting up redis, initialise the lock manager
         locker = LockManager(
@@ -146,8 +145,31 @@ class WebsocketBase():
         return locker
 
     # ------------------------------------------------------------------
+    def update_lock_namespace(self):
+        """after the session id has been set, update the widget locks
+        """
+
+        lock_namespace = {}
+        # add all registered widget types as possible locks
+        widget_types = []
+        for values in self.allowed_widget_types.values():
+            widget_types += values
+
+        # the lambda must be executed for the correct value to be taken
+        def build_lambda(name):
+            return (lambda: name)
+
+        for widget_type in widget_types:
+            lock_name = self.get_widget_lock_name(widget_type)
+            lock_namespace[lock_name] = build_lambda(lock_name)
+
+        self.locker.locks.update_lock_namespace(lock_namespace)
+
+        return
+
+    # ------------------------------------------------------------------
     async def add_server_attr(self, name, key, value):
-        self.locker.locks.validate('server')
+        self.locker.locks.validate('serv')
         attr = getattr(WebsocketBase, name)
         attr[key] = value
 
@@ -155,7 +177,7 @@ class WebsocketBase():
 
     # ------------------------------------------------------------------
     async def remove_server_attr(self, name, key):
-        self.locker.locks.validate('server')
+        self.locker.locks.validate('serv')
         attr = getattr(WebsocketBase, name)
         attr.pop(key, None)
 
@@ -163,7 +185,7 @@ class WebsocketBase():
 
     # ------------------------------------------------------------------
     async def get_server_attr(self, name):
-        self.locker.locks.validate('server')
+        self.locker.locks.validate('serv')
         attr = getattr(WebsocketBase, name)
 
         return attr
@@ -177,7 +199,7 @@ class WebsocketBase():
            a larger a date/time msec prefix can be used
         """
 
-        WebsocketBase.server_id = (
+        WebsocketBase.serv_id = (
             'serv_' + str(self.base_config.app_port) + '_'
             + get_rnd(n_digits=self.n_id_digits, out_type=str, is_unique_seed=True)
         )
@@ -195,11 +217,11 @@ class WebsocketBase():
 
         id_str = '{:0' + str(self.n_id_digits) + 'd}'
 
-        async with self.locker.locks.acquire('server'):
+        with self.locker.locks.acquire('serv'):
             self.sess_id = (
-                self.server_id + '_sess_' + id_str.format(WebsocketBase.n_server_sess)
+                self.serv_id + '_sess_' + id_str.format(WebsocketBase.n_serv_sess)
             )
-            WebsocketBase.n_server_sess += 1
+            WebsocketBase.n_serv_sess += 1
 
         return
 
@@ -209,7 +231,7 @@ class WebsocketBase():
 # ------------------------------------------------------------------
 # ------------------------------------------------------------------
 class __old_SocketManager__():
-    # server_id = None
+    # serv_id = None
 
     # # common dictionaries for all instances of
     # # the class (keeping track of all sessions etc.)
@@ -257,8 +279,8 @@ class __old_SocketManager__():
         # # cleanup the database of old sessions upon restart
         # # ------------------------------------------------------------------
         # with __old_SocketManager__.lock:
-        #     if __old_SocketManager__.server_id is None:
-        #         __old_SocketManager__.server_id = 'server_' + get_rnd(n_digits=10, out_type=str)
+        #     if __old_SocketManager__.serv_id is None:
+        #         __old_SocketManager__.serv_id = 'server_' + get_rnd(n_digits=10, out_type=str)
 
         # sess_ids_now = self.redis.s_get('ws;all_sess_ids')
         # for sess_id in sess_ids_now:
@@ -272,14 +294,14 @@ class __old_SocketManager__():
     # # upon any new connection
     # # ------------------------------------------------------------------
     # def recv_connect(self):
-    #     server_id = __old_SocketManager__.server_id
+    #     serv_id = __old_SocketManager__.serv_id
     #     tel_ids = self.inst_data.get_inst_ids()
     #     tel_id_to_types = self.inst_data.get_inst_id_to_types()
     #     categorical_types = self.inst_data.get_categorical_types()
 
     #     self.emit(
     #         'initial_connect', {
-    #             'server_id': server_id,
+    #             'serv_id': serv_id,
     #             'tel_ids': tel_ids,
     #             'tel_id_to_types': tel_id_to_types,
     #             'categorical_types': categorical_types,
@@ -297,9 +319,9 @@ class __old_SocketManager__():
     #     # print 'on_back_from_offline.................'
     #     # first validate that eg the server hasnt been restarted while this session has been offline
     #     sess_ids = self.redis.s_get('ws;all_sess_ids')
-    #     server_id = __old_SocketManager__.server_id if self.sess_id in sess_ids else ''
+    #     serv_id = __old_SocketManager__.serv_id if self.sess_id in sess_ids else ''
 
-    #     self.emit('reconnect', {'server_id': server_id})
+    #     self.emit('reconnect', {'serv_id': serv_id})
 
     #     # now run any widget specific functions
     #     with __old_SocketManager__.lock:
@@ -347,7 +369,7 @@ class __old_SocketManager__():
     #     ])
     #     self.log.debug([
     #         ['b', ' - session details: '],
-    #         ['y', __old_SocketManager__.server_id, ''],
+    #         ['y', __old_SocketManager__.serv_id, ''],
     #         ['p', self.user_group_id, ''],
     #         ['y', self.user_id, ''],
     #         ['p', self.user_group_id, ''],
@@ -630,7 +652,7 @@ class __old_SocketManager__():
     # def update_sync_group(self):
     #     widget_ids = []
     #     with __old_SocketManager__.lock:
-    #         widget_infos = self.redis.h_get_all(name='ws;widget_infos')
+    #         widget_infos = self.redis.h_get_all(name='ws;widget_infos', default_val={})
     #         for widget_id, widget_now in widget_infos.items():
     #             if widget_now['n_icon'] == -1 and widget_id in __old_SocketManager__.widget_inits:
     #                 widget_ids.append(widget_id)
@@ -1103,7 +1125,7 @@ class __old_SocketManager__():
     #     if sess_id is None:
     #         return
     #     self.log.info([
-    #         ['b', ' - cleanup_session sessionId(', __old_SocketManager__.server_id, ') '],
+    #         ['b', ' - cleanup_session sessionId(', __old_SocketManager__.serv_id, ') '],
     #         ['p', sess_id],
     #     ])
 
@@ -1115,7 +1137,7 @@ class __old_SocketManager__():
 
     #     for widget_id in widget_ids:
     #         self.log.info([[
-    #             'b', ' - cleanup_session widget_id (', __old_SocketManager__.server_id, ') '
+    #             'b', ' - cleanup_session widget_id (', __old_SocketManager__.serv_id, ') '
     #         ], ['p', widget_id]])
 
     #         self.redis.h_del(name='ws;widget_infos', key=widget_id)
@@ -1138,7 +1160,7 @@ class __old_SocketManager__():
     # # ------------------------------------------------------------------
     # def sess_heartbeat(self, loop_info):
     #     self.log.info([['y', ' - starting shared_asy_func('], ['g', 'sess_heartbeat'],
-    #                    ['y', ') - ', __old_SocketManager__.server_id]])
+    #                    ['y', ') - ', __old_SocketManager__.serv_id]])
 
     #     sleep_sec = max(ceil(self.sess_expire * 0.1), 10)
     #     sess_expire = int(max(self.sess_expire, sleep_sec * 2))
@@ -1167,7 +1189,7 @@ class __old_SocketManager__():
     # ------------------------------------------------------------------
     def cleanup(self, loop_info):
         self.log.info([['y', ' - starting shared_asy_func('], ['g', 'cleanup'],
-                       ['y', ') - ', __old_SocketManager__.server_id]])
+                       ['y', ') - ', __old_SocketManager__.serv_id]])
         sleep(3)
 
         while self.is_valid_asy_func(loop_info):

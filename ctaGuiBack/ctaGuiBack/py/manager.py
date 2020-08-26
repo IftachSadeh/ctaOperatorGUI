@@ -134,7 +134,7 @@ class Manager():
 
         # setup the lock manager
         # prefix for all lock names in redis
-        lock_prefix = service_name + ';lock;'
+        lock_prefix = 'utils;lock;' + service_name + ';'
         # dynamic lock names, based on the current properties
         lock_namespace = {
             'loop': lambda: 'loop',
@@ -149,7 +149,8 @@ class Manager():
             is_passive=True,
         )
 
-        # with self.locker.locks.acquire('loop'):
+        # with self.locker.locks.acquire('loop', debug=1):
+        #     print(' - now im locked :)')
         #     pass
 
         # for debugging, override the global flag
@@ -160,7 +161,7 @@ class Manager():
                 self.redis.flush()
 
         elif service_name == 'redis_services':
-            self.locker = LockManager(
+            LockManager(
                 log=self.log,
                 redis=self.redis,
                 base_config=self.base_config,

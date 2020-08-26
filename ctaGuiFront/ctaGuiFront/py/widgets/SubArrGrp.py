@@ -78,7 +78,7 @@ class SubArrGrp(BaseWidget):
 
         sub_arrs = self.redis.get(name="sub_arrs", default_val=[])
         obs_block_ids = self.redis.get(name=('obs_block_ids_' + 'run'), default_val=[])
-        inst_pos = self.redis.h_get_all(name="inst_pos")
+        inst_pos = self.redis.h_get_all(name='inst_pos', default_val={})
 
         data = {
             "tel": [],

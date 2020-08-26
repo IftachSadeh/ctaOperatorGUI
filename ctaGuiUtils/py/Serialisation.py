@@ -70,7 +70,7 @@ class Serialisation():
                 data = data_in
 
             else:
-                raise Exception('unknown data type')
+                raise Exception('unknown data type', data_in)
 
         except Exception as e:
             if log is None:
@@ -88,9 +88,22 @@ class Serialisation():
     # ------------------------------------------------------------------
     @classmethod
     def is_empty_obj(self, data):
-        if isinstance(data, list):
+        if data is None:
+            is_empty = True
+        elif isinstance(data, str):
+            is_empty = (data == '')
+        elif isinstance(data, bytes):
+            is_empty = (data == b'')
+        elif isinstance(data, (list, set, tuple)):
             is_empty = (len(data) == 0)
+        elif isinstance(data, dict):
+            is_empty = (len(data.keys()) == 0)
+        elif isinstance(data, (int, float, complex)):
+            is_empty = False
         else:
-            is_empty = (data is None or data == '')
+            raise Exception('unknown data type', data)
 
         return is_empty
+
+
+s = Serialisation()

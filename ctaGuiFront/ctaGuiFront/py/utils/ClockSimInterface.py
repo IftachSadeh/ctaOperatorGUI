@@ -63,7 +63,7 @@ class ClockSimInterface():
             ['y', ' - starting '],
             ['b', 'clock_sim_sim_params'],
             ['y', ' for server: '],
-            ['c', self.sm.server_id],
+            ['c', self.sm.serv_id],
         ])
         sleep_sec = 0.1
 
@@ -79,20 +79,28 @@ class ClockSimInterface():
             if msg is None:
                 continue
 
-            async with self.sm.locker.locks.acquire('server'):
-                managers = await self.sm.get_server_attr('managers')
+            # instead of locking the server, we accept a possible KeyError
+            # in case another process changes the managers dict
+            try:
+                all_sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.sm.serv_id)
 
-            all_sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.sm.server_id)
+                async with self.sm.locker.locks.acquire('serv'):
+                    managers = await self.sm.get_server_attr('managers')
+                    all_sess_ids = [s for s in all_sess_ids if s in managers.keys()]
 
-            all_sess_ids = [s for s in all_sess_ids if s in managers.keys()]
-            for sess_id in all_sess_ids:
-                await managers[sess_id].ask_sim_clock_sim_params()
+                for sess_id in all_sess_ids:
+                    await managers[sess_id].ask_sim_clock_sim_params()
+
+            except KeyError as e:
+                pass
+            except Exception as e:
+                raise e
 
         self.log.info([
             ['r', ' - ending '],
             ['b', 'clock_sim_sim_params'],
             ['r', ' for server: '],
-            ['c', self.sm.server_id],
+            ['c', self.sm.serv_id],
         ])
 
         return

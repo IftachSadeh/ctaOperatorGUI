@@ -230,7 +230,14 @@ setup_view.view000 = function() {
 
     sock.add_widget({
         name_tag: 'EmptyExample',
-        table_title: 'empty_example',
+        table_title: 'empty_example 0',
+        has_icon: true,
+        has_drawer: false,
+    })
+
+    sock.add_widget({
+        name_tag: 'EmptyExample',
+        table_title: 'empty_example 1',
         has_icon: true,
         has_drawer: false,
     })

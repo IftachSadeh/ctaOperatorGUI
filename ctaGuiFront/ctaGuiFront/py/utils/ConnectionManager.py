@@ -154,15 +154,15 @@ class ConnectionManager():
 
     # ------------------------------------------------------------------
     async def emit(self, event_name, data={}, metadata=None):
-        # lock in order to prevent racing conditions on self.n_server_msg
-        async with self.locker.locks.acquire('server'):
+        # lock in order to prevent racing conditions on self.n_serv_msg
+        async with self.locker.locks.acquire('serv'):
             data_out = {
                 'event_name': event_name,
                 'sess_id': self.sess_id,
-                'n_server_msg': self.n_server_msg,
+                'n_serv_msg': self.n_serv_msg,
                 'send_time_msec': get_time('msec'),
             }
-            self.n_server_msg += 1
+            self.n_serv_msg += 1
 
         if metadata is not None:
             data_out.update(metadata)
@@ -175,7 +175,7 @@ class ConnectionManager():
         except (ConnectionClosed, ConnectionClosedError) as e:
             self.log.warn([
                 ['r', ' - connection problems ? '],
-                ['c', self.server_id, self.sess_id, ': '],
+                ['c', self.serv_id, self.sess_id, ': '],
                 ['r', e],
             ])
         except Exception as e:
@@ -329,9 +329,9 @@ class ConnectionManager():
         if sess_id is None:
             sess_id = self.sess_id
 
-        sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.server_id)
+        sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.serv_id)
         if sess_id in sess_ids:
-            if self.redis.exists(self.get_heartbeat_name('sess', sess_id)):
+            if self.redis.exists(self.get_heartbeat_name(scope='sess', postfix=sess_id)):
                 return True
 
         return False

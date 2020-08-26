@@ -446,7 +446,7 @@ class ArrZoomer():
         }
         ArrZoomer.send_data['s_1'] = dict()
 
-        widget_infos = self.redis.h_get_all(name='ws;widget_infos', )
+        widget_infos = self.redis.h_get_all(name='ws;widget_infos', default_val={})
 
         for widget_id, widget_now in widget_infos.items():
             if widget_now['widget_name'] != self.widget_name:

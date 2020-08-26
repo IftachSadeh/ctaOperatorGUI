@@ -38,7 +38,7 @@ function SocketManager() {
     let init_views = {
     }
     let is_south = window.SITE_TYPE === 'S'
-    // let server_id = null
+    // let serv_id = null
     let base_app = window.base_app
     let tab_table_title_id = 'table_title'
     let tab_table_main_id = 'table_content'
@@ -63,7 +63,7 @@ function SocketManager() {
 
     this_top.n_client_msg = 0
 
-    this_top.n_wigits = -1
+    this_top.n_wigits = 0
 
     // wrappers for encoding/decoding data for socket communications
     const stringify_replacer = (key, value) => !is_def(value) ? null : value
@@ -311,10 +311,6 @@ function SocketManager() {
                     is_verb: true,
                     log_level: LOG_LEVELS.ERROR,
                 })
-            }
-
-            if (is_first) {
-                this_top.n_wigits += 1
             }
 
             if (is_first) {
@@ -992,10 +988,13 @@ function SocketManager() {
 
         // create the table element
         let tab_table_id = unique()
+
         let widget_id = (
             this_top.sess_id + '_widg_'
             + String(this_top.n_wigits).padStart(3, '0')
         )
+        this_top.n_wigits += 1
+
         let main_id = widget_id + 'main'
         let gs_name = tab_table_id + 'tbl'
 

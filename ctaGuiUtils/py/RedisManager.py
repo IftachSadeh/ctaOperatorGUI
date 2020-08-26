@@ -124,26 +124,50 @@ class RedisBase():
         return data
 
     # ------------------------------------------------------------------
-    def h_m_get(self, name=None, key=None, filter=False):
+    def h_m_get(self, name=None, key=None, keys=None, filter_out=False, default_val=None):
         try:
-            if (name is None) or (key is None):
-                raise Exception('redis.h_m_get(): name/key is None', name, key)
+            if name is None:
+                raise Exception('redis.h_m_get(): name/key is None', name)
 
-            if isinstance(key, list) and len(key) == 0:
-                return []
+            if (int(key is None) + int(keys is None)) != 1:
+                raise Exception(
+                    'redis.h_m_get(): must provide exactly one of key,keys',
+                    (name, key, keys),
+                )
+
+            if key is not None and not isinstance(key, str):
+                raise Exception(
+                    'redis.h_m_get(): key must be of type str',
+                    (name, key, keys),
+                )
+
+            if keys is not None and not isinstance(keys, (list, set, tuple)):
+                raise Exception(
+                    'redis.h_m_get(): keys must be one of (list, set, tuple)',
+                    (name, key, keys),
+                )
+
+            if keys is not None and len(keys) == 0:
+                return default_val
 
             # returns a list of entries (if empty, gives [None])
-            data = self.base.hmget(name, key)
+            data = self.base.hmget(name, (key if keys is None else keys))
 
-            if filter:
-                if isinstance(data, list):
+            if filter_out:
+                if isinstance(data, (list, set, tuple)):
                     data = [x for x in data if x is not None]
 
-            if not self.is_empty(data) and data != [None]:
+            if isinstance(data, (list, set, tuple)):
+                if all([d is None for d in data]):
+                    return default_val
+
+            if self.is_empty(data):
+                return default_val
+            else:
                 data = self.unpack(data)
 
         except Exception as e:
-            self.log.error([['r', 'redis.h_m_get(): '], ['o', name, key]])
+            self.log.error([['r', 'redis.h_m_get(): '], ['o', name, key, keys]])
             raise e
 
         return data
