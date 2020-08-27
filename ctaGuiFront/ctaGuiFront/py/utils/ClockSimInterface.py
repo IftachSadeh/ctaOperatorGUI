@@ -20,12 +20,6 @@ class ClockSimInterface():
             self.set_sim_clock_sim_params,
         )
 
-        setattr(
-            self.sm,
-            'clock_sim_update_sim_params',
-            self.clock_sim_update_sim_params,
-        )
-
         return
 
     # ------------------------------------------------------------------
@@ -53,54 +47,5 @@ class ClockSimInterface():
             channel='clock_sim_set_sim_params',
             message=data_pubsub,
         )
-
-        return
-
-    # ---------------------------------------------------------------------------
-    async def clock_sim_update_sim_params(self, loop_info):
-
-        self.log.info([
-            ['y', ' - starting '],
-            ['b', 'clock_sim_sim_params'],
-            ['y', ' for server: '],
-            ['c', self.sm.serv_id],
-        ])
-        sleep_sec = 0.1
-
-        # setup the channel once
-        pubsub_tag = 'clock_sim_updated_sim_params'
-        while self.redis.set_pubsub(pubsub_tag) is None:
-            await asyncio.sleep(sleep_sec)
-
-        while self.sm.get_loop_state(loop_info):
-            await asyncio.sleep(sleep_sec)
-
-            msg = self.redis.get_pubsub(key=pubsub_tag)
-            if msg is None:
-                continue
-
-            # instead of locking the server, we accept a possible KeyError
-            # in case another process changes the managers dict
-            try:
-                all_sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.sm.serv_id)
-
-                async with self.sm.locker.locks.acquire('serv'):
-                    managers = await self.sm.get_server_attr('managers')
-                    all_sess_ids = [s for s in all_sess_ids if s in managers.keys()]
-
-                for sess_id in all_sess_ids:
-                    await managers[sess_id].ask_sim_clock_sim_params()
-
-            except KeyError as e:
-                pass
-            except Exception as e:
-                raise e
-
-        self.log.info([
-            ['r', ' - ending '],
-            ['b', 'clock_sim_sim_params'],
-            ['r', ' for server: '],
-            ['c', self.sm.serv_id],
-        ])
 
         return

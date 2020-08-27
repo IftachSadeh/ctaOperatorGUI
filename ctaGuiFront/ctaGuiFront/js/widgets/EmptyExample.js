@@ -69,7 +69,6 @@ window.empty_example_svg_mains = {
 let main_empty_example = function(opt_in) {
     // let my_unique_id = unique()
     let widget_type = opt_in.widget_type
-    let widget_source = opt_in.widget_source
     let tag_arr_zoomerPlotsSvg = opt_in.base_name
     let widget_id = opt_in.widget_id
     let widget_ele = opt_in.widget_ele
@@ -106,15 +105,16 @@ let main_empty_example = function(opt_in) {
     //
     // -------------------------------------------------------------------
     function init_data(data_in) {
-        if (sock.multiple_inits({
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: icon_divs,
         })
 
@@ -126,7 +126,8 @@ let main_empty_example = function(opt_in) {
     //
     // -------------------------------------------------------------------
     function update_data(data_in) {
-        window.empty_example_svg_mains[data_in.widget_id].update_data(data_in.data)
+        let svg_mains = window.empty_example_svg_mains[data_in.metadata.widget_id]
+        svg_mains.update_data(data_in.data)
     }
     this.update_data = update_data
 
@@ -312,7 +313,6 @@ let main_empty_example = function(opt_in) {
             )
 
             let emit_data = {
-                widget_source: widget_source,
                 widget_name: widget_type,
                 widget_id: my_message_data.widget_id,
                 method_name: 'send_rnd_message',

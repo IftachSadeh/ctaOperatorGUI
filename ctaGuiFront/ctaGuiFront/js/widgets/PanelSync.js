@@ -67,7 +67,6 @@ sock.widget_table[main_script_tag] = function(opt_in) {
 // -------------------------------------------------------------------
 let sock_panel_sync = function(opt_in) {
     let widget_type = opt_in.widget_type
-    let widget_source = opt_in.widget_source
 
     // -------------------------------------------------------------------
     // ask for update for state1 data for a given module
@@ -78,7 +77,6 @@ let sock_panel_sync = function(opt_in) {
         }
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: opt_in.widget_id,
             method_name: 'ask_data',
@@ -101,7 +99,6 @@ let sock_panel_sync = function(opt_in) {
         data.data = opt_in.data
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: data.widget_id,
             method_name: 'set_sync_groups',
@@ -148,15 +145,16 @@ let main_panel_sync = function(opt_in) {
     //
     // -------------------------------------------------------------------
     function init_data(data_in) {
-        if (sock.multiple_inits({
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: null,
         })
     
@@ -2186,10 +2184,10 @@ let main_panel_sync = function(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function get_sync_state(data_in) {
-    // console.log(' - main_panel_sync - get_sync_state ',data_in);
+    function update_sync_state(data_in) {
+    // console.log(' - main_panel_sync - update_sync_state ',data_in);
     }
-    this.get_sync_state = get_sync_state
+    this.update_sync_state = update_sync_state
 
     let svg_main = new SvgMain()
 }

@@ -115,7 +115,6 @@ sock.widget_table[main_script_tag] = function(opt_in) {
 // -------------------------------------------------------------------
 let sock_sched_block_controller = function(opt_in) {
     let widget_type = opt_in.widget_type
-    let widget_source = opt_in.widget_source
     // // -------------------------------------------------------------------
     // // get data from the server for a given telescope
     // // -------------------------------------------------------------------
@@ -126,7 +125,7 @@ let sock_sched_block_controller = function(opt_in) {
     //   data.tel_id    = opt_in.tel_id;
     //   data.propId   = opt_in.propId;
     //   let emit_data = {
-    //     'widget_source':widget_source, 'widget_name':widget_type, 'widget_id':widget_id,
+    //     'widget_name':widget_type, 'widget_id':widget_id,
     //     'method_name':'sched_block_controllerAskTelData',
     //     'method_arg':data
     //   };
@@ -146,7 +145,6 @@ let sock_sched_block_controller = function(opt_in) {
         data.new_block_queue = opt_in.new_block_queue
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: data.widget_id,
             method_name: 'sched_block_controller_push_queue',
@@ -167,7 +165,7 @@ let sock_sched_block_controller = function(opt_in) {
 
         $.each(sock.all_widgets[widget_type].widgets, function(widget_id_now, module_now) {
             console.log(widget_id_now, module_now)
-            if (data.sess_widget_ids.indexOf(widget_id_now) >= 0) {
+            if (data.metadata.sess_widget_ids.indexOf(widget_id_now) >= 0) {
                 console.log(sock.all_widgets[widget_type])
                 sock.all_widgets[widget_type].widgets[widget_id_now].scheduleSuccessfullyUpdate()
             }
@@ -448,15 +446,16 @@ let main_sched_blockController = function(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: icon_divs,
         })
 
@@ -818,7 +817,7 @@ let main_sched_blockController = function(opt_in) {
         this.out = out
     }()
 
-    function sync_state_send(data_in) {
+    function send_sync_state_to_server(data_in) {
         if (sock.con_stat.is_offline()) {
             return
         }

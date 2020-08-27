@@ -55,6 +55,8 @@ function SocketManager() {
     }
     this_top.widget_table = {
     }
+    this_top.sess_widget_infos = {
+    }
 
     this_top.has_joined_session = false
     this_top.session_props = null
@@ -73,7 +75,6 @@ function SocketManager() {
     function decode_socket_data(data) {
         return JSON.parse(data)
     }
-
 
     // ---------------------------------------------------------------------------
     /**
@@ -109,7 +110,7 @@ function SocketManager() {
                     }
 
                     let event_data = decode_socket_data(event.data)
-                    let event_name = event_data.event_name
+                    let event_name = event_data.metadata.event_name
 
                     if (is_def(events[event_name])) {
                         // console.log(' - onmessage - ', [event_data.sess_id, event_name])
@@ -178,24 +179,28 @@ function SocketManager() {
                 data_in = {
                 }
             }
-            let data = {
+            let metadata = {
                 event_name: event_name,
                 sess_id: this_top.sess_id,
                 n_client_msg: this_top.n_client_msg,
                 send_time_msec: get_time_msec(),
-                data: data_in,
             }
             if (is_def(metadata_in)) {
                 $.each(metadata_in, function(key, data_now) {
-                    data[key] = data_now
+                    metadata[key] = data_now
                 })
             }
             this_top.n_client_msg += 1
             
-            // console.log('sending ', event_name)
+            let data_send = {
+                metadata: metadata,
+                data: data_in,
+            }
+            
+            // console.log('sending ', event_name, is_ws_open())
             if (is_ws_open()) {
                 ws.send(
-                    encode_socket_data(data)
+                    encode_socket_data(data_send)
                 )
             }
 
@@ -254,12 +259,31 @@ function SocketManager() {
         this_top.socket = new SocketInterface()
         this_top.socket.setup_websocket()
 
-        // -------------------------------------------------------------------
-        //
-        // -------------------------------------------------------------------
+        let is_init = true
         let is_first = true
-        function initial_connect(data_in) {
-            // console.log(' -ZZZ- initial_connect - ')
+        this_top.socket.on('initial_connect', function(data_in) {
+            // console.log('xxxxXXXXXXXXxxx initial_connect', is_first, data_in)
+            let data = data_in.data
+            let metadata = data_in.metadata
+            // console.log('xxx', '\n- data:',data,'\n- metadata:', metadata, '\n')
+
+            if (is_first) {
+                initial_connect(is_first, data)
+                is_first = false
+            }
+            else {
+                // if this is an exsisting session reconnecting, override
+                // the sess_id, which will also be transmitted to the server
+                data.sess_id = this_top.sess_id
+                metadata.sess_id = this_top.sess_id
+
+                // console.log(' - reconnect - ', data_in)
+                initial_connect(is_first, data)
+            }
+        })
+
+        function initial_connect(is_first, data_in) {
+            // console.log(' -ZZZ- initial_connect - ', data_in)
             
             let tel_info = {
             }
@@ -336,30 +360,24 @@ function SocketManager() {
                 }
                 this_top.has_joined_session = true
             }
-            is_first = false
+            
+            // in case of reconnection, make sure the server has registered
+            // all the widgets for this session
+            if (!is_first) {
+                this_top.socket.emit('sess_setup_finalised')
+                
+                $.each(this_top.sess_widget_infos, function(widget_id, ele_0) {
+                    let widget_type = ele_0.widget_type
+                    send_widget_setup({
+                        'widget_id': widget_id,
+                        'widget_type': widget_type,
+                    })
+                })
+            }
+            
 
             return
         }
-
-        let is_init = true
-        this_top.socket.on('initial_connect', function(data_in) {
-            // console.log('xxxxXXXXXXXXxxx initial_connect', is_init)
-            if (is_init) {
-                is_init = false
-                initial_connect(data_in.data)
-            }
-            else {
-                // if this is an exsisting session reconnecting, override
-                // the sess_id, which will also be transmitted to the server
-                data_in.sess_id = this_top.sess_id
-                data_in.data.sess_id = this_top.sess_id
-
-                // console.log(' - reconnect - ', data_in)
-                initial_connect(data_in.data)
-                // reconnect(data_in)
-            }
-        })
-
 
         //
         this_top.socket.on('reload_session', function(data_in) {
@@ -570,15 +588,16 @@ function SocketManager() {
         // -------------------------------------------------------------------
         // run the respective sync-state function for each widget
         // -------------------------------------------------------------------
-        this_top.socket.on('get_sync_state', function(data_in) {
+        this_top.socket.on('update_sync_state_from_server', function(data_in) {
+            // console.log('eeeeeeeeee', data_in)
             if (this_top.con_stat.is_offline()) {
                 return
             }
 
-            $.each(this_top.widget_infos, function(index_0, ele_0) {
-                $.each(ele_0.widgets, function(index1, ele_1) {
-                    if (is_def(ele_1.get_sync_state)) {
-                        ele_1.get_sync_state(data_in)
+            $.each(this_top.widget_infos, function(widget_type, ele_0) {
+                $.each(ele_0.widgets, function(widget_id, ele_1) {
+                    if (is_def(ele_1.update_sync_state)) {
+                        ele_1.update_sync_state(data_in)
                     }
                 })
             })
@@ -769,15 +788,16 @@ function SocketManager() {
             return
         }
 
-        let data_now = {
-        }
-        data_now.NS = opt_in.NS
-        data_now.widget_id = opt_in.widget_id
-        data_now.type = opt_in.type
-        data_now.data = opt_in.data
+        // let data_now = {
+        //     NS: opt_in.NS,
+        //     widget_id: opt_in.widget_id,
+        //     type: opt_in.type,
+        //     data: opt_in.data,
+        // }
 
         if (is_def(this_top.socket)) {
-            this_top.socket.emit('sync_state_send', data_now)
+            this_top.socket.emit('update_sync_state_from_client', opt_in)
+            // this_top.socket.emit('send_sync_state_to_server', data_now)
         }
     }
     this_top.sock_sync_state_send = sock_sync_state_send
@@ -806,11 +826,12 @@ function SocketManager() {
     //
     // -------------------------------------------------------------------
     function is_old_sync(prev_sync, data_in) {
-        if (!is_def(prev_sync[data_in.type])) {
-            return false
+        let out = false
+        if (is_def(prev_sync[data_in.type])) {
+            out = prev_sync[data_in.type].sync_time >= data_in.sync_time
         }
-
-        return prev_sync[data_in.type].sync_time >= data_in.sync_time
+        // console.log('lllllllll',data_in,'--------------', out)
+        return out
     }
     this_top.is_old_sync = is_old_sync
 
@@ -858,7 +879,6 @@ function SocketManager() {
         let widget_id = opt_in.widget_id
         let widget_type = opt_in.widget_type
         let widget_func = opt_in.widget_func
-        let widget_source = opt_in.widget_source
 
         let is_first = !is_def(this_top.widget_infos[widget_type])
 
@@ -872,6 +892,11 @@ function SocketManager() {
         let widget_data = this_top.widget_infos[widget_type]
 
         if (!is_def(widget_data.widgets[widget_id])) {
+
+            this_top.sess_widget_infos[widget_id] = {
+                'widget_type': widget_type,
+            }
+
             widget_data.widgets[widget_id] = (
                 new widget_func.main_func(opt_in)
             )
@@ -880,26 +905,26 @@ function SocketManager() {
             if (is_first) {
                 widget_data.sock_func = new widget_func.sock_func(opt_in)
 
-                // -------------------------------------------------------------------
-                // common sicket calls, which should be added only once!
-                // -------------------------------------------------------------------
+                // common sicket calls
                 this_top.socket.on('init_data', function(data_in) {
-                    if (data_in.widget_type === widget_type) {
+                    let metadata = data_in.metadata
+                    if (metadata.widget_type === widget_type) {
                         let widget_now = (
-                            widget_data.widgets[data_in.widget_id]
+                            widget_data.widgets[metadata.widget_id]
                         )
                         if (is_def(widget_now)) {
                             widget_now.init_data(data_in)
-                            init_views[data_in.widget_id] = true
+                            init_views[metadata.widget_id] = true
                         }
                     }
                 })
 
                 this_top.socket.on('update_data', function(data_in) {
+                    let metadata = data_in.metadata
                     if (this_top.con_stat.is_offline()) {
                         return
                     }
-                    if (data_in.widget_type !== widget_type) {
+                    if (metadata.widget_type !== widget_type) {
                         return
                     }
 
@@ -910,7 +935,7 @@ function SocketManager() {
                         widget_id_now,
                         module_now
                     ) {
-                        if (data_in.sess_widget_ids.indexOf(widget_id_now) >= 0) {
+                        if (metadata.sess_widget_ids.indexOf(widget_id_now) >= 0) {
                             // make sure we dont send the same data twice (as it could be modified)
                             n_wigit_now += 1
                             let data_update
@@ -924,33 +949,56 @@ function SocketManager() {
                         }
                     })
                 })
-            }
 
-            // -------------------------------------------------------------------
+            }
             // add the widget
-            // -------------------------------------------------------------------
-            this_top.socket.emit('widget', {
-                widget_source: widget_source,
-                widget_name: widget_type,
-                widget_id: widget_id,
-                method_name: 'setup',
+            send_widget_setup({
+                'widget_id': widget_id,
+                'widget_type': widget_type,
             })
         }
 
         return widget_data.widgets[widget_id]
     }
-    // this.set_socket_module = set_socket_module;
+
+    // -------------------------------------------------------------------
+    function send_widget_setup(opt_in) {
+        let widget_id = opt_in.widget_id
+        let widget_type = opt_in.widget_type
+        
+        let n_icon = this_top.sess_widget_infos[widget_id].n_icon
+        let icon_id = this_top.sess_widget_infos[widget_id].icon_id
+
+        if (!is_def(n_icon) || !is_def(icon_id)) {
+            n_icon = -1
+            icon_id = ''
+        }
+        
+        let data_out = {
+            widget_name: widget_type,
+            widget_id: widget_id,
+            method_name: 'setup',
+            n_icon: n_icon,
+            icon_id: icon_id,
+        }
+        this_top.socket.emit('widget', data_out)
+        
+        return
+    }
+
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
     function multiple_inits(opt_in) {
         if (init_views[opt_in.id]) {
-            console.error(
-                'trying to init_data multiple times ?!?!',
-                opt_in.id,
-                opt_in.data
-            )
+            this_top.socket.server_log({
+                data: {
+                    'multiple_inits / restoring session': opt_in,
+                },
+                is_verb: true,
+                log_level: LOG_LEVELS.INFO,
+            })
             return true
         }
         return false
@@ -961,14 +1009,25 @@ function SocketManager() {
     //
     // -------------------------------------------------------------------
     function set_icon_badge(opt_in) {
-        if (is_def(opt_in.icon_divs)) {
-            $.each(opt_in.icon_divs, function(index, icon_div_now) {
-                icon_badge.set_widget_icon({
-                    icon_div: icon_div_now,
-                    n_icon: opt_in.n_icon,
-                })
-            })
+        let metadata = opt_in.data.metadata
+        let n_icon = metadata.n_icon
+        let widget_id = metadata.widget_id
+        
+        this_top.sess_widget_infos[widget_id].n_icon = metadata.n_icon
+        this_top.sess_widget_infos[widget_id].icon_id = metadata.icon_id
+
+        if (!is_def(opt_in.icon_divs)) {
+            return
         }
+        
+        $.each(opt_in.icon_divs, function(index, icon_div_now) {
+            icon_badge.set_widget_icon({
+                icon_div: icon_div_now,
+                n_icon: n_icon,
+            })
+        })
+        
+        return
     }
     this_top.set_icon_badge = set_icon_badge
 
@@ -1091,11 +1150,8 @@ function SocketManager() {
     // -------------------------------------------------------------------
     function add_to_table(opt_in) {
         let widget_type = opt_in.name_tag
-        let widget_source = widget_type
-        // let widget_source = 'widget_' + widget_type
         let widget_func = opt_in.widget_func
         let base_name = opt_in.base_name
-        // let gs_name = opt_in.gs_name
         let widget_id = opt_in.widget_id
         let tab_table = opt_in.tab_table
         let icon_divs = opt_in.icon_divs
@@ -1183,7 +1239,6 @@ function SocketManager() {
             execute: function() {
                 opt_in.widget = set_socket_module({
                     widget_type: widget_type,
-                    widget_source: widget_source,
                     widget_func: widget_func,
                     base_name: base_name,
                     widget_id: widget_id,

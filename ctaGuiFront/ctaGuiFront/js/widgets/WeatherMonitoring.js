@@ -100,7 +100,6 @@ let main_weather_monitoring = function(opt_in) {
     let this_top = this
     let my_unique_id = unique()
     let widget_type = opt_in.widget_type
-    let widget_source = opt_in.widget_source
 
     window.colorPalette = get_color_theme('bright_grey')
     let is_south = window.SITE_TYPE === 'S'
@@ -445,15 +444,16 @@ let main_weather_monitoring = function(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: icon_divs,
         })
 
@@ -3572,7 +3572,6 @@ let main_weather_monitoring = function(opt_in) {
                         h: svg_dims.h[0],
                     },
                     widget_id: widget_id,
-                    widget_source: widget_source,
                     locker: locker,
                     is_south: is_south,
                     widget_type: widget_type,
@@ -3585,7 +3584,7 @@ let main_weather_monitoring = function(opt_in) {
                 // ------------------------------------------------------------------
                 // expose the sync function
                 // ------------------------------------------------------------------
-                function get_sync_state(data_sync_in) {
+                function update_sync_state(data_sync_in) {
                     arr_zoomer_base.get_sync_tel_focus(data_sync_in)
 
                     if (data_sync_in.type == 'sync_arr_zoomer_prop') {
@@ -3598,7 +3597,7 @@ let main_weather_monitoring = function(opt_in) {
                         console.log(' - example - got sync: ', is_own_sync, data_sync_in.data)
                     }
                 }
-                this_top.get_sync_state = get_sync_state
+                this_top.update_sync_state = update_sync_state
 
 
                 // ------------------------------------------------------------------

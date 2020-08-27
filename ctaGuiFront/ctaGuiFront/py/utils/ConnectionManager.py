@@ -153,25 +153,36 @@ class ConnectionManager():
         return data
 
     # ------------------------------------------------------------------
-    async def emit(self, event_name, data={}, metadata=None):
+    async def emit(self, event_name, data=None, metadata=None):
+        """construct the data/metadata dics to be sent to the session
+        """
+
+        data_send = data if data is not None else dict()
+
+        sess_widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
+
         # lock in order to prevent racing conditions on self.n_serv_msg
         async with self.locker.locks.acquire('serv'):
-            data_out = {
+            metadata_send = {
                 'event_name': event_name,
                 'sess_id': self.sess_id,
+                'sess_widget_ids': sess_widget_ids,
                 'n_serv_msg': self.n_serv_msg,
                 'send_time_msec': get_time('msec'),
             }
             self.n_serv_msg += 1
 
         if metadata is not None:
-            data_out.update(metadata)
-        data_out['data'] = data
+            metadata_send.update(metadata)
+
+        data_send = {
+            'data': data_send,
+            'metadata': metadata_send,
+        }
 
         try:
             if self.is_sess_open:
-                await self.ws_send(self.websocket_data_dump(data_out))
-
+                await self.ws_send(self.websocket_data_dump(data_send))
         except (ConnectionClosed, ConnectionClosedError) as e:
             self.log.warn([
                 ['r', ' - connection problems ? '],
@@ -347,7 +358,7 @@ class ConnectionManager():
         """
 
         try:
-            event_name = data['event_name']
+            event_name = data['metadata']['event_name']
         except Exception:
             self.log.error([
                 ['p', '\n'],

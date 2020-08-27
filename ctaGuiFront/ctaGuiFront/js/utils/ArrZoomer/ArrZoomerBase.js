@@ -51,7 +51,6 @@ window.ArrZoomerBase = function(opt_in_top) {
     let my_unique_id = unique()
     let run_loop = opt_in_top.run_loop
     let widget_id = opt_in_top.widget_id
-    let widget_source = opt_in_top.widget_source
     let locker = opt_in_top.locker
     let is_south = opt_in_top.is_south
     let widget_type = opt_in_top.widget_type
@@ -895,7 +894,7 @@ window.ArrZoomerBase = function(opt_in_top) {
             })
         }
         else {
-            console.error('undefined tag for data_in = ', data_in, ' !!!!!! ')
+            console.error('undefined data_in.type for ', data_in, ' !!!!!! ')
         }
     }
     this_top.update_data = update_data
@@ -1188,29 +1187,32 @@ window.ArrZoomerBase = function(opt_in_top) {
     let prev_sync = {
     }
     function get_sync_tel_focus(data_in) {
+        let data = data_in.data
+        let metadata = data_in.metadata
+        
         if (document.hidden || sock.con_stat.is_offline()) {
             return
         }
-        let is_old_sync = sock.is_old_sync(prev_sync, data_in.data)
+        let is_old_sync = sock.is_old_sync(prev_sync, data)
         if (is_old_sync) {
             return
         }
         
         let has_widget_id = (
-            data_in.sess_widget_ids.indexOf(widget_id) >= 0
+            metadata.sess_widget_ids.indexOf(widget_id) >= 0
         )
-        let same_widget_id = (widget_id === data_in.widget_id)
-        let same_zoomer_id = (data_in.data.arr_zoomer_id === arr_zoomer_id)
+        let same_widget_id = (widget_id === data.widget_id)
+        let same_zoomer_id = (data.arr_zoomer_id === arr_zoomer_id)
         if (!has_widget_id || same_widget_id || same_zoomer_id) {
             return
         }
 
-        let type = data_in.type
-        prev_sync[type] = data_in.data
+        let type = data.type
+        prev_sync[type] = data.data
 
         // react to specific events by type
         if (type === 'sync_tel_focus') {
-            sync_tel_focus(data_in.data)
+            sync_tel_focus(data.data)
         }
 
         return
@@ -1259,7 +1261,6 @@ window.ArrZoomerBase = function(opt_in_top) {
         }
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: widget_id,
             method_name: 'arr_zoomer_ask_init_data',
@@ -1277,6 +1278,7 @@ window.ArrZoomerBase = function(opt_in_top) {
         if (data_in.data.arr_zoomer_id !== arr_zoomer_id) {
             return
         }
+
         run_when_ready({
             pass: function() {
                 return !sock.con_stat.is_offline()
@@ -1302,7 +1304,6 @@ window.ArrZoomerBase = function(opt_in_top) {
         data.zoom_target = opt_in.zoom_target
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: widget_id,
             method_name: 'arr_zoomer_ask_data_s1',
@@ -1348,7 +1349,6 @@ window.ArrZoomerBase = function(opt_in_top) {
         data_widget.zoom_target_prop = tree_widget_state.zoom_target_prop
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: widget_id,
             method_name: 'arr_zoomer_set_widget_state',
@@ -1366,19 +1366,24 @@ window.ArrZoomerBase = function(opt_in_top) {
     // get update for state1 data which was explicitly asked for by a given module
     // ------------------------------------------------------------------
     sock.socket.on('arr_zoomer_get_data_s1', function(data_in) {
+        let data = data_in.data
+        let metadata = data_in.metadata
+
         if (sock.con_stat.is_offline()) {
             return
         }
-        if (data_in.arr_zoomer_id !== arr_zoomer_id) {
+        if (data.arr_zoomer_id !== arr_zoomer_id) {
             return
         }
-        
-        if (data_in.id !== '' && data_in.type === 's11') {
-            // console.log('-server- get_data_s1 ',data_in);
-            if (is_def(sock.widget_infos[widget_type].widgets[data_in.widget_id])) {
-                this_top.get_data_s1(data_in.widget_id, data_in)
+
+        if (data.id !== '' && data.type === 's11') {
+            // console.log('-server- get_data_s1 ',data);
+            if (is_def(sock.widget_infos[widget_type].widgets[metadata.widget_id])) {
+                this_top.get_data_s1(metadata.widget_id, data)
             }
         }
+        
+        return
     })
 
     // ------------------------------------------------------------------
@@ -1391,29 +1396,31 @@ window.ArrZoomerBase = function(opt_in_top) {
 
         let widgets = sock.widget_infos[widget_type].widgets
         $.each(widgets, function(widget_id_now, module_now) {
-            if (data_in.sess_widget_ids.indexOf(widget_id_now) >= 0) {
-                this_top.update_data(data_in)
+            if (data_in.metadata.sess_widget_ids.indexOf(widget_id_now) >= 0) {
+                this_top.update_data(data_in.data)
             }
         })
+        
+        return
     })
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
     run_loop.init({
-        tag: 'sync_state_send' + my_unique_id,
+        tag: 'send_sync_state_to_server' + my_unique_id,
         func: sync_state_send_now,
         n_keep: 1,
         wait: times.wait_sync_state,
     })
 
-    function sync_state_send(data_in) {
+    function send_sync_state_to_server(data_in) {
         run_loop.push({
-            tag: 'sync_state_send' + my_unique_id,
+            tag: 'send_sync_state_to_server' + my_unique_id,
             data: data_in,
         })
     }
-    this_top.sync_state_send = sync_state_send
+    this_top.send_sync_state_to_server = send_sync_state_to_server
 
     function sync_state_send_now(data_in) {
         if (sock.con_stat.is_offline()) {
@@ -1427,7 +1434,7 @@ window.ArrZoomerBase = function(opt_in_top) {
             ]
             if (!locker.are_free(sync_locks)) {
                 setTimeout(function() {
-                    sync_state_send(data_in)
+                    send_sync_state_to_server(data_in)
                 }, times.anim)
                 return
             }

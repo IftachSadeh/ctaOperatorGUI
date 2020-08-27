@@ -40,6 +40,12 @@ class AsyncLoops():
 
             name = prefix + ';' + postfix
 
+        elif scope == 'user':
+            if postfix is None:
+                postfix = self.user_id
+
+            name = prefix + ';' + postfix + ';serv;' + self.serv_id
+
         elif scope == 'sess':
             if postfix is None:
                 postfix = self.sess_id
@@ -120,8 +126,11 @@ class AsyncLoops():
 
         # if not any(n in group for n in [self.serv_id, self.sess_id]):
         if not any(n in group for n in [self.serv_id]):
-            print('------', group, self.serv_id)
-            raise Exception('loop group must include server or session scopes', )
+            self.log.warn([
+                ['r', '- server old / name not in group name ?!?'],
+                ['p', self.serv_id, ''],
+                ['o', group],
+            ])
         return
 
     # ------------------------------------------------------------------
@@ -192,14 +201,33 @@ class AsyncLoops():
         ]
 
         if self.is_simulation:
+            func_args = {
+                'pubsub_tag': 'clock_sim_updated_sim_params',
+                'sess_func': 'ask_sim_clock_sim_params',
+            }
             loops += [
                 {
                     'id': 'clock_sim_update_sim_params_loop',
-                    'func': self.clock_sim_update_sim_params,
+                    'func': self.get_pubsub_loop,
                     'group': self.get_loop_group_name(scope='serv'),
                     'heartbeat': self.get_heartbeat_name(scope='serv'),
+                    'func_args': func_args,
                 },
             ]
+
+        func_args = {
+            'pubsub_tag': 'ws;update_sync_state;' + self.user_id,
+            'sess_func': 'update_sync_state_to_client',
+        }
+        loops += [
+            {
+                'id': 'update_sync_state_loop',
+                'func': self.get_pubsub_loop,
+                'group': self.get_loop_group_name(scope='user'),
+                'heartbeat': self.get_heartbeat_name(scope='serv'),
+                'func_args': func_args,
+            },
+        ]
 
         # async_loops = []
         # for loop_info in loops:
@@ -318,6 +346,63 @@ class AsyncLoops():
                 #     self.log.info([['r', ' - clear loop '], ['c', group], ['r', ' ...'],])
                 # else:
                 #     self.log.info([['r', ' - clear loop '], ['c', loop_info['group']], ['r', ' / '], ['c', loop_info['id']], ['r', ' ...'],])
+        return
+
+    # ---------------------------------------------------------------------------
+    async def get_pubsub_loop(self, loop_info):
+
+        pubsub_tag = loop_info['func_args']['pubsub_tag']
+        sess_func = loop_info['func_args']['sess_func']
+        sess_func_args = dict()
+        if 'sess_func_args' in loop_info['func_args']:
+            sess_func_args.update(loop_info['func_args']['sess_func_args'])
+
+        self.log.info([
+            ['y', ' - starting loop '],
+            ['b', pubsub_tag],
+            ['y', ' for server: '],
+            ['c', self.serv_id],
+        ])
+        sleep_sec = 0.1
+
+        # setup the channel once
+        while self.redis.set_pubsub(pubsub_tag) is None:
+            await asyncio.sleep(sleep_sec)
+
+        while self.get_loop_state(loop_info):
+            await asyncio.sleep(sleep_sec)
+
+            msg = self.redis.get_pubsub(key=pubsub_tag)
+            if msg is None:
+                continue
+
+            sess_func_args['pubsub_data'] = msg['data'] if 'data' in msg else None
+
+            # instead of locking the server, we accept a possible KeyError
+            # in case another process changes the managers dict
+            try:
+                all_sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.serv_id)
+
+                async with self.locker.locks.acquire('serv'):
+                    managers = await self.get_server_attr('managers')
+                    all_sess_ids = [s for s in all_sess_ids if s in managers.keys()]
+
+                for sess_id in all_sess_ids:
+                    method_func = getattr(managers[sess_id], sess_func)
+                    await method_func(sess_func_args)
+
+            except KeyError as e:
+                pass
+            except Exception as e:
+                raise e
+
+        self.log.info([
+            ['r', ' - ending loop '],
+            ['b', pubsub_tag],
+            ['r', ' for server: '],
+            ['c', self.serv_id],
+        ])
+
         return
 
     # ------------------------------------------------------------------
@@ -460,7 +545,7 @@ class AsyncLoops():
         if self.sess_ping_time is None or self.is_sess_offline:
             return
 
-        ping_delay = data['send_time_msec'] - self.sess_ping_time
+        ping_delay = data['metadata']['send_time_msec'] - self.sess_ping_time
 
         if ping_delay > self.sess_ping['max_interval_good_msec']:
             is_slow = (ping_delay < self.sess_ping['max_interval_slow_msec'])

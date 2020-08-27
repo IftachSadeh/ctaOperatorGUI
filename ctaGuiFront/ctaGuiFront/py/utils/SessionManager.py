@@ -18,7 +18,7 @@ class SessionManager():
         """local cleanup for the current server session upon disconnection
         """
 
-        self.log.info([['c', ' - sess_disconnected '], ['p', self.sess_id]])
+        self.log.info([['c', ' - session disconnected '], ['p', self.sess_id]])
 
         self.set_sess_state(state=False)
 
@@ -68,26 +68,26 @@ class SessionManager():
                 client data and metadata related to the event
         """
 
-        is_existing_sess = (self.sess_id != data['sess_id'])
+        is_existing_sess = (self.sess_id != data['metadata']['sess_id'])
 
         # ------------------------------------------------------------------
         # for development, its conveniet to reload if the server was restarted, but
         # for deployment, the same session can simply be restored
-        if self.base_config.debug_opts['dev']:
+        if self.base_config.debug_opts['dev'] and 1:
             if is_existing_sess:
-                self.sess_id = data['sess_id']
+                self.sess_id = data['metadata']['sess_id']
                 await self.emit(event_name='reload_session')
                 return
         # ------------------------------------------------------------------
 
         if is_existing_sess:
-            self.sess_id = data['sess_id']
+            self.sess_id = data['metadata']['sess_id']
             self.log.info([
-                ['p', ' - restoring existing session: '],
-                ['c', self.sess_id],
+                ['wr', ' - restoring existing session: '],
+                ['o', self.sess_id],
             ])
 
-        with self.locker.locks.acquire('sess'):
+        async with self.locker.locks.acquire('sess'):
             # add a lock impacting the cleanup loop
             self.locker.semaphores.add(
                 name=self.sess_config_lock,
@@ -301,6 +301,70 @@ class SessionManager():
         return
 
     # ------------------------------------------------------------------
+    def update_sync_state_from_client(self, data_in):
+        data = data_in['data']
+
+        if not self.check_panel_sync():
+            return
+        if 'widget_id' not in data:
+            return
+        # if not self.redis.h_exists(name='ws;active_widget', key=self.user_id):
+        #     return
+
+        active_widget = self.redis.h_get(
+            name='ws;active_widget',
+            key=self.user_id,
+            default_val=None,
+        )
+        if active_widget != data['widget_id']:
+            return
+
+        all_sync_ids = []
+        sync_groups = self.redis.h_get(
+            name='ws;sync_groups', key=self.user_id, default_val=[]
+        )
+
+        for sync_group in sync_groups:
+            states_0 = [s[0] for s in sync_group['sync_states'][0]]
+            states_1 = [s[0] for s in sync_group['sync_states'][1]]
+            states_2 = [s[0] for s in sync_group['sync_states'][2]]
+
+            get_states = states_0 + states_2
+            do_send = (data['widget_id'] in states_0 or data['widget_id'] in states_1)
+            if do_send:
+                sync_group['sync_types'][data['type']] = data['data']
+
+                for id_now in get_states:
+                    add_id = (id_now != data['widget_id'] and id_now not in all_sync_ids)
+                    if add_id:
+                        all_sync_ids.append(id_now)
+
+        self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
+        data_send = {
+            'widget_id': data['widget_id'],
+            'type': data['type'],
+            'data': data['data']
+        }
+
+        self.redis.publish(
+            channel='ws;update_sync_state;' + self.user_id,
+            message=data_send,
+        )
+
+        return
+
+    # ------------------------------------------------------------------
+    async def update_sync_state_to_client(self, data_in=None):
+        # print('update_sync_state_to_client !!!!!!!!!!!!!!!!!!!!!', data_in)
+
+        await self.emit_to_queue(
+            event_name='update_sync_state_from_server',
+            data=data_in['pubsub_data'],
+        )
+
+        return
+
+    # ------------------------------------------------------------------
     def client_log(self, data):
         """interface for client logs to be processed by the server
 
@@ -313,15 +377,15 @@ class SessionManager():
                 client data and metadata related to the logging event
         """
 
-        if data['log_level'] == 'ERROR':
+        if data['metadata']['log_level'] == 'ERROR':
             self.log.error([['wr', ' - client_log:'], ['p', '', self.sess_id, ''],
                             ['y', data]])
 
-        elif data['log_level'] in ['WARN', 'WARNING']:
+        elif data['metadata']['log_level'] in ['WARN', 'WARNING']:
             self.log.warn([['b', ' - client_log:'], ['p', '', self.sess_id, ''],
                            ['y', data]])
 
-        elif data['log_level'] == 'INFO':
+        elif data['metadata']['log_level'] == 'INFO':
             self.log.info([['b', ' - client_log:'], ['p', '', self.sess_id, ''],
                            ['y', data]])
 

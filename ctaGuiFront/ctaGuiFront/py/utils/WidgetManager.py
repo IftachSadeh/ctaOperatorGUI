@@ -50,17 +50,29 @@ class WidgetManager():
         if not has_widget_id:
             await self.init_widget(data_in)
 
+        # self.log.info([
+        #     ['r', ' - KMKMKMKM '], ['y', data['method_name']]
+        # ])
+
         # call the method named args[1] with optional arguments args[2],
         # equivalent e.g., to widget.method_name(optionalArgs)
         if 'method_name' in data:
-            async with self.locker.locks.acquire('serv'):
-                widget_inits = await self.get_server_attr(name='widget_inits')
-                method_func = getattr(widget_inits[widget_id], data['method_name'])
-            async with self.locker.locks.acquire('sess'):
-                if 'method_arg' in data:
-                    await method_func(data['method_arg'])
-                else:
-                    await method_func()
+            try:
+                async with self.locker.locks.acquire('serv'):
+                    widget_inits = await self.get_server_attr(name='widget_inits')
+                    method_func = getattr(widget_inits[widget_id], data['method_name'])
+                async with self.locker.locks.acquire('sess'):
+                    if 'method_arg' in data:
+                        await method_func(data['method_arg'])
+                    else:
+                        await method_func()
+            except Exception as e:
+                self.log.error([
+                    ['r', ' - problem with method_name: '],
+                    ['y', data['method_name'], ''],
+                    ['o', data],
+                ])
+                raise e
 
         return
 
@@ -69,11 +81,13 @@ class WidgetManager():
         """importing the class for the widget and registring the id
         """
 
-        with self.locker.locks.acquire('sess'):
+        async with self.locker.locks.acquire('sess'):
             data = data_in['data']
             widget_id = data['widget_id']
-            widget_source = 'widgets.' + data['widget_source']
+            widget_source = 'widgets' + '.' + data['widget_name']
             widget_name = data['widget_name']
+            n_icon = data['n_icon']
+            icon_id = data['icon_id']
             n_sync_group = data['n_sync_group'] if 'n_sync_group' in data else 0
             sync_type = data['sync_type'] if 'sync_type' in data else 0
 
@@ -105,6 +119,11 @@ class WidgetManager():
                     '' + 'has not been registered in allowed_widget_types'
                 )
 
+            # allow for the possibility of a restored session, where the icon has
+            # already been defined
+            if n_icon < 0:
+                icon_id = 'icn_' + get_rnd(n_digits=6, out_type=str)
+
             # if this is not a synced panel, it has no sync group or icon
             if is_not_synced:
                 n_sync_group = -1
@@ -112,7 +131,7 @@ class WidgetManager():
 
             # if it is a synced panel, derive the icon as the next one after all
             # existing panels
-            if is_synced:
+            if is_synced and n_icon < 0:
                 n_icon = self.allowed_widget_types['synced'].index(widget_name)
                 while True:
                     user_widget_ids = self.redis.l_get(
@@ -135,6 +154,7 @@ class WidgetManager():
             # ------------------------------------------------------------------
             widget_now = dict()
             widget_now['n_icon'] = n_icon
+            widget_now['icon_id'] = icon_id
             widget_now['user_id'] = self.user_id
             widget_now['sess_id'] = self.sess_id
             widget_now['widget_name'] = widget_name
@@ -146,7 +166,6 @@ class WidgetManager():
             self.redis.r_push(name='ws;sess_widget_ids;' + self.sess_id, data=widget_id)
 
             # sync group initialization
-            # ------------------------------------------------------------------
             n_sync_group = min(max(n_sync_group, -1), 0)
 
             if sync_type > 2 or sync_type < 0:
@@ -160,9 +179,7 @@ class WidgetManager():
                     name='ws;sync_groups', key=self.user_id, default_val=[]
                 )
 
-                # ------------------------------------------------------------------
                 # add new empty sync group if needed
-                # ------------------------------------------------------------------
                 group_indices = []
                 if len(sync_groups) > 0:
                     group_indices = [
@@ -184,7 +201,6 @@ class WidgetManager():
                     sync_groups.append(sync_group)
 
                 # add the new widget to the requested sync group and sync state
-                icon_id = 'icn_' + get_rnd(out_type=str)
                 sync_groups[group_index]['sync_states'][sync_type].append([
                     widget_id, icon_id
                 ])
@@ -234,18 +250,40 @@ class WidgetManager():
 
         widget = opt_in['widget']
         event_name = opt_in['event_name']
-        data_func = opt_in['data_func'] if 'data_func' in opt_in else lambda: dict()
 
         metadata = {
             'widget_type': widget.widget_name,
             'widget_id': widget.widget_id,
             'n_icon': widget.n_icon,
+            'icon_id': widget.icon_id,
+            # 'sess_widget_ids': [widget.widget_id],
         }
-        data = await data_func()
+
+        data = dict()
+        if 'data' in opt_in:
+            data = opt_in['data']
+        elif 'data_func' in opt_in:
+            data = await opt_in['data_func']()
 
         await self.emit_to_queue(event_name=event_name, data=data, metadata=metadata)
 
         return
+
+        if 0:
+            # ------------------------------------------------------------------
+            def socket_event_widgets(
+                self, event_name='', data={}, sess_ids=None, widget_ids=None
+            ):
+                message = {
+                    'event_name': event_name,
+                    'data': data,
+                    'sess_ids': sess_ids,
+                    'widget_ids': widget_ids
+                }
+
+                self.redis.publish(channel='socket_event_widgets', message=message)
+
+                return
 
     # ------------------------------------------------------------------
     async def add_widget_loop(self, opt_in=None):
@@ -357,7 +395,6 @@ class WidgetManager():
         return
 
         if 0:
-
             if 'is_group_asy_func' not in opt_in:
                 opt_in['is_group_asy_func'] = True
 
@@ -406,10 +443,6 @@ class WidgetManager():
         """loop for emitting an event to a specific widget, based on widget_id
         """
 
-        print(
-            ' - sess_widget_ids should be removed now that we dont transmit with socketio ...'
-        )
-
         widget = opt_in['widget']
 
         self.log.info([
@@ -437,13 +470,10 @@ class WidgetManager():
             else:
                 data = await opt_in['data_func'](func_args)
 
-            # sess_widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
-
             metadata = {
                 'widget_type': widget.widget_name,
                 'widget_id': widget.widget_id,
-                # 'sess_widget_ids': sess_widget_ids,
-                'sess_widget_ids': [widget.widget_id],
+                # 'sess_widget_ids': [widget.widget_id],
             }
 
             await self.emit_to_queue(
@@ -455,7 +485,7 @@ class WidgetManager():
             await asyncio.sleep(sleep_sec)
 
         self.log.info([
-            ['r', ' - starting '],
+            ['r', ' - ending '],
             ['b', 'loop_widget_id'],
             ['r', ' with '],
             ['c', loop_info['group']],
@@ -505,17 +535,14 @@ class WidgetManager():
                 else:
                     data = await opt_in['data_func'](func_args)
 
-            # sess_widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
             for loop_widget in loop_widgets:
                 sess_id = loop_widget['sess_id']
                 widget_id = loop_widget['widget_id']
-                # print('sess_widget_ids', widget_id)
 
                 metadata = {
                     'widget_type': widget.widget_name,
                     'widget_id': widget_id,
-                    'sess_widget_ids': [widget_id],
-                    # 'sess_widget_ids': sess_widget_ids,
+                    # 'sess_widget_ids': [widget_id],
                 }
 
                 # instead of locking the server, we accept a possible KeyError
@@ -538,7 +565,7 @@ class WidgetManager():
             await asyncio.sleep(sleep_sec)
 
         self.log.info([
-            ['r', ' - starting '],
+            ['r', ' - ending '],
             ['b', 'loop_widget_name'],
             ['r', ' with '],
             ['c', loop_info['group']],

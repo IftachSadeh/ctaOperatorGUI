@@ -22,14 +22,13 @@ class EmptyExample(BaseWidget):
     # ------------------------------------------------------------------
     async def setup(self, *args):
         # standard common initialisations
-        BaseWidget.setup(self, *args)
+        await BaseWidget.setup(self, *args)
 
         # initial dataset and send to client
         opt_in = {
             'widget': self,
             'event_name': 'init_data',
             'data_func': self.get_data_widget_id,
-            'loop_id': 'init_data'
         }
         await self.socket_manager.emit_widget_event(opt_in=opt_in)
 

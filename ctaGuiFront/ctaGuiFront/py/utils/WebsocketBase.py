@@ -662,52 +662,52 @@ class __old_SocketManager__():
 
     #     return
 
-    # ------------------------------------------------------------------
-    def on_sync_state_send(self, data_in):
-        if not self.check_panel_sync():
-            return
-        if 'widget_id' not in data_in:
-            return
-        if not self.redis.h_exists(name='ws;active_widget', key=self.user_id):
-            return
-        all_sync_ids = []
-        with __old_SocketManager__.lock:
-            if self.redis.h_get(name='ws;active_widget',
-                                key=self.user_id) != data_in['widget_id']:
-                return
+    # # ------------------------------------------------------------------
+    # def on_sync_state_send(self, data_in):
+    #     if not self.check_panel_sync():
+    #         return
+    #     if 'widget_id' not in data_in:
+    #         return
+    #     if not self.redis.h_exists(name='ws;active_widget', key=self.user_id):
+    #         return
+    #     all_sync_ids = []
+    #     with __old_SocketManager__.lock:
+    #         if self.redis.h_get(name='ws;active_widget',
+    #                             key=self.user_id) != data_in['widget_id']:
+    #             return
 
-            sync_groups = self.redis.h_get(
-                name='ws;sync_groups', key=self.user_id, default_val=[]
-            )
+    #         sync_groups = self.redis.h_get(
+    #             name='ws;sync_groups', key=self.user_id, default_val=[]
+    #         )
 
-            for sync_group in sync_groups:
-                states_0 = [i[0] for i in sync_group['sync_states'][0]]
-                states_1 = [i[0] for i in sync_group['sync_states'][1]]
-                states_2 = [i[0] for i in sync_group['sync_states'][2]]
+    #         for sync_group in sync_groups:
+    #             states_0 = [i[0] for i in sync_group['sync_states'][0]]
+    #             states_1 = [i[0] for i in sync_group['sync_states'][1]]
+    #             states_2 = [i[0] for i in sync_group['sync_states'][2]]
 
-                get_states = states_0 + states_2
-                do_send = (
-                    data_in['widget_id'] in states_0 or data_in['widget_id'] in states_1
-                )
-                if do_send:
-                    sync_group['sync_types'][data_in['type']] = data_in['data']
+    #             get_states = states_0 + states_2
+    #             do_send = (
+    #                 data_in['widget_id'] in states_0 or data_in['widget_id'] in states_1
+    #             )
+    #             if do_send:
+    #                 sync_group['sync_types'][data_in['type']] = data_in['data']
 
-                    for id_now in get_states:
-                        if (id_now != data_in['widget_id']
-                                and id_now not in all_sync_ids):
-                            all_sync_ids.append(id_now)
+    #                 for id_now in get_states:
+    #                     if (id_now != data_in['widget_id']
+    #                             and id_now not in all_sync_ids):
+    #                         all_sync_ids.append(id_now)
 
-            self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
-        data = {
-            'widget_id': data_in['widget_id'],
-            'type': data_in['type'],
-            'data': data_in['data']
-        }
-        self.socket_event_widgets(
-            event_name='get_sync_state', data=data, widget_ids=all_sync_ids
-        )
+    #         self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
+    #     data = {
+    #         'widget_id': data_in['widget_id'],
+    #         'type': data_in['type'],
+    #         'data': data_in['data']
+    #     }
+    #     self.socket_event_widgets(
+    #         event_name='update_sync_state', data=data, widget_ids=all_sync_ids
+    #     )
 
-        return
+    #     return
 
     # # ------------------------------------------------------------------
     # def on_set_active_widget(self, data):

@@ -37,6 +37,7 @@ class BaseWidget():
         self.log_send_packet = False
         # fixed or dynamic icon
         self.n_icon = -1
+        self.icon_id = -1
         # list of utility classes to loop over
         self.my_utils = []
 
@@ -45,10 +46,11 @@ class BaseWidget():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def setup(self, *args):
+    async def setup(self, *args):
         wgt = self.redis.h_get(name='ws;widget_infos', key=self.widget_id)
         if self.n_icon == -1:
             self.n_icon = wgt['n_icon']
+            self.icon_id = wgt['icon_id']
 
         # override the global logging variable with a
         # name corresponding to the current session id
@@ -62,7 +64,7 @@ class BaseWidget():
 
         # loop over utils
         for util_now in self.my_utils:
-            util_now.setup(args)
+            await util_now.setup(args)
 
         return
 

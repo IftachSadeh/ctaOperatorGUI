@@ -63,7 +63,7 @@ window.ArrZoomerMain = function(opt_in_top) {
     let is_state_up = ele_base.is_state_up
     // let is_state_down = ele_base.is_state_down
     let is_state_change = ele_base.is_state_change
-    let sync_state_send = ele_base.sync_state_send
+    let send_sync_state_to_server = ele_base.send_sync_state_to_server
   
     ele_base.set_ele(this_top, 'main')
     let get_ele = ele_base.get_ele
@@ -765,7 +765,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                     }
 
                     // syncroniz changes with other panels
-                    sync_state_send({
+                    send_sync_state_to_server({
                         type: 'sync_tel_focus',
                         sync_time: Date.now(),
                         zoom_state: 0,
@@ -3707,11 +3707,11 @@ window.ArrZoomerMain = function(opt_in_top) {
 
             if (this_top.get_zoom_state() === 1) {
                 let arr_zoomer_prop = is_open ? sync_prop : ''
-                sync_state_send({
+                send_sync_state_to_server({
                     type: 'sync_arr_zoomer_prop',
                     sync_time: Date.now(),
                     tel_id: zooms.target,
-                    propId: arr_zoomer_prop,
+                    prop_id: arr_zoomer_prop,
                     arr_zoomer_id: arr_zoomer_id,
                 })
             }
@@ -4082,7 +4082,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                 // ------------------------------------------------------------------
                 // syncroniz changes with other panels
                 // ------------------------------------------------------------------
-                sync_state_send({
+                send_sync_state_to_server({
                     type: 'sync_tel_focus',
                     sync_time: Date.now(),
                     zoom_state: this_top.get_zoom_state(),

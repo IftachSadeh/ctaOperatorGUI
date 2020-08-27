@@ -85,7 +85,6 @@ sock.widget_table[main_script_tag] = function(opt_in) {
 let sock_plots_dash = function(opt_in) {
     // let widget_id = opt_in.widget_id
     let widget_type = opt_in.widget_type
-    let widget_source = opt_in.widget_source
 
     // FUNCTION TO SEND DATA TO THE REDIS DATABASE (need eqivalent function in .py)
     this.pushNewHierachyKeys = function(opt_in) {
@@ -99,7 +98,6 @@ let sock_plots_dash = function(opt_in) {
         data.newKeys = opt_in.newKeys
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: data.widget_id,
             method_name: 'plotDash_push_new_hirch_keys',
@@ -340,15 +338,16 @@ let main_plots_dash = function(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: icon_divs,
         })
 

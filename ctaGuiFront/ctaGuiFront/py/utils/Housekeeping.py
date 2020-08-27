@@ -55,16 +55,16 @@ class Housekeeping():
             # run the cleanup for possible zombie sessions
             all_sess_ids = self.redis.s_get('ws;all_sess_ids')
             for sess_id in all_sess_ids:
-                if not self.redis.exists(self.get_heartbeat_name(scope='sess',
-                                                                 postfix=sess_id)):
+                heartbeat_name = self.get_heartbeat_name(scope='sess', postfix=sess_id)
+                if not self.redis.exists(heartbeat_name):
                     await self.cleanup_session(sess_id=sess_id)
 
             # run the cleanup for possible zombie widgets
             widget_infos = self.redis.h_get_all('ws;widget_infos', default_val={})
             for widget_id, widget_info in widget_infos.items():
                 sess_id = widget_info['sess_id']
-                if not self.redis.exists(self.get_heartbeat_name(scope='sess',
-                                                                 postfix=sess_id)):
+                heartbeat_name = self.get_heartbeat_name(scope='sess', postfix=sess_id)
+                if not self.redis.exists(heartbeat_name):
                     # explicitly take care of the widget
                     await self.cleanup_widget(widget_ids=widget_id)
                     # for good measure, make sure the session is also gone
@@ -73,8 +73,8 @@ class Housekeeping():
             # run the cleanup for possible zombie servers
             all_server_ids = self.redis.s_get('ws;all_server_ids')
             for serv_id in all_server_ids:
-                if not self.redis.exists(self.get_heartbeat_name(scope='serv',
-                                                                 postfix=serv_id)):
+                heartbeat_name = self.get_heartbeat_name(scope='serv', postfix=serv_id)
+                if not self.redis.exists(heartbeat_name):
                     await self.cleanup_server(serv_id=serv_id)
 
             # run the cleanup for possible zombie loops
@@ -311,13 +311,14 @@ class Housekeeping():
         # cleanup expired sessions (for this particular server)
         sess_ids = self.redis.s_get('ws;server_sess_ids;' + serv_id)
         for sess_id in sess_ids:
-            if not self.redis.exists(self.get_heartbeat_name(scope='sess',
-                                                             postfix=sess_id)):
+            heartbeat_name = self.get_heartbeat_name(scope='sess', postfix=sess_id)
+            if not self.redis.exists(heartbeat_name):
                 await self.cleanup_session(sess_id=sess_id)
 
         # after the cleanup for dead sessions, check if
         # the heartbeat is still there for the server (if any session at all is alive)
-        if not self.redis.exists(self.get_heartbeat_name(scope='serv', postfix=serv_id)):
+        heartbeat_name = self.get_heartbeat_name(scope='serv', postfix=serv_id)
+        if not self.redis.exists(heartbeat_name):
             self.log.info([['c', ' - cleanup-server '], ['p', serv_id], ['c', ' ...']])
 
             await self.set_loop_state(

@@ -24,8 +24,15 @@ class RedisBase():
         return Serialisation.unpack(data, log=self.log)
 
     # ------------------------------------------------------------------
-    def is_empty(self, data):
-        return Serialisation.is_empty_obj(data)
+    def is_empty(self, data, check_pipe=True):
+        is_pipe = check_pipe and (self.base is not self.redis)
+
+        if not is_pipe:
+            out = Serialisation.is_empty_obj(data)
+        else:
+            out = True
+
+        return out
 
     # ------------------------------------------------------------------
     def flush(self):
@@ -618,10 +625,14 @@ class RedisPipeManager(RedisBase):
             if data is None or data == '':
                 data = []
             else:
-                data = [self.unpack(x) for x in data if not self.is_empty(x)]
+                data = [
+                    self.unpack(x)
+                    for x in data
+                    if not self.is_empty(x, check_pipe=False)
+                ]
 
             if not self.is_empty(data):
-                data = self.unpack(data)
+                data = self.unpack(data, check_pipe=False)
                 data = [] if data is None else data
 
         except Exception as e:
