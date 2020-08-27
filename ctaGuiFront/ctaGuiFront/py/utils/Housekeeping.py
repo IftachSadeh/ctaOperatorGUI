@@ -60,9 +60,9 @@ class Housekeeping():
                     await self.cleanup_session(sess_id=sess_id)
 
             # run the cleanup for possible zombie widgets
-            widget_infos = self.redis.h_get_all('ws;widget_infos', default_val={})
-            for widget_id, widget_info in widget_infos.items():
-                sess_id = widget_info['sess_id']
+            widget_info = self.redis.h_get_all('ws;widget_info', default_val={})
+            for widget_id, info in widget_info.items():
+                sess_id = info['sess_id']
                 heartbeat_name = self.get_heartbeat_name(scope='sess', postfix=sess_id)
                 if not self.redis.exists(heartbeat_name):
                     # explicitly take care of the widget
@@ -267,10 +267,10 @@ class Housekeeping():
         # print(' - sync_groups\n',sync_groups)
 
         for widget_id in widget_ids:
-            widget_info = self.redis.h_get(name='ws;widget_infos', key=widget_id)
+            widget_info = self.redis.h_get(name='ws;widget_info', key=widget_id)
             self.redis.delete('ws;sess_widget_ids;' + widget_info['sess_id'])
 
-            self.redis.h_del(name='ws;widget_infos', key=widget_id)
+            self.redis.h_del(name='ws;widget_info', key=widget_id)
 
             for user_id in all_user_ids:
                 self.redis.l_rem(name='ws;user_widget_ids;' + user_id, data=widget_id)

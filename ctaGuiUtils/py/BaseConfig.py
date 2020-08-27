@@ -43,7 +43,7 @@ class BaseConfig():
         debug_opts,
         is_simulation,
         allow_panel_sync=None,
-        widget_infos=None,
+        widget_info=None,
         allowed_widget_types=None,
         *args,
         **kwargs
@@ -73,9 +73,9 @@ class BaseConfig():
 
         # list here all views, which use the shared view function
         # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
-        if widget_infos is not None:
-            BaseConfig.widget_infos = widget_infos
+        if widget_info is not None:
+            BaseConfig.widget_info = widget_info
         else:
-            BaseConfig.widget_infos = []
+            BaseConfig.widget_info = []
 
         return

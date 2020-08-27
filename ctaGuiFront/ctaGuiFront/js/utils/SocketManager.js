@@ -51,11 +51,11 @@ function SocketManager() {
 
     this_top.socket = null
     this_top.con_stat = null
-    this_top.widget_infos = {
+    this_top.widget_funcs = {
     }
     this_top.widget_table = {
     }
-    this_top.sess_widget_infos = {
+    this_top.sess_widgets = {
     }
 
     this_top.has_joined_session = false
@@ -366,7 +366,7 @@ function SocketManager() {
             if (!is_first) {
                 this_top.socket.emit('sess_setup_finalised')
                 
-                $.each(this_top.sess_widget_infos, function(widget_id, ele_0) {
+                $.each(this_top.sess_widgets, function(widget_id, ele_0) {
                     let widget_type = ele_0.widget_type
                     send_widget_setup({
                         'widget_id': widget_id,
@@ -594,7 +594,7 @@ function SocketManager() {
                 return
             }
 
-            $.each(this_top.widget_infos, function(widget_type, ele_0) {
+            $.each(this_top.widget_funcs, function(widget_type, ele_0) {
                 $.each(ele_0.widgets, function(widget_id, ele_1) {
                     if (is_def(ele_1.update_sync_state)) {
                         ele_1.update_sync_state(data_in)
@@ -880,20 +880,20 @@ function SocketManager() {
         let widget_type = opt_in.widget_type
         let widget_func = opt_in.widget_func
 
-        let is_first = !is_def(this_top.widget_infos[widget_type])
+        let is_first = !is_def(this_top.widget_funcs[widget_type])
 
         if (is_first) {
-            this_top.widget_infos[widget_type] = {
+            this_top.widget_funcs[widget_type] = {
                 sock_func: null,
                 widgets: {
                 },
             }
         }
-        let widget_data = this_top.widget_infos[widget_type]
+        let widget_data = this_top.widget_funcs[widget_type]
 
         if (!is_def(widget_data.widgets[widget_id])) {
 
-            this_top.sess_widget_infos[widget_id] = {
+            this_top.sess_widgets[widget_id] = {
                 'widget_type': widget_type,
             }
 
@@ -966,8 +966,8 @@ function SocketManager() {
         let widget_id = opt_in.widget_id
         let widget_type = opt_in.widget_type
         
-        let n_icon = this_top.sess_widget_infos[widget_id].n_icon
-        let icon_id = this_top.sess_widget_infos[widget_id].icon_id
+        let n_icon = this_top.sess_widgets[widget_id].n_icon
+        let icon_id = this_top.sess_widgets[widget_id].icon_id
 
         if (!is_def(n_icon) || !is_def(icon_id)) {
             n_icon = -1
@@ -1013,8 +1013,8 @@ function SocketManager() {
         let n_icon = metadata.n_icon
         let widget_id = metadata.widget_id
         
-        this_top.sess_widget_infos[widget_id].n_icon = metadata.n_icon
-        this_top.sess_widget_infos[widget_id].icon_id = metadata.icon_id
+        this_top.sess_widgets[widget_id].n_icon = metadata.n_icon
+        this_top.sess_widgets[widget_id].icon_id = metadata.icon_id
 
         if (!is_def(opt_in.icon_divs)) {
             return

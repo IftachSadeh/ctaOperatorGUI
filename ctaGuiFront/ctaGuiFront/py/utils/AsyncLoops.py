@@ -170,16 +170,6 @@ class AsyncLoops():
         #     },
         # ]
 
-        #
-        # loops += [
-        #     {
-        #         'id': None,
-        #         'group': 'shared_asy_func',
-        #         'tag': 'pubsub_socket_evt_widgets',
-        #         'func': self.pubsub_socket_evt_widgets,
-        #     },
-        # ]
-
         # client ping/pong heartbeat for a particular session
         loops += [
             {
@@ -200,6 +190,20 @@ class AsyncLoops():
             },
         ]
 
+        func_args = {
+            'pubsub_tag': 'ws;update_sync_state;' + self.user_id,
+            'sess_func': 'update_sync_state_to_client',
+        }
+        loops += [
+            {
+                'id': 'update_sync_state_loop',
+                'func': self.get_pubsub_loop,
+                'group': self.get_loop_group_name(scope='user'),
+                'heartbeat': self.get_heartbeat_name(scope='serv'),
+                'func_args': func_args,
+            },
+        ]
+
         if self.is_simulation:
             func_args = {
                 'pubsub_tag': 'clock_sim_updated_sim_params',
@@ -215,53 +219,8 @@ class AsyncLoops():
                 },
             ]
 
-        func_args = {
-            'pubsub_tag': 'ws;update_sync_state;' + self.user_id,
-            'sess_func': 'update_sync_state_to_client',
-        }
-        loops += [
-            {
-                'id': 'update_sync_state_loop',
-                'func': self.get_pubsub_loop,
-                'group': self.get_loop_group_name(scope='user'),
-                'heartbeat': self.get_heartbeat_name(scope='serv'),
-                'func_args': func_args,
-            },
-        ]
-
-        # async_loops = []
-        # for loop_info in loops:
-        #     has_asy_func = any([
-        #         (loop_info['group'] == c['group'] and loop_info['id'] == c['id'])
-        #         for c in async_loops
-        #     ])
-        #     if not has_asy_func:
-        #         async_loops += [loop_info]
-
-        # return async_loops
-
-        # await self.add_async_loop(loop_infos=loops)
-        # return
 
         return loops
-
-    # # ------------------------------------------------------------------
-    # async def add_async_loop(self, loop_infos):
-    #     if not isinstance(loop_infos, (list, set)):
-    #         loop_infos = [loop_infos]
-    #     async with self.locker.locks.acquire('loop_state'):
-    #         async with self.locker.locks.acquire('sess'):
-    #             for loop_info in loop_infos:
-    #                 has_asy_func = any([
-    #                     (
-    #                         loop_info['group'] == c['group']
-    #                         and loop_info['id'] == c['id']
-    #                     )
-    #                     for c in self.async_loops
-    #                 ])
-    #                 if not has_asy_func:
-    #                     self.async_loops += [loop_info]
-    #     return
 
     # ------------------------------------------------------------------
     async def init_common_loops(self):

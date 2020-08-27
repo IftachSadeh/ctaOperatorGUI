@@ -108,8 +108,8 @@ class PanelSync(BaseWidget):
                 sync_group['sync_types'] = dict()
 
                 for child_1 in child_0['children']:
-                    widget_infos = [wgt for wgt in child_1 if wgt[0] in widget_ids]
-                    sync_group['sync_states'].append(widget_infos)
+                    widget_info = [wgt for wgt in child_1 if wgt[0] in widget_ids]
+                    sync_group['sync_states'].append(widget_info)
 
                 sync_groups.append(sync_group)
 
@@ -136,11 +136,11 @@ class PanelSync(BaseWidget):
             widget_ids = self.redis.l_get(
                 'ws;user_widget_ids;' + self.socket_manager.user_id
             )
-            widget_infos = self.redis.h_m_get(name='ws;widget_infos', key=widget_ids)
+            widget_info = self.redis.h_m_get(name='ws;widget_info', key=widget_ids)
 
             for n_widget in range(len(widget_ids)):
                 widget_id = widget_ids[n_widget]
-                widget_now = widget_infos[n_widget]
+                widget_now = widget_info[n_widget]
                 if widget_now is None:
                     continue
                 if widget_now['widget_name'] != self.widget_name:
@@ -178,12 +178,12 @@ class PanelSync(BaseWidget):
             widget_ids = self.redis.l_get(
                 'ws;user_widget_ids;' + self.socket_manager.user_id
             )
-            widget_infos = self.redis.h_m_get(name='ws;widget_infos', key=widget_ids)
+            widget_info = self.redis.h_m_get(name='ws;widget_info', key=widget_ids)
 
             all_sync_widgets = []
             for n_widget in range(len(widget_ids)):
                 widget_id = widget_ids[n_widget]
-                widget_now = widget_infos[n_widget]
+                widget_now = widget_info[n_widget]
                 if widget_now is None:
                     continue
                 if widget_now['n_icon'] >= 0:
@@ -215,7 +215,7 @@ class PanelSync(BaseWidget):
                             children_2.append({
                                 'id': icon_id,
                                 'trg_widg_id': widget_id,
-                                'n_icon': widget_infos[n_widget]['n_icon']
+                                'n_icon': widget_info[n_widget]['n_icon']
                             })
 
                         except Exception:

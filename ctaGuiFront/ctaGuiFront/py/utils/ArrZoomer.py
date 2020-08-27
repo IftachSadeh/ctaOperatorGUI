@@ -128,7 +128,7 @@ class ArrZoomer():
         # with self.socket_manager.lock:
         if 1:
             wgt = self.redis.h_get(
-                name='ws;widget_infos',
+                name='ws;widget_info',
                 key=self.widget_id,
             )
 
@@ -470,9 +470,9 @@ class ArrZoomer():
         }
         ArrZoomer.send_data['s_1'] = dict()
 
-        widget_infos = self.redis.h_get_all(name='ws;widget_infos', default_val={})
+        widget_info = self.redis.h_get_all(name='ws;widget_info', default_val={})
 
-        for widget_id, widget_now in widget_infos.items():
+        for widget_id, widget_now in widget_info.items():
             if widget_now['widget_name'] != self.widget_name:
                 continue
             if widget_id not in self.socket_manager.widget_inits:

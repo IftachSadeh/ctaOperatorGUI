@@ -140,10 +140,10 @@ class WidgetManager():
                     if len(user_widget_ids) == 0:
                         break
 
-                    widget_infos = self.redis.h_m_get(
-                        name='ws;widget_infos', keys=user_widget_ids, filter_out=True
+                    widget_info = self.redis.h_m_get(
+                        name='ws;widget_info', keys=user_widget_ids, filter_out=True
                     )
-                    n_icons = [x['n_icon'] for x in widget_infos]
+                    n_icons = [x['n_icon'] for x in widget_info]
 
                     if n_icon in n_icons:
                         n_icon += len(self.allowed_widget_types['synced'])
@@ -161,7 +161,7 @@ class WidgetManager():
             widget_now['widget_state'] = dict()
 
             # register the new widget
-            self.redis.h_set(name='ws;widget_infos', key=widget_id, data=widget_now)
+            self.redis.h_set(name='ws;widget_info', key=widget_id, data=widget_now)
             self.redis.r_push(name='ws;user_widget_ids;' + self.user_id, data=widget_id)
             self.redis.r_push(name='ws;sess_widget_ids;' + self.sess_id, data=widget_id)
 
@@ -229,8 +229,8 @@ class WidgetManager():
             widget_inits = await self.get_server_attr(name='widget_inits')
 
             widget_ids = []
-            widget_infos = self.redis.h_get_all(name='ws;widget_infos', default_val={})
-            for widget_id, widget_now in widget_infos.items():
+            widget_info = self.redis.h_get_all(name='ws;widget_info', default_val={})
+            for widget_id, widget_now in widget_info.items():
                 if widget_id in widget_inits:
                     if widget_now['n_icon'] == -1:
                         widget_ids.append(widget_id)

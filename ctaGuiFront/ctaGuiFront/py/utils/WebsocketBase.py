@@ -286,7 +286,7 @@ class __old_SocketManager__():
         # for sess_id in sess_ids_now:
         #   self.cleanup_session(sess_id)
         # self.redis.delete('ws;all_user_ids')
-        # self.redis.delete('ws;widget_infos')
+        # self.redis.delete('ws;widget_info')
 
         return
 
@@ -510,7 +510,7 @@ class __old_SocketManager__():
     #     # (no need for a 'from dynamicLoadWidget import dynWidg_0' statement)
     #     # ------------------------------------------------------------------
     #     with __old_SocketManager__.lock:
-    #         has_widget_id = self.redis.h_exists(name='ws;widget_infos', key=widget_id)
+    #         has_widget_id = self.redis.h_exists(name='ws;widget_info', key=widget_id)
 
     #     if not has_widget_id:
     #         # the following is equivalent e.g., to:
@@ -538,10 +538,10 @@ class __old_SocketManager__():
     #                     if len(widget_ids) == 0:
     #                         break
 
-    #                     widget_infos = self.redis.h_m_get(
-    #                         name='ws;widget_infos', key=widget_ids, filter=True
+    #                     widget_info = self.redis.h_m_get(
+    #                         name='ws;widget_info', key=widget_ids, filter=True
     #                     )
-    #                     n_icons = [x['n_icon'] for x in widget_infos]
+    #                     n_icons = [x['n_icon'] for x in widget_info]
 
     #                     if n_icon in n_icons:
     #                         n_icon += len(self.allowed_widget_types['synced'])
@@ -559,7 +559,7 @@ class __old_SocketManager__():
 
     #             # register the new widget
     #             self.redis.h_set(
-    #                 name='ws;widget_infos', key=widget_id, data=widget_now
+    #                 name='ws;widget_info', key=widget_id, data=widget_now
     #             )
     #             self.redis.r_push(name='ws;user_widget_ids;' + self.user_id, data=widget_id)
     #             self.redis.s_add(name='ws;sess_widget_ids;' + self.sess_id, data=widget_id)
@@ -652,8 +652,8 @@ class __old_SocketManager__():
     # def update_sync_group(self):
     #     widget_ids = []
     #     with __old_SocketManager__.lock:
-    #         widget_infos = self.redis.h_get_all(name='ws;widget_infos', default_val={})
-    #         for widget_id, widget_now in widget_infos.items():
+    #         widget_info = self.redis.h_get_all(name='ws;widget_info', default_val={})
+    #         for widget_id, widget_now in widget_info.items():
     #             if widget_now['n_icon'] == -1 and widget_id in __old_SocketManager__.widget_inits:
     #                 widget_ids.append(widget_id)
 
@@ -1079,7 +1079,7 @@ class __old_SocketManager__():
     #         )
 
     #         for widget_id in widget_ids:
-    #             self.redis.h_del(name='ws;widget_infos', key=widget_id)
+    #             self.redis.h_del(name='ws;widget_info', key=widget_id)
 
     #             for sync_group in sync_groups:
     #                 for sync_states in sync_group['sync_states']:
@@ -1140,7 +1140,7 @@ class __old_SocketManager__():
     #             'b', ' - cleanup_session widget_id (', __old_SocketManager__.serv_id, ') '
     #         ], ['p', widget_id]])
 
-    #         self.redis.h_del(name='ws;widget_infos', key=widget_id)
+    #         self.redis.h_del(name='ws;widget_info', key=widget_id)
     #         if widget_id in __old_SocketManager__.widget_inits:
     #             __old_SocketManager__.widget_inits.pop(widget_id, None)
     #         for user_id in all_user_ids:
@@ -1212,7 +1212,7 @@ class __old_SocketManager__():
                     if len(sess_ids_now) == len(zombie_ids):
                         widget_ids = self.redis.l_get('ws;user_widget_ids;' + user_id)
                         for widget_id in widget_ids:
-                            self.redis.h_del(name='ws;widget_infos', key=widget_id)
+                            self.redis.h_del(name='ws;widget_info', key=widget_id)
                             if widget_id in __old_SocketManager__.widget_inits:
                                 __old_SocketManager__.widget_inits.pop(widget_id, None)
 

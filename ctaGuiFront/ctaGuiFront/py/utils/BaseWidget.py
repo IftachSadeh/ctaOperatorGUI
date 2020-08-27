@@ -47,7 +47,7 @@ class BaseWidget():
     #
     # ------------------------------------------------------------------
     async def setup(self, *args):
-        wgt = self.redis.h_get(name='ws;widget_infos', key=self.widget_id)
+        wgt = self.redis.h_get(name='ws;widget_info', key=self.widget_id)
         if self.n_icon == -1:
             self.n_icon = wgt['n_icon']
             self.icon_id = wgt['icon_id']

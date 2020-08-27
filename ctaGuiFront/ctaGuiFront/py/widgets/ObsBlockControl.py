@@ -48,7 +48,7 @@ class ObsBlockControl(BaseWidget):
 
         with self.socket_manager.lock:
             wgt = self.redis.h_get(
-                name='ws;widget_infos',
+                name='ws;widget_info',
                 key=self.widget_id,
             )
             self.widget_state = wgt["widget_state"]
