@@ -199,7 +199,7 @@ class PlotsDash(BaseWidget):
         self.inst_health_sub_flat = dict()
         self.inst_health_sub_fields = dict()
 
-        self.inst_health_sub = self.socket_manager.inst_data.get_tel_healths()
+        self.inst_health_sub = self.socket_manager.inst_data.get_inst_healths()
 
         # a flat dict with references to each level of the original dict
         self.inst_health_sub_flat = dict()

@@ -1203,7 +1203,7 @@ class InstData():
         return
 
     # ------------------------------------------------------------------
-    def get_inst_pos(self):
+    def get_inst_info(self):
         while not InstData.has_init:
             sleep(0.01)
 
@@ -1237,21 +1237,27 @@ class InstData():
         return
 
     # ------------------------------------------------------------------
-    def get_inst_id_to_types(self):
+    def get_inst_id_to_types(self, is_copy=True):
         while not InstData.has_init:
             sleep(0.01)
 
-        return copy.deepcopy(InstData.tel_id_to_types)
+        out = InstData.tel_id_to_types
+        if is_copy:
+            out = copy.deepcopy(out)
+        return out
 
     # ------------------------------------------------------------------
-    def get_categorical_types(self):
+    def get_categorical_types(self, is_copy=True):
         while not InstData.has_init:
             sleep(0.01)
 
-        return copy.deepcopy(InstData.categorical_types)
+        out = InstData.categorical_types
+        if is_copy:
+            out = copy.deepcopy(out)
+        return out
 
     # ------------------------------------------------------------------
-    def get_inst_ids(self, inst_types=None):
+    def get_inst_ids(self, inst_types=None, is_copy=True):
         n_tries, max_n_tries = 0, 1e3
         try:
             while not InstData.has_init:
@@ -1267,7 +1273,9 @@ class InstData():
             raise Exception()
 
         if inst_types is None:
-            inst_ids = copy.deepcopy(InstData.inst_Ids)
+            inst_ids = InstData.inst_Ids
+            if is_copy:
+                inst_ids = copy.deepcopy(inst_ids)
         else:
             if isinstance(inst_types, str):
                 inst_types = [inst_types]
@@ -1279,7 +1287,7 @@ class InstData():
         return inst_ids
 
     # ------------------------------------------------------------------
-    def get_proc_ids(self, inst_types=None):
+    def get_proc_ids(self, inst_types=None, is_copy=True):
         n_tries, max_n_tries = 0, 1e3
         try:
             while not InstData.has_init:
@@ -1294,29 +1302,41 @@ class InstData():
             ])
             raise Exception()
 
-        return copy.deepcopy(InstData.proc_ids)
+        out = InstData.proc_ids
+        if is_copy:
+            out = copy.deepcopy(out)
+        return out
 
     # ------------------------------------------------------------------
     def is_south_site(self):
         return (InstData.site_type == 'S')
 
     # ------------------------------------------------------------------
-    def get_tel_healths(self):
+    def get_inst_healths(self, is_copy=False):
         while not InstData.has_init:
             sleep(0.01)
 
-        return copy.deepcopy(InstData.inst_health)
+        out = InstData.inst_health
+        if is_copy:
+            out = copy.deepcopy(out)
+        return out
 
     # ------------------------------------------------------------------
-    def get_sub_array_insts(self):
+    def get_sub_array_insts(self, is_copy=False):
         while not InstData.has_init:
             sleep(0.01)
 
-        return copy.deepcopy(InstData.sub_array_tels)
+        out = InstData.sub_array_tels
+        if is_copy:
+            out = copy.deepcopy(out)
+        return out
 
     # ------------------------------------------------------------------
-    def get_inst_id_to_sub_array(self):
+    def get_inst_id_to_sub_array(self, is_copy=False):
         while not InstData.has_init:
             sleep(0.01)
 
-        return copy.deepcopy(InstData.tel_id_to_sub_array)
+        out = InstData.tel_id_to_sub_array
+        if is_copy:
+            out = copy.deepcopy(out)
+        return out

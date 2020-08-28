@@ -87,7 +87,7 @@ function SocketManager() {
         this_sock_int.connected = false
 
         // obj for all event names
-        let events = {
+        let on_events = {
         }
 
         // open the WebSocket and add interfaces
@@ -112,20 +112,30 @@ function SocketManager() {
                     let event_data = decode_socket_data(event.data)
                     let event_name = event_data.metadata.event_name
 
-                    if (is_def(events[event_name])) {
+                    if (is_def(on_events[event_name])) {
                         // console.log(' - onmessage - ', [event_data.sess_id, event_name])
-                        events[event_name](event_data)
+                        $.each(on_events[event_name], function(n_func, func) {
+                            // console.log('on_events', event_name, event_data)
+                            func(event_data)
+                        })
                     }
                     else {
                         throw [
-                            'undefined event_name', event.data,
+                            (' --> undefined event_name: ' + event_data.metadata.event_name + ' <--'),
+                            [ event_data.metadata ],
+                            // [event_data.metadata, event.data],
                         ]
                     }
                 }
                 catch (err) {
+                    console.log(err[0])
+                    let err_data = {
+                        'msg': err[0],
+                        'data': err[1],
+                    }
                     this_top.socket.server_log({
-                        data: err,
-                        is_verb: true,
+                        data: err_data,
+                        is_verb: false,
                         log_level: LOG_LEVELS.ERROR,
                     })
                 }
@@ -166,9 +176,14 @@ function SocketManager() {
         }
         this_sock_int.setup_websocket = setup_websocket
 
-        // on event of a given type, use the registered function
+        // register a function for an incoming event
         function on(event_name, func) {
-            events[event_name] = func
+            if (!is_def(on_events[event_name])) {
+                on_events[event_name] = [ func ]
+            }
+            else {
+                on_events[event_name].push(func)
+            }
             return
         }
         this_sock_int.on = on
@@ -908,23 +923,22 @@ function SocketManager() {
                 // common sicket calls
                 this_top.socket.on('init_data', function(data_in) {
                     let metadata = data_in.metadata
-                    if (metadata.widget_type === widget_type) {
-                        let widget_now = (
-                            widget_data.widgets[metadata.widget_id]
-                        )
-                        if (is_def(widget_now)) {
-                            widget_now.init_data(data_in)
-                            init_views[metadata.widget_id] = true
-                        }
+                    let widget_data = this_top.widget_funcs[metadata.widget_type]
+
+                    let widget_now = (
+                        widget_data.widgets[metadata.widget_id]
+                    )
+                    if (is_def(widget_now)) {
+                        widget_now.init_data(data_in)
+                        init_views[metadata.widget_id] = true
                     }
                 })
 
                 this_top.socket.on('update_data', function(data_in) {
                     let metadata = data_in.metadata
+                    let widget_data = this_top.widget_funcs[metadata.widget_type]
+
                     if (this_top.con_stat.is_offline()) {
-                        return
-                    }
-                    if (metadata.widget_type !== widget_type) {
                         return
                     }
 

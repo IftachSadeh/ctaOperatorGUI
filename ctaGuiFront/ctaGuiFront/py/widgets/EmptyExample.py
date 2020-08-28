@@ -24,7 +24,7 @@ class EmptyExample(BaseWidget):
         # standard common initialisations
         await BaseWidget.setup(self, *args)
 
-        # initial dataset and send to client
+        # initialise dataset and send to client
         opt_in = {
             'widget': self,
             'event_name': 'init_data',

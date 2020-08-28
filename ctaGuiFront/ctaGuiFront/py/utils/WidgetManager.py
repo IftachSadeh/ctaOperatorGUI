@@ -463,12 +463,19 @@ class WidgetManager():
             opt_in['sleep_sec'] if 'sleep_sec' in opt_in else self.basic_widget_sleep_sec
         )
         func_args = opt_in['func_args'] if 'func_args' in opt_in else None
+        verify_data = opt_in['verify_data'] if 'verify_data' in opt_in else None
 
         while self.get_loop_state(loop_info):
+            await asyncio.sleep(sleep_sec)
+
             if func_args is None:
                 data = await opt_in['data_func']()
             else:
                 data = await opt_in['data_func'](func_args)
+
+            if verify_data is not None:
+                if not await verify_data(data):
+                    continue
 
             metadata = {
                 'widget_type': widget.widget_name,
@@ -481,8 +488,6 @@ class WidgetManager():
                 data=data,
                 metadata=metadata,
             )
-
-            await asyncio.sleep(sleep_sec)
 
         self.log.info([
             ['r', ' - ending '],
@@ -522,8 +527,11 @@ class WidgetManager():
             opt_in['sleep_sec'] if 'sleep_sec' in opt_in else self.basic_widget_sleep_sec
         )
         func_args = opt_in['func_args'] if 'func_args' in opt_in else None
+        verify_data = opt_in['verify_data'] if 'verify_data' in opt_in else None
 
         while self.get_loop_state(loop_info):
+            await asyncio.sleep(sleep_sec)
+
             name = (
                 'ws;server_user_widget_loops;' + self.serv_id + ';' + self.user_id + ';'
                 + widget.widget_name
@@ -534,6 +542,10 @@ class WidgetManager():
                     data = await opt_in['data_func']()
                 else:
                     data = await opt_in['data_func'](func_args)
+
+                if verify_data is not None:
+                    if not await verify_data(data):
+                        continue
 
             for loop_widget in loop_widgets:
                 sess_id = loop_widget['sess_id']
@@ -561,8 +573,6 @@ class WidgetManager():
                     pass
                 except Exception as e:
                     raise e
-
-            await asyncio.sleep(sleep_sec)
 
         self.log.info([
             ['r', ' - ending '],

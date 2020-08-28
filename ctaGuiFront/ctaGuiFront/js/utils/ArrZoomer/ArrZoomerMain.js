@@ -1675,65 +1675,65 @@ window.ArrZoomerMain = function(opt_in_top) {
     }
 
 
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    function set_tel_layout(opt_in) {
-        if (
-            !locker.are_free([
-                'set_state_lock',
-                'data_change',
-                'zoom',
-                'auto_zoom_target',
-                's1_props_change',
-            ])
-        ) {
-            setTimeout(function() {
-                set_tel_layout(opt_in)
-            }, times.anim / 2)
-            return
-        }
+    // // ------------------------------------------------------------------
+    // //
+    // // ------------------------------------------------------------------
+    // function set_tel_layout(opt_in) {
+    //     if (
+    //         !locker.are_free([
+    //             'set_state_lock',
+    //             'data_change',
+    //             'zoom',
+    //             'auto_zoom_target',
+    //             's1_props_change',
+    //         ])
+    //     ) {
+    //         setTimeout(function() {
+    //             set_tel_layout(opt_in)
+    //         }, times.anim / 2)
+    //         return
+    //     }
 
-        let id = opt_in.id
-        let update_id = opt_in.update_id
-        let data = opt_in.data
+    //     let id = opt_in.id
+    //     let update_id = opt_in.update_id
+    //     let data = opt_in.data
 
-        // check if we are about to change the id
-        let is_change = insts.data.layout !== id
+    //     // check if we are about to change the id
+    //     let is_change = insts.data.layout !== id
 
-        if (is_change || is_def(data)) {
-            locker.expires({
-                id: 'set_state_lock',
-                duration: times.anim / 2,
-            })
-        }
+    //     if (is_change || is_def(data)) {
+    //         locker.expires({
+    //             id: 'set_state_lock',
+    //             duration: times.anim / 2,
+    //         })
+    //     }
 
-        if (id === 'physical') {
-            if (update_id) {
-                insts.data.layout = id
-            }
-            this_top.set_layout_physical(data)
-        }
-        // else if (id === 'sub_arr') {
-        //   if (update_id) insts.data.layout = id
-        //   this_top.set_layout_sub_arr(data)
-        // }
-        else {
-            console.error(' - trying to set undefined layout', id)
-            return
-        }
+    //     if (id === 'physical') {
+    //         if (update_id) {
+    //             insts.data.layout = id
+    //         }
+    //         this_top.set_layout_physical(data)
+    //     }
+    //     // else if (id === 'sub_arr') {
+    //     //   if (update_id) insts.data.layout = id
+    //     //   this_top.set_layout_sub_arr(data)
+    //     // }
+    //     else {
+    //         console.error(' - trying to set undefined layout', id)
+    //         return
+    //     }
 
-        if ((update_id && is_change) || is_def(data)) {
-            set_state()
+    //     if ((update_id && is_change) || is_def(data)) {
+    //         set_state()
 
-            if (this_top.get_zoom_state() === 1) {
-                $.each(s10_eles, function(index, ele_now) {
-                    ele_now.s10.update_pos_g(times.anim)
-                })
-            }
-        }
-    }
-    this_top.set_tel_layout = set_tel_layout
+    //         if (this_top.get_zoom_state() === 1) {
+    //             $.each(s10_eles, function(index, ele_now) {
+    //                 ele_now.s10.update_pos_g(times.anim)
+    //             })
+    //         }
+    //     }
+    // }
+    // this_top.set_tel_layout = set_tel_layout
 
     // ------------------------------------------------------------------
     //

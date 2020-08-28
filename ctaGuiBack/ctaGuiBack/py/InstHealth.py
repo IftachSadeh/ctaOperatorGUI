@@ -57,6 +57,10 @@ class InstHealth(ServiceManager):
         # the fraction of telescopes to randomely update
         self.update_frac = 0.05
 
+        # set debug_updates to 0 to have mild updates, to 1 to have frequent
+        # updates for a single inst, or to 2 to frequently update all instruments
+        self.debug_updates = 1
+
         self.inst_data = self.base_config.inst_data
         self.health_tag = self.inst_data.health_tag
 
@@ -104,7 +108,7 @@ class InstHealth(ServiceManager):
 
             # self.redPipe.hmset('inst_health_s0'+str(id_now), self.inst_health_s0[id_now])
 
-        self.inst_health_sub = self.inst_data.get_tel_healths()
+        self.inst_health_sub = self.inst_data.get_inst_healths()
 
         # a flat dict with references to each level of the original dict
         self.inst_health_sub_flat = dict()
@@ -183,8 +187,22 @@ class InstHealth(ServiceManager):
         pipe = self.redis.get_pipe()
 
         for id_now in self.tel_ids:
-            if (rnd_gen.random() > update_frac):
-                continue
+            if (self.debug_updates >= 2) or (id_now in ['Lx01']):
+                update_frac_now = 1
+            else:
+                update_frac_now = update_frac
+
+            rnd = rnd_gen.random()
+            if self.debug_updates == 0:
+                if rnd > update_frac_now:
+                    continue
+            elif self.debug_updates == 1:
+                if (id_now not in ['Lx01']) and (rnd < 0.5):
+                    continue
+                elif rnd > update_frac_now:
+                    continue
+            elif self.debug_updates == 2:
+                pass
 
             arr_props[id_now] = self.inst_health_s0[id_now]
 
@@ -195,6 +213,14 @@ class InstHealth(ServiceManager):
                 health_tot = rnd_gen.randint(40, 100)
             else:
                 health_tot = rnd_gen.randint(60, 100)
+
+            if self.debug_updates == 0:
+                pass
+            elif self.debug_updates == 1:
+                if (id_now in ['Lx01']) and rnd < 0.5:
+                    health_tot = rnd_gen.randint(0, 100)
+            elif self.debug_updates >= 2:
+                health_tot = rnd_gen.randint(0, 100)
 
             arr_props[id_now][self.health_tag] = health_tot
 
@@ -216,6 +242,7 @@ class InstHealth(ServiceManager):
 
             for key, val in self.inst_health_s0[id_now].items():
                 pipe.h_set(name='inst_health;' + str(id_now), key=key, data=val)
+                # print('inst_health;' + str(id_now), key, val)
 
         pipe.execute()
 
@@ -252,7 +279,6 @@ class InstHealth(ServiceManager):
                         rnd_now = rnd_gen.uniform(-30, 30)
                     val = data_in['val'] + ceil(rnd_now)
                     data_in['val'] = max(20, min(100, int(val)))
-
             return
 
         ids = self.tel_ids if (tel_id_in is None) else tel_id_in

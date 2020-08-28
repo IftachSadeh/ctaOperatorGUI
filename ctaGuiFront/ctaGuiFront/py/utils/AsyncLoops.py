@@ -219,7 +219,6 @@ class AsyncLoops():
                 },
             ]
 
-
         return loops
 
     # ------------------------------------------------------------------
@@ -317,7 +316,9 @@ class AsyncLoops():
             sess_func_args.update(loop_info['func_args']['sess_func_args'])
 
         self.log.info([
-            ['y', ' - starting loop '],
+            ['y', ' - starting '],
+            ['b', loop_info['id']],
+            ['y', ' pubsub on: '],
             ['b', pubsub_tag],
             ['y', ' for server: '],
             ['c', self.serv_id],
