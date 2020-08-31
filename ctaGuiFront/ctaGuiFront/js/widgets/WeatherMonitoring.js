@@ -121,12 +121,40 @@ let main_weather_monitoring = function(opt_in) {
         },
         data: [],
     }
+
     let svg = {
     }
+
+    // -1 for value => fit 100% of remaining space
     let box = {
+        urgent: {
+            x: 0,
+            y: 0,
+            w: 200,
+            h: -1,
+        },
+        overview: {
+            x: 200,
+            y: 0,
+            w: 250,
+            h: -1,
+        },
+        external: {
+            x: 400,
+            y: 0,
+            w: -1,
+            h: 50,
+        },
+    }
+    box.focus = {
+        x: box.overview.x + box.overview.w,
+        y: 0,
+        w: -1,
+        h: -1,
     }
     let svg_dims = {
     }
+    let screen_unit = 'px'
 
     // let this_sched_block_inspector = this
     // let is_south = window.SITE_TYPE === 'S'
@@ -155,111 +183,71 @@ let main_weather_monitoring = function(opt_in) {
             svg_dims.h = {
             }
             svg_dims.w[0] = 1000
-            svg_dims.h[0] = svg_dims.w[0] * 1.33 // / sgv_tag.main.whRatio
+            svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
-            // svg_dims.w[0] = 500
-            // svg_dims.h[0] = 500
-
-            d3.select(svg_div)
-                .style('width', 'calc(100% - 200px)')
-                .style('height', 'calc(100% - 175px)')
-                .style('margin-top', '175px')
-                .style('margin-left', '200px')
-                .style('overflow', 'scroll')
-                .style('max-height', ($(document).height() * 0.8 - 175) + 'px')
             svg.svg = d3
                 .select(svg_div)
                 .append('svg')
-                // .attr('preserveAspectRatio', 'xMidYMid meet')
+                .attr('preserveAspectRatio', 'xMidYMid meet')
                 .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
                 .style('position', 'relative')
                 .style('width', '100%')
                 .style('height', '100%')
-                .style('top', '0%')
-                .style('left', '0%')
-                // .style('max-height', ($(document).height() * 0.8) + 'px')
+                .style('top', '0' + screen_unit)
+                .style('left', '0' + screen_unit)
                 .on('dblclick.zoom', null)
-
-            d3.select(svg_divFM)
-                .style('position', 'absolute')
-                .style('width', '200px')
-                .style('height', '100%')
-                .style('top', '0%')
-                .style('left', '0%')
-                .style('pointer-events', 'none')
-                // .style('max-height', ($(document).height() * 0.8) + 'px')
-            svg.floatingMenu = d3
-                .select(svg_divFM)
-                .append('svg')
-                // .attr('preserveAspectRatio', 'xMidYMid meet')
-                // .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
-                .style('width', '100%')
-                .style('height', '100%')
-                .style('top', '0%')
-                .style('left', '0%')
-                .style('pointer-events', 'none')
-            svg.floatingMenu.append('rect')
-                .attr('x', '98%')
-                .attr('y', 0)
-                .attr('width', '1px')
-                .attr('height', '100%')
-                .attr('fill', colorPalette.darkest.stroke)
-                .attr('stroke', colorPalette.darkest.stroke)
-                .attr('stroke-width', 0.0)
-
-            d3.select(svg_divPL)
-                .style('position', 'absolute')
-                .style('width', 'calc(100% - 200px)')
-                .style('height', '174px')
-                .style('top', '0%')
-                .style('left', '200px')
-                .style('pointer-events', 'none')
-                // .style('max-height', ($(document).height() * 0.8) + 'px')
-            svg.plotList = d3
-                .select(svg_divPL)
-                .append('svg')
-                // .attr('preserveAspectRatio', 'xMidYMid meet')
-                // .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
-                .style('width', '100%')
-                .style('height', '100%')
-                .style('top', '0%')
-                .style('left', '0%')
-                .style('pointer-events', 'none')
-            svg.plotList.append('rect')
-                .attr('x', 0)
-                .attr('y', '99%')
-                .attr('width', '100%')
-                .attr('height', '1px')
-                .attr('fill', colorPalette.darkest.stroke)
-                .attr('stroke', colorPalette.darkest.stroke)
-                .attr('stroke-width', 0.0)
-
-            function adjustDim() {
-                box.pl = {
-                    x: 0,
-                    y: 0,
-                    w: $(svg.plotList.node()).width(),
-                    h: $(svg.plotList.node()).height(),
-                }
-                svgPL.adjustScrollBox()
-                svgPL.adjustPlotDistribution()
-            }
-
-            $(window).resize(
-                function() {
-                    adjustDim()
-                })
-
-            svg.floatingMenuRoot = svg.floatingMenu.append('g')
-            // .attr('transform', 'translate(' + -svg_dims.w[0] * 0.12 + ',' + 0 + ')')
 
             if (disable_scroll_svg) {
                 svg.svg.on('wheel', function() {
                     d3.event.preventDefault()
                 })
             }
+
+            function adjustDim() {
+                box.urgent.h = svg_dims.h[0]
+                box.overview.h = svg_dims.h[0] - box.external.h
+                box.external.w = svg_dims.w[0] - box.urgent.w
+                box.focus = {
+                    x: box.overview.x + box.overview.w,
+                    y: 0,
+                    w: svg_dims.w[0] - (box.overview.x + box.overview.w),
+                    h: svg_dims.h[0] - (box.external.y + box.external.h),
+                }
+            }
+
+            $(window).resize(
+                function() {
+                    adjustDim()
+                })
+            adjustDim()
+
             svg.back = svg.svg.append('g')
             svg.g = svg.svg.append('g')
+
+            svg.svg.append('g').attr('id', 'urgent')
+                .attr('transform', 'translate('
+            + box.urgent.x
+            + ','
+            + box.urgent.y
+            + ')')
+            svg.svg.append('g').attr('id', 'overview')
+                .attr('transform', 'translate('
+            + box.overview.x
+            + ','
+            + box.overview.y
+            + ')')
+            svg.svg.append('g').attr('id', 'external')
+                .attr('transform', 'translate('
+            + box.external.x
+            + ','
+            + box.external.y
+            + ')')
+            svg.svg.append('g').attr('id', 'focus')
+                .attr('transform', 'translate('
+            + box.focus.x
+            + ','
+            + box.focus.y
+            + ')')
         }
         function initBackground() {
             let pattern = {
@@ -308,25 +296,25 @@ let main_weather_monitoring = function(opt_in) {
                 .attr('stroke-width', 6)
                 .attr('stroke-opacity', 6)
 
-            svg.back.append('rect')
-                .attr('x', svg_dims.w[0] * 0.0)
-                .attr('y', svg_dims.h[0] * 0.0)
-                .attr('width', svg_dims.w[0] * 0.26)
-                .attr('height', 30)
-                .attr('fill', colorPalette.darker.background)
-            svg.back.append('rect')
-                .attr('x', svg_dims.w[0] * 0.26 - 30)
-                .attr('y', svg_dims.h[0] * 0.0)
-                .attr('width', 30)
-                .attr('height', svg_dims.h[0] * 1)
-                .attr('fill', colorPalette.darker.background)
-            svg.back.append('text')
-                .text('Data tracking')
-                .style('fill', '#000000')
-                .style('font-weight', 'bold')
-                .style('font-size', '22px')
-                .attr('text-anchor', 'start')
-                .attr('transform', 'translate(' + (4) + ',' + (20) + ')')
+            // svg.back.append('rect')
+            //     .attr('x', svg_dims.w[0] * 0.0)
+            //     .attr('y', svg_dims.h[0] * 0.0)
+            //     .attr('width', svg_dims.w[0] * 0.26)
+            //     .attr('height', 30)
+            //     .attr('fill', colorPalette.darker.background)
+            // svg.back.append('rect')
+            //     .attr('x', svg_dims.w[0] * 0.26 - 30)
+            //     .attr('y', svg_dims.h[0] * 0.0)
+            //     .attr('width', 30)
+            //     .attr('height', svg_dims.h[0] * 1)
+            //     .attr('fill', colorPalette.darker.background)
+            // svg.back.append('text')
+            //     .text('Data tracking')
+            //     .style('fill', '#000000')
+            //     .style('font-weight', 'bold')
+            //     .style('font-size', '22' + screen_unit)
+            //     .attr('text-anchor', 'start')
+            //     .attr('transform', 'translate(' + (4) + ',' + (20) + ')')
 
             // svg.back.append('rect')
             //   .attr('x', svg_dims.w[0] * 0.26)
@@ -336,72 +324,94 @@ let main_weather_monitoring = function(opt_in) {
             //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
             //   .attr('stroke', 'none')
             //   .attr('rx', 0)
-            svg.back.append('text')
-                .text('Big Plot')
-                .style('fill', colorPalette.bright.background)
-                .style('font-weight', 'bold')
-                .style('font-size', '8px')
-                .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (svg_dims.w[0] * 0.5) + ',' + (svg_dims.h[0] * 0.25) + ')')
-            let fo = svg.back.append('foreignObject')
-                .attr('x', svg_dims.w[0] * 0.5 + 'px')
-                .attr('y', svg_dims.h[0] * 0.36 + 'px')
-                .attr('width', svg_dims.w[0] * 0.48 + 'px')
-                .attr('height', svg_dims.h[0] * 0.495 + 'px').node()
-
-            let iframe = document.createElement('iframe')
-            iframe.width = (svg_dims.w[0] * 0.48) + 'px'
-            iframe.height = (svg_dims.h[0] * 0.3) + 'px'
-            iframe.src = 'https://embed.windy.com/embed2.html?lat=28.718&lon=-17.849&zoom=11&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=48.683&detailLon=2.133&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1'
-
-            fo.appendChild(iframe)
-            // svg.svg._groups[0][0].appendChild(fo)
-
-            // svg.back.append('rect')
-            //   .attr('x', svg_dims.w[0] * 0.78)
-            //   .attr('y', svg_dims.h[0] * 0.98)
-            //   .attr('width', svg_dims.w[0] * 0.25)
-            //   .attr('height', svg_dims.h[0] * 0.02)
-            //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-            //   .attr('stroke', 'none')
-            //   .attr('rx', 0)
             // svg.back.append('text')
-            //   .text('Plots List')
-            //   .style('fill', colorPalette.bright.background)
-            //   .style('font-weight', 'bold')
-            //   .style('font-size', '8px')
-            //   .attr('text-anchor', 'middle')
-            //   .attr('transform', 'translate(' + (svg_dims.w[0] * 0.875) + ',' + (svg_dims.h[0] * 0.995) + ')')
-
-            // svg.back.append('rect')
-            //   .attr('x', svg_dims.w[0] * 0.0)
-            //   .attr('y', 0)
-            //   .attr('width', svg_dims.w[0] * 0.32)
-            //   .attr('height', svg_dims.h[0] * 0.14)
-            //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-            //   .attr('stroke', 'none')
-            //   .attr('rx', 0)
-            // svg.back.append('text')
-            //   .text('_information')
-            //   .style('fill', colorPalette.bright.background)
-            //   .style('font-weight', 'bold')
-            //   .style('font-size', '8px')
-            //   .attr('text-anchor', 'middle')
-            //   .attr('transform', 'translate(' + (svg_dims.w[0] * 0.16) + ',' + (svg_dims.h[0] * 0.015) + ')')
+            //     .text('Big Plot')
+            //     .style('fill', colorPalette.bright.background)
+            //     .style('font-weight', 'bold')
+            //     .style('font-size', '8' + screen_unit)
+            //     .attr('text-anchor', 'middle')
+            //     .attr('transform', 'translate(' + (svg_dims.w[0] * 0.5) + ',' + (svg_dims.h[0] * 0.25) + ')')
+            // let fo = svg.back.append('foreignObject')
+            //     .attr('x', svg_dims.w[0] * 0.5 + screen_unit)
+            //     .attr('y', svg_dims.h[0] * 0.36 + screen_unit)
+            //     .attr('width', svg_dims.w[0] * 0.48 + screen_unit)
+            //     .attr('height', svg_dims.h[0] * 0.495 + screen_unit).node()
+            //
+            // let iframe = document.createElement('iframe')
+            // iframe.width = (svg_dims.w[0] * 0.48) + screen_unit
+            // iframe.height = (svg_dims.h[0] * 0.3) + screen_unit
+            // iframe.src = 'https://embed.windy.com/embed2.html?lat=28.718&lon=-17.849&zoom=11&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=48.683&detailLon=2.133&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1'
+            //
+            // fo.appendChild(iframe)
         }
         function initBox() {
+            box.urgent_date = {
+                x: 0,
+                y: 0,
+                w: box.urgent.w,
+                h: 100,
+            }
+            box.urgent_supervision = {
+                x: 0,
+                y: 100,
+                w: box.urgent.w,
+                h: box.urgent.h - 100,
+            }
+
+            box.overview_time_options = {
+                x: 0,
+                y: 0, // y: box.overview_date.y + box.overview_date.h,
+                w: box.overview.w,
+                h: 100,
+            }
+            box.overview_measures = {
+                x: 0,
+                y: box.overview_time_options.y + box.overview_time_options.h,
+                w: box.overview.w,
+                h: (box.overview.h
+                - box.overview_time_options.h)
+                * 0.5,
+            }
+            box.overview_sensors = {
+                x: 0,
+                y: box.overview.h * 0.6,
+                w: box.overview.w,
+                h: box.overview.h * 0.4,
+            }
+            box.overview_horizontal_dispatch = {
+                warning: {
+                    x: 0,
+                    w: 20,
+                },
+                old_values: {
+                    x: 25,
+                    w: (box.overview.w - 30) * 0.5,
+                },
+                current_values: {
+                    x: 30 + (box.overview.w - 20) * 0.5,
+                    w: (box.overview.w - 30) * 0.5,
+                },
+            }
+
+            box.focus_measures = {
+                x: box.focus.w * 0.2,
+                y: box.focus.h * 0.1,
+                w: box.focus.w * 0.6,
+                h: box.focus.h * 0.4,
+            }
+            box.focus_sensors = {
+                x: 0,
+                y: box.focus.h * 0.6,
+                w: box.focus.w,
+                h: box.focus.h * 0.4,
+            }
+
             box.block_queue_server = {
                 x: svg_dims.w[0] * 0.374,
                 y: svg_dims.h[0] * 0.155,
                 w: svg_dims.w[0] * 0.59,
                 h: svg_dims.h[0] * 0.47,
                 marg: svg_dims.w[0] * 0.01,
-            }
-            box.pl = {
-                x: 0,
-                y: 0,
-                w: $(svg.plotList.node()).width(),
-                h: $(svg.plotList.node()).height(),
             }
         }
         function initDefaultStyle() {
@@ -458,25 +468,13 @@ let main_weather_monitoring = function(opt_in) {
         })
 
         let svg_div_id = sgv_tag.main.id + 'svg'
-        let svg_divFMId = sgv_tag.main.id + 'FM'
-        let svg_divPLId = sgv_tag.main.id + 'PL'
         let parent = sgv_tag.main.widget.get_ele(sgv_tag.main.id)
 
         let svg_div = sgv_tag.main.widget.get_ele(svg_div_id)
-        let svg_divFM = sgv_tag.main.widget.get_ele(svg_divFMId)
-        let svg_divPL = sgv_tag.main.widget.get_ele(svg_divPLId)
         if (!is_def(svg_div)) {
             let svg_div = document.createElement('div')
             svg_div.id = svg_div_id
             dom_add(parent, svg_div)
-
-            let svg_divFM = document.createElement('div')
-            svg_divFM.id = svg_divFMId
-            dom_add(parent, svg_divFM)
-
-            let svg_divPL = document.createElement('div')
-            svg_divPL.id = svg_divPLId
-            dom_add(parent, svg_divPL)
 
             run_when_ready({
                 pass: function() {
@@ -507,7 +505,7 @@ let main_weather_monitoring = function(opt_in) {
         shared.time.from.setTime(shared.time.current.getTime() - shared.time.range)
         loadMesures()
 
-        svg_measured_data.init_data()
+        svg_main_measures_tracking.init_data()
         svgHeathMapSensors.init_data()
 
         createUrgentList()
@@ -516,8 +514,9 @@ let main_weather_monitoring = function(opt_in) {
         svgFMTimeline.init_data()
         svgFMSupervision.init_data()
         svgObservationSite.init_data()
+        svg_measures_plots.init_data()
 
-        svgPL.init_data()
+        // svgPL.init_data()
 
         // svgPlotDisplay.init_data()
     }
@@ -543,7 +542,7 @@ let main_weather_monitoring = function(opt_in) {
         updateMesures()
         createUrgentList()
 
-        svg_measured_data.update_data()
+        svg_main_measures_tracking.update_data()
         // svgPlotDisplay.update_data()
         svgFMDate.update_data()
         svgFMSupervision.update_data()
@@ -616,14 +615,14 @@ let main_weather_monitoring = function(opt_in) {
         for (let i = 0; i < shared.data.length; i++) {
             if (shared.data[i].id === data.id) {
                 shared.data.splice(i, 1)
-                // svgPlotDisplay.unbindData(data)
-                svg_measured_data.unselectMeasure(data.id)
+                svg_measures_plots.unbind_data(data)
+                svg_main_measures_tracking.unselectMeasure(data.id)
                 return
             }
         }
         shared.data.push(data)
-        // svgPlotDisplay.bindData(data)
-        svg_measured_data.selectMeasure(data.id)
+        svg_measures_plots.bind_data(data)
+        svg_main_measures_tracking.selectMeasure(data.id)
     }
     function linearRegression(x, y) {
         var lr = {
@@ -1223,14 +1222,14 @@ let main_weather_monitoring = function(opt_in) {
         }
         this.init_data = init_data
 
-        function bindData(data) {
-            plot.bindData(data.id, [ data.status.current ].concat(data.status.previous), 'bottom', 'left')
+        function bind_data(data) {
+            plot.bind_data(data.id, [ data.status.current ].concat(data.status.previous), 'bottom', 'left')
         }
-        this.bindData = bindData
-        function unbindData(data) {
-            plot.unbindData(data.id)
+        this.bind_data = bind_data
+        function unbind_data(data) {
+            plot.unbind_data(data.id)
         }
-        this.unbindData = unbindData
+        this.unbind_data = unbind_data
 
         function update_data() {
             let start_time_sec = {
@@ -1271,1298 +1270,66 @@ let main_weather_monitoring = function(opt_in) {
         function update() {}
         this.update = update
     }
-    let SvgHeathMapSensors = function() {
-        let box
-        let step = 20
-        let currentState = 'default'
-        let spaceSize = 6
-        let lineSize
-        let scrollbox
-        // reserved.overview.modifications.scrollBox.get('inner_g')
-        function changeState(from, action) {
-            if (from === 'heatmap') {
-                if (currentState === 'default') {
-                    currentState = 'expanded'
-                    expandSensor()
-                }
-                else if (currentState === 'expanded') {
-                    currentState = 'default'
-                    defaultDisplay()
-                }
-                else if (currentState === 'shift') {
-                    currentState = 'expanded'
-                    expandSensor()
-                }
-            }
-            else if (from === 'measured') {
-                if (action === 'expanded') {
-                    currentState = 'shift'
-                    shrinkSensor()
-                }
-                else if (action === 'default') {
-                    currentState = 'default'
-                    defaultDisplay()
-                }
-            }
-        }
-        this.changeState = changeState
-        function shrinkSensor() {
-            svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
-                .each(function(d) {
-                    let g = d3.select(this)
-                    g.on('mouseenter', () => {})
-                    g.on('mouseleave', () => {})
-                    g.selectAll('g.sensorline')
-                        .transition()
-                        .duration(600)
-                        .attr('transform', function(d, i) {
-                            return 'translate(' + 0 + ',' + 0 + ')'
-                        })
-                })
-            svg.g.select('g#hardwareMonitoring').selectAll('rect#label').remove()
-            svg.g.select('g#hardwareMonitoring').selectAll('text#label').remove()
 
-            let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
-            svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
-                .attr('opacity', 1)
-                .transition()
-                .duration(400)
-                .delay((d, i) => i * (400 / count))
-                .attr('opacity', 0)
-                .on('end', function() {
-                    d3.select(this).attr('visibility', 'hidden')
-                })
+    let SvgFMDate = function() {
 
-            svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
-                .transition()
-                .duration(600)
-                .delay((d, i) => i * (600 / count))
-                .attr('transform', function(d, i) {
-                    return 'translate(' + (-box.w * 0.7 + box.w * 0.25 * (i % 4)) + ',' + (parseInt(i / 4) * 30) + ')'
-                })
-        }
-        // function unshift () {
-        //
-        //   let offset = 0
-        //   svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
-        //     .transition()
-        //     .duration(400)
-        //     .delay((d, i) => 400 - i * (400 / count))
-        //     .attr('transform', (d, i) => {
-        //       let trans = offset
-        //       offset += 12 + d.length * (lineSize)
-        //       return 'translate(' + 0 + ',' + trans + ')'
-        //     })
-        //
-        //   // let offset = 0
-        //   // svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
-        //   //   .each(function (d, i) {
-        //   //     let g = d3.select(this)
-        //   //     g.transition()
-        //   //       .duration(600)
-        //   //       .delay((d, i) => 600 - i * (600 / count))
-        //   //       .attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-        //   //     offset += 12 + d.length * (lineSize)
-        //   //   })
-        // }
-        function display_onoff_button(g) {
-            g.select('rect#background').attr('fill', d3.color(colorPalette.darker.background).darker(0.2))
-            g.selectAll('g.sensorline').transition()
-                .duration(300)
-                .attr('transform', function(d, i) {
-                    return 'translate(' + 28 + ',' + (i * 12) + ')'
-                })
-
-            let ig = g.selectAll('g.sensorline')
-                .append('g')
-                .attr('id', 'onoff_button')
-                .on('click', function(d, i) {
-                    if (d[i].running) {
-                        d[i].running = false
-                        ig.select('rect#slideback')
-                            .transition()
-                            .duration(200)
-                            .attr('fill', (d, i) => {
-                                return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-                            })
-                        ig.select('circle#slidebutton')
-                            .transition()
-                            .duration(200)
-                            .attr('cx', (d, i) => {
-                                return d[i].running ? -12 : -22
-                            })
-                            .attr('fill', (d, i) => {
-                                return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-                            })
-                    }
-                    else {
-                        d[i].running = true
-                        ig.select('rect#slideback')
-                            .transition()
-                            .duration(200)
-                            .attr('fill', (d, i) => {
-                                return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-                            })
-                        ig.select('circle#slidebutton')
-                            .transition()
-                            .duration(200)
-                            .attr('cx', (d, i) => {
-                                return d[i].running ? -12 : -22
-                            })
-                            .attr('fill', (d, i) => {
-                                return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-                            })
-                    }
-                    onOffSensor(d3.select(d3.select(this).node().parentNode), i)
-                })
-            ig.append('rect')
-                .attr('id', 'slideback')
-                .attr('x', -28)
-                .attr('y', (d, i) => (i * 8.5) - 4)
-                .attr('width', 22)
-                .attr('height', 12)
-                .attr('stroke', '#000000')
-                .attr('stroke-width', 0.5)
-                .attr('fill', (d, i) => {
-                    return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-                })
-                .style('opacity', 0.5)
-                .attr('rx', 6)
-            ig.append('circle')
-                .attr('id', 'slidebutton')
-                .attr('cx', (d, i) => {
-                    return d[i].running ? -12 : -22
-                })
-                .attr('cy', (d, i) => (i * 8.5) + 2)
-                .attr('r', 5.5)
-                .attr('stroke', '#000000')
-                .attr('stroke-width', 0.5)
-                .attr('fill', (d, i) => {
-                    return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-                })
-            // ig.append('rect')
-            //   .attr('id', 'slideoverlay')
-            //   .attr('x', -28)
-            //   .attr('y', (d, i) => (i * 8.5) - 4)
-            //   .attr('width', 22)
-            //   .attr('height', 12)
-            //   .attr('stroke', 'none')
-            //   .attr('fill', 'transparent')
-            //   .attr('rx', 6)
-            //   .on('click', function (d, i) {
-            //     if (d[i].running) {
-            //       d[i].running = false
-            //       ig.select('rect#slideback')
-            //         .attr('fill', (d, i) => {
-            //           return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-            //         })
-            //       ig.select('circle#slidebutton')
-            //         .attr('cx', (d, i) => {
-            //           return d[i].running ? -12 : -22
-            //         })
-            //         .attr('fill', (d, i) => {
-            //           return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-            //         })
-            //     } else {
-            //       d[i].running = true
-            //       ig.select('rect#slideback')
-            //         .attr('fill', (d, i) => {
-            //           return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-            //         })
-            //       ig.select('circle#slidebutton')
-            //         .attr('cx', (d, i) => {
-            //           return d[i].running ? -12 : -22
-            //         })
-            //         .attr('fill', (d, i) => {
-            //           return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
-            //         })
-            //     }
-            //   })
-        }
-        function hideOnOff_button(g) {
-            g.selectAll('g.sensorline').selectAll('g#onoff_button').remove()
-            g.select('rect#background').attr('fill', 'transparent')
-            g.selectAll('g.sensorline').transition()
-                .duration(300)
-                .attr('transform', function(d, i) {
-                    return 'translate(' + 0 + ',' + (i * 12) + ')'
-                })
-        }
-        function expandSensor() {
-            // svg_measured_data.shift()
-            let offset = 0
-            svg.g.select('g#hardwareMonitoring')
-                .transition()
-                .duration(600)
-                .attr('transform', 'translate(' + 0 + ',' + -box.y * 0.00 + ')')
-            svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
-                .attr('visibility', 'visible')
-                .transition()
-                .duration(600)
-                .attr('opacity', 1)
-            svg.g.select('g#heatmapSensors').selectAll('g.sensor')
-                .each(function(d, i) {
-                    let g = d3.select(this)
-                    g.on('mouseenter', function(d) {
-                        display_onoff_button(g)
-                    })
-                    g.on('mouseleave', function(d) {
-                        hideOnOff_button(g)
-                    })
-                    // g.on('click', () => {
-                    //   console.log(d3.event);
-                    //   console.log('click2')
-                    // })
-                    offset += 24
-                    // let localCpOffset = offset
-                    g.append('text')
-                        .attr('id', 'label')
-                        .text(d => d[0].name)
-                        .attr('x', -6)
-                        .attr('y', '-18px')
-                        .style('font-weight', 'bold')
-                        .style('font-size', '16px')
-                    g.append('rect')
-                        .attr('id', 'label')
-                        .attr('x', -4)
-                        .attr('y', -11)
-                        .attr('width', 2)
-                        .attr('height', d.length * (lineSize + 16))
-                    g.select('rect#background')
-                        .attr('x', -6)
-                        .attr('y', -26)
-                        .attr('width', box.w)
-                        .attr('height', d.length * (lineSize + 12) + 8 + 16)
-                        .attr('fill', 'transparent')
-                    g.transition()
-                        .duration(600)
-                        .attr('transform', 'translate(' + 6 + ',' + (offset) + ')')
-
-                    g.selectAll('g.sensorline')
-                        .append('text')
-                        .attr('id', 'label')
-                        .text((d, i) => d[i].id)
-                        .attr('x', 0)
-                        .attr('y', -1)
-                        .style('font-size', '14px')
-                        .attr('transform', function(d, i) {
-                            return 'translate(' + 0 + ',' + (i * 9) + ')'
-                        })
-                    g.selectAll('g.sensorline')
-                        .transition()
-                        .duration(600)
-                        .attr('transform', function(d, i) {
-                            return 'translate(' + 0 + ',' + (i * 18) + ')'
-                        })
-                    offset += d.length * (lineSize + 22)
-                })
-
-            scrollbox.update_box({
-                x: 0,
-                y: 0,
-                w: box.w,
-                h: (box.y * 0.00 + box.h),
-            })
-            scrollbox.reset_vertical_scroller({
-                can_scroll: true,
-                scroll_height: (offset),
-            })
-        }
-        function defaultDisplay() {
-            // svg_measured_data.unshift()
-            svg.g.select('g#hardwareMonitoring')
-                .transition()
-                .duration(200)
-                .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-                .on('end', function() {
-                    scrollbox.update_box({
-                        x: 0,
-                        y: 0,
-                        w: box.w,
-                        h: box.h,
-                    })
-                    scrollbox.reset_vertical_scroller({
-                        can_scroll: true,
-                        scroll_height: 0,
-                    })
-                    let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
-                    svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
-                        .attr('visibility', 'visible')
-                        .transition()
-                        .duration(600)
-                        .delay((d, i) => i * (600 / count))
-                        .attr('opacity', 1)
-                    let offset = 0
-                    svg.g.select('g#heatmapSensors').selectAll('g.sensor')
-                        .each(function(d) {
-                            let g = d3.select(this)
-                            g.on('mouseenter', () => {})
-                            g.on('mouseleave', () => {})
-                            g.transition()
-                                .duration(600)
-                                .attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-                            g.selectAll('g.sensorline')
-                                .transition()
-                                .duration(600)
-                                .attr('transform', function(d, i) {
-                                    return 'translate(' + 0 + ',' + 0 + ')'
-                                })
-                            offset += spaceSize + d.length * (lineSize)
-                        })
-                    svg.g.select('g#heatmapSensors').selectAll('rect#label').remove()
-                    svg.g.select('g#heatmapSensors').selectAll('text#label').remove()
-                })
-        }
-        function onOffSensor(g, j) {
-            g.selectAll('rect#timestamp')
-                .attr('fill', (d, i) => {
-                    if (d[j].status.previous[i] === 'RUNNING') {
-                        return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker().darker()
-                    }
-                    if (d[j].status.previous[i] === 'ERROR') {
-                        return d[j].running === true ? d3.color(colorPalette.blocks.fail.background) : d3.color(colorPalette.blocks.fail.background).darker().darker()
-                    }
-                    if (d[j].status.previous[i] === 'OFF') {
-                        return d[j].running === true ? d3.color('#333333') : d3.color('#333333').darker().darker()
-                    }
-                })
-            g.selectAll('rect#current')
-                .attr('fill', (d, i) => {
-                    if (d[j].status.current === 'RUNNING') {
-                        return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker()
-                    }
-                    if (d[j].status.current === 'ERROR') {
-                        return d[j].running === true ? d3.color(colorPalette.blocks.fail.background) : d3.color(colorPalette.blocks.fail.background).darker()
-                    }
-                    if (d[j].status.current === 'OFF') {
-                        return d[j].running === true ? d3.color('#333333') : d3.color('#333333').darker()
-                    }
-                })
-        }
-        function SensorCore(sensors, g) {
-            let rows = 0
-            for (let el in sensors) {
-                rows += sensors[el].length
-            }
-            lineSize = (box.h - sensors.length * spaceSize) / rows
-            let current = g
-                .selectAll('g.sensor')
-                .data(sensors, function(d) {
-                    return d.id
-                })
-            let enter = current
-                .enter()
-                .append('g')
-                .attr('class', 'sensor')
-
-            enter.each(function(d, i) {
-                let g = d3.select(this)
-                g.append('rect').attr('id', 'background')
-                for (let j = 0; j < d.length; j++) {
-                    let ig = g.append('g').attr('class', 'sensorline')
-                    let tg = ig.append('g').attr('id', 'timestampsline')
-                    for (let i = 0; i < d[j].status.previous.length; i++) {
-                        tg.append('rect')
-                            .attr('id', 'timestamp')
-                            .attr('x', 0 + (i * (box.w * 0.74) / d[j].status.previous.length))
-                            .attr('y', j * lineSize)
-                            .attr('width', (box.w * 0.74) / d[j].status.previous.length)
-                            .attr('height', lineSize)
-                            .attr('fill', () => {
-                                if (d[j].status.previous[i] === 'RUNNING') {
-                                    return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker().darker()
-                                }
-                                if (d[j].status.previous[i] === 'ERROR') {
-                                    return d[j].running === true ? d3.color(colorPalette.blocks.fail.background) : d3.color(colorPalette.blocks.fail.background).darker().darker()
-                                }
-                                if (d[j].status.previous[i] === 'OFF') {
-                                    return d[j].running === true ? d3.color('#333333') : d3.color('#333333').darker().darker()
-                                }
-                            }) // colorPalette.dark.background)
-                            .attr('stroke', '#000000')
-                            .attr('stroke-width', 0.1)
-                        // .style('opacity', d[j].running === true ? 1 : 0.2)
-                    }
-                    ig.append('rect')
-                        .attr('id', 'current')
-                        .attr('x', box.w * 0.78)
-                        .attr('y', j * lineSize)
-                        .attr('width', (box.w * 0.05))
-                        .attr('height', lineSize)
-                        .attr('fill', () => {
-                            if (d[j].status.current === 'RUNNING') {
-                                return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker()
-                            }
-                            if (d[j].status.current === 'ERROR') {
-                                return d[j].running === true ? d3.color(colorPalette.blocks.fail.background) : d3.color(colorPalette.blocks.fail.background).darker()
-                            }
-                            if (d[j].status.current === 'OFF') {
-                                return d[j].running === true ? d3.color('#333333') : d3.color('#333333').darker()
-                            }
-                        }) // colorPalette.dark.background)
-                        .attr('stroke', '#000000')
-                        .attr('stroke-width', 0.2)
-                        .attr('rx', 0)
-
-                    let errorbox = ig.append('g').attr('id', 'errorbox')
-                        .attr('display', 'auto')
-                        .style('opacity', 1)
-                    errorbox.append('rect')
-                        .attr('id', 'background')
-                        .attr('x', box.w * 0.89)
-                        .attr('y', 0 + j * lineSize - lineSize * 0.5)
-                        .attr('width', lineSize * 1.75)
-                        .attr('height', lineSize * 1.75)
-                        .attr('stroke', '#000000')
-                        .attr('stroke-width', 1)
-                    errorbox.append('text')
-                        .text('!')
-                        .attr('x', box.w * 0.9 + 9)
-                        .attr('y', 16 + j * lineSize - lineSize * 0.5)
-                        .style('font-size', '18px')
-                        .style('text-anchor', 'middle')
-                        .style('font-weight', 'bold')
-                        .style('user-select', 'none')
-                        .style('pointer-events', 'none')
-
-                    // if (d[j].status.current === 'ERROR') {
-                    //   ig.append('rect')
-                    //     .attr('x', box.w * 0.88)
-                    //     .attr('y', 0 + j * lineSize - lineSize * 0.5)
-                    //     .attr('width', lineSize * 2.5)
-                    //     .attr('height', lineSize * 2.5)
-                    //     .attr('fill', 'gold')
-                    //     .attr('stroke-width', 0)
-                    //   ig.append('svg:image')
-                    //     .attr('xlink:href', '/static/icons/warning-tri.svg')
-                    //     .attr('x', box.w * 0.88)
-                    //     .attr('y', 0 + j * lineSize - lineSize * 0.5)
-                    //     .attr('width', lineSize * 2.5)
-                    //     .attr('height', lineSize * 2.5)
-                    //     .style('opacity', 0.5)
-                    //     .style('pointer-events', 'none')
-                    // }
-                }
-            })
-            let merge = current.merge(enter)
-
-            let offset = 0
-            merge.each(function(d, i) {
-                let g = d3.select(this)
-
-                g.selectAll('g.sensorline').each(function(d, j) {
-                    let g = d3.select(this)
-                    if (d[j].status.current === 'ERROR') {
-                        g.select('g#errorbox').attr('display', 'auto')
-                        g.select('g#errorbox rect#background').attr('fill', colorPalette.blocks.fail.background)
-                    }
-                    else {
-                        g.select('g#errorbox').attr('display', 'none')
-                    }
-                })
-
-                g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-                offset += spaceSize + d.length * (lineSize)
-            })
-            current
-                .exit()
-                .transition('in_out')
-                .duration(times.anim)
-                .style('opacity', 0)
-                .remove()
-        }
         function init_data() {
-            box = {
-                x: svg_dims.w[0] * 0.0,
-                y: svg_dims.h[0] * 0.7,
-                w: svg_dims.w[0] * 0.265,
-                h: svg_dims.h[0] * 0.28,
-                marg: svg_dims.w[0] * 0.01,
-            }
+            let main = svg.svg.select('#urgent').append('g').attr('id', 'fmdate')
 
-            let fillfun = function() {
-                let status = {
-                    current: '',
-                    previous: [],
-                }
-                let rand = Math.random()
-                if (rand < 0.75) {
-                    status.current = 'RUNNING'
-                }
-                else if (rand < 0.9) {
-                    status.current = 'ERROR'
-                }
-                else if (rand <= 1) {
-                    status.current = 'OFF'
-                }
-                for (let i = 0; i < step; i++) {
-                    let rand = Math.random()
-                    if (rand < 0.92) {
-                        status.previous.push('RUNNING')
-                    }
-                    else if (rand < 0.96) {
-                        status.previous.push('ERROR')
-                    }
-                    else if (rand <= 1) {
-                        status.previous.push('OFF')
-                    }
-                }
-                return status
-            }
-            shared.server.sensors = [
-                [{
-                    id: 'id0',
-                    name: 'Illuminator',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id1',
-                    name: 'Photometer',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id2',
-                    name: 'All-sky-camera',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id3',
-                    name: 'Ceilometer',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id4',
-                    name: 'Ceilometer',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id5',
-                    name: 'FRAM',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id6',
-                    name: 'LIDARs',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id7',
-                    name: 'LIDARs',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id8',
-                    name: 'Weather-stations',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id9',
-                    name: 'Weather-stations',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id10',
-                    name: 'Weather-stations',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id11',
-                    name: 'Anemometers',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id12',
-                    name: 'Anemometers',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id13',
-                    name: 'Anemometers',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id14',
-                    name: 'Anemometers',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id15',
-                    name: 'Anemometers',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id16',
-                    name: 'Anemometers',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id17',
-                    name: 'Precipitation',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id18',
-                    name: 'Precipitation',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id19',
-                    name: 'Precipitation',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id20',
-                    name: 'Dust',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                }],
-                [{
-                    id: 'id21',
-                    name: 'Accelerometers',
-                    status: fillfun(),
-                    running: Math.random() < 0.5,
-                },
-                {
-                    id: 'id22',
-                    name: 'Accelerometers',
-                    status: fillfun(),
-                    running: true,
-                }],
-            ]
-
-            let main = svg.g.append('g').attr('id', 'hardwareMonitoring')
-            scrollbox = initScrollBox('heatmapScrollbox', main.append('g').attr('id', 'heatmapSensors').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.05) + ')'), box, {
-            }, true)
-            // main.append('rect')
-            //   .attr('x', box.x)
-            //   .attr('y', box.y)
-            //   .attr('width', box.w)
-            //   .attr('height', box.y)
-            //   .attr('fill', colorPalette.darker.background)
             main.append('rect')
-                .attr('x', box.x)
-                .attr('y', (box.y - 18) + 'px')
-                .attr('width', box.w * 0.87)
-                .attr('height', '24px')
-                .attr('fill', colorPalette.dark.background)
+                .attr('x', box.urgent_date.x)
+                .attr('y', box.urgent_date.y)
+                .attr('width', box.urgent_date.w)
+                .attr('height', box.urgent_date.h)
+                .attr('fill', colorPalette.darkest.stroke)
+                .attr('stroke', colorPalette.darkest.stroke)
+                .attr('stroke-width', 0.3)
+                .attr('rx', 0)
             main.append('text')
-                .text('Hardware')
-                .style('fill', '#000000')
+                .attr('id', 'currentHourTop')
+                .attr('stroke', colorPalette.bright.background)
+                .attr('stroke-width', 0.0)
+                .attr('fill', colorPalette.bright.background)
+                .attr('x', box.urgent_date.w * 0.5)
+                .attr('y', box.urgent_date.h * 0.4)
                 .style('font-weight', 'bold')
-                .style('font-size', '18px')
-                .style('user-select', 'none')
-                .attr('text-anchor', 'start')
-                .attr('transform', 'translate(' + (box.x + 2) + ',' + (box.y) + ')')
-
-            let gsens = scrollbox.get('inner_g')
-            main.append('rect')
-                .attr('x', box.x + box.w * 0.78)
-                .attr('y', (box.y - 14) + 'px')
-                .attr('width', '16px')
-                .attr('height', '16px')
-                .attr('fill', 'transparent')
-                .attr('stroke-width', 0)
-                .style('boxShadow', '10px 20px 30px black')
-                .on('click', function() {
-                    changeState('heatmap')
-                })
-                .on('mouseover', function(d) {
-                    d3.select(this).style('cursor', 'pointer')
-                    d3.select(this).attr('fill', colorPalette.darker.background)
-                })
-                .on('mouseout', function(d) {
-                    d3.select(this).style('cursor', 'default')
-                    d3.select(this).attr('fill', 'transparent')
-                })
-            main.append('svg:image')
-                .attr('xlink:href', '/static/icons/full-size.svg')
-                .attr('x', box.x + box.w * 0.78)
-                .attr('y', (box.y - 14) + 'px')
-                .attr('width', '16px')
-                .attr('height', '16px')
+                .attr('text-anchor', 'middle')
+                .style('font-size', '18' + screen_unit)
                 .style('pointer-events', 'none')
-
-            SensorCore(shared.server.sensors, gsens)
-        }
-        this.init_data = init_data
-
-        function update_data() {}
-        this.update_data = update_data
-
-        function update() {}
-        this.update = update
-    }
-    let SvgMeasuredis_data = function() {
-        let box
-        let expanded = false
-        let scrollbox
-
-        function shift() {
-            svg.g.select('g#measured_data')
-                .transition()
-                .duration(600)
-                .attr('transform', 'translate(' + 0 + ',' + box.h * 0.7 + ')')
-        }
-        this.shift = shift
-        function unshift() {
-            svg.g.select('g#measured_data')
-                .transition()
-                .duration(600)
-                .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-        }
-        this.unshift = unshift
-        function expand(g) {
-            // svgHeathMapSensors.changeState('measured', 'expanded')
-
-            // svg.g.select('g#measured_data')
-            //   .transition()
-            //   .delay(250)
-            //   .duration(600)
-            //   .attr('transform', 'translate(' + 0 + ',' + -box.h * 0.35 + ')')
-        }
-        function shrink(g) {
-            svgHeathMapSensors.changeState('measured', 'default')
-
-            // svg.g.select('g#measured_data')
-            //   .transition()
-            //   .duration(600)
-            //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-        }
-        function selectMeasure(id) {
-            let g = scrollbox.get('inner_g').select('g#' + id)
-            g.select('rect#background').attr('fill', colorPalette.darkest.background)
-            g.data()[0].selected = true
-        }
-        this.selectMeasure = selectMeasure
-        function unselectMeasure(id) {
-            let g = scrollbox.get('inner_g').select('g#' + id)
-            g.select('rect#background').attr('fill', 'transparent')
-            delete g.data()[0]['selected']
-        }
-        this.unselectMeasure = unselectMeasure
-        function measuredCore() {
-            let lineDim = {
-                w: box.w,
-                h: 30,
-                marg: 6,
-            }
-            let current = scrollbox.get('inner_g')
-                .selectAll('g.measures')
-                .data(shared.server.measures, function(d) {
-                    return d.id
-                })
-            let enter = current
-                .enter()
-                .append('g')
-                .attr('class', 'measures')
-
-            enter.each(function(d, i) {
-                let g = d3.select(this)
-                let min = d.status.current.y
-                let max = d.status.current.y
-                for (let j = 0; j < d.status.previous.length; j++) {
-                    if (d.status.previous[j].y < min) {
-                        min = d.status.previous[j].y
-                    }
-                    if (d.status.previous[j].y > max) {
-                        max = d.status.previous[j].y
-                    }
-                }
-
-                let main = g.attr('id', d.id)
-                    .on('mouseenter', () => {
-                        d3.select(this).style('cursor', 'pointer')
-                        if (g.data()[0].selected) {
-                            return
-                        }
-                        main.select('#background').attr('fill', colorPalette.darker.background)
-                    })
-                    .on('mouseleave', () => {
-                        d3.select(this).style('cursor', 'default')
-                        if (g.data()[0].selected) {
-                            return
-                        }
-                        main.select('#background').attr('fill', 'transparent')
-                    })
-                    .on('click', () => {
-                        addDataToPlot(d)
-                    })
-                main.append('rect')
-                    .attr('id', 'background')
-                    .attr('x', 0)
-                    .attr('y', -18)
-                    .attr('width', lineDim.w)
-                    .attr('height', lineDim.h * 1.4)
-                    .attr('fill', 'transparent')
-
-                // main.append('defs')
-                //   .append('clipPath')
-                //   .attr('id', 'rect-clip' + d.id)
-                //   .append('rect')
-                //   .attr('x', 12 + (box.w * 0.45 / 50 * min))
-                //   .attr('y', -12)
-                //   .attr('width', (box.w * 0.45 / 50 * (max - min)))
-                //   .attr('height', 12)
-                //   .style('fill-opacity', 0)
-                // main.append('rect')
-                //   .attr('x', 0)
-                //   .attr('y', -12)
-                //   .attr('width', box.w * 0.075)
-                //   .attr('height', 12)
-                //   .attr('fill', colorPalette.blocks.fail.background)
-                //   .attr('stroke', 'none')
-                //   .attr('rx', 0)
-                //   .style('opacity', 0.8)
-                //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-                // main.append('rect')
-                //   .attr('x', 0 + box.w * 0.075)
-                //   .attr('y', -12)
-                //   .attr('width', box.w * 0.075)
-                //   .attr('height', 12)
-                //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
-                //   .attr('stroke', 'none')
-                //   .attr('rx', 0)
-                //   .style('opacity', 0.8)
-                //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-                // main.append('rect')
-                //   .attr('x', 0 + box.w * 0.15)
-                //   .attr('y', -12)
-                //   .attr('width', box.w * 0.15)
-                //   .attr('height', 12)
-                //   .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
-                //   .attr('stroke', 'none')
-                //   .attr('rx', 0)
-                //   .style('opacity', 0.8)
-                //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-                // main.append('rect')
-                //   .attr('x', 0 + box.w * 0.3)
-                //   .attr('y', -12)
-                //   .attr('width', box.w * 0.075)
-                //   .attr('height', 12)
-                //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
-                //   .attr('stroke', 'none')
-                //   .attr('rx', 0)
-                //   .style('opacity', 0.8)
-                //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-                // main.append('rect')
-                //   .attr('x', 0 + box.w * 0.375)
-                //   .attr('y', -12)
-                //   .attr('width', box.w * 0.075)
-                //   .attr('height', 12)
-                //   .attr('fill', colorPalette.blocks.fail.background)
-                //   .attr('stroke', 'none')
-                //   .attr('rx', 0)
-                //   .style('opacity', 0.8)
-                //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-                //
-                // main.append('rect')
-                //   .attr('x', 0 + (box.w * 0.45 / 50 * d.status.current))
-                //   .attr('y', -12)
-                //   .attr('width', 3)
-                //   .attr('height', 12)
-                //   .attr('fill', '#000000') // colorPalette.dark.background)
-                //   .attr('stroke', 'none')
-                //   .attr('rx', 0)
-                //
-                // main.append('text')
-                //   .attr('id', 'measurelabel')
-                //   .text(d.name + ':')
-                //   .attr('x', box.w * 0.48)
-                //   .attr('y', 0)
-                //   .style('font-size', '12px')
-                // main.append('text')
-                //   .attr('id', 'valuelabel')
-                //   .text(d.status.current)
-                //   .attr('x', box.w * 0.75)
-                //   .attr('y', 0)
-                //   .style('font-size', '12px')
-                //   .style('font-weight', 'bold')
-                // main.append('text')
-                //   .attr('id', 'unitlabel')
-                //   .text(d.unit)
-                //   .attr('x', box.w * 0.88)
-                //   .attr('y', 0)
-                //   .style('font-size', '9px')
-                //   .style('font-weight', '')
-
-                main.append('rect')
-                    .attr('x', 12)
-                    .attr('y', -13)
-                    .attr('width', (lineDim.w * 0.36))
-                    .attr('height', lineDim.h)
-                    .attr('fill', 'none')
-                    .attr('stroke', '#000000')
-                    .attr('stroke-width', 0.1)
-                main.append('defs')
-                    .append('clipPath')
-                    .attr('id', 'rect-clip' + d.id)
-                    .append('rect')
-                    .attr('x', 12 + (lineDim.w * 0.36 / 100 * min))
-                    .attr('y', -13)
-                    .attr('width', (lineDim.w * 0.36 / 100 * (max - min)))
-                    .attr('height', lineDim.h)
-                    .style('fill-opacity', 0)
-                let healthg = main.append('g').attr('id', 'healthGroup')
-                    .style('opacity', 0.7)
-                healthg.append('rect')
-                    .attr('x', 12)
-                    .attr('y', -13)
-                    .attr('width', lineDim.w * 0.06)
-                    .attr('height', lineDim.h)
-                    .attr('fill', colorPalette.blocks.fail.background)
-                    .attr('stroke', 'none')
-                    .attr('rx', 0)
-                    .style('opacity', 0.8)
-                    .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-                healthg.append('rect')
-                    .attr('x', 12 + lineDim.w * 0.06)
-                    .attr('y', -13)
-                    .attr('width', lineDim.w * 0.06)
-                    .attr('height', lineDim.h)
-                    .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
-                    .attr('stroke', 'none')
-                    .attr('rx', 0)
-                    .style('opacity', 0.8)
-                    .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-                healthg.append('rect')
-                    .attr('x', 12 + lineDim.w * 0.12)
-                    .attr('y', -13)
-                    .attr('width', lineDim.w * 0.12)
-                    .attr('height', lineDim.h)
-                    .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
-                    .attr('stroke', 'none')
-                    .attr('rx', 0)
-                    .style('opacity', 0.8)
-                    .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-                healthg.append('rect')
-                    .attr('x', 12 + lineDim.w * 0.24)
-                    .attr('y', -13)
-                    .attr('width', lineDim.w * 0.06)
-                    .attr('height', lineDim.h)
-                    .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
-                    .attr('stroke', 'none')
-                    .attr('rx', 0)
-                    .style('opacity', 0.8)
-                    .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-                healthg.append('rect')
-                    .attr('x', 12 + lineDim.w * 0.3)
-                    .attr('y', -13)
-                    .attr('width', lineDim.w * 0.06)
-                    .attr('height', lineDim.h)
-                    .attr('fill', colorPalette.blocks.fail.background)
-                    .attr('stroke', 'none')
-                    .attr('rx', 0)
-                    .style('opacity', 0.8)
-                    .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-
-                // main.append('rect')
-                //   .attr('x', 12 + (box.w * 0.36 / 100 * d.status.current.y))
-                //   .attr('y', -13)
-                //   .attr('width', 1)
-                //   .attr('height', 30)
-                //   .attr('fill', '#000000') // colorPalette.dark.background)
-                //   .attr('stroke', 'none')
-                //   .attr('rx', 0)
-                let valueline = d3.line()
-                    .curve(d3.curveBundle)
-                    .x(function(d, j) {
-                        return 12 + (box.w * 0.36 / 100 * d.y)
-                    })
-                    .y(function(dd, j) {
-                        return -13 + 30 - (30 / d.status.previous.length) * j
-                    })
-                main.append('path')
-                    .attr('d', valueline(d.status.previous))
-                    .attr('fill', 'none')
-                    .attr('stroke', '#000000')
-                    .attr('stroke-width', 1.5)
-                main.append('polygon')
-                    .attr('cx', 13 + (lineDim.w * 0.36 / 100 * d.status.current.y))
-                    .attr('cy', 16)
-                    .attr('points', (13 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 16 + ' '
-            + (6 + lineDim.w * 0.36 / 100 * d.status.current.y) + ',' + 24 + ' '
-            + (20 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 24)
-                    .attr('r', 3)
-                    .attr('fill', '#000000')
-                    .attr('stroke', 'none')
-                    .attr('rx', 0)
-
-                main.append('text')
-                    .attr('id', 'measurelabel')
-                    .text(d.name)
-                    .attr('x', box.w * 0.43)
-                    .attr('y', -5)
-                    .style('font-size', '16px')
-                    .style('user-select', 'none')
-                    .style('text-anchor', 'start')
-                main.append('text')
-                    .attr('id', 'valuelabel')
-                    .text(d.status.current.y)
-                    .attr('x', box.w * 0.62)
-                    .attr('y', 16)
-                    .style('font-size', '20px')
-                    .style('font-weight', 'bold')
-                    .style('user-select', 'none')
-                    .style('text-anchor', 'end')
-                main.append('text')
-                    .attr('id', 'unitlabel')
-                    .text('(' + d.unit + ')')
-                    .attr('x', box.w * 0.86)
-                    .attr('y', -7)
-                    .style('font-size', '12px')
-                    .style('font-weight', '')
-                    .style('user-select', 'none')
-                    .style('text-anchor', 'end')
-
-                main.append('text')
-                    .attr('id', 'gradient')
-                    .text(d.status.gradient)
-                    .attr('x', box.w * 0.68)
-                    .attr('y', 16)
-                    .style('font-size', '16px')
-                    .style('text-anchor', 'start')
-                    .style('font-weight', '')
-                    .style('user-select', 'none')
-
-                let errorbox = main.append('g').attr('id', 'errorbox')
-                    .attr('display', 'none')
-                    .style('opacity', 1)
-                errorbox.append('rect')
-                    .attr('id', 'background')
-                    .attr('x', box.w * 0.9)
-                    .attr('y', -6)
-                    .attr('width', 22)
-                    .attr('height', 22)
-                    .attr('stroke', '#000000')
-                    .attr('stroke-width', 1)
-                errorbox.append('rect')
-                    .attr('id', 'pattern')
-                    .attr('x', box.w * 0.9 + 4)
-                    .attr('y', -2)
-                    .attr('width', 14)
-                    .attr('height', 14)
-                errorbox.append('text')
-                    .text('!')
-                    .attr('x', box.w * 0.9 + 11)
-                    .attr('y', 12)
-                    .style('font-size', '18px')
-                    .style('text-anchor', 'middle')
-                    .style('font-weight', 'bold')
-                    .style('user-select', 'none')
-            })
-            let merge = current.merge(enter)
-
-            let offset = 18
-            merge.each(function(d, i) {
-                let min = Math.min(...d.status.previous.map((a) => a.y), d.status.current.y)
-                let max = Math.max(...d.status.previous.map((a) => a.y), d.status.current.y)
-
-                let g = d3.select(this)
-                g.on('click', () => {
-                    addDataToPlot(d)
-                })
-                g.select('clipPath#rect-clip' + d.id + ' rect')
-                    .transition()
-                    .duration(400)
-                    .attr('x', 12 + (box.w * 0.36 / 100 * min))
-                    .attr('width', (box.w * 0.36 / 100 * (max - min)))
-
-                let valueline = d3.line()
-                    .curve(d3.curveBundle)
-                    .x(function(d, j) {
-                        return 12 + (box.w * 0.36 / 100 * d.y)
-                    })
-                    .y(function(dd, j) {
-                        return -13 + 30 - (30 / d.status.previous.length) * j
-                    })
-                g.select('path')
-                    .transition()
-                    .duration(400)
-                    .attr('d', valueline(d.status.previous))
-                g.select('polygon')
-                    .transition()
-                    .duration(400)
-                    .attr('points', (13 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 16 + ' '
-            + (6 + lineDim.w * 0.36 / 100 * d.status.current.y) + ',' + 24 + ' '
-            + (20 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 24)
-                g.select('text#valuelabel')
-                    .text(d.status.current.y)
-                g.select('text#gradient')
-                    .text(d.status.gradient)
-
-                if (d.status.current.y < 16.6 || d.status.current.y > 83.4) {
-                    g.select('g#errorbox').attr('display', 'auto')
-                    g.select('g#errorbox rect#background').attr('fill', colorPalette.blocks.fail.background)
-                    g.select('g#errorbox rect#pattern').attr('fill', colorPalette.blocks.fail.background)
-                }
-                else if (d.status.current.y < 33.2 || d.status.current.y > 66) {
-                    g.select('g#errorbox').attr('display', 'auto')
-                    g.select('g#errorbox rect#background').attr('fill', colorPalette.blocks.warning.background)
-                    if ((d.status.current.y + d.status.gradient) < 16.6 || (d.status.current.y + d.status.gradient) > 83.4) {
-                        g.select('g#errorbox rect#pattern').attr('fill', colorPalette.blocks.fail.background)
-                    }
-                    else {
-                        g.select('g#errorbox rect#pattern').attr('fill', colorPalette.blocks.warning.background)
-                    }
-                }
-                else if ((d.status.current.y + d.status.gradient) < 33.2 || (d.status.current.y + d.status.gradient) > 66) {
-                    g.select('g#errorbox').attr('display', 'auto')
-                    g.select('g#errorbox rect#background').attr('fill', colorPalette.blocks.done.background)
-                    g.select('g#errorbox rect#pattern').attr('fill', colorPalette.blocks.warning.background)
-                }
-                else {
-                    g.select('g#errorbox').attr('display', 'none')
-                }
-
-                g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-                offset += 50
-            })
-            current
-                .exit()
-                .transition('in_out')
-                .duration(times.anim)
-                .style('opacity', 0)
-                .remove()
-        }
-        function init_data() {
-            box = {
-                x: svg_dims.w[0] * 0.0,
-                y: 48,
-                w: svg_dims.w[0] * 0.26,
-                h: svg_dims.h[0] * 0.55,
-                marg: svg_dims.w[0] * 0.01,
-            }
-
-            let main = svg.g.append('g').attr('id', 'measured_data')
-            scrollbox = initScrollBox('measuredScrollbox', main.append('g').attr('id', 'measured').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.03) + ')'), box, {
-            }, true)
-
-            main.append('rect')
-                .attr('x', box.x)
-                .attr('y', (box.y - 18) + 'px')
-                .attr('width', box.w * 0.885)
-                .attr('height', '24px')
-                .attr('fill', colorPalette.dark.background)
+                .style('user-select', 'none')
             main.append('text')
-                .text('Measures')
-                .style('fill', '#000000')
+                .attr('id', 'currentHourBottom')
+                .attr('stroke', colorPalette.bright.background)
+                .attr('stroke-width', 0.0)
+                .attr('fill', colorPalette.bright.background)
+                .attr('x', box.urgent_date.w * 0.5)
+                .attr('y', box.urgent_date.h * 0.8)
                 .style('font-weight', 'bold')
-                .style('font-size', '18px')
-                .style('user-select', 'none')
-                .attr('text-anchor', 'start')
-                .attr('transform', 'translate(' + (box.x + 2) + ',' + (box.y) + ')')
-            // let startY = svg_dims.h[0] * 0.4
-            // let endY = svg_dims.h[0] * 0.6
-            // svg.g.append('rect')
-            //   .attr('x', svg_dims.w[0] * 0.0)
-            //   .attr('y', startY)
-            //   .attr('width', svg_dims.w[0] * 0.015)
-            //   .attr('height', endY)
-            //   .attr('fill', '#0288D1')
-            //   .attr('stroke', 'none')
-            //   .attr('rx', 0)
-            // svg.g.append('rect')
-            //   .attr('x', svg_dims.w[0] * 0.015)
-            //   .attr('y', startY)
-            //   .attr('width', svg_dims.w[0] * 0.015)
-            //   .attr('height', endY)
-            //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
-            //   .attr('stroke', 'none')
-            //   .attr('rx', 0)
-            // svg.g.append('rect')
-            //   .attr('x', svg_dims.w[0] * 0.03)
-            //   .attr('y', startY)
-            //   .attr('width', svg_dims.w[0] * 0.03)
-            //   .attr('height', endY)
-            //   .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
-            //   .attr('stroke', 'none')
-            //   .attr('rx', 0)
-            // svg.g.append('rect')
-            //   .attr('x', svg_dims.w[0] * 0.06)
-            //   .attr('y', startY)
-            //   .attr('width', svg_dims.w[0] * 0.015)
-            //   .attr('height', endY)
-            //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
-            //   .attr('stroke', 'none')
-            //   .attr('rx', 0)
-            // svg.g.append('rect')
-            //   .attr('x', svg_dims.w[0] * 0.075)
-            //   .attr('y', startY)
-            //   .attr('width', svg_dims.w[0] * 0.015)
-            //   .attr('height', endY)
-            //   .attr('fill', '#0288D1')
-            //   .attr('stroke', 'none')
-            //   .attr('rx', 0)
-
-            main.append('rect')
-                .attr('x', box.x + box.w * 0.78)
-                .attr('y', (box.y - 14) + 'px')
-                .attr('width', '16px')
-                .attr('height', '16px')
-                .attr('fill', 'transparent')
-                .attr('stroke-width', 0)
-                .style('boxShadow', '10px 20px 30px black')
-                .on('click', function() {
-                    if (expanded) {
-                        expanded = false
-                        shrink(gmes)
-                    }
-                    else {
-                        expanded = true
-                        expand(gmes)
-                    }
-                })
-                .on('mouseover', function(d) {
-                    d3.select(this).style('cursor', 'pointer')
-                    d3.select(this).attr('fill', colorPalette.darker.background)
-                })
-                .on('mouseout', function(d) {
-                    d3.select(this).style('cursor', 'default')
-                    d3.select(this).attr('fill', 'transparent')
-                })
-            main.append('svg:image')
-                .attr('xlink:href', '/static/icons/full-size.svg')
-                .attr('x', box.x + box.w * 0.78)
-                .attr('y', (box.y - 14) + 'px')
-                .attr('width', '16px')
-                .attr('height', '16px')
+                .attr('text-anchor', 'middle')
+                .style('font-size', '20' + screen_unit)
                 .style('pointer-events', 'none')
+                .style('user-select', 'none')
 
-            measuredCore()
+            update_data()
         }
         this.init_data = init_data
 
         function update_data() {
-            measuredCore()
+            let currentTime = {
+                date: new Date(shared.server.time_of_night.date_now),
+            }
+            svg.svg.select(
+                'g#fmdate text#currentHourTop').text(
+                d3.timeFormat('%b %a %d, %Y')(currentTime.date)
+            )
+            svg.svg.select(
+                'g#fmdate text#currentHourBottom').text(
+                d3.timeFormat('%H:%M:%S UTC')(currentTime.date)
+            )
         }
         this.update_data = update_data
-
-        function update() {}
-        this.update = update
     }
     let SvgFMSupervision = function() {
-        let box
-        let expanded = false
         let scrollbox
 
         // function expand (g) {
@@ -2585,14 +1352,14 @@ let main_weather_monitoring = function(opt_in) {
         function serpervisionCore() {
             function drawHardware(g, d, i) {
                 g.append('rect')
-                    .attr('x', box.x - 2)
+                    .attr('x', box.urgent_supervision.x - 2)
                     .attr('y', size.y - 2)
-                    .attr('width', box.w + 4)
+                    .attr('width', box.urgent_supervision.w + 4)
                     .attr('height', size.h + 4)
                     .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.medium.background)
                     .attr('stroke', '#000000')
                     .attr('stroke-width', 0.2)
-                    .attr('stroke-dasharray', [ box.w + 4, box.w + 4 + (size.h + 4) * 2 ])
+                    .attr('stroke-dasharray', [ box.urgent_supervision.w + 4, box.urgent_supervision.w + 4 + (size.h + 4) * 2 ])
                 g.append('rect')
                     .attr('x', size.x)
                     .attr('y', size.y)
@@ -2625,14 +1392,14 @@ let main_weather_monitoring = function(opt_in) {
             }
             function drawMeasure(g, d, i) {
                 g.append('rect')
-                    .attr('x', box.x - 2)
+                    .attr('x', box.urgent_supervision.x - 2)
                     .attr('y', size.y - 2)
-                    .attr('width', box.w + 4)
+                    .attr('width', box.urgent_supervision.w + 4)
                     .attr('height', size.h + 4)
                     .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.medium.background)
                     .attr('stroke', '#000000')
                     .attr('stroke-width', 0.2)
-                    .attr('stroke-dasharray', [ box.w + 4, box.w + 4 + (size.h + 4) * 2 ])
+                    .attr('stroke-dasharray', [ box.urgent_supervision.w + 4, box.urgent_supervision.w + 4 + (size.h + 4) * 2 ])
                 g.append('rect')
                     .attr('x', size.x)
                     .attr('y', size.y)
@@ -2665,7 +1432,7 @@ let main_weather_monitoring = function(opt_in) {
                 g.append('text')
                     .attr('id', 'label')
                     .text(d.data.status.current.y + ' >> ' + 84)
-                    .attr('x', box.w * 0.95)
+                    .attr('x', box.urgent_supervision.w * 0.95)
                     .attr('y', size.y + size.h * 0.66)
                     .style('font-weight', '')
                     .style('text-anchor', 'end')
@@ -2711,17 +1478,10 @@ let main_weather_monitoring = function(opt_in) {
                 .remove()
         }
         function init_data() {
-            box = {
-                x: 8,
-                y: svg_dims.h[0] * 0.2,
-                w: svg_dims.w[0] * 0.18,
-                h: svg_dims.h[0] * 0.4,
-                marg: svg_dims.w[0] * 0.01,
-            }
 
-            let main = svg.floatingMenuRoot.append('g').attr('id', 'urgentSupervision')
-                .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
-            scrollbox = initScrollBox('supervisionScrollbox', main.append('g').attr('id', 'supervision').attr('transform', 'translate(' + 0 + ',' + 6 + ')'), box, {
+            let main = svg.svg.select('#urgent').append('g').attr('id', 'urgentSupervision')
+                .attr('transform', 'translate(' + box.urgent_supervision.x + ',' + (box.urgent_supervision.y) + ')')
+            scrollbox = initScrollBox('supervisionScrollbox', main.append('g').attr('id', 'supervision').attr('transform', 'translate(' + 0 + ',' + 6 + ')'), box.urgent_supervision, {
             }, true)
 
             // main.append('rect')
@@ -2791,71 +1551,8 @@ let main_weather_monitoring = function(opt_in) {
         function update() {}
         this.update = update
     }
-    let SvgFMDate = function() {
-        let box
 
-        function init_data() {
-            box = {
-                x: 8,
-                y: 0,
-                w: svg_dims.w[0] * 0.18,
-                h: svg_dims.h[0] * 0.065,
-            }
-
-            let main = svg.floatingMenuRoot.append('g').attr('id', 'fmdate')
-
-            main.append('rect')
-                .attr('x', box.x)
-                .attr('y', box.y)
-                .attr('width', box.w)
-                .attr('height', box.h)
-                .attr('fill', colorPalette.darkest.stroke)
-                .attr('stroke', colorPalette.darkest.stroke)
-                .attr('stroke-width', 0.3)
-                .attr('rx', 0)
-            main.append('text')
-                .attr('id', 'currentHourTop')
-                .attr('stroke', colorPalette.bright.background)
-                .attr('stroke-width', 0.0)
-                .attr('fill', colorPalette.bright.background)
-                .attr('x', box.w * 0.5)
-                .attr('y', box.h * 0.4)
-                .style('font-weight', 'bold')
-                .attr('text-anchor', 'middle')
-                .style('font-size', '18px')
-                .style('pointer-events', 'none')
-                .style('user-select', 'none')
-            main.append('text')
-                .attr('id', 'currentHourBottom')
-                .attr('stroke', colorPalette.bright.background)
-                .attr('stroke-width', 0.0)
-                .attr('fill', colorPalette.bright.background)
-                .attr('x', box.w * 0.5)
-                .attr('y', box.h * 0.8)
-                .style('font-weight', 'bold')
-                .attr('text-anchor', 'middle')
-                .style('font-size', '20px')
-                .style('pointer-events', 'none')
-                .style('user-select', 'none')
-
-            update_data()
-        }
-        this.init_data = init_data
-
-        function update_data() {
-            let currentTime = {
-                date: new Date(shared.server.time_of_night.date_now),
-            }
-            svg.floatingMenuRoot.select('g#fmdate text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
-            svg.floatingMenuRoot.select('g#fmdate text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
-        }
-        this.update_data = update_data
-
-        function update() {}
-        this.update = update
-    }
     let SvgFMTimeline = function() {
-        let box
         let stock = {
         }
 
@@ -2863,8 +1560,8 @@ let main_weather_monitoring = function(opt_in) {
             shared.time.range = 1000 * (3600 * (parseInt(a)) + 60 * parseInt(b))
             shared.time.from.setTime(shared.time.current.getTime() - shared.time.range)
             loadMesures()
-            svg_measured_data.update_data()
-            svgPlotDisplay.update_data()
+            svg_main_measures_tracking.update_data()
+            svg_measures_plots.update_data()
         }
         function createInput(type, g, innerbox) {
             stock[type + 'minus_button'] = new button_d3()
@@ -2906,7 +1603,7 @@ let main_weather_monitoring = function(opt_in) {
                     common: {
                         style: {
                             font: 'bold',
-                            'font-size': '9px',
+                            'font-size': '9' + screen_unit,
                             fill: colorPalette.medium.text,
                             anchor: 'middle',
                             'pointer-events': 'none',
@@ -2920,7 +1617,7 @@ let main_weather_monitoring = function(opt_in) {
                     hovered: {
                         style: {
                             font: 'bold',
-                            'font-size': '14px',
+                            'font-size': '14' + screen_unit,
                             fill: colorPalette.medium.text,
                             anchor: 'start',
                             'pointer-events': 'none',
@@ -2985,7 +1682,7 @@ let main_weather_monitoring = function(opt_in) {
                     common: {
                         style: {
                             font: 'bold',
-                            'font-size': '9px',
+                            'font-size': '9' + screen_unit,
                             fill: colorPalette.medium.text,
                             anchor: 'middle',
                             'pointer-events': 'none',
@@ -2999,7 +1696,7 @@ let main_weather_monitoring = function(opt_in) {
                     hovered: {
                         style: {
                             font: 'bold',
-                            'font-size': '14px',
+                            'font-size': '14' + screen_unit,
                             fill: colorPalette.medium.text,
                             anchor: 'start',
                             'pointer-events': 'none',
@@ -3026,66 +1723,64 @@ let main_weather_monitoring = function(opt_in) {
             })
         }
         function init_data() {
-            box = {
-                x: 8,
-                y: svg_dims.h[0] * 0.07,
-                w: svg_dims.w[0] * 0.18,
-                h: svg_dims.h[0] * 0.1,
-            }
 
-            let main = svg.floatingMenuRoot.append('g').attr('id', 'fmdate')
-                .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+            let main = svg.svg.select('#overview').append('g').attr('id', 'fmdate')
+                .attr('transform', 'translate('
+                + box.overview_time_options.x
+                + ','
+                + box.overview_time_options.y
+                + ')')
                 .style('pointer-events', 'auto')
 
             main.append('rect')
                 .attr('x', 0)
                 .attr('y', 0)
-                .attr('width', box.w)
-                .attr('height', '22px')
+                .attr('width', box.overview_time_options.w)
+                .attr('height', '22' + screen_unit)
                 .attr('fill', colorPalette.darkest.background)
             main.append('text')
                 .text('Timeline range')
                 .style('fill', '#000000')
                 .style('font-weight', 'bold')
-                .style('font-size', '15px')
+                .style('font-size', '15' + screen_unit)
                 .attr('text-anchor', 'start')
                 .attr('transform', 'translate(' + (4) + ',' + (16) + ')')
             main.append('rect')
                 .attr('x', 0)
-                .attr('y', box.h * 0.26)
-                .attr('width', box.w * 0.96)
-                .attr('height', box.h * 0.38)
+                .attr('y', '22' + screen_unit)
+                .attr('width', box.overview_time_options.w)
+                .attr('height', box.overview_time_options.h * 0.38)
                 .attr('fill', colorPalette.dark.background)
                 .attr('rx', 2)
-            main.append('rect')
-                .attr('x', 0)
-                .attr('y', box.h * 0.68)
-                .attr('width', box.w * 0.96)
-                .attr('height', box.h * 0.42)
-                .attr('fill', colorPalette.dark.background)
-                .attr('rx', 2)
+            // main.append('rect')
+            //     .attr('x', 0)
+            //     .attr('y', box.overview_time_options.h * 0.68)
+            //     .attr('width', box.overview_time_options.w * 0.96)
+            //     .attr('height', box.overview_time_options.h * 0.32)
+            //     .attr('fill', colorPalette.dark.background)
+            //     .attr('rx', 2)
 
-            let gDateSelector = main.append('g').attr('transform', 'translate(' + (box.w * 0.0) + ',' + (box.h * 0.28) + '), scale(1.5,1.5)')
+            let gDateSelector = main.append('g').attr('transform', 'translate(' + (box.overview_time_options.w * 0.0) + ',' + (box.overview_time_options.h * 0.28) + '), scale(1.5,1.5)')
             gDateSelector.append('text')
                 .text('Last:')
                 .style('fill', '#000000')
                 .style('font-weight', '')
-                .style('font-size', '9px')
+                .style('font-size', '9' + screen_unit)
                 .attr('text-anchor', 'start')
-                .attr('transform', 'translate(' + (15) + ',' + (box.h * 0.12) + ')')
+                .attr('transform', 'translate(' + (15) + ',' + (box.overview_time_options.h * 0.12) + ')')
 
             let font_size = 11
             let time = new Date(1000 * (3600 * (parseInt(2)) + 60 * parseInt(0)))
             let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
             let hbox = {
-                x: box.w * 0.3,
+                x: box.overview_time_options.w * 0.3,
                 y: 0,
                 w: 14,
                 h: 18,
             }
             let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
             let mbox = {
-                x: box.w * 0.45,
+                x: box.overview_time_options.w * 0.45,
                 y: 0,
                 w: 14,
                 h: 18,
@@ -3114,7 +1809,7 @@ let main_weather_monitoring = function(opt_in) {
             gDateSelector.append('text')
                 .text(':')
                 .style('fill', colorPalette.dark.stroke)
-                .style('font-size', font_size + 'px')
+                .style('font-size', font_size + screen_unit)
                 .attr('text-anchor', 'middle')
                 .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 5) + ',' + (hbox.h * 0.5) + ')')
             stock.minuteOpts = {
@@ -3138,22 +1833,22 @@ let main_weather_monitoring = function(opt_in) {
                 })
             createInput('minute', gDateSelector, mbox)
 
-            let gFromToSelector = main.append('g').attr('transform', 'translate(' + (box.w * 0.03) + ',' + (box.h * 0.7) + ')')
-                .style('opacity', 0.2)
-            gFromToSelector.append('text')
-                .text('From:')
-                .style('fill', '#000000')
-                .style('font-weight', '')
-                .style('font-size', '13.5px')
-                .attr('text-anchor', 'start')
-                .attr('transform', 'translate(' + (15) + ',' + (box.h * 0.12) + ')')
-            gFromToSelector.append('text')
-                .text('To:')
-                .style('fill', '#000000')
-                .style('font-weight', '')
-                .style('font-size', '13.5px')
-                .attr('text-anchor', 'start')
-                .attr('transform', 'translate(' + (15) + ',' + (box.h * 0.34) + ')')
+            // let gFromToSelector = main.append('g').attr('transform', 'translate(' + (box.overview_time_options.w * 0.03) + ',' + (box.overview_time_options.h * 0.7) + ')')
+            //     .style('opacity', 0.2)
+            // gFromToSelector.append('text')
+            //     .text('From:')
+            //     .style('fill', '#000000')
+            //     .style('font-weight', '')
+            //     .style('font-size', '13.5' + screen_unit)
+            //     .attr('text-anchor', 'start')
+            //     .attr('transform', 'translate(' + (15) + ',' + (box.overview_time_options.h * 0.12) + ')')
+            // gFromToSelector.append('text')
+            //     .text('To:')
+            //     .style('fill', '#000000')
+            //     .style('font-weight', '')
+            //     .style('font-size', '13.5' + screen_unit)
+            //     .attr('text-anchor', 'start')
+            //     .attr('transform', 'translate(' + (15) + ',' + (box.overview_time_options.h * 0.34) + ')')
 
             update_data()
         }
@@ -3163,14 +1858,858 @@ let main_weather_monitoring = function(opt_in) {
             let currentTime = {
                 date: new Date(shared.server.time_of_night.date_now),
             }
-            svg.floatingMenuRoot.select('text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
-            svg.floatingMenuRoot.select('text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
+            svg.svg.select('text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
+            svg.svg.select('text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
         }
         this.update_data = update_data
 
         function update() {}
         this.update = update
     }
+    let Svg_main_measures_tracking = function() {
+
+        function selectMeasure(id) {
+            // let g = scrollbox.overview_measures.get('inner_g').select('g#' + id)
+            // g.select('rect#background').attr('fill', colorPalette.darkest.background)
+            // g.data()[0].selected = true
+        }
+        this.selectMeasure = selectMeasure
+        function unselectMeasure(id) {
+            // let g = scrollbox.overview_measures.get('inner_g').select('g#' + id)
+            // g.select('rect#background').attr('fill', 'transparent')
+            // delete g.data()[0]['selected']
+        }
+        this.unselectMeasure = unselectMeasure
+        function measuredCore() {
+            let line_dim = {
+                w: box.overview_measures.w,
+                h: 35,
+                marg: 4,
+            }
+            let inner_box = {
+                warning: {
+                    x: box.overview_horizontal_dispatch.warning.x,
+                    y: 0,
+                    w: box.overview_horizontal_dispatch.warning.w,
+                    h: line_dim.h,
+                },
+                path: {
+                    x: box.overview_horizontal_dispatch.old_values.x,
+                    y: 0,
+                    w: box.overview_horizontal_dispatch.old_values.w,
+                    h: line_dim.h * 0.8,
+                },
+                text: {
+                    x: box.overview_horizontal_dispatch.current_values.x,
+                    y: 0,
+                    w: box.overview_horizontal_dispatch.current_values.w,
+                    h: line_dim.h,
+                },
+            }
+            let current = svg.svg.select('#measured_data')
+                .selectAll('g.measures')
+                .data(shared.server.measures, function(d) {
+                    return d.id
+                })
+            let enter = current
+                .enter()
+                .append('g')
+                .attr('class', 'measures')
+
+            enter.each(function(d) {
+                let g = d3.select(this)
+                g.append('rect')
+                    .attr('id', 'background')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('width', line_dim.w)
+                    .attr('height', line_dim.h)
+                    .attr('fill', 'transparent')
+
+                let text_g = g.append('g').attr('id', 'text_g')
+                    .attr('transform',
+                        'translate('
+                    + inner_box.text.x
+                    + ','
+                    + inner_box.text.y
+                    + ')')
+                let path_g = g.append('g').attr('id', 'path_g')
+                    .attr('transform',
+                        'translate('
+                    + inner_box.path.x
+                    + ','
+                    + inner_box.path.y
+                    + ')')
+                    .style('opacity', 0.7)
+                let warning_g = g.append('g').attr('id', 'warning_g')
+                    .attr('transform',
+                        'translate('
+                        + inner_box.warning.x
+                        + ','
+                        + inner_box.warning.y
+                        + ')')
+                    .attr('display', 'none')
+                    .style('opacity', 1)
+
+                let min = d.status.current.y
+                let max = d.status.current.y
+                for (let j = 0; j < d.status.previous.length; j++) {
+                    if (d.status.previous[j].y < min) {
+                        min = d.status.previous[j].y
+                    }
+                    if (d.status.previous[j].y > max) {
+                        max = d.status.previous[j].y
+                    }
+                }
+
+                g.attr('id', d.id)
+                    .on('mouseenter', () => {
+                        d3.select(this).style('cursor', 'pointer')
+                        if (g.data()[0].selected) {
+                            return
+                        }
+                        g.select('#background').attr('fill', colorPalette.darker.background)
+                    })
+                    .on('mouseleave', () => {
+                        d3.select(this).style('cursor', 'default')
+                        if (g.data()[0].selected) {
+                            return
+                        }
+                        g.select('#background').attr('fill', 'transparent')
+                    })
+                    .on('click', () => {
+                        addDataToPlot(d)
+                    })
+
+                path_g.append('rect')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('width', inner_box.path.w)
+                    .attr('height', inner_box.path.h)
+                    .attr('fill', 'none')
+                    .attr('stroke', '#000000')
+                    .attr('stroke-width', 0.1)
+                path_g.append('defs')
+                    .append('clipPath')
+                    .attr('id', 'rect-clip' + d.id)
+                    .append('rect')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('width', inner_box.path.w)
+                    .attr('height', inner_box.path.h)
+                    .style('fill-opacity', 0)
+
+                path_g.append('rect')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('width', inner_box.path.w * 0.1)
+                    .attr('height', inner_box.path.h)
+                    .attr('fill', colorPalette.blocks.fail.background)
+                    .attr('stroke', 'none')
+                    .attr('rx', 0)
+                    .style('opacity', 0.2)
+                    .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+                path_g.append('rect')
+                    .attr('x', 0 + inner_box.path.w * 0.1)
+                    .attr('y', 0)
+                    .attr('width', inner_box.path.w * 0.1)
+                    .attr('height', inner_box.path.h)
+                    .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+                    .attr('stroke', 'none')
+                    .attr('rx', 0)
+                    .style('opacity', 0.2)
+                    .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+                // path_g.append('rect')
+                //     .attr('x', 0 + inner_box.path.w * 0.2)
+                //     .attr('y', 0)
+                //     .attr('width', inner_box.path.w * 0.6)
+                //     .attr('height', inner_box.path.h)
+                //     .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
+                //     .attr('stroke', 'none')
+                //     .attr('rx', 0)
+                //     .style('opacity', 0.4)
+                //     .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+                path_g.append('rect')
+                    .attr('x', 0 + inner_box.path.w * 0.8)
+                    .attr('y', 0)
+                    .attr('width', inner_box.path.w * 0.1)
+                    .attr('height', inner_box.path.h)
+                    .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+                    .attr('stroke', 'none')
+                    .attr('rx', 0)
+                    .style('opacity', 0.2)
+                    .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+                path_g.append('rect')
+                    .attr('x', 0 + inner_box.path.w * 0.9)
+                    .attr('y', 0)
+                    .attr('width', inner_box.path.w * 0.1)
+                    .attr('height', inner_box.path.h)
+                    .attr('fill', colorPalette.blocks.fail.background)
+                    .attr('stroke', 'none')
+                    .attr('rx', 0)
+                    .style('opacity', 0.2)
+                    .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+
+                let valueline = d3.line()
+                    .curve(d3.curveBundle)
+                    .x(function(d, j) {
+                        return 0 + (inner_box.path.w / 100 * d.y)
+                    })
+                    .y(function(dd, j) {
+                        return 0 + inner_box.path.h - (inner_box.path.h / d.status.previous.length) * j
+                    })
+                path_g.append('path')
+                    .attr('d', valueline(d.status.previous))
+                    .attr('fill', 'none')
+                    .attr('stroke', '#000000')
+                    .attr('stroke-width', 1.5)
+                path_g.append('polygon')
+                    .attr('r', 3)
+                    .attr('fill', '#000000')
+                    .attr('stroke', 'none')
+                    .attr('rx', 0)
+
+                text_g.append('text')
+                    .attr('id', 'measurelabel')
+                    .text(d.name)
+                    .attr('x', inner_box.text.w * 0)
+                    .attr('y', inner_box.text.h * 0.3)
+                    .style('font-size', '16' + screen_unit)
+                    .style('user-select', 'none')
+                    .style('text-anchor', 'start')
+                text_g.append('text')
+                    .attr('id', 'valuelabel')
+                    .text(d.status.current.y)
+                    .attr('x', inner_box.text.w * 0.0)
+                    .attr('y', inner_box.text.h * 0.8)
+                    .style('font-size', '20' + screen_unit)
+                    .style('font-weight', 'bold')
+                    .style('user-select', 'none')
+                    .style('text-anchor', 'start')
+                text_g.append('text')
+                    .attr('id', 'unitlabel')
+                    .text('(' + d.unit + ')')
+                    .attr('x', inner_box.text.w * 1)
+                    .attr('y', inner_box.text.h * 0.3)
+                    .style('font-size', '12' + screen_unit)
+                    .style('font-weight', '')
+                    .style('user-select', 'none')
+                    .style('text-anchor', 'end')
+
+                text_g.append('text')
+                    .attr('id', 'gradient')
+                    .text(d.status.gradient)
+                    .attr('x', inner_box.text.w * 1)
+                    .attr('y', inner_box.text.h * 0.8)
+                    .style('font-size', '16' + screen_unit)
+                    .style('text-anchor', 'end')
+                    .style('font-weight', '')
+                    .style('user-select', 'none')
+
+                // warning_g.append('rect')
+                //     .attr('id', 'background')
+                //     .attr('x', inner_box.warning.x + inner_box.warning.w * 0.5 - 11)
+                //     .attr('y', inner_box.warning.y + inner_box.warning.h * 0.5 - 11)
+                //     .attr('width', 22)
+                //     .attr('height', 22)
+                //     .attr('stroke', '#000000')
+                //     .attr('stroke-width', 1)
+                warning_g.append('rect')
+                    .attr('id', 'pattern')
+                    .attr('x', inner_box.warning.x + inner_box.warning.w * 0.5 - 11)
+                    .attr('y', inner_box.warning.y + inner_box.warning.h * 0.5 - 11)
+                    .attr('width', 22)
+                    .attr('height', 22)
+                    // .attr('x', inner_box.warning.x + inner_box.warning.w * 0.5 - 7)
+                    // .attr('y', inner_box.warning.y + inner_box.warning.h * 0.5 - 7)
+                    // .attr('width', 14)
+                    // .attr('height', 14)
+                warning_g.append('text')
+                    .text('!')
+                    .attr('x', inner_box.warning.x + inner_box.warning.w * 0.5)
+                    .attr('y', inner_box.warning.y + inner_box.warning.h * 0.5 + 7)
+                    .style('font-size', '18' + screen_unit)
+                    .style('text-anchor', 'middle')
+                    .style('font-weight', 'bold')
+                    .style('user-select', 'none')
+            })
+            let merge = current.merge(enter)
+
+            merge.each(function(d, i) {
+                // let min = Math.min(...d.status.previous.map((a) => a.y), d.status.current.y)
+                // let max = Math.max(...d.status.previous.map((a) => a.y), d.status.current.y)
+
+                let g = d3.select(this)
+                g.on('click', () => {
+                    addDataToPlot(d)
+                })
+                g.select('clipPath#rect-clip' + d.id + ' rect')
+                    .transition()
+                    .duration(400)
+                    .attr('x', 0)
+                    .attr('width', inner_box.path.w)
+
+                let valueline = d3.line()
+                    .curve(d3.curveBundle)
+                    .x(function(d, j) {
+                        return 0 + (inner_box.path.w / 100 * d.y)
+                    })
+                    .y(function(dd, j) {
+                        return 0 + inner_box.path.h - (inner_box.path.h / d.status.previous.length) * j
+                    })
+                g.select('path')
+                    .transition()
+                    .duration(400)
+                    .attr('d', valueline(d.status.previous))
+                g.select('polygon')
+                    .transition()
+                    .duration(400)
+                    .attr('points', (0 + (inner_box.path.w / 100 * d.status.current.y)) + ',' + (inner_box.path.h) + ' '
+                      + (-6 + inner_box.path.w / 100 * d.status.current.y) + ',' + (inner_box.path.h + 8) + ' '
+                      + (6 + (inner_box.path.w / 100 * d.status.current.y)) + ',' + (inner_box.path.h + 8))
+                g.select('text#valuelabel')
+                    .text(d.status.current.y)
+                g.select('text#gradient')
+                    .text(d.status.gradient)
+
+                if (d.status.current.y < 16.6 || d.status.current.y > 83.4) {
+                    g.select('g#warning_g').attr('display', 'auto')
+                    g.select('g#warning_g rect#background').attr('fill', colorPalette.blocks.fail.background)
+                    g.select('g#warning_g rect#pattern').attr('fill', colorPalette.blocks.fail.background)
+                }
+                else if (d.status.current.y < 33.2 || d.status.current.y > 66) {
+                    g.select('g#warning_g').attr('display', 'auto')
+                    g.select('g#warning_g rect#background').attr('fill', colorPalette.blocks.warning.background)
+                    if ((d.status.current.y + d.status.gradient) < 16.6 || (d.status.current.y + d.status.gradient) > 83.4) {
+                        g.select('g#warning_g rect#pattern').attr('fill', colorPalette.blocks.fail.background)
+                    }
+                    else {
+                        g.select('g#warning_g rect#pattern').attr('fill', colorPalette.blocks.warning.background)
+                    }
+                }
+                else if ((d.status.current.y + d.status.gradient) < 33.2 || (d.status.current.y + d.status.gradient) > 66) {
+                    g.select('g#warning_g').attr('display', 'auto')
+                    g.select('g#warning_g rect#background').attr('fill', colorPalette.blocks.done.background)
+                    g.select('g#warning_g rect#pattern').attr('fill', colorPalette.blocks.warning.background)
+                }
+                else {
+                    g.select('g#warning_g').attr('display', 'none')
+                }
+                g.attr('transform', 'translate(' + 0 + ',' + ((line_dim.h + line_dim.marg) * i) + ')')
+            })
+            current
+                .exit()
+                .transition('in_out')
+                .duration(times.anim)
+                .style('opacity', 0)
+                .remove()
+        }
+        function init_data() {
+            let main = svg.svg.select('#overview').append('g').attr('id', 'measured_data')
+                .attr('transform', 'translate('
+                + box.overview_measures.x
+                + ','
+                + box.overview_measures.y
+                + ')')
+
+            main.append('rect')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', box.overview_measures.w)
+                .attr('height', '24' + screen_unit)
+                .attr('fill', colorPalette.dark.background)
+            main.append('text')
+                .text('Measures')
+                .style('fill', '#000000')
+                .style('font-weight', 'bold')
+                .style('font-size', '18' + screen_unit)
+                .style('user-select', 'none')
+                .attr('text-anchor', 'start')
+                .attr('transform', 'translate(2 , 0)')
+            // let startY = svg_dims.h[0] * 0.4
+            // let endY = svg_dims.h[0] * 0.6
+            // svg.g.append('rect')
+            //   .attr('x', svg_dims.w[0] * 0.0)
+            //   .attr('y', startY)
+            //   .attr('width', svg_dims.w[0] * 0.015)
+            //   .attr('height', endY)
+            //   .attr('fill', '#0288D1')
+            //   .attr('stroke', 'none')
+            //   .attr('rx', 0)
+            // svg.g.append('rect')
+            //   .attr('x', svg_dims.w[0] * 0.015)
+            //   .attr('y', startY)
+            //   .attr('width', svg_dims.w[0] * 0.015)
+            //   .attr('height', endY)
+            //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+            //   .attr('stroke', 'none')
+            //   .attr('rx', 0)
+            // svg.g.append('rect')
+            //   .attr('x', svg_dims.w[0] * 0.03)
+            //   .attr('y', startY)
+            //   .attr('width', svg_dims.w[0] * 0.03)
+            //   .attr('height', endY)
+            //   .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
+            //   .attr('stroke', 'none')
+            //   .attr('rx', 0)
+            // svg.g.append('rect')
+            //   .attr('x', svg_dims.w[0] * 0.06)
+            //   .attr('y', startY)
+            //   .attr('width', svg_dims.w[0] * 0.015)
+            //   .attr('height', endY)
+            //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+            //   .attr('stroke', 'none')
+            //   .attr('rx', 0)
+            // svg.g.append('rect')
+            //   .attr('x', svg_dims.w[0] * 0.075)
+            //   .attr('y', startY)
+            //   .attr('width', svg_dims.w[0] * 0.015)
+            //   .attr('height', endY)
+            //   .attr('fill', '#0288D1')
+            //   .attr('stroke', 'none')
+            //   .attr('rx', 0)
+
+            measuredCore()
+        }
+        this.init_data = init_data
+
+        function update_data() {
+            measuredCore()
+        }
+        this.update_data = update_data
+    }
+    let SvgHeathMapSensors = function() {
+        let step = 20
+        let marg = 6
+        let line_height = 4
+
+        function SensorCore(sensors, g) {
+            let current = g
+                .selectAll('g.sensor')
+                .data(sensors, function(d) {
+                    return d.id
+                })
+            let enter = current
+                .enter()
+                .append('g')
+                .attr('class', 'sensor')
+
+            enter.each(function(d) {
+                let weather_station_box_height = line_height * d.length
+                let g = d3.select(this)
+
+                let translate_y = {
+                    warning: 0,
+                    old_values: 0,
+                    current_values: 0,
+                }
+                if (weather_station_box_height
+                  < box.overview_horizontal_dispatch.old_values.w) {
+                    translate_y.warning
+                    = box.overview_horizontal_dispatch.old_values.w
+                    * 0.5
+                    translate_y.old_values
+                    = (box.overview_horizontal_dispatch.old_values.w
+                      - weather_station_box_height)
+                      * 0.5
+                }
+                else if (weather_station_box_height
+                  > box.overview_horizontal_dispatch.old_values.w) {
+                    translate_y.warning
+                    = weather_station_box_height
+                    * 0.5
+                    translate_y.current_values
+                    = (weather_station_box_height
+                    - box.overview_horizontal_dispatch.old_values.w)
+                    * 0.5
+                }
+
+                let warning_g = g.append('g').attr('id', 'warning_g')
+                    .attr('transform', 'translate('
+                    + box.overview_horizontal_dispatch.warning.x
+                    + ','
+                    + translate_y.warning
+                    + ')')
+                    .attr('display', 'none')
+                    .style('opacity', 1)
+                let old_values_g = g.append('g').attr('id', 'old_values_g')
+                    .attr('transform', 'translate('
+                    + box.overview_horizontal_dispatch.old_values.x
+                    + ','
+                    + translate_y.old_values
+                    + ')')
+                let current_values_g = g.append('g').attr('id', 'current_values_g')
+                    .attr('transform', 'translate('
+                    + box.overview_horizontal_dispatch.current_values.x
+                    + ','
+                    + translate_y.current_values
+                    + ')')
+
+                for (let j = 0; j < d.length; j++) {
+                    let ig = old_values_g.append('g').attr('class', 'sensorline')
+                    let tg = ig.append('g').attr('id', 'timestampsline')
+                    for (let i = 0; i < d[j].status.previous.length; i++) {
+                        tg.append('rect')
+                            .attr('id', 'timestamp')
+                            .attr('x',
+                                i
+                                * (box.overview_horizontal_dispatch.current_values.w)
+                                / d[j].status.previous.length
+                            )
+                            .attr('y', j * line_height)
+                            .attr('width',
+                                (box.overview_horizontal_dispatch.current_values.w)
+                                / d[j].status.previous.length
+                            )
+                            .attr('height', line_height)
+                            .attr('fill', () => {
+                                if (d[j].status.previous[i] === 'RUNNING') {
+                                    return d3.color(colorPalette.blocks.done.background)
+                                }
+                                else if (d[j].status.previous[i] === 'ERROR') {
+                                    return d3.color(colorPalette.blocks.fail.background)
+                                }
+                                else if (d[j].status.previous[i] === 'OFF') {
+                                    return d3.color('#333333')
+                                }
+
+                                return 1
+                            })
+                            .attr('stroke', '#000000')
+                            .attr('stroke-width', 0.1)
+                    }
+                }
+
+                let arr_zoomer_ele_opts_weather1 = {
+                    do_ele: {
+                        main: true,
+                        // ches: true,
+                        // mini: true,
+                        tree: false,
+                        // lens: !true,
+                        // more: false,
+                    },
+                    trans: {
+                        // main: 'translate(85,85)scale(3)',
+                        main: 'translate('
+                  + (0)
+                  + ','
+                  + (0)
+                  + ')scale(1)',
+                        // ches: 'translate(110,0)scale(8)',
+                        tree: 'translate('
+                  + (0)
+                  + ','
+                  + (0)
+                  + ')scale(1)',
+                        // mini: 'translate(5,0)scale(1)',
+                        // lens: 'translate(10,5)scale(0.18)',
+                    },
+                    inst_filter: {
+                        // inst_ids: [ 'Lx01', 'Mx04', 'Mx10' ],
+                        // inst_types: [ 'AUX', 'PROC' ],
+                    },
+                    main: {
+                        // dblclick_zoom_in_out: false,
+                    },
+                    ches: {
+                        // myOpt: 0,
+                    },
+                    mini: {
+                        // static_zoom: false,
+                    },
+                    tree: {
+                        // aspect_ratio: 6/5,
+                    },
+                    lens: {
+                        // aspect_ratio: 4,
+                        // has_titles: true,
+                        // pointerEvents: true,
+                    },
+                    more: {
+                        aspect_ratio: 0.5,
+                        // has_title: false,
+                    },
+                    base_ele_width: box.overview_horizontal_dispatch.old_values.w,
+                }
+                init_arr_zoomer(current_values_g, arr_zoomer_ele_opts_weather1, 'Ax00')
+
+                warning_g.append('rect')
+                    .attr('id', 'background')
+                    .attr('x', box.overview_horizontal_dispatch.warning.w * 0.5 - 11)
+                    .attr('y', -11)
+                    .attr('width', 22)
+                    .attr('height', 22)
+                    .attr('stroke', '#000000')
+                    .attr('stroke-width', 1)
+                    .attr('fill', colorPalette.blocks.fail.background)
+                warning_g.append('text')
+                    .text('!')
+                    .attr('x', box.overview_horizontal_dispatch.warning.w * 0.5)
+                    .attr('y', 9)
+                    .style('font-size', '18' + screen_unit)
+                    .style('text-anchor', 'middle')
+                    .style('font-weight', 'bold')
+                    .style('user-select', 'none')
+            })
+            let merge = current.merge(enter)
+
+            let offset = 0
+            merge.each(function(d) {
+                let g = d3.select(this)
+                let error = false
+                g.selectAll('g.sensorline').each(function(d, j) {
+                    if (d[j].status.current === 'ERROR') {
+                        error = true
+                    }
+                })
+
+                if (error) {
+                    g.select('#warning_g')
+                        .attr('display', 'auto')
+                }
+                else {
+                    g.select('#warning_g').attr('display', 'none')
+                }
+
+                g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
+
+                let weather_station_box_height = line_height * d.length
+                offset
+                += marg
+                + d.length
+                * (weather_station_box_height
+                  < box.overview_horizontal_dispatch.old_values.w)
+                        ? box.overview_horizontal_dispatch.old_values.w
+                        : weather_station_box_height
+            })
+            current
+                .exit()
+                .transition('in_out')
+                .duration(times.anim)
+                .style('opacity', 0)
+                .remove()
+        }
+        function init_data() {
+
+            let fillfun = function() {
+                let status = {
+                    current: '',
+                    previous: [],
+                }
+                let rand = Math.random()
+                if (rand < 0.75) {
+                    status.current = 'RUNNING'
+                }
+                else if (rand < 0.9) {
+                    status.current = 'ERROR'
+                }
+                else if (rand <= 1) {
+                    status.current = 'OFF'
+                }
+                for (let i = 0; i < step; i++) {
+                    let rand = Math.random()
+                    if (rand < 0.92) {
+                        status.previous.push('RUNNING')
+                    }
+                    else if (rand < 0.96) {
+                        status.previous.push('ERROR')
+                    }
+                    else if (rand <= 1) {
+                        status.previous.push('OFF')
+                    }
+                }
+                return status
+            }
+
+            let weather_stations = [ 'Ax00', 'Ax01', 'Ax00', 'Ax01', 'Ax00', 'Ax01' ]
+            shared.server.sensors = []
+            let array = [
+                {
+                    id: 'id0',
+                    name: 'Illuminator',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id1',
+                    name: 'Photometer',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id2',
+                    name: 'All-sky-camera',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id3',
+                    name: 'Ceilometer',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id4',
+                    name: 'Ceilometer',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id5',
+                    name: 'FRAM',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id6',
+                    name: 'LIDARs',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id7',
+                    name: 'LIDARs',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id8',
+                    name: 'Weather-stations',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id9',
+                    name: 'Weather-stations',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id10',
+                    name: 'Weather-stations',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id11',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id12',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id13',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id14',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id15',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id16',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id17',
+                    name: 'Precipitation',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id18',
+                    name: 'Precipitation',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id19',
+                    name: 'Precipitation',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id20',
+                    name: 'Dust',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id21',
+                    name: 'Accelerometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id22',
+                    name: 'Accelerometers',
+                    status: fillfun(),
+                    running: true,
+                },
+            ]
+            for (var i = 0; i < weather_stations.length; i++) {
+                let rand = Math.floor(Math.random() * (array.length - 7))
+                shared.server.sensors.push(array.slice(0, 6 + rand))
+            }
+
+            let main = svg.svg.select('#overview')
+                .append('g')
+                .attr('id', 'hardware_overview')
+                .attr('transform', 'translate('
+                + box.overview_sensors.x
+                + ','
+                + box.overview_sensors.y
+                + ')')
+            // main.append('rect')
+            //   .attr('x', box.overview_sensors.x)
+            //   .attr('y', box.overview_sensors.y)
+            //   .attr('width', box.overview_sensors.w)
+            //   .attr('height', box.overview_sensors.y)
+            //   .attr('fill', colorPalette.darker.background)
+            // main.append('rect')
+            //     .attr('x', 0)
+            //     .attr('y', 0)
+            //     .attr('width', box.overview_sensors.w)
+            //     .attr('height', '24' + screen_unit)
+            //     .attr('fill', colorPalette.dark.background)
+            // main.append('text')
+            //     .text('Hardware')
+            //     .style('fill', '#000000')
+            //     .style('font-weight', 'bold')
+            //     .style('font-size', '18' + screen_unit)
+            //     .style('user-select', 'none')
+            //     .attr('text-anchor', 'start')
+            //     .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+
+            SensorCore(shared.server.sensors, main)
+
+        }
+        this.init_data = init_data
+
+        function update_data() {}
+        this.update_data = update_data
+
+        function update() {}
+        this.update = update
+    }
+
     let SvgPL = function() {
         let scrollbox
         let plotbox
@@ -3180,12 +2719,12 @@ let main_weather_monitoring = function(opt_in) {
             if (!scrollbox) {
                 return
             }
-            let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
+            let nbperline = Math.floor(box.external.w / (plotbox.w + 29))
             scrollbox.update_box({
                 x: 0,
                 y: 0,
-                w: box.pl.w,
-                h: box.pl.h,
+                w: box.external.w,
+                h: box.external.h,
             })
             scrollbox.reset_vertical_scroller({
                 can_scroll: true,
@@ -3196,7 +2735,7 @@ let main_weather_monitoring = function(opt_in) {
         this.adjustScrollBox = adjustScrollBox
 
         function adjustPlotDistribution() {
-            let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
+            let nbperline = Math.floor(box.external.w / (plotbox.w + 29))
             for (let i = 0; i < plotList.length; i++) {
                 d3.select(plotList[i].get('main').g.node().parentNode.parentNode.parentNode.parentNode)
                     .transition()
@@ -3338,11 +2877,11 @@ let main_weather_monitoring = function(opt_in) {
             let plotlistg = svg.plotList.append('g').attr('id', 'plotList')
                 .style('pointer-events', 'auto')
 
-            scrollbox = initScrollBox('plotListScrollbox', plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + 0 + ',' + 0 + ')'), box.pl, {
+            scrollbox = initScrollBox('plotListScrollbox', plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + 0 + ',' + 0 + ')'), box.external, {
             }, true)
             let pinnedPlot = scrollbox.get('inner_g')
 
-            let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
+            let nbperline = Math.floor(box.external.w / (plotbox.w + 29))
             for (var i = 0; i < 8; i++) {
                 let opt_in = {
                     g: pinnedPlot.append('g'),
@@ -3373,7 +2912,7 @@ let main_weather_monitoring = function(opt_in) {
                 // })
 
                 let data = shared.server.measures[Math.floor((Math.random() * 11))]
-                // plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
+                // plot.bind_data(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
             }
 
             adjustScrollBox()
@@ -3382,8 +2921,8 @@ let main_weather_monitoring = function(opt_in) {
             plotlistg.append('rect')
                 .attr('x', 0)
                 .attr('y', 0)
-                .attr('width', '200px')
-                .attr('height', '20px')
+                .attr('width', '200' + screen_unit)
+                .attr('height', '20' + screen_unit)
                 .attr('fill', colorPalette.darkest.background) // colorPalette.dark.background)
                 .attr('stroke', 'none')
                 .attr('rx', 0)
@@ -3391,7 +2930,7 @@ let main_weather_monitoring = function(opt_in) {
                 .text('Plots List')
                 .style('fill', '#000000')
                 .style('font-weight', 'bold')
-                .style('font-size', '14px')
+                .style('font-size', '14' + screen_unit)
                 .attr('text-anchor', 'start')
                 .attr('transform', 'translate(' + (10) + ',' + (16) + ')')
         }
@@ -3404,284 +2943,287 @@ let main_weather_monitoring = function(opt_in) {
         function update() {}
         this.update = update
     }
-    let SvgObservationSite = function() {
-        let obsbox
+    function init_arr_zoomer(g, arr_zoomer_ele_opts, target) {
+        let arr_zoomer_lock_init_key = 'in_init_arr_zoomer' + my_unique_id
 
-        function init_data() {
-            obsbox = {
-                x: svg_dims.w[0] * 0.55,
-                y: svg_dims.h[0] * 0.68,
-                w: svg_dims.h[0] * 0.32,
-                h: svg_dims.h[0] * 0.32,
+        let arr_zoomer_base = new ArrZoomerBase({
+            run_loop: run_loop,
+            svg_dims: {
+                w: svg_dims.w[0],
+                h: svg_dims.h[0],
+            },
+            widget_id: widget_id,
+            widget_source: widget_source,
+            locker: locker,
+            is_south: is_south,
+            widget_type: widget_type,
+            sock: sock,
+            user_opts: arr_zoomer_ele_opts,
+            lock_init_key: arr_zoomer_lock_init_key,
+            svg: g.append('g'),
+        })
+
+        // ------------------------------------------------------------------
+        // expose the sync function
+        // ------------------------------------------------------------------
+        function get_sync_state(data_sync_in) {
+            arr_zoomer_base.get_sync_tel_focus(data_sync_in)
+
+            if (data_sync_in.type == 'sync_arr_zoomer_prop') {
+                // check if this came from myself (even for the same widget_id one
+                // can have multiple zoomers, but arr_zoomer_id is completely unique)
+                let is_own_sync = (
+                    arr_zoomer_base.arr_zoomer_id
+                  === data_sync_in.data.arr_zoomer_id
+                )
+                console.log(' - example - got sync: ', is_own_sync, data_sync_in.data)
+            }
+        }
+        this_top.get_sync_state = get_sync_state
+
+
+        // ------------------------------------------------------------------
+        // examples of optional customisations
+        // ------------------------------------------------------------------
+        function set_user_styles() {
+            if (!locker.is_free(arr_zoomer_lock_init_key)) {
+                setTimeout(function() {
+                    set_user_styles()
+                }, 10)
+                return
             }
 
-            let maing = svg.g.append('g')
-            maing.append('rect')
-                .attr('x', obsbox.x)
-                .attr('y', obsbox.y)
-                .attr('width', obsbox.w)
-                .attr('height', obsbox.h)
-                .attr('fill', 'rgb(56, 59, 66)')
-                .attr('stroke', '#000000')
-                .attr('stroke-width', '0.4px')
-            maing.append('circle')
-                .attr('cx', obsbox.x + obsbox.w * 0.5)
-                .attr('cy', obsbox.y + obsbox.h * 0.5)
-                .attr('r', obsbox.w * 0.45)
-                .attr('fill', '#FEFEFE')
-                .attr('stroke', '#000000')
-                .attr('stroke-width', '0.4px')
-            bck_pattern({
-                com: {
-                },
-                g_now: maing.append('g').attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.05) + ',' + (obsbox.y + obsbox.h * 0.05) + ')'),
-                g_tag: 'hex',
-                len_wh: [ obsbox.w * 0.9, obsbox.h * 0.9 ],
-                opac: 0.15,
-                hex_r: 18,
-            })
+            let bck_rect_main = arr_zoomer_base.get_ele('main')
+            if (bck_rect_main) {
+                bck_rect_main.get_bck_rect()
+                    .style('fill', 'transparent' )
+                    .style('stroke', window.cols_blues[0] )
+                    .style('stroke-width', 1)
+                    .attr('opacity', 0.5)
+            }
 
-            maing.append('rect')
-                .attr('x', (obsbox.x + obsbox.w * 0.29))
-                .attr('y', (obsbox.y + obsbox.h * 0.25))
-                .attr('width', 30)
-                .attr('height', 30)
-                .attr('fill', colorPalette.blocks.done.background)
-                .attr('stroke', '#000000')
-                .attr('stroke-width', '0.4px')
-                .attr('transform', 'rotate(45 ' + (15 + obsbox.x + obsbox.w * 0.29) + ' ' + (15 + obsbox.y + obsbox.h * 0.25) + ')')
-            maing.append('text')
-                .text('1')
-                .style('fill', '#000000')
-                .style('font-weight', 'bold')
-                .style('font-size', '16px')
-                .style('user-select', 'none')
-                .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.29 + 15) + ',' + (obsbox.y + obsbox.h * 0.25 + 22) + ')')
+            let bck_rect_tree = arr_zoomer_base.get_ele('tree')
+            if (bck_rect_tree) {
+                bck_rect_tree.get_bck_rect()
+                    .style('stroke', window.cols_reds[0] )
+                    .style('stroke-width', 1)
+                    .attr('opacity', 0.8)
+            }
+            return
+        }
+        set_user_styles()
 
-            maing.append('rect')
-                .attr('x', (obsbox.x + obsbox.w * 0.37))
-                .attr('y', (obsbox.y + obsbox.h * 0.76))
-                .attr('width', 30)
-                .attr('height', 30)
-                .attr('fill', colorPalette.blocks.fail.background)
-                .attr('stroke', '#000000')
-                .attr('stroke-width', '0.4px')
-                .attr('transform', 'rotate(45 ' + (15 + obsbox.x + obsbox.w * 0.37) + ' ' + (15 + obsbox.y + obsbox.h * 0.76) + ')')
-            maing.append('text')
-                .text('2')
-                .style('fill', '#000000')
-                .style('font-weight', 'bold')
-                .style('font-size', '16px')
-                .style('user-select', 'none')
-                .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.37 + 15) + ',' + (obsbox.y + obsbox.h * 0.76 + 22) + ')')
+        if (target) {
+            auto_trans_test(arr_zoomer_base, target)
+        }
 
-            maing.append('rect')
-                .attr('x', (obsbox.x + obsbox.w * 0.5))
-                .attr('y', (obsbox.y + obsbox.h * 0.57))
-                .attr('width', 30)
-                .attr('height', 30)
-                .attr('fill', colorPalette.blocks.done.background)
-                .attr('stroke', '#000000')
-                .attr('stroke-width', '0.4px')
-                .attr('transform', 'rotate(45 ' + (15 + obsbox.x + obsbox.w * 0.5) + ' ' + (15 + obsbox.y + obsbox.h * 0.57) + ')')
-            maing.append('text')
-                .text('3')
-                .style('fill', '#000000')
-                .style('font-weight', 'bold')
-                .style('font-size', '16px')
-                .style('user-select', 'none')
-                .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.5 + 15) + ',' + (obsbox.y + obsbox.h * 0.57 + 22) + ')')
+        return
+    }
+    function auto_trans_test(arr_zoomer, target) {
+        if (!is_def(arr_zoomer.get_ele('main'))) {
+            setTimeout(function() {
+                auto_trans_test(arr_zoomer, target)
+            }, 0.2)
+            return
+        }
+        arr_zoomer.get_ele('main').zoom_to_target_main({
+            // target: 'init',
+            target: target,
+            // scale: arr_zoomer_base.zooms.len['0.1.5'],
+            scale: arr_zoomer.zooms.len['1.2'],
+            // scale: arr_zoomer_base.zooms.len['0.0'],
+            duration_scale: 0.5,
+            // duration_scale: 1.5,
+        })
+        return
+    }
+    let SvgObservationSite = function() {
+        let maing
+        let weather_stations = [ 'Ax00', 'Ax01' ]
 
-            maing.append('rect')
-                .attr('x', (obsbox.x + obsbox.w * 0.72))
-                .attr('y', (obsbox.y + obsbox.h * 0.33))
-                .attr('width', 30)
-                .attr('height', 30)
-                .attr('fill', colorPalette.blocks.done.background)
-                .attr('stroke', '#000000')
-                .attr('stroke-width', '0.4px')
-                .attr('transform', 'rotate(45 ' + (15 + obsbox.x + obsbox.w * 0.72) + ' ' + (15 + obsbox.y + obsbox.h * 0.33) + ')')
-            maing.append('text')
-                .text('4')
-                .style('fill', '#000000')
-                .style('font-weight', 'bold')
-                .style('font-size', '16px')
-                .style('user-select', 'none')
-                .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.72 + 15) + ',' + (obsbox.y + obsbox.h * 0.33 + 22) + ')')
-
-
+        function init_data() {
+            maing = svg.svg.select('#focus')
+                .append('g')
+                .attr('id', 'weather_station_panel')
+                .attr('transform', 'translate('
+                + box.focus_sensors.x
+                + ','
+                + box.focus_sensors.y
+                + ')')
             // ------------------------------------------------------------------
             //
             // ------------------------------------------------------------------
-            function init_arr_zoomer() {
-                let arr_zoomer_ele_opts = {
-                    do_ele: {
-                        main: true,
-                        // ches: true,
-                        // mini: true,
-                        tree: true,
-                        // lens: !true,
-                        // more: false,
-                    },
-                    trans: {
-                        // main: 'translate(85,85)scale(3)',
-                        main: 'translate(85,85)scale(5)',
-                        // ches: 'translate(110,0)scale(8)',
-                        tree: 'translate(590,100)scale(3.5)',
-                        // mini: 'translate(5,0)scale(1)',
-                        // lens: 'translate(10,5)scale(0.18)',
-                    },
-                    inst_filter: {
-                        // inst_ids: [ 'Lx01', 'Mx04', 'Mx10' ],
-                        // inst_types: [ 'AUX', 'PROC' ],
-                    },
-                    main: {
-                        // dblclick_zoom_in_out: false,
-                    },
-                    ches: {
-                        // myOpt: 0,
-                    },
-                    mini: {
-                        // static_zoom: false,
-                    },
-                    tree: {
-                        // aspect_ratio: 6/5,
-                    },
-                    lens: {
-                        // aspect_ratio: 4,
-                        // has_titles: true,
-                        // pointerEvents: true,
-                    },
-                    more: {
-                        aspect_ratio: 0.5,
-                        // has_title: false,
-                    },
-                    base_ele_width: 100,
-                }
-
-                let arr_zoomer_lock_init_key = 'in_init_arr_zoomer' + my_unique_id
-
-                let arr_zoomer_base = new ArrZoomerBase({
-                    run_loop: run_loop,
-                    svg_dims: {
-                        w: svg_dims.w[0],
-                        h: svg_dims.h[0],
-                    },
-                    widget_id: widget_id,
-                    widget_source: widget_source,
-                    locker: locker,
-                    is_south: is_south,
-                    widget_type: widget_type,
-                    sock: sock,
-                    user_opts: arr_zoomer_ele_opts,
-                    lock_init_key: arr_zoomer_lock_init_key,
-                    svg: svg.g.append('g'),
-                })
-
-                // ------------------------------------------------------------------
-                // expose the sync function
-                // ------------------------------------------------------------------
-                function get_sync_state(data_sync_in) {
-                    arr_zoomer_base.get_sync_tel_focus(data_sync_in)
-
-                    if (data_sync_in.type == 'sync_arr_zoomer_prop') {
-                        // check if this came from myself (even for the same widget_id one
-                        // can have multiple zoomers, but arr_zoomer_id is completely unique)
-                        let is_own_sync = (
-                            arr_zoomer_base.arr_zoomer_id
-                            === data_sync_in.data.arr_zoomer_id
-                        )
-                        console.log(' - example - got sync: ', is_own_sync, data_sync_in.data)
-                    }
-                }
-                this_top.get_sync_state = get_sync_state
-
-
-                // ------------------------------------------------------------------
-                // examples of optional customisations
-                // ------------------------------------------------------------------
-                function set_user_styles() {
-                    if (!locker.is_free(arr_zoomer_lock_init_key)) {
-                        setTimeout(function() {
-                            set_user_styles()
-                        }, 10)
-                        return
-                    }
-
-                    let bck_rect_main = arr_zoomer_base.get_ele('main').get_bck_rect()
-                    bck_rect_main
-                        .style('fill', 'transparent' )
-                        .style('stroke', window.cols_blues[0] )
-                        .style('stroke-width', 10)
-                        .attr('opacity', 0.5)
-
-                    let bck_rect_tree = arr_zoomer_base.get_ele('tree').get_bck_rect()
-                    bck_rect_tree
-                        .style('stroke', window.cols_reds[0] )
-                        .style('stroke-width', 10)
-                        .attr('opacity', 0.8)
-
-                    return
-                }
-                set_user_styles()
-
-                return
+            let arr_zoomer_ele_opts_map = {
+                do_ele: {
+                    main: true,
+                    // ches: true,
+                    // mini: true,
+                    tree: false,
+                    // lens: !true,
+                    // more: false,
+                },
+                trans: {
+                    // main: 'translate(85,85)scale(3)',
+                    main: 'translate('
+                  + (box.focus_sensors.w * 0.5 - box.focus_sensors.h * 0.25) * 0.5
+                  + ','
+                  + (14)
+                  + ')scale(1)',
+                    // ches: 'translate(110,0)scale(8)',
+                    tree: 'translate('
+                  + (box.focus_sensors.h * 0.25)
+                  + ','
+                  + (14)
+                  + ')scale(1)',
+                    // mini: 'translate(5,0)scale(1)',
+                    // lens: 'translate(10,5)scale(0.18)',
+                },
+                inst_filter: {
+                    // inst_ids: [ 'Lx01', 'Mx04', 'Mx10' ],
+                    // inst_types: [ 'AUX', 'PROC' ],
+                },
+                main: {
+                    // dblclick_zoom_in_out: false,
+                },
+                ches: {
+                    // myOpt: 0,
+                },
+                mini: {
+                    // static_zoom: false,
+                },
+                tree: {
+                    // aspect_ratio: 6/5,
+                },
+                lens: {
+                    // aspect_ratio: 4,
+                    // has_titles: true,
+                    // pointerEvents: true,
+                },
+                more: {
+                    aspect_ratio: 0.5,
+                    // has_title: false,
+                },
+                base_ele_width: box.focus_sensors.h,
             }
-            init_arr_zoomer()
+            init_arr_zoomer(maing, arr_zoomer_ele_opts_map)
 
             return
         }
         this.init_data = init_data
 
         function update_data() {
-            let start_time_sec = {
-                date: new Date(shared.time.from),
-                time: Number(shared.time.from.getTime()),
-            }
-            let end_time_sec = {
-                date: new Date(shared.server.time_of_night.date_now),
-                time: Number(shared.server.time_of_night.now),
-            }
-            // plot.updateAxis({
-            //     id: 'bottom',
-            //     domain: [ start_time_sec.date, end_time_sec.date ],
-            //     range: [ 0, plotbox.w ],
-            // })
-            // plot.updateAxis({
-            //     id: 'left',
-            //     domain: [ 0, 100 ],
-            //     range: [ plotbox.h, 0 ],
-            // })
-            // plot.updateAxis({
-            //     id: 'right',
-            //     domain: [ 0, 100 ],
-            //     range: [ plotbox.h, 0 ],
-            // })
-            //
-            // brush.updateAxis({
-            //     id: 'top',
-            //     domain: [ start_time_sec.date, end_time_sec.date ],
-            // })
-            // brush.updateAxis({
-            //     id: 'middle',
-            //     domain: [ start_time_sec.date, end_time_sec.date ],
-            // })
         }
         this.update_data = update_data
 
         function update() {}
         this.update = update
     }
+    let Svg_measures_plots = function() {
+        let focusedPlot
+
+        function init_data() {
+            let g = svg.svg.select('#focus')
+                .append('g')
+                .attr('id', 'measures_plots_panel')
+                .attr('transform', 'translate('
+                + box.focus_measures.x
+                + ','
+                + box.focus_measures.y
+                + ')')
+
+            focusedPlot = new PlotTimeSeries()
+            focusedPlot.init({
+                main: {
+                    g: g,
+                    box: box.focus_measures,
+                    clipping: true,
+                },
+                interaction: {
+                    pinned: {
+                        enabled: false,
+                        event: () => {
+                            console.log('pinned')
+                        },
+                    },
+                    remove: {
+                        enabled: false,
+                        event: () => {
+                            console.log('remove')
+                        },
+                    },
+                },
+                axis: [],
+                content: [],
+                zoom: {
+                    enabled: true,
+                },
+                brush: {
+                    enabled: true,
+                    behavior: 'zoom_rect',
+                },
+            })
+
+            focusedPlot.add_axis({
+                id: 'left',
+                location: 'left',
+                type: 'linear',
+                profile: 'focus',
+                domain: [ 0, 100 ],
+                range: [ box.focus_measures.h, 0 ],
+            })
+            focusedPlot.add_axis({
+                id: 'bottom',
+                location: 'bottom',
+                type: 'time',
+                profile: 'context',
+                domain: [ shared.time.from.getTime(), shared.time.current.getTime() ],
+                range: [ 0, box.focus_measures.w ],
+            })
+
+            return
+        }
+        this.init_data = init_data
+
+        function bind_data(data) {
+            focusedPlot.add_data({
+                id: data.id,
+                data: data.status.previous,
+                drawing_method: 'plotline',
+                shape: 'circle',
+                axis_x: 'bottom',
+                axis_y: 'left',
+            })
+        }
+        this.bind_data = bind_data
+
+        function unbind_data(data) {
+            focusedPlot.remove_data(data.id)
+        }
+        this.unbind_data = unbind_data
+
+        function update_data() {
+            focusedPlot.update_axis({
+                id: 'bottom',
+                location: 'bottom',
+                type: 'time',
+                profile: 'context',
+                domain: [ shared.time.from.getTime(), shared.time.current.getTime() ],
+                range: [ 0, box.focus_measures.w ],
+            })
+        }
+        this.update_data = update_data
+
+        function update() {}
+        this.update = update
+    }
+
+    let svg_measures_plots = new Svg_measures_plots()
     let svgObservationSite = new SvgObservationSite()
     let svgPL = new SvgPL()
     let svgFMTimeline = new SvgFMTimeline()
     let svgFMDate = new SvgFMDate()
     let svgFMSupervision = new SvgFMSupervision()
-    let svg_measured_data = new SvgMeasuredis_data()
+    let svg_main_measures_tracking = new Svg_main_measures_tracking()
     let svgHeathMapSensors = new SvgHeathMapSensors()
     let svgPlotDisplay = new SvgPlotDisplay()
 }

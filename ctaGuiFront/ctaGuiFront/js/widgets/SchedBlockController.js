@@ -346,7 +346,7 @@ let main_sched_blockController = function(opt_in) {
             }
             box.brushZoom = {
                 x: svg_dims.w[0] * 0.004,
-                y: svg_dims.h[0] * 0.65,
+                y: svg_dims.h[0] * 0.66,
                 w: svg_dims.w[0] * 0.62,
                 h: svg_dims.h[0] * 0.05,
                 marg: svg_dims.w[0] * 0.01,
@@ -492,6 +492,8 @@ let main_sched_blockController = function(opt_in) {
         initBox()
 
         shared.data.server = data_in.data
+        shared.data.server.time_of_night.date_start = new Date(shared.data.server.time_of_night.start * 1000)
+        shared.data.server.time_of_night.date_end = new Date(shared.data.server.time_of_night.end * 1000)
         shared.data.server.sched_blocks = create_sched_blocks(shared.data.server.blocks)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
@@ -554,6 +556,8 @@ let main_sched_blockController = function(opt_in) {
         }
         locker.add('update_data')
         shared.data.server = data_in.data
+        shared.data.server.time_of_night.date_start = new Date(shared.data.server.time_of_night.start * 1000)
+        shared.data.server.time_of_night.date_end = new Date(shared.data.server.time_of_night.end * 1000)
         shared.data.server.sched_blocks = create_sched_blocks(shared.data.server.blocks)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
@@ -1832,14 +1836,13 @@ let main_sched_blockController = function(opt_in) {
                 time: shared.data.server.time_of_night.now,
             }
             let start_time_sec = {
-                date: axisTop[0],
-                time: shared.data.server.time_of_night.start,
+                date: new Date(shared.data.server.time_of_night.date_start),
+                time: Number(axisTop[0] / 1000),
             }
             let end_time_sec = {
-                date: axisTop[1],
-                time: shared.data.server.time_of_night.end,
+                date: new Date(shared.data.server.time_of_night.date_end),
+                time: Number(axisTop[1] / 1000),
             }
-            console.log(get_blocksData())
             blockQueue.update_data({
                 time: {
                     current_time: current_time,
@@ -1858,28 +1861,28 @@ let main_sched_blockController = function(opt_in) {
         this.update_data = update_data
 
         function update() {
-            let current_time = {
-                date: new Date(shared.data.server.time_of_night.date_now),
-                time: shared.data.server.time_of_night.now,
-            }
-            let axisTop = brushZoom.get_axis().axis.scale().domain()
-            console.log(axisTop)
-            let start_time_sec = {
-                date: axisTop[0],
-                time: shared.data.server.time_of_night.start,
-            }
-            let end_time_sec = {
-                date: axisTop[1],
-                time: shared.data.server.time_of_night.end,
-            }
-
-            blockQueue.update({
-                time: {
-                    current_time: current_time,
-                    start_time_sec: start_time_sec,
-                    end_time_sec: end_time_sec,
-                },
-            })
+            // let current_time = {
+            //     date: new Date(shared.data.server.time_of_night.date_now),
+            //     time: shared.data.server.time_of_night.now,
+            // }
+            // let axisTop = brushZoom.get_axis().axis.scale().domain()
+            // console.log(axisTop)
+            // let start_time_sec = {
+            //     date: axisTop[0],
+            //     time: shared.data.server.time_of_night.start,
+            // }
+            // let end_time_sec = {
+            //     date: axisTop[1],
+            //     time: shared.data.server.time_of_night.end,
+            // }
+            //
+            // blockQueue.update({
+            //     time: {
+            //         current_time: current_time,
+            //         start_time_sec: start_time_sec,
+            //         end_time_sec: end_time_sec,
+            //     },
+            // })
         }
         this.update = update
 
@@ -2247,7 +2250,6 @@ let main_sched_blockController = function(opt_in) {
                 date: new Date(shared.data.server.time_of_night.date_end),
                 time: Number(shared.data.server.time_of_night.end),
             }
-
             brushZoom.update_axis({
                 domain: [ start_time_sec.date, end_time_sec.date ],
             })
@@ -2869,12 +2871,12 @@ let main_sched_blockController = function(opt_in) {
 
             let axisTop = brushZoom.get_axis().axis.scale().domain()
             let start_time_sec = {
-                date: axisTop[0],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0]) / -1000,
+                date: axisTop[0] / 1000,
+                time: axisTop[0] / 1000,
             }
             let end_time_sec = {
-                date: axisTop[1],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1]) / -1000,
+                date: axisTop[1] / 1000,
+                time: axisTop[1] / 1000,
             }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])
