@@ -23,6 +23,8 @@ class ArrZoomer():
 
         self.zoom_state = None
 
+        self.sleep_sec = 5
+
         # a flat dict with references to each level of the original dict
         # (as this is a shallow copy of the content, any change to
         # self.tel_sub_health_flat will be reflected in self.inst_tel_health
@@ -128,8 +130,7 @@ class ArrZoomer():
 
         # shared loop for all widgets of this type to update the s0 data
         async def tel_health_s0():
-            # setting arr_zoomer_id to None, since this is a global loop, not
-            # one for this specific instance
+            # setting arr_zoomer_id to None, since this is done on the global level
             data = {
                 'arr_zoomer_id': None,
                 'data': await self.get_tel_health_s0(),
@@ -137,7 +138,7 @@ class ArrZoomer():
             return data
 
         # function to prevent the event if the zoom target is not relevant
-        async def verify_s0(data):
+        async def verify_s0(data, metadata):
             is_ok = True
             if not self.do_data_updates:
                 is_ok = False
@@ -148,7 +149,7 @@ class ArrZoomer():
             'loop_group': 'widget_name',
             'data_func': tel_health_s0,
             'verify_data': verify_s0,
-            'sleep_sec': 5,
+            'sleep_sec': self.sleep_sec,
             'loop_id': 'arr_zoomer_update_data_s0',
             'event_name': 'arr_zoomer_update_data_s0',
         }
@@ -174,7 +175,7 @@ class ArrZoomer():
             return data
 
         # function to prevent the event if the zoom target is not relevant
-        async def verify_s1(data):
+        async def verify_s1(data, metadata):
             is_ok = True
             if not self.do_data_updates:
                 is_ok = False
@@ -187,7 +188,7 @@ class ArrZoomer():
             'loop_group': 'widget_id',
             'data_func': tel_health_s1,
             'verify_data': verify_s1,
-            'sleep_sec': 5,
+            'sleep_sec': self.sleep_sec,
             'loop_id': 'arr_zoomer_update_data_s1',
             'event_name': 'arr_zoomer_update_data_s1',
         }

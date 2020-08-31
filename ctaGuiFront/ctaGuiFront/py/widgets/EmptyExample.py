@@ -32,7 +32,7 @@ class EmptyExample(BaseWidget):
         }
         await self.socket_manager.emit_widget_event(opt_in=opt_in)
 
-        # start a thread which will call update_data() and send 1Hz data updates to
+        # start a thread which will call get_data_widget_id() and send updates to
         # all sessions in the group
         opt_in = {
             'widget': self,
@@ -40,7 +40,7 @@ class EmptyExample(BaseWidget):
             'data_func': self.get_data_widget_id,
             'sleep_sec': 3,
             'loop_id': 'update_data_widget_id',
-            'event_name': 'update_data',
+            'event_name': 'update_data_by_widget_id',
         }
         await self.socket_manager.add_widget_loop(opt_in=opt_in)
 
@@ -49,8 +49,8 @@ class EmptyExample(BaseWidget):
             'loop_group': 'widget_name',
             'data_func': self.get_data_widget_name,
             'sleep_sec': 5,
-            'loop_id': 'update_data_widget_name',
-            'event_name': 'update_data_widget_name',
+            'loop_id': 'update_data_all_widgets',
+            'event_name': 'update_data_all_widgets',
         }
         await self.socket_manager.add_widget_loop(opt_in=opt_in)
 

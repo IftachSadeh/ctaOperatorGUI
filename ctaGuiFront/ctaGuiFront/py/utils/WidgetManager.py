@@ -458,30 +458,45 @@ class WidgetManager():
             ['c', opt_in['event_name']],
         ])
 
+        # name of event to transmit to the client
         event_name = opt_in['event_name']
+        
+        # interval to sleep between transmisions in se
         sleep_sec = (
             opt_in['sleep_sec'] if 'sleep_sec' in opt_in else self.basic_widget_sleep_sec
         )
-        func_args = opt_in['func_args'] if 'func_args' in opt_in else None
+        
+        # function to call to get the dat to transmit
+        data_func_args = opt_in['data_func_args'] if 'data_func_args' in opt_in else None
+        
+        # function to call to modify the data, metadate to transmit
+        update_data_func = (
+            opt_in['update_data_func'] if 'update_data_func' in opt_in else None
+        )
+        
+        # function to call to verify that the event should be transmitted
         verify_data = opt_in['verify_data'] if 'verify_data' in opt_in else None
 
         while self.get_loop_state(loop_info):
             await asyncio.sleep(sleep_sec)
 
-            if func_args is None:
+            if data_func_args is None:
                 data = await opt_in['data_func']()
             else:
-                data = await opt_in['data_func'](func_args)
-
-            if verify_data is not None:
-                if not await verify_data(data):
-                    continue
+                data = await opt_in['data_func'](data_func_args)
 
             metadata = {
                 'widget_type': widget.widget_name,
                 'widget_id': widget.widget_id,
                 # 'sess_widget_ids': [widget.widget_id],
             }
+
+            if update_data_func is not None:
+                metadata = await update_data_func(metadata)
+
+            if verify_data is not None:
+                if not await verify_data(data, metadata):
+                    continue
 
             await self.emit_to_queue(
                 event_name=event_name,
@@ -522,11 +537,23 @@ class WidgetManager():
             ['c', opt_in['event_name']],
         ])
 
+        # name of event to transmit to the client
         event_name = opt_in['event_name']
+        
+        # interval to sleep between transmisions in se
         sleep_sec = (
             opt_in['sleep_sec'] if 'sleep_sec' in opt_in else self.basic_widget_sleep_sec
         )
-        func_args = opt_in['func_args'] if 'func_args' in opt_in else None
+        
+        # function to call to get the dat to transmit
+        data_func_args = opt_in['data_func_args'] if 'data_func_args' in opt_in else None
+        
+        # function to call to modify the metadate to transmit
+        update_data_func = (
+            opt_in['update_data_func'] if 'update_data_func' in opt_in else None
+        )
+        
+        # function to call to verify that the event should be transmitted
         verify_data = opt_in['verify_data'] if 'verify_data' in opt_in else None
 
         while self.get_loop_state(loop_info):
@@ -538,24 +565,35 @@ class WidgetManager():
             )
             loop_widgets = self.redis.l_get(name=name)
             if len(loop_widgets) > 0:
-                if func_args is None:
+                if data_func_args is None:
                     data = await opt_in['data_func']()
                 else:
-                    data = await opt_in['data_func'](func_args)
+                    data = await opt_in['data_func'](data_func_args)
 
-                if verify_data is not None:
-                    if not await verify_data(data):
-                        continue
-
+            # only send once for each session, regardles of the number of widgets
+            # (if different data are needed for each widget, use
+            # loop_widget_id() instead...)
+            sent_sess_ids = []
             for loop_widget in loop_widgets:
                 sess_id = loop_widget['sess_id']
+                if sess_id in sent_sess_ids:
+                    continue
+                sent_sess_ids += [sess_id]
+                
                 widget_id = loop_widget['widget_id']
 
                 metadata = {
                     'widget_type': widget.widget_name,
-                    'widget_id': widget_id,
+                    # 'widget_id': widget_id,
                     # 'sess_widget_ids': [widget_id],
                 }
+
+                if update_data_func is not None:
+                    data, metadata = await update_data_func(data, metadata)
+                
+                if verify_data is not None:
+                    if not await verify_data(data, metadata):
+                        continue
 
                 # instead of locking the server, we accept a possible KeyError
                 # in case another process changes the managers dict

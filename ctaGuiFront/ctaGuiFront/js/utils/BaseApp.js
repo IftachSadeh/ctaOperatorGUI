@@ -832,15 +832,16 @@ function BaseApp() {
             return
         }
 
-        socket.on('get_sim_clock_sim_params', function(data_in) {
+        let get_sim_clock_sim_params_evt = function(data_in) {
             // console.log('dddddddddddd', data_in)
             update_eles(data_in.data)
+        }
+        sock.socket.add_event({
+            name: 'get_sim_clock_sim_params',
+            func: get_sim_clock_sim_params_evt,
+            is_unique: true,
         })
 
-
-        // socket.on('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', function(data_in) {
-        //     console.log('dddddddddddd', data_in.data)
-        // })
 
         setTimeout(function() {
             socket.emit('ask_sim_clock_sim_params')

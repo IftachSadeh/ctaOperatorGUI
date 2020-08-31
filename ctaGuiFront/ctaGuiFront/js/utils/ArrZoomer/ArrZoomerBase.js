@@ -1291,9 +1291,11 @@ window.ArrZoomerBase = function(opt_in_top) {
     }
 
     // ------------------------------------------------------------------
-    // get update for state1 data which was explicitly asked for by a given module
+    // initialisation for an individual instance, destinguised by arr_zoomer_id, where
+    // different instances may be zoomed in on different instrument, and so
+    // the data are different for each instance
     // ------------------------------------------------------------------
-    sock.socket.on('arr_zoomer_get_init_data', function(data_in) {
+    let arr_zoomer_get_init_data_evt =  function(data_in) {
         let data = data_in.data
         // let metadata = data_in.metadata
 
@@ -1309,6 +1311,11 @@ window.ArrZoomerBase = function(opt_in_top) {
                 init_data(data)
             },
         })
+    }
+    sock.socket.add_event({
+        name: 'arr_zoomer_get_init_data',
+        func: arr_zoomer_get_init_data_evt,
+        is_unique: false,
     })
 
     // ------------------------------------------------------------------
@@ -1385,9 +1392,11 @@ window.ArrZoomerBase = function(opt_in_top) {
 
 
     // ------------------------------------------------------------------
-    // get update for state1 data which was explicitly asked for by a given module
+    // update for an individual instance, destinguised by arr_zoomer_id, where
+    // different instances may be zoomed in on different instrument, and so
+    // the data are different for each instance
     // ------------------------------------------------------------------
-    sock.socket.on('arr_zoomer_get_data_s1', function(data_in) {
+    let arr_zoomer_get_data_s1_evt = function(data_in) {
         let data = data_in.data
         let metadata = data_in.metadata
 
@@ -1406,12 +1415,19 @@ window.ArrZoomerBase = function(opt_in_top) {
         }
         
         return
+    }
+    sock.socket.add_event({
+        name: 'arr_zoomer_get_data_s1',
+        func: arr_zoomer_get_data_s1_evt,
+        is_unique: false,
     })
 
     // ------------------------------------------------------------------
     // global update for all widgets in all sessions
+    // in this case, there is no check on arr_zoomer_id, since the data
+    // are the same for all instances (arr_zoomer_id is not defined in the event)
     // ------------------------------------------------------------------
-    sock.socket.on('arr_zoomer_update_data_s0', function(data_in) {
+    let arr_zoomer_update_data_s0_evt = function(data_in) {
         let data = data_in.data
         let metadata = data_in.metadata
 
@@ -1419,20 +1435,22 @@ window.ArrZoomerBase = function(opt_in_top) {
             return
         }
 
-        let widgets = sock.widget_funcs[widget_type].widgets
-        $.each(widgets, function(widget_id_now, module_now) {
-            if (data_in.metadata.sess_widget_ids.indexOf(widget_id_now) >= 0) {
-                this_top.update_data_s0(data_in.data)
-            }
-        })
-        
+        this_top.update_data_s0(data_in.data)
         return
+    }
+    sock.socket.add_event({
+        name: 'arr_zoomer_update_data_s0',
+        func: arr_zoomer_update_data_s0_evt,
+        is_unique: false,
     })
 
+
     // ------------------------------------------------------------------
-    // update for an individual session, destinguised by arr_zoomer_id
+    // update for an individual instance, destinguised by arr_zoomer_id, where
+    // different instances may be zoomed in on different instrument, and so
+    // the data are different for each instance
     // ------------------------------------------------------------------
-    sock.socket.on('arr_zoomer_update_data_s1', function(data_in) {
+    let arr_zoomer_update_data_s1_evt = function(data_in) {
         let data = data_in.data
         // let metadata = data_in.metadata
 
@@ -1446,6 +1464,11 @@ window.ArrZoomerBase = function(opt_in_top) {
         this_top.update_data_s1(data)
         
         return
+    }
+    sock.socket.add_event({
+        name: 'arr_zoomer_update_data_s1',
+        func: arr_zoomer_update_data_s1_evt,
+        is_unique: false,
     })
 
 

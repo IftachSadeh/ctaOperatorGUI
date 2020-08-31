@@ -128,13 +128,8 @@ function SocketManager() {
                     }
                 }
                 catch (err) {
-                    console.log(err[0])
-                    let err_data = {
-                        'msg': err[0],
-                        'data': err[1],
-                    }
                     this_top.socket.server_log({
-                        data: err_data,
+                        data: err,
                         is_verb: false,
                         log_level: LOG_LEVELS.ERROR,
                     })
@@ -177,16 +172,46 @@ function SocketManager() {
         this_sock_int.setup_websocket = setup_websocket
 
         // register a function for an incoming event
-        function on(event_name, func) {
-            if (!is_def(on_events[event_name])) {
-                on_events[event_name] = [ func ]
+        function add_event(opt_in) {
+            let name = opt_in.name
+            let func = opt_in.func
+            let is_unique = opt_in.is_unique
+
+            try {
+                if (typeof name !== 'string' || name === '') {
+                    throw 'name must be set as a non-empty string in add_event'
+                }
+                if (typeof func !== 'function') {
+                    throw 'func must be set as a function in add_event'
+                }
+                if (typeof is_unique !== 'boolean') {
+                    throw 'is_unique must be set as true/false in add_event'
+                }
+            }
+            catch (err) {
+                console.error(err, opt_in)
+            }
+
+            if (!is_def(on_events[name])) {
+                on_events[name] = [ func ]
             }
             else {
-                on_events[event_name].push(func)
+                if (!is_unique) {
+                    on_events[name].push(func)
+                }
+                else {
+                    console.log('redo skip !!!!!!!!!!!!!!!!!!!', name)
+                }
             }
             return
         }
-        this_sock_int.on = on
+        this_sock_int.add_event = add_event
+
+        // register a function for an incoming event
+        function get_on_events() {
+            return on_events
+        }
+        this_sock_int.get_on_events = get_on_events
 
         // send a socket event by event name
         function emit(event_name, data_in, metadata_in) {
@@ -276,7 +301,8 @@ function SocketManager() {
 
         let is_init = true
         let is_first = true
-        this_top.socket.on('initial_connect', function(data_in) {
+        
+        let initial_connect_evt = function(data_in) {
             // console.log('xxxxXXXXXXXXxxx initial_connect', is_first, data_in)
             let data = data_in.data
             let metadata = data_in.metadata
@@ -295,6 +321,11 @@ function SocketManager() {
                 // console.log(' - reconnect - ', data_in)
                 initial_connect(is_first, data)
             }
+        }
+        this_top.socket.add_event({
+            name: 'initial_connect',
+            func: initial_connect_evt,
+            is_unique: true,
         })
 
         function initial_connect(is_first, data_in) {
@@ -395,11 +426,17 @@ function SocketManager() {
         }
 
         //
-        this_top.socket.on('reload_session', function(data_in) {
+        let reload_session_evt = function(data_in) {
             setTimeout(function() {
                 window.location.reload()
             }, 100)
+        }
+        this_top.socket.add_event({
+            name: 'reload_session',
+            func: reload_session_evt,
+            is_unique: true,
         })
+
 
         // -------------------------------------------------------------------
         // get/send heartbeat ping/pong messages to the server
@@ -412,7 +449,7 @@ function SocketManager() {
         }
         reset_ping()
         
-        this_top.socket.on('heartbeat_ping', function(data_in) {
+        let heartbeat_ping_evt = function(data_in) {
             // console.log(' - got heartbeat_ping', data_in)
             // if this is not the first ping, check that the delay is within the allowed range
             if (document.hidden) {
@@ -434,6 +471,11 @@ function SocketManager() {
             ping_time_msec = get_time_msec()
             // let the server know that the ping was received
             this_top.socket.emit('heartbeat_pong')
+        }
+        this_top.socket.add_event({
+            name: 'heartbeat_ping',
+            func: heartbeat_ping_evt,
+            is_unique: true,
         })
 
         // -------------------------------------------------------------------
@@ -603,7 +645,7 @@ function SocketManager() {
         // -------------------------------------------------------------------
         // run the respective sync-state function for each widget
         // -------------------------------------------------------------------
-        this_top.socket.on('update_sync_state_from_server', function(data_in) {
+        let update_sync_state_from_server_evt = function(data_in) {
             // console.log('eeeeeeeeee', data_in)
             if (this_top.con_stat.is_offline()) {
                 return
@@ -616,13 +658,20 @@ function SocketManager() {
                     }
                 })
             })
+
+            return
+        }
+        this_top.socket.add_event({
+            name: 'update_sync_state_from_server',
+            func: update_sync_state_from_server_evt,
+            is_unique: true,
         })
 
 
         // // -------------------------------------------------------------------
         // //
         // // -------------------------------------------------------------------
-        // this_top.socket.on('join_session_data', function(data_in) {
+        // this_top.socket.add_event('join_session_data', function(data_in) {
         //     if (!this_top.has_joined_session) {
         //         if (is_def(setup_view[widget_name])) {
         //             setup_view[widget_name]()
@@ -895,9 +944,7 @@ function SocketManager() {
         let widget_type = opt_in.widget_type
         let widget_func = opt_in.widget_func
 
-        let is_first = !is_def(this_top.widget_funcs[widget_type])
-
-        if (is_first) {
+        if (!is_def(this_top.widget_funcs[widget_type])) {
             this_top.widget_funcs[widget_type] = {
                 sock_func: null,
                 widgets: {
@@ -917,54 +964,63 @@ function SocketManager() {
             )
             init_views[widget_id] = false
 
-            if (is_first) {
-                widget_data.sock_func = new widget_func.sock_func(opt_in)
+            widget_data.sock_func = new widget_func.sock_func(opt_in)
 
-                // common sicket calls
-                this_top.socket.on('init_data', function(data_in) {
-                    let metadata = data_in.metadata
-                    let widget_data = this_top.widget_funcs[metadata.widget_type]
+            // common call to initialisation function, which applies
+            // to all widgets in this session
+            let init_data_evt = function(data_in) {
+                let metadata = data_in.metadata
+                let widget_data = this_top.widget_funcs[metadata.widget_type]
 
-                    let widget_now = (
-                        widget_data.widgets[metadata.widget_id]
-                    )
-                    if (is_def(widget_now)) {
-                        widget_now.init_data(data_in)
-                        init_views[metadata.widget_id] = true
-                    }
-                })
-
-                this_top.socket.on('update_data', function(data_in) {
-                    let metadata = data_in.metadata
-                    let widget_data = this_top.widget_funcs[metadata.widget_type]
-
-                    if (this_top.con_stat.is_offline()) {
-                        return
-                    }
-
-                    let n_wigit_now = 0
-                    let n_wigits = Object.keys(widget_data.widgets).length
-
-                    $.each(widget_data.widgets, function(
-                        widget_id_now,
-                        module_now
-                    ) {
-                        if (metadata.sess_widget_ids.indexOf(widget_id_now) >= 0) {
-                            // make sure we dont send the same data twice (as it could be modified)
-                            n_wigit_now += 1
-                            let data_update
-                                = (n_wigits === 1 || n_wigit_now === n_wigits)
-                                    ? data_in
-                                    : deep_copy(data_in)
-
-                            widget_data.widgets[widget_id_now].update_data(
-                                data_update
-                            )
-                        }
-                    })
-                })
-
+                let widget_now = (
+                    widget_data.widgets[metadata.widget_id]
+                )
+                if (is_def(widget_now)) {
+                    widget_now.init_data(data_in)
+                    init_views[metadata.widget_id] = true
+                }
             }
+            this_top.socket.add_event({
+                name: 'init_data',
+                func: init_data_evt,
+                is_unique: true,
+            })
+
+            // let update_data_evt = function(data_in) {
+            //     let metadata = data_in.metadata
+            //     let widget_data = this_top.widget_funcs[metadata.widget_type]
+
+            //     if (this_top.con_stat.is_offline()) {
+            //         return
+            //     }
+
+            //     let n_wigit_now = 0
+            //     let n_wigits = Object.keys(widget_data.widgets).length
+
+            //     $.each(widget_data.widgets, function(
+            //         widget_id_now,
+            //         module_now
+            //     ) {
+            //         if (metadata.sess_widget_ids.indexOf(widget_id_now) >= 0) {
+            //             // make sure we dont send the same data twice (as it could be modified)
+            //             n_wigit_now += 1
+            //             let data_update
+            //                 = (n_wigits === 1 || n_wigit_now === n_wigits)
+            //                     ? data_in
+            //                     : deep_copy(data_in)
+
+            //             widget_data.widgets[widget_id_now].update_data(
+            //                 data_update
+            //             )
+            //         }
+            //     })
+            // }
+            // this_top.socket.add_event({
+            //     name: 'update_data',
+            //     func: update_data_evt,
+            //     is_unique: true,
+            // })
+
             // add the widget
             send_widget_setup({
                 'widget_id': widget_id,
@@ -1010,7 +1066,7 @@ function SocketManager() {
                 data: {
                     'multiple_inits / restoring session': opt_in,
                 },
-                is_verb: true,
+                is_verb: false,
                 log_level: LOG_LEVELS.INFO,
             })
             return true
@@ -1332,14 +1388,14 @@ window.sock = new SocketManager()
 //     }
 // })
 // // in case we disconnect (internet is off or server is down)
-// this_top.socket.on('disconnect', function() {
+// this_top.socket.add_event('disconnect', function() {
 //     console.log('disconnect',this_top.is_reload)
 //     if (!this_top.is_reload) {
 //         this_top.con_stat.set_server_con_state(this_top.con_states.NOT_CONNECTED)
 //         this_top.con_stat.set_user_con_state_opts(false)
 //     }
 // })
-// this_top.socket.on('error', function(obj) {
+// this_top.socket.add_event('error', function(obj) {
 //   console.log("error", obj);
 // });
 
