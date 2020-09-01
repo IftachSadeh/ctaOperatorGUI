@@ -5785,7 +5785,6 @@ let main_sched_blocksInspector = function(opt_in) {
             })
             // }
         }
-        console.log(errors, filtered)
         shared.data.copy.conflicts = conflicts
         svgRight_info.updateOverview()
         linkConflicts()
