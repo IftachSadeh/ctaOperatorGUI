@@ -28,14 +28,14 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
         .attr('height', box.h + 'px')
         .attr('x', box.x + 'px')
         .attr('y', box.y + 'px')
-
+    
     let root_div = fo
         .append('xhtml:div')
         .attr('class', 'quantity')
         .attr('id', id)
         .style('width', '100%')
         .style('height', '100%')
-
+    
     let input = root_div
         .append('input')
         .attr('type', 'number')
@@ -49,17 +49,16 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
         .style('border-left-style', 'hidden')
         .style('border-bottom-style', 'groove')
         .style('background', 'transparent')
-
+    
     input.property('value', function() {
-        opt_in.old_value = opt_in.value
         return opt_in.value
     })
 
     if (opt_in.disabled) {
-        input.attr('disabled', true)
-        return input
+        input.attr('disabled')
+        return
     }
-
+    
     input.on('change', function() {
         let new_val = parseInt(input.property('value'))
         if (new_val > opt_in.max) {
@@ -69,10 +68,8 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
             new_val = opt_in.min
         }
         input.property('value', ('0' + new_val).slice(-2))
-        events.change(input.property('value'),
-            Number(input.property('value')) - opt_in.old_value)
-
-        opt_in.old_value = Number(input.property('value'))
+        events.change(input.property('value'))
+        return
     })
     input.on('focus', function() {
         $(this).select()
@@ -97,9 +94,7 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
             new_val = opt_in.max
         }
         input.property('value', ('0' + new_val).slice(-2))
-        events.wheel(input.property('value'), Math.sign(d3.event.wheelDelta))
-
-        opt_in.old_value = Number(input.property('value'))
+        events.change(input.property('value'))
     })
     input.on('keyup', function() {
         let event = d3.event
@@ -348,8 +343,6 @@ window.dropdown_d3 = function() {
         },
         options: {
             value: undefined,
-            blocked: undefined,
-            keepDropOpen: undefined,
             list: undefined,
             dim: undefined,
             nb: undefined,
@@ -454,31 +447,28 @@ window.dropdown_d3 = function() {
             ),
             reserved.main.background.common.style
         )
-        if (reserved.options.blocked) {
-            back
-                .on('click', drop)
-                .on('mouseover', () => {
-                    add_node_attr(
-                        back.transition().duration(100),
-                        reserved.main.background.hovered.attr
-                    )
-                    add_node_style(
-                        back.transition().duration(100),
-                        reserved.main.background.hovered.style
-                    )
-                })
-                .on('mouseout', () => {
-                    add_node_attr(
-                        back.transition().duration(100),
-                        reserved.main.background.common.attr
-                    )
-                    add_node_style(
-                        back.transition().duration(100),
-                        reserved.main.background.common.style
-                    )
-                })
-            drawArrowDown()
-        }
+        back
+            .on('click', drop)
+            .on('mouseover', () => {
+                add_node_attr(
+                    back.transition().duration(100),
+                    reserved.main.background.hovered.attr
+                )
+                add_node_style(
+                    back.transition().duration(100),
+                    reserved.main.background.hovered.style
+                )
+            })
+            .on('mouseout', () => {
+                add_node_attr(
+                    back.transition().duration(100),
+                    reserved.main.background.common.attr
+                )
+                add_node_style(
+                    back.transition().duration(100),
+                    reserved.main.background.common.style
+                )
+            })
 
         currentValue = new_d3_node(
             reserved.main.g,
@@ -496,6 +486,7 @@ window.dropdown_d3 = function() {
         let bboxt = currentValue.node().getBBox()
         currentValue.attr('y', (bboxt.height * 0.5 + reserved.main.dim.h) * 0.5)
 
+        drawArrowDown()
     }
     this.init = init
 

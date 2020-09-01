@@ -3509,9 +3509,7 @@ window.BlockDisplayer = function(opt_in) {
                 .on('dblclick', function(d) {
                     clearTimeout(timeout)
                     console.log('dbclick')
-                    if (com.events.block.dbclick) {
-                        com.events.block.dbclick(d)
-                    }
+                    com.events.block.dbclick(d)
                     // let node = d3.select(this)
                     // node.attr('clicked', 2)
                 })

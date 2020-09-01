@@ -1058,16 +1058,74 @@ window.PlotTimeSeries = function() {
     this.get_all_axis = get_all_axis
     function update_axis(axis) {
         let index = 0
-        let list = axis.location
-            ? [ axis.location ]
-            : [ 'top', 'bottom', 'left', 'right' ]
-        for (var i = 0; i < list.length; i++) {
-            for (index; index < reserved.axis[list[i]].length; index++) {
-                if (reserved.axis[list[i]][index].id === axis.id) {
-                    reserved.axis[list[i]][index].axis.update_axis(axis)
+        for (index; index < reserved.axis.length; index++) {
+            if (reserved.axis[index].id === axis.id) {
+                if (axis.range) {
+                    reserved.axis[index].range = axis.range
                 }
+                if (axis.domain) {
+                    reserved.axis[index].domain = axis.domain
+                }
+                if (axis.box) {
+                    reserved.axis[index].box = axis.box
+                }
+                if (axis.tickSize) {
+                    reserved.axis[index].style.axis.tickSize = axis.tickSize
+                }
+                break
             }
         }
+        reserved.axis[index].meta.scale
+            .domain(reserved.axis[index].domain)
+            .range(reserved.axis[index].range)
+
+        if (reserved.axis[index].location === 'bottom') {
+            reserved.axis[index].meta.g.attr(
+                'transform',
+                'translate('
+              + reserved.axis[index].box.x
+              + ','
+              + (reserved.axis[index].box.y
+                + reserved.axis[index].box.h)
+                + ')'
+            )
+        }
+        else if (reserved.axis[index].location === 'top') {
+            reserved.axis[index].meta.g.attr(
+                'transform',
+                'translate('
+              + reserved.axis[index].box.x
+              + ','
+              + reserved.axis[index].box.y
+              + ')'
+            )
+        }
+        else if (reserved.axis[index].location === 'right') {
+            reserved.axis[index].meta.g.attr(
+                'transform',
+                'translate('
+              + (reserved.axis[index].box.x
+                + reserved.axis[index].box.w)
+                + ','
+                + reserved.axis[index].box.y
+                + ')'
+            )
+        }
+        else if (reserved.axis[index].location === 'left') {
+            reserved.axis[index].meta.g.attr(
+                'transform',
+                'translate('
+              + (reserved.axis[index].box.x)
+              + ','
+              + reserved.axis[index].box.y
+              + ')'
+            )
+        }
+
+        // core_axis(index)
+        // applyZoomBrush(reserved.axis[index])
+
+        // if (!reserved.axis[index].enabled) return
     }
     this.update_axis = update_axis
 
