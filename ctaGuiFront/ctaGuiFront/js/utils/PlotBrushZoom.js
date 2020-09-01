@@ -612,7 +612,7 @@ window.PlotBrushZoom = function() {
                     computeZoomFactorkx()
                 }
 
-                update()
+                update_zoom()
                 reserved.zoom.callback()
             })
             .call(
@@ -624,7 +624,7 @@ window.PlotBrushZoom = function() {
                         reserved.brush.meta.y = d3.event.dy
 
                         computeDragFactor()
-                        update()
+                        update_zoom()
                         reserved.zoom.callback()
                     })
                     .on('end', function() {
@@ -647,7 +647,7 @@ window.PlotBrushZoom = function() {
         reserved.brush.coef = new_brush_zoom_factor.brush.coef
         reserved.brush.meta = new_brush_zoom_factor.brush.meta
 
-        update()
+        update_zoom()
     }
     this.set_brush_zoom_factor = set_brush_zoom_factor
     function set_brush_zoom_factor_horizontal(new_brush_zoom_factor) {
@@ -659,7 +659,7 @@ window.PlotBrushZoom = function() {
         reserved.brush.coef.x = new_brush_zoom_factor.brush.coef.x
         reserved.brush.meta.x = new_brush_zoom_factor.brush.meta.x
 
-        update()
+        update_zoom()
     }
     this.set_brush_zoom_factor_horizontal = set_brush_zoom_factor_horizontal
     function set_brush_zoom_factor_vertical(new_brush_zoom_factor) {
@@ -671,7 +671,7 @@ window.PlotBrushZoom = function() {
         reserved.brush.coef.y = new_brush_zoom_factor.brush.coef.y
         reserved.brush.meta.y = new_brush_zoom_factor.brush.meta.y
 
-        update()
+        update_zoom()
     }
     this.set_brush_zoom_factor_vertical = set_brush_zoom_factor_vertical
 
@@ -833,7 +833,6 @@ window.PlotBrushZoom = function() {
             })
     }
     function core_axis(axis) {
-
         axis.axis.scale(axis.scale)
         if (axis.ticks_min_max && reserved.type !== 'band') {
             if (reserved.location === 'left' || reserved.location === 'right') {
@@ -967,24 +966,25 @@ window.PlotBrushZoom = function() {
     }
     this.update_axis = update_axis
 
-    function update() {
+    function update_zoom() {
         applyZoomBrush()
+        // if (!reserved.axis.zoom) {
+        //     return
+        // }
+        core_axis(reserved.axis)
+        updateAzerty()
 
-        if (reserved.axis.zoom) {
-            core_axis(reserved.axis)
-        }
-        if (reserved.azerty.zoom) {
-            updateAzerty()
-        }
     }
-    this.update = update
+    this.update_zoom = update_zoom
 
     function applyZoomBrush() {
         reserved.axis.scale.domain(reserved.domain).range(reserved.range)
 
         let newDomain = deep_copy(reserved.domain)
+
         if (reserved.location === 'top'
         || reserved.location === 'bottom') {
+            // console.log(reserved.zoom.coef.kx)
             newDomain[0] = reserved.axis.scale.invert(reserved.zoom.coef.x)
             newDomain[1] = reserved.axis.scale.invert(
                 reserved.zoom.coef.x + reserved.box.w * reserved.zoom.coef.kx
