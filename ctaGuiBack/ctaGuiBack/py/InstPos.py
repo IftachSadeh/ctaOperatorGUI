@@ -1,43 +1,34 @@
+import gevent
+from gevent import sleep
 from random import Random
-from time import sleep
-from threading import Lock
 
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
-from ctaGuiUtils.py.ServiceManager import ServiceManager
 
 
-class InstPos(ServiceManager):
-    """telescope pointing-position simulation class, simulating changes of pointing
-
-       Only a single active instance is allowed to exist
-    """
-
-    lock = Lock()
-
+class InstPos():
     # ------------------------------------------------------------------
-    def __init__(self, base_config, service_name, interrupt_sig):
-        self.class_name = self.__class__.__name__
-        super().__init__(class_prefix=self.class_name)
-
+    #
+    # ------------------------------------------------------------------
+    def __init__(self, base_config):
         self.log = LogParser(base_config=base_config, title=__name__)
+        self.log.info([['y', ' - InstPos - ']])
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
         self.clock_sim = self.base_config.clock_sim
         self.inst_data = self.base_config.inst_data
-
-        self.service_name = service_name
-        self.interrupt_sig = interrupt_sig
-
         self.tel_ids = self.inst_data.get_inst_ids()
 
         self.inst_pos_0 = self.base_config.inst_pos_0
 
+        self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, base_config=self.base_config, log=self.log
+            name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
 
+        # ------------------------------------------------------------------
+        #
         # ------------------------------------------------------------------
         rnd_seed = 10989152934
         self.rnd_gen = Random(rnd_seed)
@@ -49,37 +40,27 @@ class InstPos(ServiceManager):
             'min_wait': min_wait_update_sec,
         }
 
-        # sleep duration for thread loops
-        self.loop_sleep_sec = 1
-        # minimal real-time delay between randomisations (once every self.loop_act_rate sec)
-        self.loop_act_rate = max(int(5 / self.loop_sleep_sec), 1)
+        # minimal real-time delay between randomisations
+        self.loop_sleep = 5
 
         self.init()
 
-        # make sure this is the only active instance
-        self.init_active_instance()
-
-        self.setup_threads()
+        gevent.spawn(self.loop)
 
         return
 
     # ------------------------------------------------------------------
-    def setup_threads(self):
-
-        self.add_thread(target=self.loop_main)
-        self.add_thread(target=self.loop_active_heartbeat)
-
-        return
-
+    #
     # ------------------------------------------------------------------
     def init(self):
-        # self.log.info([['g', ' - InstPos.init() ...']])
+        self.log.info([['g', ' - InstPos.init() ...']])
 
-        with InstPos.lock:
-            self.update_inst_pos()
+        self.update_inst_pos()
 
         return
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def update_inst_pos(self):
         min_delta_pos_sqr = pow(0.05, 2)
@@ -87,16 +68,16 @@ class InstPos(ServiceManager):
 
         inst_pos_in = dict()
         if self.redis.exists('inst_pos'):
-            inst_pos_in = self.redis.h_get_all(name='inst_pos')
+            inst_pos_in = self.redis.h_get_all(name='inst_pos', packed=True)
 
-        obs_block_ids = self.redis.get(name=('obs_block_ids_' + 'run'), default_val=[])
-
-        pipe = self.redis.get_pipe()
+        obs_block_ids = self.redis.get(
+            name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+        )
 
         for obs_block_id in obs_block_ids:
-            pipe.get(obs_block_id)
+            self.redis.pipe.get(obs_block_id)
 
-        blocks = pipe.execute()
+        blocks = self.redis.pipe.execute(packed=True)
 
         tel_point_pos = dict()
         for n_block in range(len(blocks)):
@@ -147,33 +128,28 @@ class InstPos(ServiceManager):
                     + pos_dif[1] * rnd_scale * self.rnd_gen.random() * frac_delta_pos
                 ]
 
-            pipe.h_set(name='inst_pos', key=id_now, data=inst_pos_new)
+            self.redis.pipe.h_set(
+                name='inst_pos', key=id_now, data=inst_pos_new, packed=True
+            )
 
-        pipe.execute()
+        self.redis.pipe.execute()
 
         return
 
     # ------------------------------------------------------------------
-    def loop_main(self):
-        self.log.info([['g', ' - starting InstPos.loop_main ...']])
-        sleep(0.1)
+    #
+    # ------------------------------------------------------------------
+    def loop(self):
+        self.log.info([['g', ' - starting inst_pos.loop ...']])
+        sleep(2)
 
-        n_loop = 0
-        while self.can_loop():
-            n_loop += 1
-            sleep(self.loop_sleep_sec)
-            if n_loop % self.loop_act_rate != 0:
-                continue
-
+        while True:
             need_update = self.clock_sim.need_data_update(
                 update_opts=self.check_update_opts,
             )
-            if not need_update:
-                continue
-
-            with InstPos.lock:
+            if need_update:
                 self.update_inst_pos()
 
-        self.log.info([['c', ' - ending InstPos.loop_main ...']])
+            sleep(self.loop_sleep)
 
         return

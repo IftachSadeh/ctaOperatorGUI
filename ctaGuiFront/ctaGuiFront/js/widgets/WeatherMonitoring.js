@@ -100,6 +100,7 @@ let main_weather_monitoring = function(opt_in) {
     let this_top = this
     let my_unique_id = unique()
     let widget_type = opt_in.widget_type
+    let widget_source = opt_in.widget_source
 
     window.colorPalette = get_color_theme('bright_grey')
     let is_south = window.SITE_TYPE === 'S'
@@ -454,16 +455,15 @@ let main_weather_monitoring = function(opt_in) {
             }
         }
 
-        let mult_inits = sock.multiple_inits({
+        if (sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })
-        if (mult_inits) {
+        })) {
             return
         }
 
         sock.set_icon_badge({
-            data: data_in,
+            n_icon: data_in.n_icon,
             icon_divs: icon_divs,
         })
 
@@ -3110,7 +3110,6 @@ let main_weather_monitoring = function(opt_in) {
             return
         }
         this.init_data = init_data
-
 
         function update_data() {
         }

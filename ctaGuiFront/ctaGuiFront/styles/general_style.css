@@ -308,29 +308,6 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
   background-color: #009688;
 }
 
-.status-indicator-warn {
-  animation-name: warn_color_pulse;
-  animation-duration: 5s;
-  animation-iteration-count: infinite;
-}
-@keyframes warn_color_pulse {
-  0% {
-    background-color: #e0bf3b;
-  }
-  10% {
-    background-color: #e0bf3b;
-  }
-  50% {
-    background-color: #C62828;
-  }
-  90% {
-    background-color: #e0bf3b;
-  }
-  100% {
-    background-color: #e0bf3b;
-  }
-}
-
 .checkbox_slider {
   position: relative;
   display: inline-block;

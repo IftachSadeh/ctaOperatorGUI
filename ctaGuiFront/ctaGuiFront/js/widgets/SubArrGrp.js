@@ -234,11 +234,10 @@ let main_sub_arr_grp = function(opt_in) {
     //
     // -------------------------------------------------------------------
     function init_data(data_init) {
-        let mult_inits = sock.multiple_inits({
+        if (sock.multiple_inits({
             id: widget_id,
-            data: data_in,
-        })
-        if (mult_inits) {
+            data: data_init,
+        })) {
             return
         }
 
@@ -248,7 +247,7 @@ let main_sub_arr_grp = function(opt_in) {
         let has_join_data = join_tel_props(data_in, true)
 
         sock.set_icon_badge({
-            data: data_in,
+            n_icon: data_init.n_icon,
             icon_divs: icon_divs,
         })
 
@@ -570,15 +569,14 @@ let main_sub_arr_grp = function(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    // function update_sync_state(data_in) {
+    // function get_sync_state(data_in) {
     //   svg_sub_arr.zoom_to_target({ target:tel_data.tel_hover.id, scale:get_scale(), duration_scale:2 });
     // }
-    // this.update_sync_state = update_sync_state;
+    // this.get_sync_state = get_sync_state;
 
     let prev_sync = {
     }
-    function update_sync_state(data_in) {
-        console.log('see arrzommer update_sync_state JJJJJJJJJJJJJJJJ')
+    function get_sync_state(data_in) {
         if (document.hidden) {
             return
         }
@@ -586,7 +584,7 @@ let main_sub_arr_grp = function(opt_in) {
             return
         }
 
-        let sess_widget_ids = data_in.metadata.sess_widget_ids
+        let sess_widget_ids = data_in.sess_widget_ids
         if (sess_widget_ids.indexOf(widget_id) < 0 || widget_id === data_in.widget_id) {
             return
         }
@@ -601,7 +599,7 @@ let main_sub_arr_grp = function(opt_in) {
 
         let type = data_in.type
         if (type === 'sync_tel_focus') {
-            // locker.add("update_sync_state");
+            // locker.add("get_sync_state");
 
             let target = data_in.data.target
             let zoom_state = data_in.data.zoom_state
@@ -619,21 +617,21 @@ let main_sub_arr_grp = function(opt_in) {
             })
         }
     }
-    this.update_sync_state = update_sync_state
+    this.get_sync_state = get_sync_state
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
     run_loop.init({
-        tag: 'send_sync_state_to_server',
+        tag: 'sync_state_send',
         func: sync_state_send_nce,
         n_keep: 1,
         wait: times.wait_sync_state,
     })
 
-    function send_sync_state_to_server(data_in) {
+    function sync_state_send(data_in) {
         run_loop.push({
-            tag: 'send_sync_state_to_server',
+            tag: 'sync_state_send',
             data: data_in,
         })
     }
@@ -654,7 +652,7 @@ let main_sub_arr_grp = function(opt_in) {
             ])
         ) {
             setTimeout(function() {
-                send_sync_state_to_server(data_in)
+                sync_state_send(data_in)
             }, times.anim)
             return
         }
@@ -2493,7 +2491,7 @@ let main_sub_arr_grp = function(opt_in) {
 
                             // syncroniz changes with other panels
                             // -------------------------------------------------------------------
-                            send_sync_state_to_server({
+                            sync_state_send({
                                 type: 'sync_tel_focus',
                                 sync_time: Date.now(),
                                 zoom_state: 0,
@@ -3444,7 +3442,7 @@ let main_sub_arr_grp = function(opt_in) {
 
                 // syncroniz changes with other panels
                 // -------------------------------------------------------------------
-                send_sync_state_to_server({
+                sync_state_send({
                     type: 'sync_tel_focus',
                     sync_time: Date.now(),
                     zoom_state: 1,

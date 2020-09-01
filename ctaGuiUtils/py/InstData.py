@@ -1,5 +1,5 @@
 import copy
-from time import sleep
+from gevent import sleep
 
 from ctaGuiUtils.py.LogParser import LogParser
 
@@ -20,15 +20,14 @@ class InstData():
     has_init = False
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def __init__(self, base_config, lock=None, *args, **kwargs):
         self.log = LogParser(base_config=base_config, title=__name__)
 
         def init():
-            self.log.debug([
-                ['y', ' - initializing InstData - '],
-                ['g', 'init_inst_pos()'],
-                ['y', ' ...'],
-            ])
+            self.log.debug([['y', ' - initializing InstData - '],
+                            ['g', 'init_inst_pos()'], ['y', ' ...']])
 
             self.base_config = base_config
             self.base_config.inst_data = self
@@ -68,20 +67,26 @@ class InstData():
         return
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     @property
     def health_tag(self):
         return 'health'
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     @property
     def health_title(self):
         return 'Health'
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def init_sub_array_tels(self):
         sub_array_tels = dict()
 
-        # print(' -- FIXME -- implement SBs ....')
+        print(' -- FIXME -- implement SBs ....')
 
         try:
             # ------------------------------------------------------------------
@@ -123,6 +128,8 @@ class InstData():
         return
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def set_tel_id_to_sub_array(self):
         tel_id_to_sub_array = dict()
         sub_array_tels = InstData.sub_array_tels
@@ -140,6 +147,8 @@ class InstData():
 
         return
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def init_tel_ids(self):
         try:
@@ -184,6 +193,8 @@ class InstData():
         return tel_ids
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def init_aux_ids(self):
         try:
             # south
@@ -204,6 +215,8 @@ class InstData():
         return aux_ids
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def init_proc_ids(self):
         try:
             proc_ids = ['Px00', 'Px01', 'Px02']
@@ -216,6 +229,8 @@ class InstData():
 
         return proc_ids
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def add_inst_info_id(self, ids):
         def add_dict_id(id_now, entry):
@@ -233,6 +248,8 @@ class InstData():
 
         return add_dict_id
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def init_inst_pos(self):
         if InstData.inst_info is None:
@@ -489,13 +506,15 @@ class InstData():
         return
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def scale_inst_pos(self):
         if self.is_south_site():
             pos_scale = 0.18
         else:
             pos_scale = 1
 
-        for id_now, ele_now in InstData.inst_info.items():
+        for id_now, ele_now in InstData.inst_info.iteritems():
             for xy_now in ['x', 'y']:
                 ele_now[xy_now] *= pos_scale
 
@@ -503,7 +522,7 @@ class InstData():
             # transform the coordinate system, where originally:
             #     MC x position [->North] in meters.
             #     MC y position [->West] in meters.
-            for id_now, ele_now in InstData.inst_info.items():
+            for id_now, ele_now in InstData.inst_info.iteritems():
                 x = -1 * ele_now['y']
                 y = -1 * ele_now['x']
 
@@ -534,6 +553,8 @@ class InstData():
 
         return
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def init_aux_pos(self):
         if InstData.inst_info is None:
@@ -566,12 +587,16 @@ class InstData():
         return
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def init_proc_pos(self):
         if InstData.inst_info is None:
             InstData.inst_info = dict()
 
         add_dict_id = self.add_inst_info_id(InstData.proc_ids)
 
+        # ------------------------------------------------------------------
+        #
         # ------------------------------------------------------------------
         id_now = 'Px00'
         add_dict_id(id_now, {'x': 5, 'y': 0, 'type': 'PROC'})
@@ -581,10 +606,14 @@ class InstData():
         add_dict_id(id_now, {'x': 0, 'y': -5, 'type': 'PROC'})
 
         # ------------------------------------------------------------------
+        #
+        # ------------------------------------------------------------------
         InstData.categorical_types = ['PROC']
 
         return
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def init_tel_health(self):
         inst_health = dict()
@@ -592,6 +621,8 @@ class InstData():
         aux_ids = InstData.aux_ids
         proc_ids = InstData.proc_ids
 
+        # ------------------------------------------------------------------
+        #
         # ------------------------------------------------------------------
         for id_now in tel_ids:
             inst_health[id_now] = dict()
@@ -963,6 +994,8 @@ class InstData():
                 }
 
         # ------------------------------------------------------------------
+        #
+        # ------------------------------------------------------------------
         for id_now in aux_ids:
             inst_health[id_now] = dict()
 
@@ -1057,6 +1090,8 @@ class InstData():
                 ]
             }
 
+        # ------------------------------------------------------------------
+        #
         # ------------------------------------------------------------------
         for id_now in proc_ids:
             inst_health[id_now] = dict()
@@ -1198,17 +1233,23 @@ class InstData():
             }
 
         # ------------------------------------------------------------------
+        #
+        # ------------------------------------------------------------------
         InstData.inst_health = inst_health
 
         return
 
     # ------------------------------------------------------------------
-    def get_inst_info(self):
+    #
+    # ------------------------------------------------------------------
+    def get_inst_pos(self):
         while not InstData.has_init:
             sleep(0.01)
 
         return InstData.inst_info
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def get_tel_type(self, tel_id):
         try:
@@ -1224,10 +1265,14 @@ class InstData():
         return tel_type
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def is_tel_type(self, tel_id, comp_type):
         is_type = (self.get_tel_type(tel_id) == comp_type)
         return is_type
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def set_inst_id_to_types(self):
         InstData.tel_id_to_types = dict()
@@ -1237,27 +1282,27 @@ class InstData():
         return
 
     # ------------------------------------------------------------------
-    def get_inst_id_to_types(self, is_copy=True):
+    #
+    # ------------------------------------------------------------------
+    def get_inst_id_to_types(self):
         while not InstData.has_init:
             sleep(0.01)
 
-        out = InstData.tel_id_to_types
-        if is_copy:
-            out = copy.deepcopy(out)
-        return out
+        return copy.deepcopy(InstData.tel_id_to_types)
 
     # ------------------------------------------------------------------
-    def get_categorical_types(self, is_copy=True):
+    #
+    # ------------------------------------------------------------------
+    def get_categorical_types(self):
         while not InstData.has_init:
             sleep(0.01)
 
-        out = InstData.categorical_types
-        if is_copy:
-            out = copy.deepcopy(out)
-        return out
+        return copy.deepcopy(InstData.categorical_types)
 
     # ------------------------------------------------------------------
-    def get_inst_ids(self, inst_types=None, is_copy=True):
+    #
+    # ------------------------------------------------------------------
+    def get_inst_ids(self, inst_types=None):
         n_tries, max_n_tries = 0, 1e3
         try:
             while not InstData.has_init:
@@ -1273,9 +1318,7 @@ class InstData():
             raise Exception()
 
         if inst_types is None:
-            inst_ids = InstData.inst_Ids
-            if is_copy:
-                inst_ids = copy.deepcopy(inst_ids)
+            inst_ids = copy.deepcopy(InstData.inst_Ids)
         else:
             if isinstance(inst_types, str):
                 inst_types = [inst_types]
@@ -1287,7 +1330,9 @@ class InstData():
         return inst_ids
 
     # ------------------------------------------------------------------
-    def get_proc_ids(self, inst_types=None, is_copy=True):
+    #
+    # ------------------------------------------------------------------
+    def get_proc_ids(self, inst_types=None):
         n_tries, max_n_tries = 0, 1e3
         try:
             while not InstData.has_init:
@@ -1302,41 +1347,37 @@ class InstData():
             ])
             raise Exception()
 
-        out = InstData.proc_ids
-        if is_copy:
-            out = copy.deepcopy(out)
-        return out
+        return copy.deepcopy(InstData.proc_ids)
 
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def is_south_site(self):
         return (InstData.site_type == 'S')
 
     # ------------------------------------------------------------------
-    def get_inst_healths(self, is_copy=False):
+    #
+    # ------------------------------------------------------------------
+    def get_tel_healths(self):
         while not InstData.has_init:
             sleep(0.01)
 
-        out = InstData.inst_health
-        if is_copy:
-            out = copy.deepcopy(out)
-        return out
+        return copy.deepcopy(InstData.inst_health)
 
     # ------------------------------------------------------------------
-    def get_sub_array_insts(self, is_copy=False):
+    #
+    # ------------------------------------------------------------------
+    def get_sub_array_insts(self):
         while not InstData.has_init:
             sleep(0.01)
 
-        out = InstData.sub_array_tels
-        if is_copy:
-            out = copy.deepcopy(out)
-        return out
+        return copy.deepcopy(InstData.sub_array_tels)
 
     # ------------------------------------------------------------------
-    def get_inst_id_to_sub_array(self, is_copy=False):
+    #
+    # ------------------------------------------------------------------
+    def get_inst_id_to_sub_array(self):
         while not InstData.has_init:
             sleep(0.01)
 
-        out = InstData.tel_id_to_sub_array
-        if is_copy:
-            out = copy.deepcopy(out)
-        return out
+        return copy.deepcopy(InstData.tel_id_to_sub_array)

@@ -1,19 +1,25 @@
-from pyramid.security import remember
-from pyramid.security import forget
 from pyramid.httpexceptions import HTTPFound
+from pyramid.response import Response
 from pyramid.view import forbidden_view_config
+from pyramid.security import remember, forget
 
+# the socket.io manager
+from socketio import socketio_manage
+
+# import the utils module to allow access to self.app_prefix
 from ctaGuiUtils.py.LogParser import LogParser
-from ctaGuiFront.py.utils.security import USERS
-from ctaGuiFront.py.utils.security import check_password
+from ctaGuiFront.py.utils.Models import db_session, MyModel
+# base-class for all widgets which use sockets
+from ctaGuiFront.py.utils.SocketManager import SocketManager
 
 
-# ------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+#
+# ---------------------------------------------------------------------------
 class ViewManager():
-    """views for given web addresses
-    """
-
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
     def __init__(self, base_config, *args, **kwargs):
         self.log = LogParser(base_config=base_config, title=__name__)
         self.log.info([['y', " - ViewManager - "], ['g', base_config.site_type]])
@@ -21,22 +27,35 @@ class ViewManager():
         self.base_config = base_config
         self.app_prefix = base_config.app_prefix
         self.site_type = base_config.site_type
-        self.websocket_route = base_config.websocket_route
+
+        # attach the BaseConfig instance to the socket
+        setattr(SocketManager, 'base_config', self.base_config)
 
         return
 
     # ------------------------------------------------------------------
-    def get_display_user_id(self, request):
-        user_id = request.authenticated_userid
-        return ('' if user_id is None else user_id)
+    # socketio_service
+    # ------------------------------------------------------------------
+    def socket_view(self, request):
+        socks = dict()
+        socks["/" + "index"] = SocketManager
+        socks["/" + "view_refresh_all"] = SocketManager
+        # socks["/"+"view100"] = socket_manager_view100
+
+        for widget_name in self.base_config.all_widgets:
+            if not ('/' + widget_name) in socks:
+                socks['/' + widget_name] = SocketManager
+
+        socketio_manage(request.environ, socks, request=request)
+
+        return Response('')
 
     # ------------------------------------------------------------------
-    def get_display_user_group(self, request):
-        user_group = ''
-        for princ in request.effective_principals:
-            if princ.startswith('group:'):
-                user_group = princ[len('group:'):]
-        return str(user_group)
+    #
+    # ------------------------------------------------------------------
+    def get_display_userid(self, request):
+        userid = request.authenticated_userid
+        return ('' if userid is None else userid)
 
     # ------------------------------------------------------------------
     # login page with authentication - check the DB for
@@ -50,100 +69,88 @@ class ViewManager():
             return HTTPFound(location=request.route_url("index"))
 
         # preform the authentication check against the DB
-        if 'user_name' in request.params and 'password' in request.params:
-            user_name = request.params['user_name']
+        if 'username' in request.params and 'password' in request.params:
+            login = request.params['username']
             password = request.params['password']
-            hashed_pw = USERS.get(user_name)
+            db_lookup = db_session.query(MyModel).filter(MyModel.userId == login).first()
 
-            if hashed_pw and check_password(password, hashed_pw):
-                headers = remember(request, user_name)
-                return HTTPFound(location=request.route_url("index"), headers=headers)
+            # check if succesfull login
+            if db_lookup is not None:
+                is_login = (str(db_lookup.userId) == login)
+                is_pass = (str(db_lookup.passwd) == password)
+                if is_login and is_pass:
+                    headers = remember(request, login)
+                    return HTTPFound(location=request.route_url("index"), headers=headers)
 
         return dict(
             location=request.route_url(view_name),
             login=request.authenticated_userid,
             app_prefix=self.app_prefix,
             ns_type=self.site_type,
-            websocket_route=self.websocket_route['client'],
             widget_name=view_name,
-            display_user_id=self.get_display_user_id(request),
-            display_user_group=self.get_display_user_group(request),
+            display_userid=self.get_display_userid(request),
         )
 
     # ------------------------------------------------------------------
+    # logout page with a redirect to the login
+    # ------------------------------------------------------------------
     def view_logout(self, request):
-        """logout page with a redirect to the login
-        """
-
         # forget the current loged-in user
         headers = forget(request)
         # redirect to the login page
         return HTTPFound(location=request.route_url("index"), headers=headers)
 
     # ------------------------------------------------------------------
+    # forbidden view redirects to the login
+    # ------------------------------------------------------------------
     @forbidden_view_config()
     def view_forbidden(self, request):
-        """forbidden view redirects to the login
-        """
-
         return HTTPFound(location=request.route_url("login"))
 
     # ------------------------------------------------------------------
+    # index, empty, not-found
+    # ------------------------------------------------------------------
     def view_index(self, request):
-        """index, empty, not-found
-        """
-
         view_name = "index"
 
         return dict(
             ns_type=self.site_type,
-            websocket_route=self.websocket_route['client'],
             widget_name=view_name,
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
             came_from=request.route_url(view_name),
-            display_user_id=self.get_display_user_id(request),
-            display_user_group=self.get_display_user_group(request),
+            display_userid=self.get_display_userid(request),
         )
 
     # ------------------------------------------------------------------
+    # redirects
+    # ------------------------------------------------------------------
     def view_empty(self, request):
-        """redirects
-        """
-
         return HTTPFound(location=request.route_url("index"))
 
     def view_not_found(self, request):
-        """redirects
-        """
-
         view_name = "not_found"
 
         return dict(
             ns_type=self.site_type,
-            websocket_route=self.websocket_route['client'],
             widget_name=view_name,
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
             location=request.route_url(view_name),
-            display_user_id=self.get_display_user_id(request),
-            display_user_group=self.get_display_user_group(request),
+            display_userid=self.get_display_userid(request),
         )
 
     # ------------------------------------------------------------------
+    # now for the widgets
+    # ------------------------------------------------------------------
     def view_common(self, request):
-        """the widgets
-        """
-
         view_name = request.matched_route.name
 
         return dict(
             ns_type=self.site_type,
-            websocket_route=self.websocket_route['client'],
             widget_name=view_name,
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
             came_from=request.route_url(view_name),
-            display_user_id=self.get_display_user_id(request),
-            display_user_group=self.get_display_user_group(request),
+            display_userid=self.get_display_userid(request),
         )
