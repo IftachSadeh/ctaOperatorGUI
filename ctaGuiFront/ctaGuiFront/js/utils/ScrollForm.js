@@ -662,23 +662,23 @@ window.ScrollForm = function(opt_in) {
             scroll_height: com.component.content_div._groups[0][0].scroll_height,
         })
 
-    // for (let key in com.data.data) {
-    //   let group = com.data.data[key]
-    //
-    //   let parent_div = com.component.content_div.append('div')
-    //     .attr('id', 'id_' + key)
-    //     .style('width', '100%')
-    //   let divs = []
-    //   for (let i = 0; i < com.titles.data.length; i++) {
-    //     divs.push(parent_div.append('div')
-    //       .style('display', 'inline-block')
-    //       .style('width', 'calc(' + com.titles.data[i].width + ' - 2px)')
-    //       .style('background', 'transparent')
-    //       .style('vertical-align', 'top')
-    //       .style('border-rigth', '2px solid #ffffff'))
-    //   }
-    //   fill_divs(key, group, divs, 0)
-    // }
+        // for (let key in com.data.data) {
+        //   let group = com.data.data[key]
+        //
+        //   let parent_div = com.component.content_div.append('div')
+        //     .attr('id', 'id_' + key)
+        //     .style('width', '100%')
+        //   let divs = []
+        //   for (let i = 0; i < com.titles.data.length; i++) {
+        //     divs.push(parent_div.append('div')
+        //       .style('display', 'inline-block')
+        //       .style('width', 'calc(' + com.titles.data[i].width + ' - 2px)')
+        //       .style('background', 'transparent')
+        //       .style('vertical-align', 'top')
+        //       .style('border-rigth', '2px solid #ffffff'))
+        //   }
+        //   fill_divs(key, group, divs, 0)
+        // }
 
     // let totOffset = 0
     // let totScrollHeight = com.component.content_div._groups[0][0].scroll_height

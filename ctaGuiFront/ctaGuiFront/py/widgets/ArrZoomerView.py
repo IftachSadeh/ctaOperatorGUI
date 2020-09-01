@@ -2,49 +2,46 @@ from ctaGuiFront.py.utils.ArrZoomer import ArrZoomer
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
-# ------------------------------------------------------------------
-# ArrZoomerView
-# ------------------------------------------------------------------
 class ArrZoomerView(BaseWidget):
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def __init__(self, widget_id='', socket_manager=None, *args, **kwargs):
+    def __init__(self, widget_id='', sm=None, *args, **kwargs):
         # standard common initialisations
         BaseWidget.__init__(
             self,
             widget_id=widget_id,
-            socket_manager=socket_manager,
+            sm=sm,
         )
 
-        # ------------------------------------------------------------------
+        # optionally turn off updates for debugging
+        # self.do_data_updates = False
+
         # widget-specific initialisations
-        # ------------------------------------------------------------------
         self.ArrZoomer = ArrZoomer(parent=self)
-        self.my_utils += [self.ArrZoomer]
+        self.my_utils += [
+            self.ArrZoomer,
+        ]
 
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def setup(self, *args):
+    async def setup(self, *args):
         # standard common initialisations
-        BaseWidget.setup(self, *args)
+        await BaseWidget.setup(self, *args)
 
-        # initial dataset and send to client
-        opt_in = {'widget': self}
-        self.socket_manager.send_init_widget(opt_in=opt_in)
+        # send initialisation event. for this view, no data are sent, as
+        # all the interesting stuff happens as part of the arr_zoomer_ask_for_init_data
+        # event, which is part of the ArrZoomer utility
+        opt_in = {
+            'widget': self,
+            'event_name': 'init_data',
+        }
+        await self.sm.emit_widget_event(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def back_from_offline(self):
+    async def back_from_offline(self, data):
         # standard common initialisations
-        BaseWidget.back_from_offline(self)
+        await BaseWidget.back_from_offline(self, data)
 
-        # with ArrZoomerView.lock:
-        #     print('-- back_from_offline',self.widget_name,self.widget_id)
         return

@@ -48,30 +48,29 @@ class ObsBlockControl(BaseWidget):
 
         with self.socket_manager.lock:
             wgt = self.redis.h_get(
-                name='all_widgets',
+                name='ws;widget_info',
                 key=self.widget_id,
-                packed=True,
             )
             self.widget_state = wgt["widget_state"]
             self.widget_state["focus_id"] = ""
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.send_init_widget(opt_in=opt_in)
+        self.socket_manager.send_widget_init_data(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates
         # to all sessions in the group
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.add_widget_tread(opt_in=opt_in)
+        self.socket_manager.add_widget_loop(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def back_from_offline(self):
+    async def back_from_offline(self, data):
         # standard common initialisations
-        BaseWidget.back_from_offline(self)
+        await BaseWidget.back_from_offline(self, data)
 
         # with ObsBlockControl.lock:
         #     print('-- back_from_offline',self.widget_name,self.widget_id)
@@ -117,7 +116,7 @@ class ObsBlockControl(BaseWidget):
             for key in keys_now:
                 self.redis.pipe.get('obs_block_ids_' + key)
 
-            data = self.redis.pipe.execute(packed=True)
+            data = self.redis.pipe.execute()
             obs_block_ids = sum(data, [])  # flatten the list of lists
 
             self.redis.pipe.reset()
@@ -125,7 +124,7 @@ class ObsBlockControl(BaseWidget):
                 self.redis.pipe.get(obs_block_id)
 
             key = keys_now[0]
-            blocks = self.redis.pipe.execute(packed=True)
+            blocks = self.redis.pipe.execute()
             ObsBlockControl.blocks[key] = sorted(
                 blocks,
                 cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])

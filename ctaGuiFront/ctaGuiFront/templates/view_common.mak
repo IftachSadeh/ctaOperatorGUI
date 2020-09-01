@@ -8,10 +8,12 @@
 
     <!-- set a global variable (must come before anything else) -->
     <script>
-        window.APP_PREFIX = '{{app_prefix}}'
-        window.SITE_TYPE = '{{ns_type}}'
-        window.WIDGET_NAME = '{{widget_name}}'
-        window.DISPLAY_USERID = '{{display_userid}}'
+        window.APP_PREFIX = '${app_prefix}'
+        window.SITE_TYPE = '${ns_type}'
+        window.WEBSOCKET_ROUTE = '${websocket_route}'
+        window.WIDGET_NAME = '${widget_name}'
+        window.DISPLAY_USER_ID = '${display_user_id}'
+        window.DISPLAY_USER_GROUP = '${display_user_group}'
     </script>
 
     <meta charset="UTF-8" />
@@ -24,30 +26,10 @@
     <link rel="icon" type="image/x-icon" href="/static/icon-batman.png"/>
 
     <!-- executed sed 's/d3/d3_3_5_17/g' bower_components/d3/d3.min.js -->
-    <!-- <script type="text/javascript" src="/js/dc_d3_3_5_17/d3_3_5_17.min.js"></script> -->
     <script type="text/javascript" src="/bower_components/d3/d3.js"></script>
     <script type="text/javascript" src="/js/d3_hexbin/d3-hexbin.v0.2.min.js"></script>
-    <!-- <script type="text/javascript" src="/bower_components/crossfilter/crossfilter.min.js"></script> -->
-
-    <!-- executed: sed 's/d3/d3_3_5_17/g' bower_components/dcjs/dc.js -->
-    <!-- <link rel="stylesheet" type="text/css" href="/js/dc_d3_3_5_17/dc.min.css"> -->
-
     <script type="text/javascript" src="/bower_components/textures/dist/textures.js"></script>
     <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
-    <!-- <script type="text/javascript" src="/bower_components/jquery-ui/jquery-ui.min.js"></script> -->
-    <!-- <script type="text/javascript" src="/bower_components/jszip/dist/jszip.min.js"></script> -->
-    <!-- <script type="text/javascript" src="/bower_components/moment/min/moment.min.js"></script> -->
-    <!-- <script type="text/javascript" src="/bower_components/sprintf/dist/sprintf.min.js"></script> -->
-
-    <!-- socket.io -->
-    <script type="text/javascript" src="/bower_components/gevent-socketio/examples/simple_pyramid_chat/chatter2/static/socket.io.js"></script>
-
-    <!-- ========================================================================= -->
-    <!-- themes and styles -->
-    <!-- ========================================================================= -->
-    <!-- <link rel="import" href="/bower_components/font-roboto/roboto.html"> -->
-    <!-- <link rel="import" href="/styles/app-theme.html"> -->
-
     <link rel="stylesheet" type="text/css" href="/styles/fonts.css"/>
     <link rel="stylesheet" type="text/css" href="/styles/general_style.css"/>
     <link href="/static/fontawesome-free-5.12.0-web/css/all.css" rel="stylesheet">
@@ -60,6 +42,8 @@
 
     <div id="title_div" class="menu_header site_header"></div>
     
+    <div class="menu_header" style="opacity: 0; padding-left: 24px; padding-bottom: 5px; margin-top: -40px; font-size: 15px;" id="debug_text_div">${display_user_id}</div>
+
     <div id="base_app_div"></div>
 
     <div id="general_ops_div"></div>
@@ -73,7 +57,7 @@
 
         <div class="flex_ele"></div>
 
-        <div class="menu_header" id="userName_div" style="opacity:0.8; pointer-events:none">{{display_userid}}</div>
+        <div class="menu_header" id="user_name_div" style="opacity:0.8; pointer-events:none">${display_user_id}</div>
         <div style="margin-right: 3px;"></div>
 
 

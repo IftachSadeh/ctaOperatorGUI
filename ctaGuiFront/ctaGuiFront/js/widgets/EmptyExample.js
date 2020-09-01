@@ -29,7 +29,7 @@ var main_script_tag = 'EmptyExample'
 sock.widget_table[main_script_tag] = function(opt_in) {
     let x0 = 0
     let y0 = 0
-    let h0 = 9
+    let h0 = 6
     let w0 = 12
     let div_key = 'main'
 
@@ -63,10 +63,12 @@ let sock_empty_example = function(opt_in) {}
 // -------------------------------------------------------------------
 // here we go with the content of this particular widget
 // -------------------------------------------------------------------
+window.empty_example_svg_mains = {
+}
+
 let main_empty_example = function(opt_in) {
     // let my_unique_id = unique()
     let widget_type = opt_in.widget_type
-    let widget_source = opt_in.widget_source
     let tag_arr_zoomerPlotsSvg = opt_in.base_name
     let widget_id = opt_in.widget_id
     let widget_ele = opt_in.widget_ele
@@ -87,26 +89,54 @@ let main_empty_example = function(opt_in) {
 
     // delay counters
     let locker = new Locker()
-    locker.add('in_init')
+    locker.add('in_init' + widget_id)
 
     // function loop
     let run_loop = new RunLoop({
         tag: widget_id,
     })
 
+    // ------------------------------------------------------------------
+    // this is not a unique event (transmitted to all widgets of this)
+    // type by a single loop. we add this with is_singleton=false
+    // and set the local widget_id in each case
+    // ------------------------------------------------------------------
+    let update_data_by_widget_id_evt = function(data_in) {
+        if (data_in.metadata.widget_id !== widget_id) {
+            return
+        }
+        update_data(data_in)
+    }
+    sock.socket.add_event({
+        name: 'update_data_by_widget_id',
+        func: update_data_by_widget_id_evt,
+        is_singleton: false,
+    })
+
+    let update_data_widget_name_evt = function(data_in) {
+        data_in.metadata.widget_id = widget_id
+        update_data(data_in)
+    }
+    sock.socket.add_event({
+        name: 'update_data_all_widgets',
+        func: update_data_widget_name_evt,
+        is_singleton: false,
+    })
+
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
     function init_data(data_in) {
-        if (sock.multiple_inits({
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: icon_divs,
         })
 
@@ -118,7 +148,8 @@ let main_empty_example = function(opt_in) {
     //
     // -------------------------------------------------------------------
     function update_data(data_in) {
-        svg_main.update_data(data_in.data)
+        let svg_mains = window.empty_example_svg_mains[data_in.metadata.widget_id]
+        svg_mains.update_data(data_in.data)
     }
     this.update_data = update_data
 
@@ -189,10 +220,7 @@ let main_empty_example = function(opt_in) {
                 .style('height', '100%')
                 .style('top', '0px')
                 .style('left', '0px')
-            // .attr("viewBox", "0 0 "+svg_dims.w[0]+" "+svg_dims.h[0] * whRatio)
-            // .classed("svgInGridStack_inner", true)
                 .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
-            // .call(com.svg_zoom)
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
@@ -225,21 +253,21 @@ let main_empty_example = function(opt_in) {
                 g_now: svg.g,
                 g_tag: 'hex',
                 len_wh: [ svg_dims.w[0], svg_dims.h[0] ],
-                opac: 0.1,
-                hex_r: 15,
+                opac: 0.06,
+                hex_r: 20,
             })
 
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            update_dataOnce(data_in.data)
+            update_data_once(data_in.data)
 
             run_when_ready({
                 pass: function() {
-                    return locker.is_free(tag_empty_example + 'update_data')
+                    return locker.is_free(tag_empty_example + 'update_data' + widget_id)
                 },
                 execute: function() {
-                    locker.remove('in_init')
+                    locker.remove('in_init' + widget_id)
                 },
             })
         }
@@ -249,52 +277,68 @@ let main_empty_example = function(opt_in) {
         //
         // -------------------------------------------------------------------
         run_loop.init({
-            tag: 'update_data',
-            func: update_dataOnce,
+            tag: widget_id + 'update_data_0',
+            func: update_data_once,
+            n_keep: 1,
+        })
+        run_loop.init({
+            tag: widget_id + 'update_data_1',
+            func: update_data_once,
             n_keep: 1,
         })
 
         function update_data(data_in) {
-            if (!locker.is_free('in_init')) {
+            if (!locker.is_free('in_init' + widget_id)) {
                 setTimeout(function() {
                     update_data(data_in)
                 }, 10)
                 return
             }
+            // console.log('lllllllllll',widget_id,data_in.n_circ)
 
-            run_loop.push({
-                tag: 'update_data',
-                data: data_in,
-            }) //, time:data_in.emit_time
+            if (data_in.n_circ == 0) {
+                run_loop.push({
+                    tag: widget_id + 'update_data_0',
+                    data: data_in,
+                })
+            }
+            else if (data_in.n_circ == 1) {
+                run_loop.push({
+                    tag: widget_id + 'update_data_1',
+                    data: data_in,
+                })
+            }
         }
+        this.update_data = update_data
 
         // -------------------------------------------------------------------
         // some random stuff for illustration
         // -------------------------------------------------------------------
-        function update_dataOnce(data_in) {
-            if (!locker.are_free([ tag_empty_example + 'update_data' ])) {
-                // console.log('will delay update_data');
+        function update_data_once(data_in) {
+            if (!locker.are_free([ tag_empty_example + 'update_data' + widget_id ])) {
+                // console.log('will delay update_data', data_in)
                 setTimeout(function() {
                     update_data(data_in)
                 }, 10)
                 return
             }
-            locker.add(tag_empty_example + 'update_data')
+            locker.add(tag_empty_example + 'update_data' + widget_id)
 
             // -------------------------------------------------------------------
             // send some random message to the server ...
             // -------------------------------------------------------------------
-            let myMessageData = {
+            let my_message_data = {
             }
-            myMessageData.widget_id = opt_in.widget_id
-            myMessageData.myMessage = 'myMessage' + unique()
+            my_message_data.widget_id = opt_in.widget_id
+            my_message_data.my_message = (
+                'my_message_' + widget_id + unique() + '_' + data_in.n_circ
+            )
 
             let emit_data = {
-                widget_source: widget_source,
                 widget_name: widget_type,
-                widget_id: myMessageData.widget_id,
+                widget_id: my_message_data.widget_id,
                 method_name: 'send_rnd_message',
-                method_arg: myMessageData,
+                method_arg: my_message_data,
             }
 
             sock.socket.emit('widget', emit_data)
@@ -302,8 +346,8 @@ let main_empty_example = function(opt_in) {
             // -------------------------------------------------------------------
             // do random stuff on updates ...
             // -------------------------------------------------------------------
-            let tag_circ = 'myCirc'
-            let rnd = Math.max(0.1, Math.min(0.9, data_in.rnd))
+            let tag_circ = 'my_circ' + data_in.n_circ
+            let rnd = Math.max(0.1, Math.min(0.9, data_in.rnd / 100))
             let opac = Math.max(0.1, Math.min(0.9, Math.pow(1 - rnd, 2)))
             let time = data_in.time
 
@@ -330,11 +374,11 @@ let main_empty_example = function(opt_in) {
                 .attr('fill', 'transparent')
                 .attr('stroke', 'transparent')
                 .attr('stroke-width', '3')
-                .attr('cx', svg_dims.w[0] / 2)
-                .attr('cy', svg_dims.h[0] / 2)
+                .attr('cx', svg_dims.w[0] * ((data_in.n_circ == 0) ? 0.75 : 0.25))
+                .attr('cy', svg_dims.h[0] * ((data_in.n_circ == 0) ? 0.45 : 0.55))
                 .merge(circ)
                 .transition('in_out')
-                .duration(times.anim)
+                .duration(data_in.anim_speed)
                 .style('fill-opacity', opac)
                 .style('fill', function(d, i) {
                     return i === 0 ? cols_mix[time % cols_mix.length] : 'transparent'
@@ -355,12 +399,12 @@ let main_empty_example = function(opt_in) {
                 .remove()
             // -------------------------------------------------------------------
 
-            locker.remove(tag_empty_example + 'update_data')
+            locker.remove(tag_empty_example + 'update_data' + widget_id)
         }
-        this.update_data = update_data
     }
 
     let svg_main = new SvgMain()
+    window.empty_example_svg_mains[widget_id] = svg_main
 }
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------

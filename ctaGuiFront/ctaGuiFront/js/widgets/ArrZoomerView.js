@@ -71,7 +71,6 @@ let main_arr_zoomer = function(opt_in) {
     let this_top = this
     let my_unique_id = unique()
     let widget_type = opt_in.widget_type
-    let widget_source = opt_in.widget_source
     let tag_arr_zoomer_svg = opt_in.base_name
     let widget_id = opt_in.widget_id
     let widget_ele = opt_in.widget_ele
@@ -225,10 +224,11 @@ let main_arr_zoomer = function(opt_in) {
     //
     // ------------------------------------------------------------------
     function init_data(data_in) {
-        if (sock.multiple_inits({
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
@@ -267,7 +267,7 @@ let main_arr_zoomer = function(opt_in) {
             },
         })
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: icon_divs,
         })
 
@@ -306,7 +306,6 @@ let main_arr_zoomer = function(opt_in) {
                 h: svg_dims.h,
             },
             widget_id: widget_id,
-            widget_source: widget_source,
             locker: locker,
             is_south: is_south,
             widget_type: widget_type,
@@ -319,7 +318,7 @@ let main_arr_zoomer = function(opt_in) {
         // ------------------------------------------------------------------
         // expose the sync function
         // ------------------------------------------------------------------
-        function get_sync_state(data_sync_in) {
+        function update_sync_state(data_sync_in) {
             arr_zoomer_base.get_sync_tel_focus(data_sync_in)
             
             // if (data_sync_in.type == 'sync_arr_zoomer_prop') {
@@ -330,13 +329,17 @@ let main_arr_zoomer = function(opt_in) {
             //     // console.log('got sync: ', is_own_sync, data_sync_in.data)
             // }
         }
-        this_top.get_sync_state = get_sync_state
+        this_top.update_sync_state = update_sync_state
 
         locker.remove('in_init')
 
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
         function auto_trans_test() {
+            sock.socket.emit('set_active_widget', {
+                'widget_id': widget_id,
+            })
+
             if (!is_def(arr_zoomer_base.get_ele('main'))) {
                 setTimeout(function() {
                     auto_trans_test()

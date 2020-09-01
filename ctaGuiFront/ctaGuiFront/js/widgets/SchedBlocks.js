@@ -165,7 +165,7 @@ function main_sched_blocks(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function sync_state_send(data_in) {
+    function send_sync_state_to_server(data_in) {
         if (sock.con_stat.is_offline()) {
             return
         }
@@ -182,7 +182,7 @@ function main_sched_blocks(opt_in) {
     // -------------------------------------------------------------------
     let prev_sync = {
     }
-    function get_sync_state(data_in) {
+    function update_sync_state(data_in) {
         if (document.hidden) {
             return
         }
@@ -190,7 +190,7 @@ function main_sched_blocks(opt_in) {
             return
         }
 
-        let sess_widget_ids = data_in.sess_widget_ids
+        let sess_widget_ids = data_in.metadata.sess_widget_ids
         if (sess_widget_ids.indexOf(widget_id) < 0 || widget_id === data_in.widget_id) {
             return
         }
@@ -205,7 +205,7 @@ function main_sched_blocks(opt_in) {
             }
         }
     }
-    this.get_sync_state = get_sync_state
+    this.update_sync_state = update_sync_state
 
     function sortBlocksByState(array) {
         if (!array) {
@@ -513,15 +513,16 @@ function main_sched_blocks(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: icon_divs,
         })
 

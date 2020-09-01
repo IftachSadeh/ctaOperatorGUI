@@ -1,74 +1,97 @@
-from random import Random
 from ctaGuiUtils.py.utils import get_time, get_rnd
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
 # ------------------------------------------------------------------
-#  EmptyExample
-# ------------------------------------------------------------------
 class EmptyExample(BaseWidget):
+
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def __init__(self, widget_id="", socket_manager=None, *args, **kwargs):
+    def __init__(self, widget_id='', sm=None, *args, **kwargs):
         # standard common initialisations
         BaseWidget.__init__(
             self,
             widget_id=widget_id,
-            socket_manager=socket_manager,
+            sm=sm,
         )
 
-        # ------------------------------------------------------------------
         # widget-specific initialisations
-        # ------------------------------------------------------------------
         pass
 
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def setup(self, *args):
+    async def setup(self, *args):
         # standard common initialisations
-        BaseWidget.setup(self, *args)
+        await BaseWidget.setup(self, *args)
 
-        # initial dataset and send to client
-        opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.send_init_widget(opt_in=opt_in)
+        # initialise dataset and send to client
+        opt_in = {
+            'widget': self,
+            'event_name': 'init_data',
+            'data_func': self.get_data_widget_id,
+        }
+        await self.sm.emit_widget_event(opt_in=opt_in)
 
-        # start a thread which will call update_data() and send 1Hz data updates to
+        # start a loop which will call get_data_widget_id() and send updates to
         # all sessions in the group
-        opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.add_widget_tread(opt_in=opt_in)
+        opt_in = {
+            'widget': self,
+            'loop_group': 'widget_id',
+            'data_func': self.get_data_widget_id,
+            'sleep_sec': 3,
+            'loop_id': 'update_data_widget_id',
+            'event_name': 'update_data_by_widget_id',
+        }
+        await self.sm.add_widget_loop(opt_in=opt_in)
+
+        opt_in = {
+            'widget': self,
+            'loop_group': 'widget_name',
+            'data_func': self.get_data_widget_name,
+            'sleep_sec': 5,
+            'loop_id': 'update_data_all_widgets',
+            'event_name': 'update_data_all_widgets',
+        }
+        await self.sm.add_widget_loop(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def back_from_offline(self):
+    async def back_from_offline(self, data):
         # standard common initialisations
-        BaseWidget.back_from_offline(self)
+        await BaseWidget.back_from_offline(self, data)
 
-        # with EmptyExample.lock:
-        #     print('-- back_from_offline',self.widget_name,self.widget_id)
+        # additional custom stuff
+        pass
+
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def get_data(self):
-        data = {"rnd": get_rnd(), 'time': get_time('msec')}
+    async def get_data_widget_id(self):
+        data = {
+            'rnd': get_rnd(),
+            'time': get_time('msec'),
+            'n_circ': 0,
+            'anim_speed': 500,
+        }
+        return data
 
+    # ------------------------------------------------------------------
+    async def get_data_widget_name(self):
+        data = {
+            'rnd': get_rnd(),
+            'time': get_time('msec'),
+            'n_circ': 1,
+            'anim_speed': 500,
+        }
         return data
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def send_rnd_message(self, data):
-        # self.log.info([
-        #     ['y', ' - got event: send_rnd_message('],
-        #     ['g', str(data['myMessage'])], ['y', ")"]
-        # ])
-
+    async def send_rnd_message(self, data):
+        debug_msg = False
+        if debug_msg:
+            self.log.info([['y', ' - got event: send_rnd_message('],
+                           ['g', str(data['my_message'])], ['y', ')'],])
         return
