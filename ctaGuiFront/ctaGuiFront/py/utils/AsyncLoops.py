@@ -191,7 +191,7 @@ class AsyncLoops():
         ]
 
         func_args = {
-            'pubsub_tag': 'ws;update_sync_state;' + self.user_id,
+            'pubsub_tag': 'ws;update_sync_state_to_client;' + self.user_id,
             'sess_func': 'update_sync_state_to_client',
         }
         loops += [

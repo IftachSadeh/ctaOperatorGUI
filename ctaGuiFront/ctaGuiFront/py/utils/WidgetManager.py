@@ -61,11 +61,11 @@ class WidgetManager():
                 async with self.locker.locks.acquire('serv'):
                     widget_inits = await self.get_server_attr(name='widget_inits')
                     method_func = getattr(widget_inits[widget_id], data['method_name'])
-                async with self.locker.locks.acquire('sess'):
-                    if 'method_arg' in data:
-                        await method_func(data['method_arg'])
-                    else:
-                        await method_func()
+
+                if 'method_arg' in data:
+                    await method_func(data['method_arg'])
+                else:
+                    await method_func()
             except Exception as e:
                 self.log.error([
                     ['r', ' - problem with method_name: '],
@@ -107,7 +107,7 @@ class WidgetManager():
             async with self.locker.locks.acquire('serv'):
                 widget_inits = await self.get_server_attr(name='widget_inits')
                 widget_inits[widget_id] = widget_cls(
-                    widget_id=widget_id, socket_manager=self
+                    widget_id=widget_id, sm=self
                 )
 
             # make sure the requested widget has been registered as a legitimate class
@@ -122,7 +122,7 @@ class WidgetManager():
             # allow for the possibility of a restored session, where the icon has
             # already been defined
             if n_icon < 0:
-                icon_id = 'icn_' + get_rnd(n_digits=6, out_type=str)
+                icon_id = self.icon_prefix + get_rnd(n_digits=6, out_type=str)
 
             # if this is not a synced panel, it has no sync group or icon
             if is_not_synced:
@@ -183,7 +183,8 @@ class WidgetManager():
                 group_indices = []
                 if len(sync_groups) > 0:
                     group_indices = [
-                        i for i, x in enumerate(sync_groups) if x['id'] == 'grp_0'
+                        i for (i, x) in enumerate(sync_groups)
+                        if x['id'] == self.sync_group_prefix + str(n_sync_group)
                     ]
                 if len(group_indices) > 0:
                     group_index = group_indices[0]
@@ -193,7 +194,7 @@ class WidgetManager():
                     # the sync_group['id'] must correspond to the pattern defined
                     # by the client for new groups (e.g., 'grp_0') !!!
                     sync_group = dict()
-                    sync_group['id'] = 'grp_0'
+                    sync_group['id'] = self.sync_group_prefix + str(n_sync_group)
                     sync_group['title'] = 'Group 0'
                     sync_group['sync_states'] = [[], [], []]
                     sync_group['sync_types'] = dict()
@@ -211,32 +212,28 @@ class WidgetManager():
                     data=sync_groups,
                 )
 
-        if n_sync_group != -1:
+        if widget_name in ['PanelSync']:
             await self.update_sync_group()
 
         return
 
     # ------------------------------------------------------------------
     async def update_sync_group(self):
-        return
-        return
-        return
-        return
 
-        print('lock for update_sync_group !?')
+        # print('lock for update_sync_group !?')
 
-        async with self.locker.locks.acquire('serv'):
-            widget_inits = await self.get_server_attr(name='widget_inits')
+        # async with self.locker.locks.acquire('serv'):
+        widget_inits = await self.get_server_attr(name='widget_inits')
 
-            widget_ids = []
-            widget_info = self.redis.h_get_all(name='ws;widget_info', default_val={})
-            for widget_id, widget_now in widget_info.items():
-                if widget_id in widget_inits:
-                    if widget_now['n_icon'] == -1:
-                        widget_ids.append(widget_id)
+        widget_ids = []
+        widget_info = self.redis.h_get_all(name='ws;widget_info', default_val={})
+        for widget_id, widget_now in widget_info.items():
+            if widget_id in widget_inits:
+                if widget_now['n_icon'] == -1:
+                    widget_ids.append(widget_id)
 
-            for widget_id in widget_ids:
-                getattr(widget_inits[widget_id], 'update_sync_groups')()
+        for widget_id in widget_ids:
+            getattr(widget_inits[widget_id], 'update_sync_groups')()
 
         return
 
@@ -338,7 +335,8 @@ class WidgetManager():
             - probably most locks from the cleanup are not needed. the important part is
             to eg have consistent initialisation, or loop states etc.
 
-            - sync_groups --> set or whatever ??????????/
+            - sync_groups --> 
+                - not persistified after server restart for recovered sees
         '''
         # =============================================================
         # =============================================================
@@ -417,7 +415,7 @@ class WidgetManager():
                         widget.widget_group_sess[widget.widget_group] = []
 
                     widget.widget_group_sess[widget.widget_group].append(
-                        widget.socket_manager.sess_id
+                        widget.sm.sess_id
                     )
 
                     if self.get_asy_func_id(widget.widget_group, asy_func_group) == -1:

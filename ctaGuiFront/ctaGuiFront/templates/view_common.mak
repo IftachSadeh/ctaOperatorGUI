@@ -42,6 +42,8 @@
 
     <div id="title_div" class="menu_header site_header"></div>
     
+    <div class="menu_header" style="opacity: 0; padding-left: 24px; padding-bottom: 5px; margin-top: -40px; font-size: 15px;" id="debug_text_div">${display_user_id}</div>
+
     <div id="base_app_div"></div>
 
     <div id="general_ops_div"></div>
@@ -55,7 +57,7 @@
 
         <div class="flex_ele"></div>
 
-        <div class="menu_header" id="userName_div" style="opacity:0.8; pointer-events:none">${display_user_id}</div>
+        <div class="menu_header" id="user_name_div" style="opacity:0.8; pointer-events:none">${display_user_id}</div>
         <div style="margin-right: 3px;"></div>
 
 

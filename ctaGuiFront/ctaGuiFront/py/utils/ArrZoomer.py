@@ -1,3 +1,5 @@
+import asyncio
+
 from ctaGuiUtils.py.utils import flatten_dict
 from ctaGuiUtils.py.LogParser import LogParser
 
@@ -72,7 +74,7 @@ class ArrZoomer():
         # the id of this instance
         self.widget_id = parent.widget_id
         # the parent of this widget
-        self.socket_manager = parent.socket_manager
+        self.sm = parent.sm
         # widget-class and widget group names
         self.widget_name = parent.widget_name
         # redis interface
@@ -81,11 +83,13 @@ class ArrZoomer():
         self.do_data_updates = parent.do_data_updates
         # some etra logging messages for this module
         self.log_send_packet = parent.log_send_packet
+        # locker
+        self.locker = self.sm.locker
 
         # validate that all required properties have been defined
         check_init_properties = [
             'widget_id',
-            'socket_manager',
+            'sm',
             'widget_name',
             'redis',
             'do_data_updates',
@@ -104,13 +108,18 @@ class ArrZoomer():
                 raise
 
         # functional interface - arr_zoomer_ask_for_init_data
-        self.parent.arr_zoomer_ask_for_init_data = self.get_init_data
+        self.parent.arr_zoomer_ask_for_init_data = self.arr_zoomer_ask_for_init_data
+        # ask the client to end session parameters which may be needed in case
+        # of eg restoration of a session (in which case init is not rerun)
+        self.parent.get_arr_zoomer_param_from_client = (
+            self.get_arr_zoomer_param_from_client
+        )
         # functional interface - get_zoomer_state
         self.parent.get_zoomer_state = self.get_zoomer_state
         # functional interface - arr_zoomer_ask_for_data_s1
-        self.parent.arr_zoomer_ask_for_data_s1 = self.ask_data_s1
+        self.parent.arr_zoomer_ask_for_data_s1 = self.arr_zoomer_ask_for_data_s1
         # functional interface - setter for the zoom state
-        self.parent.arr_zoomer_set_widget_state = self.set_widget_state
+        self.parent.arr_zoomer_set_widget_state = self.arr_zoomer_set_widget_state
 
         return
 
@@ -122,7 +131,10 @@ class ArrZoomer():
         wgt = self.redis.h_get(
             name='ws;widget_info',
             key=self.widget_id,
+            default_val=None,
         )
+        if wgt is None:
+            return
 
         self.zoom_state = wgt['widget_state']
         self.zoom_state['zoom_state'] = 0
@@ -153,7 +165,7 @@ class ArrZoomer():
             'loop_id': 'arr_zoomer_update_data_s0',
             'event_name': 'arr_zoomer_update_data_s0',
         }
-        await self.socket_manager.add_widget_loop(opt_in=opt_in)
+        await self.sm.add_widget_loop(opt_in=opt_in)
 
         # function to get the s1 data for this specific widget_id
         async def tel_health_s1():
@@ -167,10 +179,19 @@ class ArrZoomer():
 
             await self.update_tel_health_s1(id_in=zoom_target)
 
-            data = {
-                'arr_zoomer_id': self.arr_zoomer_id,
-                'data': self.get_flat_tel_health(zoom_target),
-            }
+            try:
+                data = {
+                    'arr_zoomer_id': self.arr_zoomer_id,
+                    'data': self.get_flat_tel_health(zoom_target),
+                }
+            except AttributeError:
+                # AttributeError can arise for a restored session, for which
+                # we do not repeat arr_zoomer_ask_for_init_data(),
+                # and so arr_zoomer_id is not set
+                await self.ask_arr_zoomer_param_from_client()
+                data = None
+            except Exception as e:
+                raise e
 
             return data
 
@@ -192,34 +213,13 @@ class ArrZoomer():
             'loop_id': 'arr_zoomer_update_data_s1',
             'event_name': 'arr_zoomer_update_data_s1',
         }
-        await self.socket_manager.add_widget_loop(opt_in=opt_in)
-
-        # # start arr_zoomer_update_sub_arr thread
-        # thread_id = self.socket_manager.get_thread_id(
-        #     self.socket_manager.user_group_id,
-        #     'arr_zoomer_update_sub_arr',
-        # )
-        # if thread_id == -1:
-        #     if self.log_send_packet:
-        #         ArrZoomer.log.info([
-        #             ['y', ' - starting arr_zoomer_update_sub_arr('],
-        #             ['g', self.socket_manager.user_group_id],
-        #             ['y', ')'],
-        #         ])
-
-        #     thread_id = self.socket_manager.set_thread_state(
-        #         self.socket_manager.user_group_id,
-        #         'arr_zoomer_update_sub_arr',
-        #         True,
-        #     )
-        #     _ = gevent.spawn(self.update_sub_arr, thread_id)
+        await self.sm.add_widget_loop(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
-    def back_from_offline(self):
-        # with ArrZoomer.lock:
-        #     print('-- back_from_offline',self.widget_name,self.widget_id)
+    async def back_from_offline(self, data):
+        await self.ask_arr_zoomer_param_from_client()
         return
 
     # ------------------------------------------------------------------
@@ -227,7 +227,7 @@ class ArrZoomer():
         return self.zoom_state
 
     # ------------------------------------------------------------------
-    async def set_widget_state(self, *args):
+    async def arr_zoomer_set_widget_state(self, *args):
         """set the zoom state of the widget
         """
 
@@ -281,7 +281,37 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    async def get_init_data(self, *args):
+    async def ask_arr_zoomer_param_from_client(self):
+        """interface to ask for a list of requested parameters from the client
+        """
+
+        data = {
+            'params': ['arr_zoomer_id'],
+        }
+
+        opt_in = {
+            'widget': self,
+            'data': data,
+            'event_name': 'ask_arr_zoomer_param_from_client',
+        }
+
+        await self.sm.emit_widget_event(opt_in=opt_in)
+
+        return
+    
+    # ------------------------------------------------------------------
+    async def get_arr_zoomer_param_from_client(self, *args):
+        """interface to get a list of requested parameters from the client
+        """
+        
+        data_in = args[0]
+        for (k,v) in data_in.items():
+            setattr(self, k, v)
+
+        return
+
+    # ------------------------------------------------------------------
+    async def arr_zoomer_ask_for_init_data(self, *args):
         """initialise dataset and send to client when the client asks for it
         """
 
@@ -292,7 +322,7 @@ class ArrZoomer():
         self.arr_zoomer_id = data_in['arr_zoomer_id']
 
         self.log.debug([
-            ['b', ' - ArrZoomer get_init_data '],
+            ['b', ' - ArrZoomer arr_zoomer_ask_for_init_data '],
             ['c', self.arr_zoomer_id, ' , '],
             ['b', ' , '],
             ['y', data_in],
@@ -323,14 +353,13 @@ class ArrZoomer():
 
             return data
 
-        # ------------------------------------------------------------------
         opt_in = {
             'widget': self,
             'data_func': get_data,
             'event_name': 'arr_zoomer_get_init_data',
         }
 
-        await self.socket_manager.emit_widget_event(opt_in=opt_in)
+        await self.sm.emit_widget_event(opt_in=opt_in)
 
         return
 
@@ -414,12 +443,27 @@ class ArrZoomer():
         return data
 
     # ------------------------------------------------------------------
-    async def ask_data_s1(self, *args):
+    async def arr_zoomer_ask_for_data_s1(self, *args):
         data = args[0]
 
+        # AttributeError can arise for a restored session, for which
+        # we do not repeat arr_zoomer_ask_for_init_data(),
+        # and so arr_zoomer_id is not set
+        try:
+            arr_zoomer_id = self.arr_zoomer_id
+
+        except AttributeError as e:
+            await self.ask_arr_zoomer_param_from_client() 
+            await asyncio.sleep(0.01)
+            await self.arr_zoomer_ask_for_data_s1(*args)
+            return
+
+        except Exception as e:
+            raise e
+
         self.log.debug([
-            ['b', ' - ask_data_s1 '],
-            ['b', self.socket_manager.sess_id, ' , '],
+            ['b', ' - arr_zoomer_ask_for_data_s1 '],
+            ['b', self.sm.sess_id, ' , '],
             ['g', data['zoom_state']],
             ['b', ' , '],
             ['y', data['zoom_target']],
@@ -442,7 +486,7 @@ class ArrZoomer():
             'event_name': 'arr_zoomer_get_data_s1',
             'data': emit_data_s1,
         }
-        await self.socket_manager.emit_widget_event(opt_in=opt_in)
+        await self.sm.emit_widget_event(opt_in=opt_in)
 
         return
 
@@ -467,8 +511,8 @@ class ArrZoomer():
     #     sleep(n_sec_sleep)
 
     #     def get_thread_id():
-    #         return self.socket_manager.get_thread_id(
-    #             self.socket_manager.user_group_id,
+    #         return self.sm.get_thread_id(
+    #             self.sm.user_group_id,
     #             'arr_zoomer_update_sub_arr',
     #         )
 
@@ -491,7 +535,7 @@ class ArrZoomer():
     #                 'data': self.sub_arr_grp,
     #             }
 
-    #             self.socket_manager.socket_event_widgets(
+    #             self.sm.socket_event_widgets(
     #                 event_name='arr_zoomer_update_data',
     #                 sess_ids=sess_ids,
     #                 widget_ids=widget_ids,

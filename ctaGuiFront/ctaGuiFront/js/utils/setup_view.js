@@ -155,6 +155,12 @@ setup_view.view203 = function() {
         has_icon: false,
         has_drawer: false,
     })
+    sock.add_widget({
+        name_tag: 'PanelSync',
+        table_title: 'Panel synchronization',
+        has_icon: false,
+        has_drawer: false,
+    })
 }
 
 // -------------------------------------------------------------------

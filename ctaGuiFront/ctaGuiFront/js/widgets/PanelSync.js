@@ -137,9 +137,17 @@ let main_panel_sync = function(opt_in) {
         tag: widget_id,
     })
 
-    // -------------------------------------------------------------------
-    //
-    // -------------------------------------------------------------------
+    let update_data_evt = function(data_in) {
+        if (data_in.metadata.widget_id !== widget_id) {
+            return
+        }
+        update_data(data_in)
+    }
+    sock.socket.add_event({
+        name: 'update_data',
+        func: update_data_evt,
+        is_singleton: false,
+    })
 
     // -------------------------------------------------------------------
     //
@@ -176,6 +184,8 @@ let main_panel_sync = function(opt_in) {
     //
     // -------------------------------------------------------------------
     let SvgMain = function() {
+        let this_top = this
+        
         let com = {
         }
         let recs = {
@@ -206,8 +216,37 @@ let main_panel_sync = function(opt_in) {
         scale_r[1].inner_h_0 = 1.25
         scale_r[1].inner_h_1 = 1.3
 
-        this.scale_r = scale_r
+        this_top.scale_r = scale_r
 
+        // sync_group_prefix, icon_prefix come from the server as part of init_data
+        this_top.sync_group_prefix = ''
+        this_top.icon_prefix = ''
+
+        this_top.empty_icn_tag = 'empty_icn'
+
+        function get_grp_id(index_0, index_1) {
+            let grp_id = this_top.sync_group_prefix + index_0
+            if (is_def(index_1)) {
+                grp_id += '_' + index_1
+            }
+            return grp_id
+        }
+        
+        function get_icn_id(index_0, index_1, index_2) {
+            let icn_id = this_top.icon_prefix + index_0
+            if (is_def(index_1)) {
+                icn_id += '_' + index_1
+            }
+            if (is_def(index_2)) {
+                icn_id += '_' + index_2
+            }
+            return icn_id
+        }
+
+
+        function get_grp_title(n_grp) {
+            return 'Group ' + n_grp
+        }
         // let arc_prev = {}
         // arc_prev.ang = {}
         // arc_prev.rad = {}
@@ -299,7 +338,7 @@ let main_panel_sync = function(opt_in) {
                 })
             })
 
-            sock.all_widgets[widget_type].sock_func.groups_to_server({
+            sock.widget_funcs[widget_type].sock_func.groups_to_server({
                 widget_id: widget_id,
                 data: data,
             })
@@ -312,6 +351,8 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         function init_data(data_in) {
             grps.data = data_in.groups
+            this_top.sync_group_prefix = data_in.sync_group_prefix
+            this_top.icon_prefix = data_in.icon_prefix
 
             if (is_def(svg.svg)) {
                 return
@@ -360,11 +401,9 @@ let main_panel_sync = function(opt_in) {
                 .style('height', '100%')
                 .style('top', '0px')
                 .style('left', '0px')
-            // .attr("viewBox", "0 0 "+svg_dims.w[0]+" "+svg_dims.h[0] * whRatio)
-            // .classed("svgInGridStack_inner", true)
                 .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
-            // .call(com.svg_zoom)
-            // .on("dblclick.zoom", null)
+                // .call(com.svg_zoom)
+                // .on("dblclick.zoom", null)
 
             if (disable_scroll_svg) {
                 svg.svg.on('wheel', function() {
@@ -402,35 +441,35 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            svg.recG = svg.g.append('g')
-            recs.g_base = svg.recG.append('g')
-            recs.data_g = svg.recG.append('g')
+            svg.rec_g = svg.g.append('g')
+            recs.g_base = svg.rec_g.append('g')
+            recs.data_g = svg.rec_g.append('g')
 
-            svg.mainG = svg.g.append('g')
+            svg.main_g = svg.g.append('g')
 
             com.vor = {
             }
-            com.vor.g = svg.mainG.append('g')
+            com.vor.g = svg.main_g.append('g')
 
             com.empty = {
             }
-            com.empty.g = svg.mainG.append('g')
+            com.empty.g = svg.main_g.append('g')
 
             com.icons = {
             }
-            com.icons.g = svg.mainG.append('g')
+            com.icons.g = svg.main_g.append('g')
 
             com.highlight = {
             }
-            com.highlight.g = svg.mainG.append('g')
+            com.highlight.g = svg.main_g.append('g')
 
-            svg.mainG.attr(
+            svg.main_g.attr(
                 'transform',
                 'translate(' + shift_main_g[0] + ',' + shift_main_g[1] + ')'
             )
 
             // // for debugging
-            // svg.mainG.append("g").selectAll("rect").data([0])
+            // svg.main_g.append("g").selectAll("rect").data([0])
             //   .enter()
             //   .append("rect")
             //     .attr("x", 0).attr("y", 0)
@@ -443,7 +482,7 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            function doDrag_main_start(d_in, thisIn) {
+            function do_drag_main_start(d_in, thisIn) {
                 move_node_up(thisIn, 2)
 
                 com.icons.g.selectAll('g.' + tag_icon).style('pointer-events', 'none')
@@ -462,10 +501,10 @@ let main_panel_sync = function(opt_in) {
                     override: true,
                 })
 
-                doDrag_main_start(d_in, thisIn)
+                do_drag_main_start(d_in, thisIn)
             }
 
-            com.dramain_gsuring = function(d_in, thisIn) {
+            com.drag_main_during = function(d_in, thisIn) {
                 d3.select(thisIn).attr('transform', function(d) {
                     d.x = d3.event.x
                     d.y = d3.event.y
@@ -473,10 +512,10 @@ let main_panel_sync = function(opt_in) {
                 })
             }
 
-            function doDrag_main_end(d_in, _) {
+            function do_drag_main_end(d_in, _) {
                 com.icons.g
                     .selectAll('g.' + tag_icon)
-                    .style('pointer-events', icon_pntEvt)
+                    .style('pointer-events', icon_pnt_evt)
 
                 com.icons.g
                     .selectAll('circle.' + tag_circ)
@@ -490,7 +529,7 @@ let main_panel_sync = function(opt_in) {
             }
 
             com.drag_main_end = function(d_in, thisIn) {
-                doDrag_main_end(d_in, thisIn)
+                do_drag_main_end(d_in, thisIn)
 
                 locker.remove({
                     id: tag_main + 'in_drag',
@@ -505,7 +544,7 @@ let main_panel_sync = function(opt_in) {
                     com.drag_main_start(d, this)
                 })
                 .on('drag', function(d) {
-                    com.dramain_gsuring(d, this)
+                    com.drag_main_during(d, this)
                 })
                 .on('end', function(d) {
                     com.drag_main_end(d, this)
@@ -516,7 +555,7 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             let icon_side = null
             let icon_side_sel = null
-            com.dragSideStart = function(d_in) {
+            com.drag_side_start = function(d_in) {
                 locker.add({
                     id: tag_main + 'in_drag',
                     override: true,
@@ -531,28 +570,28 @@ let main_panel_sync = function(opt_in) {
                 icon_side_sel = (
                     icons.length === 0
                         ? null
-                        : svg.mainG.select('#' + id_side)
+                        : svg.main_g.select('#' + id_side)
                 )
 
                 if (is_def(icon_side_sel)) {
                     move_node_up(icon_side_sel.node(), 2)
+
+                    icon_side_sel
+                        .transition('in_out')
+                        .duration(times.anim / 5)
+                        .attr('transform', function(d) {
+                            d.x = d3.event.x - shift_main_g[0]
+                            d.y = d3.event.y - shift_main_g[1]
+                            return 'translate(' + d.x + ',' + d.y + ')'
+                        })
                 }
 
-                icon_side_sel
-                    .transition('in_out')
-                    .duration(times.anim / 5)
-                    .attr('transform', function(d) {
-                        d.x = d3.event.x - shift_main_g[0]
-                        d.y = d3.event.y - shift_main_g[1]
-                        return 'translate(' + d.x + ',' + d.y + ')'
-                    })
-
                 if (is_def(icon_side)) {
-                    doDrag_main_start(icon_side, this)
+                    do_drag_main_start(icon_side, this)
                 }
             }
 
-            com.dragSideDuring = function(d_in) {
+            com.drag_side_during = function(d_in) {
                 if (!is_def(icon_side)) {
                     return
                 }
@@ -564,8 +603,8 @@ let main_panel_sync = function(opt_in) {
                 })
             }
 
-            com.dragSideEnd = function(d_in) {
-                doDrag_main_end(icon_side, this)
+            com.drag_side_end = function(d_in) {
+                do_drag_main_end(icon_side, this)
 
                 icon_side = null
                 icon_side_sel = null
@@ -577,11 +616,11 @@ let main_panel_sync = function(opt_in) {
                 })
             }
 
-            com.dragSide = d3
+            com.drag_side = d3
                 .drag()
-                .on('start', com.dragSideStart)
-                .on('drag', com.dragSideDuring)
-                .on('end', com.dragSideEnd)
+                .on('start', com.drag_side_start)
+                .on('drag', com.drag_side_during)
+                .on('end', com.drag_side_end)
 
             // -------------------------------------------------------------------
             //
@@ -594,14 +633,14 @@ let main_panel_sync = function(opt_in) {
 
             if (can_tog_empty) {
                 h0 -= w0 + marg
-                initnew_grpSideTog({
+                init_new_grp_side_tog({
                     g_trans_x: x0 - shift_main_g[0],
                     g_trans_y: y0 + h0 + marg,
                     rec_w: w0,
                 })
             }
 
-            recs.recOpt = {
+            recs.rec_opt = {
                 id: tag_grid_rec,
                 tag_clip_path: tag_clip_path,
                 recs: recs,
@@ -621,10 +660,10 @@ let main_panel_sync = function(opt_in) {
                         strk_opac: 0.2,
                     },
                 },
-                // vor_opt: { mouseover: side_col_hov, call: com.dragSide },
+                // vor_opt: { mouseover: side_col_hov, call: com.drag_side },
                 vor_opt: {
                     mouseover: side_col_hov,
-                    call: com.dragSide,
+                    call: com.drag_side,
                 },
                 on_zoom: {
                     during: upd_side_col_on_zoom,
@@ -640,7 +679,7 @@ let main_panel_sync = function(opt_in) {
                 },
             }
 
-            com.scroll_grid = new ScrollGrid(recs.recOpt)
+            com.scroll_grid = new ScrollGrid(recs.rec_opt)
 
             recs.data_g = com.scroll_grid.get_bck_data_g()
             recs.data_g.attr('clip-path', (
@@ -672,13 +711,13 @@ let main_panel_sync = function(opt_in) {
         function set_allow_sync_state(data_in) {
             let isAcive = data_in.allow_panel_sync
 
-            let tagRec = 'overlayRec'
-            let rect = svg.overlay.selectAll('rect.' + tagRec).data([ 0 ])
+            let tag_rec = 'overlay_rec'
+            let rect = svg.overlay.selectAll('rect.' + tag_rec).data([ 0 ])
 
             rect
                 .enter()
                 .append('rect')
-                .attr('class', tagRec)
+                .attr('class', tag_rec)
                 .attr('x', 0)
                 .attr('y', 0)
                 .attr('width', svg_dims.w[0])
@@ -693,7 +732,7 @@ let main_panel_sync = function(opt_in) {
             bck_pattern({
                 com: com,
                 g_now: svg.overlay,
-                g_tag: tagRec,
+                g_tag: tag_rec,
                 len_wh: [ svg_dims.w[0], svg_dims.h[0] ],
                 opac: isAcive ? 0 : 0.2,
                 circ_type: 'lighter',
@@ -705,7 +744,7 @@ let main_panel_sync = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function ask_data() {
-            sock.all_widgets[widget_type].sock_func.ask_data({
+            sock.widget_funcs[widget_type].sock_func.ask_data({
                 widget_id: widget_id,
             })
         }
@@ -772,13 +811,13 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             // use the original data for existing elements
             // -------------------------------------------------------------------
-            let origV = {
+            let origs = {
             }
             $.each(grps.data.children, function(n_child_0, child_now_0) {
                 $.each(child_now_0.children, function(n_child_1, child_now_1) {
                     $.each(child_now_1.children, function(n_child_2, child_now_2) {
                         if (child_now_2.n_icon !== n_empty_icon) {
-                            origV[child_now_2.id] = child_now_2
+                            origs[child_now_2.id] = child_now_2
                         }
                     })
                 })
@@ -787,9 +826,9 @@ let main_panel_sync = function(opt_in) {
             $.each(data_in.children, function(n_child_0, child_now_0) {
                 $.each(child_now_0.children, function(n_child_1, child_now_1) {
                     $.each(child_now_1.children, function(n_child_2, child_now_2) {
-                        if (is_def(origV[child_now_2.id])) {
+                        if (is_def(origs[child_now_2.id])) {
                             data_in.children[n_child_0].children[n_child_1]
-                                .children[n_child_2] = origV[child_now_2.id]
+                                .children[n_child_2] = origs[child_now_2.id]
                         }
                     })
                 })
@@ -824,7 +863,7 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function initnew_grpSideTog(opt_in) {
+        function init_new_grp_side_tog(opt_in) {
             let g_trans_x = opt_in.g_trans_x
             let g_trans_y = opt_in.g_trans_y
             let rec_w = opt_in.rec_w
@@ -1137,7 +1176,7 @@ let main_panel_sync = function(opt_in) {
                 })
                 .call(com.drag_main)
                 .merge(icn)
-                .style('pointer-events', icon_pntEvt)
+                .style('pointer-events', icon_pnt_evt)
                 // .each(function(d,i) { if(d.data.n_icon>=0)console.log(d.data.id,d) })
                 .each(function(d) {
                     if (is_def(d.data.set_r)) {
@@ -1168,7 +1207,7 @@ let main_panel_sync = function(opt_in) {
                 ask_data()
             }
         }
-        function icon_pntEvt(d) {
+        function icon_pnt_evt(d) {
             return d.data.n_icon === n_empty_icon ? 'none' : 'auto'
         }
 
@@ -1182,7 +1221,7 @@ let main_panel_sync = function(opt_in) {
         }
 
         function side_col_click(d_in) {
-            let id_now = 'icn' + unique()
+            let id_now = unique()
             if (is_def(d_in)) {
                 let n_icon = d_in.data.data.data.n_icon
                 let trg_widg_id = d_in.data.data.data.trg_widg_id
@@ -1222,7 +1261,7 @@ let main_panel_sync = function(opt_in) {
                         return d.id
                     })
                     $.each(grps.data.children, function(n_child_0, child_now_0) {
-                        if (grp_ids.indexOf('grp' + n_child_0) < 0 && n_grp < 0) {
+                        if (grp_ids.indexOf(get_grp_id(n_child_0)) < 0 && n_grp < 0) {
                             n_grp = n_child_0
                         }
                     })
@@ -1230,31 +1269,29 @@ let main_panel_sync = function(opt_in) {
                         n_grp = grps.data.children.length
                     }
 
-                    console.log('FIXME - panelsync - group name logic generalise')
                     let new_grp = {
-                        id: 'grp' + n_grp,
-                        title: 'Group ' + n_grp,
+                        id: get_grp_id(n_grp),
+                        title: get_grp_title(n_grp),
                         children: [
                             {
-                                id: 'grp' + n_grp + '_0',
+                                id: get_grp_id(n_grp, 0),
                                 children: [ data_add ],
                             },
-                            // { id:"grp_"+n_grp+"_0", children: [{id:"icn_"+n_grp+"_0"+id_now, trg_widg_id:"", n_icon:n_empty_icon}, data_add] },
                             {
-                                id: 'grp' + n_grp + '_1',
+                                id: get_grp_id(n_grp, 1),
                                 children: [
                                     {
-                                        id: 'icn' + n_grp + '_1' + id_now,
+                                        id: get_icn_id(n_grp, id_now, 1),
                                         trg_widg_id: '',
                                         n_icon: n_empty_icon,
                                     },
                                 ],
                             },
                             {
-                                id: 'grp' + n_grp + '_2',
+                                id: get_grp_id(n_grp, 2),
                                 children: [
                                     {
-                                        id: 'icn' + n_grp + '_2' + id_now,
+                                        id: get_icn_id(n_grp, id_now, 2),
                                         trg_widg_id: '',
                                         n_icon: n_empty_icon,
                                     },
@@ -1386,9 +1423,9 @@ let main_panel_sync = function(opt_in) {
                 .attr('transform', function(d) {
                     return 'translate(' + (d.x + d.w / 2) + ',' + (d.y + d.h / 2) + ')'
                 })
-                .call(com.dragSide)
+                .call(com.drag_side)
                 .merge(icn)
-                .style('pointer-events', icon_pntEvt)
+                .style('pointer-events', icon_pnt_evt)
                 // .each(function(d,i) { if(d.data.n_icon>=0)console.log(d.data.id,d) })
                 .each(function(d) {
                     if (is_def(d.data.data.set_r)) {
@@ -1746,7 +1783,7 @@ let main_panel_sync = function(opt_in) {
                     return d.id
                 })
                 $.each(grps.data.children, function(n_child_0, child_now_0) {
-                    if (grp_ids.indexOf('grp' + n_child_0) < 0 && n_grp < 0) {
+                    if (grp_ids.indexOf(get_grp_id(n_child_0)) < 0 && n_grp < 0) {
                         n_grp = n_child_0
                     }
                 })
@@ -1760,34 +1797,34 @@ let main_panel_sync = function(opt_in) {
                 // -------------------------------------------------------------------
                 let id_now = unique()
                 let new_grp = {
-                    id: 'grp' + n_grp,
-                    title: 'Group ' + n_grp,
+                    id: get_grp_id(n_grp),
+                    title: get_grp_title(n_grp),
                     children: [
                         {
-                            id: 'grp' + n_grp + '_0',
+                            id: get_grp_id(n_grp, 0),
                             children: [
                                 {
-                                    id: 'icn' + n_grp + '_0' + id_now,
+                                    id: get_icn_id(n_grp, id_now, 0),
                                     trg_widg_id: '',
                                     n_icon: n_empty_icon,
                                 },
                             ],
                         },
                         {
-                            id: 'grp' + n_grp + '_1',
+                            id: get_grp_id(n_grp, 1),
                             children: [
                                 {
-                                    id: 'icn' + n_grp + '_1' + id_now,
+                                    id: get_icn_id(n_grp, id_now, 1),
                                     trg_widg_id: '',
                                     n_icon: n_empty_icon,
                                 },
                             ],
                         },
                         {
-                            id: 'grp' + n_grp + '_2',
+                            id: get_grp_id(n_grp, 2),
                             children: [
                                 {
-                                    id: 'icn' + n_grp + '_2' + id_now,
+                                    id: get_icn_id(n_grp, id_now, 2),
                                     trg_widg_id: '',
                                     n_icon: n_empty_icon,
                                 },
@@ -1809,8 +1846,8 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             if (locker.is_free(tag_main + 'in_drag')) {
                 grps.data.children = grps.data.children.sort(function(x, y) {
-                    let id_x = parseInt(x.id.replace('grp', ''))
-                    let id_y = parseInt(y.id.replace('grp', ''))
+                    let id_x = parseInt(x.id.replace(this_top.sync_group_prefix, ''))
+                    let id_y = parseInt(y.id.replace(this_top.sync_group_prefix, ''))
 
                     return id_x - id_y
                 })
@@ -1956,7 +1993,7 @@ let main_panel_sync = function(opt_in) {
                 $.each(child_now_0.children, function(n_child_1, child_now_1) {
                     if (child_now_1.children.length === 0) {
                         child_now_1.children.push({
-                            id: 'icnEmpty' + unique(),
+                            id: this_top.empty_icn_tag + unique(),
                             trg_widg_id: '',
                             title: '',
                             n_icon: n_empty_icon,

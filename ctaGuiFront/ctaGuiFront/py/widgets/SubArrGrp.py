@@ -52,9 +52,9 @@ class SubArrGrp(BaseWidget):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def back_from_offline(self):
+    async def back_from_offline(self, data):
         # standard common initialisations
-        BaseWidget.back_from_offline(self)
+        await BaseWidget.back_from_offline(self, data)
 
         # with SubArrGrp.lock:
         #     print('-- back_from_offline',self.widget_name,self.widget_id)

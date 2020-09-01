@@ -839,7 +839,7 @@ function BaseApp() {
         sock.socket.add_event({
             name: 'get_sim_clock_sim_params',
             func: get_sim_clock_sim_params_evt,
-            is_unique: true,
+            is_singleton: true,
         })
 
 
@@ -872,12 +872,6 @@ function BaseApp() {
         }
     }
     this.get_connection_stat_div = get_connection_stat_div
-
-    // let userName_div = document.querySelector("#"+"userName_div")
-    // if(window.USER_ID !== 'None') {
-    //   userName_div.innerHTML = window.USER_ID
-    //   userName_div.style.opacity = '80%'
-    // }
 }
 
 // ------------------------------------------------------------------

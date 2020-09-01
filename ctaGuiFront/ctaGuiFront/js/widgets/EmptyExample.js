@@ -98,7 +98,7 @@ let main_empty_example = function(opt_in) {
 
     // ------------------------------------------------------------------
     // this is not a unique event (transmitted to all widgets of this)
-    // type by a single loop. we add this with is_unique=false
+    // type by a single loop. we add this with is_singleton=false
     // and set the local widget_id in each case
     // ------------------------------------------------------------------
     let update_data_by_widget_id_evt = function(data_in) {
@@ -110,7 +110,7 @@ let main_empty_example = function(opt_in) {
     sock.socket.add_event({
         name: 'update_data_by_widget_id',
         func: update_data_by_widget_id_evt,
-        is_unique: false,
+        is_singleton: false,
     })
 
     let update_data_widget_name_evt = function(data_in) {
@@ -120,7 +120,7 @@ let main_empty_example = function(opt_in) {
     sock.socket.add_event({
         name: 'update_data_all_widgets',
         func: update_data_widget_name_evt,
-        is_unique: false,
+        is_singleton: false,
     })
 
     // -------------------------------------------------------------------

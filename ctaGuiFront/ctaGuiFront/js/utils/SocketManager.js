@@ -48,6 +48,10 @@ function SocketManager() {
         'SLOW_CONNECTION': 'SLOW_CONNECTION',
         'NOT_CONNECTED': 'NOT_CONNECTED',
     }
+    this_top.send_connection_logs = false
+    // this_top.send_connection_logs = true
+
+    this_top.debug_sess_id = true
 
     this_top.socket = null
     this_top.con_stat = null
@@ -175,7 +179,7 @@ function SocketManager() {
         function add_event(opt_in) {
             let name = opt_in.name
             let func = opt_in.func
-            let is_unique = opt_in.is_unique
+            let is_singleton = opt_in.is_singleton
 
             try {
                 if (typeof name !== 'string' || name === '') {
@@ -184,8 +188,8 @@ function SocketManager() {
                 if (typeof func !== 'function') {
                     throw 'func must be set as a function in add_event'
                 }
-                if (typeof is_unique !== 'boolean') {
-                    throw 'is_unique must be set as true/false in add_event'
+                if (typeof is_singleton !== 'boolean') {
+                    throw 'is_singleton must be set as true/false in add_event'
                 }
             }
             catch (err) {
@@ -196,12 +200,12 @@ function SocketManager() {
                 on_events[name] = [ func ]
             }
             else {
-                if (!is_unique) {
+                if (!is_singleton) {
                     on_events[name].push(func)
                 }
-                else {
-                    console.log('redo skip !!!!!!!!!!!!!!!!!!!', name)
-                }
+                // else {
+                //     console.log('redo skip !!!!!!!!!!!!!!!!!!!', name)
+                // }
             }
             return
         }
@@ -325,7 +329,7 @@ function SocketManager() {
         this_top.socket.add_event({
             name: 'initial_connect',
             func: initial_connect_evt,
-            is_unique: true,
+            is_singleton: true,
         })
 
         function initial_connect(is_first, data_in) {
@@ -341,6 +345,14 @@ function SocketManager() {
             this_top.sess_id = String(data_in.sess_id)
             // this_top.sess_id = String('_xx_00_xx_') // for debugging
             // this_top.sess_id = String(unique({prefix: ''}))
+
+            let user_name_div = document.querySelector('#debug_text_div')
+            if (this_top.debug_sess_id && (user_name_div.style.opacity < 0.01)) {
+                user_name_div.style.opacity = 1
+                user_name_div.innerHTML += (
+                    ' ; ' + this_top.sess_id 
+                )
+            }
 
             this_top.sess_ping = data_in.sess_ping
 
@@ -434,7 +446,7 @@ function SocketManager() {
         this_top.socket.add_event({
             name: 'reload_session',
             func: reload_session_evt,
-            is_unique: true,
+            is_singleton: true,
         })
 
 
@@ -475,7 +487,7 @@ function SocketManager() {
         this_top.socket.add_event({
             name: 'heartbeat_ping',
             func: heartbeat_ping_evt,
-            is_unique: true,
+            is_singleton: true,
         })
 
         // -------------------------------------------------------------------
@@ -550,15 +562,17 @@ function SocketManager() {
                                     ? LOG_LEVELS.ERROR
                                     : LOG_LEVELS.WARNING
                             )
-                            this_top.socket.server_log({
-                                data: {
-                                    event_name: state,
-                                    ping_latest_delay_msec: ping_latest_delay_msec,
-                                    ping_total_delay_msec: ping_total_delay_msec,
-                                },
-                                is_verb: true,
-                                log_level: level,
-                            })
+                            if (this_top.send_connection_logs) {
+                                this_top.socket.server_log({
+                                    data: {
+                                        event_name: state,
+                                        ping_latest_delay_msec: ping_latest_delay_msec,
+                                        ping_total_delay_msec: ping_total_delay_msec,
+                                    },
+                                    is_verb: true,
+                                    log_level: level,
+                                })
+                            }
                         }
                     }
 
@@ -646,15 +660,17 @@ function SocketManager() {
         // run the respective sync-state function for each widget
         // -------------------------------------------------------------------
         let update_sync_state_from_server_evt = function(data_in) {
-            // console.log('eeeeeeeeee', data_in)
             if (this_top.con_stat.is_offline()) {
                 return
             }
 
+            let sync_widget_ids = data_in.data.sync_widget_ids
             $.each(this_top.widget_funcs, function(widget_type, ele_0) {
                 $.each(ele_0.widgets, function(widget_id, ele_1) {
-                    if (is_def(ele_1.update_sync_state)) {
-                        ele_1.update_sync_state(data_in)
+                    if (sync_widget_ids.indexOf(widget_id) >= 0) {
+                        if (is_def(ele_1.update_sync_state)) {
+                            ele_1.update_sync_state(data_in)
+                        }
                     }
                 })
             })
@@ -664,7 +680,7 @@ function SocketManager() {
         this_top.socket.add_event({
             name: 'update_sync_state_from_server',
             func: update_sync_state_from_server_evt,
-            is_unique: true,
+            is_singleton: true,
         })
 
 
@@ -983,7 +999,7 @@ function SocketManager() {
             this_top.socket.add_event({
                 name: 'init_data',
                 func: init_data_evt,
-                is_unique: true,
+                is_singleton: true,
             })
 
             // let update_data_evt = function(data_in) {
@@ -1018,7 +1034,7 @@ function SocketManager() {
             // this_top.socket.add_event({
             //     name: 'update_data',
             //     func: update_data_evt,
-            //     is_unique: true,
+            //     is_singleton: true,
             // })
 
             // add the widget
@@ -1067,7 +1083,7 @@ function SocketManager() {
                     'multiple_inits / restoring session': opt_in,
                 },
                 is_verb: false,
-                log_level: LOG_LEVELS.INFO,
+                log_level: LOG_LEVELS.DEBUG,
             })
             return true
         }

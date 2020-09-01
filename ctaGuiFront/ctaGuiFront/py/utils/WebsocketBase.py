@@ -67,6 +67,8 @@ class WebsocketBase():
 
         self.loop_prefix = 'ws;loop;'
         self.heartbeat_prefix = 'ws;heartbeat;'
+        self.sync_group_prefix = 'grp_'
+        self.icon_prefix = 'icn_'
 
         self.asyncio_queue = asyncio.Queue()
 
@@ -312,7 +314,7 @@ class __old_SocketManager__():
     # # ------------------------------------------------------------------
     # # upon reconnection to an existing session
     # # ------------------------------------------------------------------
-    # def on_back_from_offline(self):
+    # def on_back_from_offline(self, data):
     #     if self.sess_id is None:
     #         return
 

@@ -543,6 +543,7 @@ let LOG_LEVELS = {
     ERROR: 'ERROR',
     WARNING: 'WARNING',
     INFO: 'INFO',
+    DEBUG: 'DEBUG',
 }
 window.LOG_LEVELS = LOG_LEVELS
 

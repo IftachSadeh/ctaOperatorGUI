@@ -21,6 +21,7 @@ reload_dirs += [
     base_dir + 'js',
     base_dir + 'py',
     base_dir + 'templates/',
+    base_dir + 'styles/',
 ]
 base_dir = '../ctaGuiUtils/'
 reload_dirs += [

@@ -73,7 +73,7 @@ class SessionManager():
         # ------------------------------------------------------------------
         # for development, its conveniet to reload if the server was restarted, but
         # for deployment, the same session can simply be restored
-        if self.base_config.debug_opts['dev'] and 1:
+        if self.base_config.debug_opts['dev'] and 0:
             if is_existing_sess:
                 self.sess_id = data['metadata']['sess_id']
                 await self.emit(event_name='reload_session')
@@ -215,6 +215,15 @@ class SessionManager():
 
         self.init_user_sync_loops()
 
+        # # simple locker test
+        # async with self.locker.locks.acquire('serv', debug=1):
+        #     print(' - now im locked 0 :)')
+        #     pass
+        #     async with self.locker.locks.acquire('serv', debug=1, can_exist=1):
+        #         print(' - now im locked 1 :)')
+        #         pass
+        # print(' - lock released !!!!!!')
+
         return
 
     # ------------------------------------------------------------------
@@ -262,20 +271,16 @@ class SessionManager():
             'o', ' - back_from_offline needs you     ', self.sess_id, '!' * 50
         ]])
 
-        # # print 'on_back_from_offline.................'
-        # # first validate that eg the server hasnt been restarted while this session has been offline
-        # sess_ids = self.redis.s_get('ws;all_sess_ids')
-        # serv_id = __old_SocketManager__.serv_id if self.sess_id in sess_ids else ''
+        sess_widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
 
-        # self.emit('reconnect', {'serv_id': serv_id})
+        async with self.locker.locks.acquire('serv'):
+            widget_inits = await self.get_server_attr(name='widget_inits')
 
-        # # now run any widget specific functions
-        # with __old_SocketManager__.lock:
-        #     widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
-        #     for widget_id in widget_ids:
-        #         if widget_id in __old_SocketManager__.widget_inits:
-        #             getattr(__old_SocketManager__.widget_inits[widget_id], 'back_from_offline')()
-
+        for widget_id in sess_widget_ids:
+            if widget_id in widget_inits:
+                method_func = getattr(widget_inits[widget_id], 'back_from_offline')
+                await method_func(data)
+        
         return
 
     # ------------------------------------------------------------------
@@ -304,6 +309,8 @@ class SessionManager():
     def update_sync_state_from_client(self, data_in):
         data = data_in['data']
 
+        force_sync = data['force_sync'] if 'force_sync' in data else False
+
         if not self.check_panel_sync():
             return
         if 'widget_id' not in data:
@@ -311,19 +318,22 @@ class SessionManager():
         # if not self.redis.h_exists(name='ws;active_widget', key=self.user_id):
         #     return
 
+        # only the active widget should nominally be able to publish sync events
         active_widget = self.redis.h_get(
             name='ws;active_widget',
             key=self.user_id,
             default_val=None,
         )
-        if active_widget != data['widget_id']:
+        if (active_widget != data['widget_id']) and not force_sync:
             return
 
-        all_sync_ids = []
+        # go through all widgets in sync groups for this user and collect ids for
+        # targets of the sync event
         sync_groups = self.redis.h_get(
             name='ws;sync_groups', key=self.user_id, default_val=[]
         )
 
+        sync_ids = []
         for sync_group in sync_groups:
             states_0 = [s[0] for s in sync_group['sync_states'][0]]
             states_1 = [s[0] for s in sync_group['sync_states'][1]]
@@ -332,22 +342,27 @@ class SessionManager():
             get_states = states_0 + states_2
             do_send = (data['widget_id'] in states_0 or data['widget_id'] in states_1)
             if do_send:
-                sync_group['sync_types'][data['type']] = data['data']
+                # sync_group['sync_types'][data['type']] = data['data']
 
                 for id_now in get_states:
-                    add_id = (id_now != data['widget_id'] and id_now not in all_sync_ids)
+                    add_id = (id_now != data['widget_id'] and id_now not in sync_ids)
                     if add_id:
-                        all_sync_ids.append(id_now)
+                        sync_ids.append(id_now)
 
-        self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
+        # self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
+        
         data_send = {
             'widget_id': data['widget_id'],
             'type': data['type'],
-            'data': data['data']
+            'data': data['data'],
+            'sync_widget_ids': sync_ids,
         }
 
+        # publish through a loop (defined as part of setup_loops()), in order
+        # to get the sync to all servers. each server will then execute the local
+        # update_sync_state_to_client() function
         self.redis.publish(
-            channel='ws;update_sync_state;' + self.user_id,
+            channel='ws;update_sync_state_to_client;' + self.user_id,
             message=data_send,
         )
 
@@ -355,7 +370,6 @@ class SessionManager():
 
     # ------------------------------------------------------------------
     async def update_sync_state_to_client(self, data_in=None):
-        # print('update_sync_state_to_client !!!!!!!!!!!!!!!!!!!!!', data_in)
 
         await self.emit_to_queue(
             event_name='update_sync_state_from_server',
@@ -387,6 +401,10 @@ class SessionManager():
 
         elif data['metadata']['log_level'] == 'INFO':
             self.log.info([['b', ' - client_log:'], ['p', '', self.sess_id, ''],
+                           ['y', data]])
+
+        elif data['metadata']['log_level'] == 'DEBUG':
+            self.log.debug([['b', ' - client_log:'], ['p', '', self.sess_id, ''],
                            ['y', data]])
 
         else:

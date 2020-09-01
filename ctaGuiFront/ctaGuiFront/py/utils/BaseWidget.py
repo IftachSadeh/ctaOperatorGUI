@@ -14,19 +14,19 @@ class BaseWidget():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, widget_id='', socket_manager=None, *args, **kwargs):
-        self.log = LogParser(base_config=socket_manager.base_config, title=__name__)
+    def __init__(self, widget_id='', sm=None, *args, **kwargs):
+        self.log = LogParser(base_config=sm.base_config, title=__name__)
 
         # the id of this instance
         self.widget_id = widget_id
         # the parent of this widget
-        self.socket_manager = socket_manager
+        self.sm = sm
         # the shared basic configuration class
-        self.base_config = self.socket_manager.base_config
+        self.base_config = self.sm.base_config
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
         # for common threading
-        self.widget_group = (self.socket_manager.user_group_id + '_' + self.widget_name)
+        self.widget_group = (self.sm.user_group_id + '_' + self.widget_name)
         # redis interface
         self.redis = RedisManager(
             name=self.widget_name, base_config=self.base_config, log=self.log
@@ -57,7 +57,7 @@ class BaseWidget():
         self.log = LogParser(
             base_config=self.base_config,
             title=(
-                str(self.socket_manager.user_id) + '/' + str(self.socket_manager.sess_id)
+                str(self.sm.user_id) + '/' + str(self.sm.sess_id)
                 + '/' + __name__ + '/' + self.widget_id
             ),
         )
@@ -71,9 +71,9 @@ class BaseWidget():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def back_from_offline(self):
+    async def back_from_offline(self, data):
         # loop over utils
         for util_now in self.my_utils:
-            util_now.back_from_offline()
+            await util_now.back_from_offline(data)
 
         return

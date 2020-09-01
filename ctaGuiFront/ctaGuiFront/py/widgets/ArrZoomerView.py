@@ -4,12 +4,12 @@ from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 class ArrZoomerView(BaseWidget):
     # ------------------------------------------------------------------
-    def __init__(self, widget_id='', socket_manager=None, *args, **kwargs):
+    def __init__(self, widget_id='', sm=None, *args, **kwargs):
         # standard common initialisations
         BaseWidget.__init__(
             self,
             widget_id=widget_id,
-            socket_manager=socket_manager,
+            sm=sm,
         )
 
         # optionally turn off updates for debugging
@@ -35,15 +35,13 @@ class ArrZoomerView(BaseWidget):
             'widget': self,
             'event_name': 'init_data',
         }
-        await self.socket_manager.emit_widget_event(opt_in=opt_in)
+        await self.sm.emit_widget_event(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
-    def back_from_offline(self):
+    async def back_from_offline(self, data):
         # standard common initialisations
-        BaseWidget.back_from_offline(self)
+        await BaseWidget.back_from_offline(self, data)
 
-        # with ArrZoomerView.lock:
-        #     print('-- back_from_offline',self.widget_name,self.widget_id)
         return

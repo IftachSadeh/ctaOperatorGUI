@@ -149,9 +149,14 @@ class Manager():
             is_passive=True,
         )
 
+        # # simaple locker test
         # with self.locker.locks.acquire('loop', debug=1):
-        #     print(' - now im locked :)')
+        #     print(' - now im locked 0 :)')
         #     pass
+        #     with self.locker.locks.acquire('loop', debug=1, can_exist=1):
+        #         print(' - now im locked 1 :)')
+        #         pass
+        # print(' - lock released !!!!!!')
 
         # for debugging, override the global flag
         self.do_flush_redis = True

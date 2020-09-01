@@ -163,11 +163,11 @@ let sock_sched_block_controller = function(opt_in) {
         }
         console.log('sched_block_controller_new_queue received')
 
-        $.each(sock.all_widgets[widget_type].widgets, function(widget_id_now, module_now) {
+        $.each(sock.widget_funcs[widget_type].widgets, function(widget_id_now, module_now) {
             console.log(widget_id_now, module_now)
             if (data.metadata.sess_widget_ids.indexOf(widget_id_now) >= 0) {
-                console.log(sock.all_widgets[widget_type])
-                sock.all_widgets[widget_type].widgets[widget_id_now].scheduleSuccessfullyUpdate()
+                console.log(sock.widget_funcs[widget_type])
+                sock.widget_funcs[widget_type].widgets[widget_id_now].scheduleSuccessfullyUpdate()
             }
         })
     })

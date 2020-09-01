@@ -163,7 +163,7 @@ let main_plots_dash = function(opt_in) {
 
     function pushNewHierachyKeys() {
     // locker.add('pushNewHierachyKeys')
-        sock.all_widgets[widget_type].sock_func.pushNewHierachyKeys({
+        sock.widget_funcs[widget_type].sock_func.pushNewHierachyKeys({
             widget_id: widget_id,
             newKeys: shared.server.hierarchy.keys,
         })

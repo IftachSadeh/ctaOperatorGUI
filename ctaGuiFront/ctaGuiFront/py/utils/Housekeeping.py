@@ -264,11 +264,11 @@ class Housekeeping():
         sync_groups = self.redis.h_get(
             name='ws;sync_groups', key=self.user_id, default_val=[]
         )
-        # print(' - sync_groups\n',sync_groups)
 
         for widget_id in widget_ids:
-            widget_info = self.redis.h_get(name='ws;widget_info', key=widget_id)
-            self.redis.delete('ws;sess_widget_ids;' + widget_info['sess_id'])
+            widget_info = self.redis.h_get(name='ws;widget_info', key=widget_id, default_val={})
+            if 'sess_id' in widget_info:
+                self.redis.delete('ws;sess_widget_ids;' + widget_info['sess_id'])
 
             self.redis.h_del(name='ws;widget_info', key=widget_id)
 
@@ -290,13 +290,12 @@ class Housekeeping():
             for sync_group in sync_groups:
                 for sync_states in sync_group['sync_states']:
                     rm_elements = []
-                    for sync_type_now in sync_states:
-                        if sync_type_now[0] == widget_id:
-                            rm_elements.append(sync_type_now)
+                    for sync_info in sync_states:
+                        if sync_info[0] == widget_id:
+                            rm_elements.append(sync_info)
                     for rm_element in rm_elements:
                         sync_states.remove(rm_element)
 
-        # print(' + sync_groups\n',sync_groups)
         self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
 
         await self.update_sync_group()
@@ -357,9 +356,6 @@ class Housekeeping():
             self.redis.s_rem(name='ws;all_user_ids', data=user_id)
             self.redis.h_del(name='ws;sync_groups', key=user_id)
 
-            self.redis.h_del(name='ws;active_widget', key=user_id)
-            self.redis.delete(name='ws;user_widget_ids;' + user_id)
-
             # cleanup widgets
             widget_names = self.redis.h_get(
                 name='ws;server_user_widgets' + self.serv_id, key=user_id, default_val=[]
@@ -372,5 +368,8 @@ class Housekeeping():
                 self.redis.delete(name=name)
 
             self.redis.h_del(name='ws;server_user_widgets' + self.serv_id, key=user_id)
+            
+            self.redis.h_del(name='ws;active_widget', key=user_id)
+            self.redis.delete(name='ws;user_widget_ids;' + user_id)
 
         return

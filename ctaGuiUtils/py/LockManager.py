@@ -198,7 +198,12 @@ class RedisLock():
                with locker.locks.acquire('loop'):
                    pass
             """
-            self._lock_enter(is_async=False)
+
+            names = self._lock_get_names()
+
+            self._sync_lock_enter_check(names=names)
+            self._lock_enter_set(names=names)
+            
             return
 
         # ------------------------------------------------------------------
@@ -209,7 +214,12 @@ class RedisLock():
                async with locker.locks.acquire('loop'):
                    pass
             """
-            self._lock_enter(is_async=True)
+
+            names = self._lock_get_names()
+
+            await self._async_lock_enter_check(names=names)
+            self._lock_enter_set(names=names)
+
             return
 
         # ------------------------------------------------------------------
@@ -227,18 +237,21 @@ class RedisLock():
             return
 
         # ------------------------------------------------------------------
-        def _lock_enter(self, is_async):
-            if is_async:
-
-                async def sleep_sec(sec):
-                    await asyncio.sleep(sec)
-            else:
-
-                def sleep_sec(sec):
-                    time.sleep(sec)
-
-            names = [self.parent.get_lock_name(name) for name in self.lock_names]
-
+        def _lock_get_names(self):
+            
+            names_check = [self.parent.get_lock_name(name) for name in self.lock_names]
+            
+            names = []
+            for name in names_check:
+                if self.can_exist:
+                    if self.redis.exists(name):
+                        continue
+                names += [name]
+            
+            return names
+        
+        # ------------------------------------------------------------------
+        async def _async_lock_enter_check(self, names):
             for name in names:
                 if self.can_exist:
                     if self.redis.exists(name):
@@ -247,7 +260,7 @@ class RedisLock():
                     time_0 = get_time('msec')
                     time_1, timeout_0, timeout_1 = time_0, 0, 0
                     while self.redis.exists(name):
-                        sleep_sec(0.01)
+                        await asyncio.sleep(0.01)
 
                         timeout_0 = get_time('msec') - time_0
                         timeout_1 = get_time('msec') - time_1
@@ -267,7 +280,43 @@ class RedisLock():
                             ' - lock for ' + str(name) + ' seems to have expired'
                             + ' (not released) after ' + str(timeout_1) + ' msec'
                         )
+            return
 
+        # ------------------------------------------------------------------
+        def _sync_lock_enter_check(self, names):
+            for name in names:
+                if self.can_exist:
+                    if self.redis.exists(name):
+                        return
+                else:
+                    time_0 = get_time('msec')
+                    time_1, timeout_0, timeout_1 = time_0, 0, 0
+                    while self.redis.exists(name):
+                        time.sleep(0.01)
+
+                        timeout_0 = get_time('msec') - time_0
+                        timeout_1 = get_time('msec') - time_1
+                        if timeout_0 >= self.slow_lock_msec:
+                            time_0 = get_time('msec')
+                            self.log.warn([
+                                ['r', ' - slow lock for '],
+                                ['b', name],
+                                ['r', ' waiting for '],
+                                ['c', timeout_1],
+                                ['r', ' msec ...'],
+                            ])
+
+                    if timeout_0 >= self.lock_timeout_sec * 1e3:
+                        time_0 = get_time('msec')
+                        raise Exception(
+                            ' - lock for ' + str(name) + ' seems to have expired'
+                            + ' (not released) after ' + str(timeout_1) + ' msec'
+                        )
+            return
+
+        # ------------------------------------------------------------------
+        def _lock_enter_set(self, names):
+            for name in names:
                 lock_id = self.get_lock_id()
 
                 self.redis.set(

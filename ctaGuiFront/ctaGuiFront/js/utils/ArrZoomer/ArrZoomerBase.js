@@ -1222,6 +1222,7 @@ window.ArrZoomerBase = function(opt_in_top) {
         )
         let same_widget_id = (widget_id === data.widget_id)
         let same_zoomer_id = (data.arr_zoomer_id === arr_zoomer_id)
+
         if (!has_widget_id || same_widget_id || same_zoomer_id) {
             return
         }
@@ -1291,6 +1292,47 @@ window.ArrZoomerBase = function(opt_in_top) {
     }
 
     // ------------------------------------------------------------------
+    // interface for the server to ask for specific parameters
+    // ------------------------------------------------------------------
+    let ask_arr_zoomer_param_from_client_evt =  function(data_in) {
+        let params = data_in.data.params
+
+        let data_send = {
+        }
+        $.each(params, function(_, param) {
+            data_send[param] = this_top[param]
+
+            if (!is_def(this_top[param])) {
+                sock.socket.server_log({
+                    data: {
+                        msg: [
+                            'ask_arr_zoomer_param_from_client_evt() '
+                            + 'asked for undefined parameter',
+                            param,
+                        ]
+                    },
+                    is_verb: true,
+                    log_level: LOG_LEVELS.ERROR,
+                })
+            }
+        })
+
+        let emit_data = {
+            widget_name: widget_type,
+            widget_id: widget_id,
+            method_name: 'get_arr_zoomer_param_from_client',
+            method_arg: data_send,
+        }
+        sock.socket.emit('widget', emit_data)
+
+    }
+    sock.socket.add_event({
+        name: 'ask_arr_zoomer_param_from_client',
+        func: ask_arr_zoomer_param_from_client_evt,
+        is_singleton: false,
+    })
+
+    // ------------------------------------------------------------------
     // initialisation for an individual instance, destinguised by arr_zoomer_id, where
     // different instances may be zoomed in on different instrument, and so
     // the data are different for each instance
@@ -1315,7 +1357,7 @@ window.ArrZoomerBase = function(opt_in_top) {
     sock.socket.add_event({
         name: 'arr_zoomer_get_init_data',
         func: arr_zoomer_get_init_data_evt,
-        is_unique: false,
+        is_singleton: false,
     })
 
     // ------------------------------------------------------------------
@@ -1419,7 +1461,7 @@ window.ArrZoomerBase = function(opt_in_top) {
     sock.socket.add_event({
         name: 'arr_zoomer_get_data_s1',
         func: arr_zoomer_get_data_s1_evt,
-        is_unique: false,
+        is_singleton: false,
     })
 
     // ------------------------------------------------------------------
@@ -1441,7 +1483,7 @@ window.ArrZoomerBase = function(opt_in_top) {
     sock.socket.add_event({
         name: 'arr_zoomer_update_data_s0',
         func: arr_zoomer_update_data_s0_evt,
-        is_unique: false,
+        is_singleton: false,
     })
 
 
@@ -1468,7 +1510,7 @@ window.ArrZoomerBase = function(opt_in_top) {
     sock.socket.add_event({
         name: 'arr_zoomer_update_data_s1',
         func: arr_zoomer_update_data_s1_evt,
-        is_unique: false,
+        is_singleton: false,
     })
 
 

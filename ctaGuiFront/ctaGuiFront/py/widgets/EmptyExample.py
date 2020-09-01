@@ -6,12 +6,12 @@ from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 class EmptyExample(BaseWidget):
 
     # ------------------------------------------------------------------
-    def __init__(self, widget_id='', socket_manager=None, *args, **kwargs):
+    def __init__(self, widget_id='', sm=None, *args, **kwargs):
         # standard common initialisations
         BaseWidget.__init__(
             self,
             widget_id=widget_id,
-            socket_manager=socket_manager,
+            sm=sm,
         )
 
         # widget-specific initialisations
@@ -30,9 +30,9 @@ class EmptyExample(BaseWidget):
             'event_name': 'init_data',
             'data_func': self.get_data_widget_id,
         }
-        await self.socket_manager.emit_widget_event(opt_in=opt_in)
+        await self.sm.emit_widget_event(opt_in=opt_in)
 
-        # start a thread which will call get_data_widget_id() and send updates to
+        # start a loop which will call get_data_widget_id() and send updates to
         # all sessions in the group
         opt_in = {
             'widget': self,
@@ -42,7 +42,7 @@ class EmptyExample(BaseWidget):
             'loop_id': 'update_data_widget_id',
             'event_name': 'update_data_by_widget_id',
         }
-        await self.socket_manager.add_widget_loop(opt_in=opt_in)
+        await self.sm.add_widget_loop(opt_in=opt_in)
 
         opt_in = {
             'widget': self,
@@ -52,14 +52,14 @@ class EmptyExample(BaseWidget):
             'loop_id': 'update_data_all_widgets',
             'event_name': 'update_data_all_widgets',
         }
-        await self.socket_manager.add_widget_loop(opt_in=opt_in)
+        await self.sm.add_widget_loop(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
-    def back_from_offline(self):
+    async def back_from_offline(self, data):
         # standard common initialisations
-        BaseWidget.back_from_offline(self)
+        await BaseWidget.back_from_offline(self, data)
 
         # additional custom stuff
         pass
@@ -93,5 +93,5 @@ class EmptyExample(BaseWidget):
         debug_msg = False
         if debug_msg:
             self.log.info([['y', ' - got event: send_rnd_message('],
-                           ['g', str(data['my_message'])], ['y', ")"]])
+                           ['g', str(data['my_message'])], ['y', ')'],])
         return
