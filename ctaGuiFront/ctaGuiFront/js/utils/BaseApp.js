@@ -22,6 +22,8 @@ $.getScript('/js/utils/common.js', function() {
     let output = base_app.init()
     let is_socket_view = output.is_socket_view
 
+    // is_socket_view = 0
+
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
@@ -36,8 +38,9 @@ $.getScript('/js/utils/common.js', function() {
                     },
                     execute: function() {
                         base_app.setup_opt_socks()
+                        sock.socket.emit('sess_setup_finalised')
                     },
-                    wait: 100,
+                    wait: 25,
                 })
             })
         })
@@ -59,7 +62,7 @@ function BaseApp() {
         let widget_name = window.WIDGET_NAME
         let has_side_menu = true
         let is_socket_view = true
-        let is_login = widget_name == 'login'
+        let is_login = (widget_name == 'login')
 
         if (widget_name === 'not_found') {
             console.warn('ready(base-app)...', widget_name)
@@ -129,8 +132,8 @@ function BaseApp() {
 
             th = row.appendChild(document.createElement('th'))
             entry = th.appendChild(document.createElement('input'))
-            entry.id = 'username'
-            entry.name = 'username'
+            entry.id = 'user_name'
+            entry.name = 'user_name'
             entry.label = 'Username'
             entry.value = 'user0'
             entry.classList.add('form-input')
@@ -161,7 +164,7 @@ function BaseApp() {
             let msg_div = main_div.appendChild(document.createElement('div'))
             msg_div.innerHTML = (
                 'Log-in is implemented for development purposes...<br>'
-                + ' Please use username = \'guest\' '
+                + ' Please use user_name = \'guest\' '
                 + 'and a password \'123\' or \'user0\' with \'xxx\''
             )
             msg_div.classList.add('menu_header')
@@ -286,7 +289,8 @@ function BaseApp() {
             input_id: 'server_con_stat_div_btn',
             checked: true,
             tooltip: {
-                text: 'Server status',
+                // text filled in dynamically as part of SocketManager
+                text: '',
                 class_list: [ 'tooltip-bottom-left' ],
             },
         })
@@ -456,6 +460,13 @@ function BaseApp() {
 
         // for debugging
         let is_open = false
+        
+        // is_open = true
+        // is_open = true
+        // is_open = true
+        // is_open = true
+        // is_open = true
+        
         if (is_open) {
             setTimeout(function() {
                 tog_opt_menu()
@@ -812,33 +823,28 @@ function BaseApp() {
             let is_skip_daytime = opt_in.is_skip_daytime
             let is_short_night = opt_in.is_short_night
             let data_emit = {
-                data: {
-                    speed_factor: speed_factor,
-                    is_skip_daytime: is_skip_daytime,
-                    is_short_night: is_short_night,
-                },
+                speed_factor: speed_factor,
+                is_skip_daytime: is_skip_daytime,
+                is_short_night: is_short_night,
             }
             socket.emit('set_sim_clock_sim_params', data_emit)
 
             return
         }
 
-        socket.on('get_sim_clock_sim_params', function(data_in) {
-            let data = {
-                speed_factor: data_in.data.speed_factor,
-                min_speed_factor: data_in.data.min_speed_factor,
-                max_speed_factor: data_in.data.max_speed_factor,
-                is_skip_daytime: data_in.data.is_skip_daytime,
-                is_short_night: data_in.data.is_short_night,
-            }
-            update_eles(data)
+        let get_sim_clock_sim_params_evt = function(data_in) {
+            // console.log('dddddddddddd', data_in)
+            update_eles(data_in.data)
+        }
+        sock.socket.add_event({
+            name: 'get_sim_clock_sim_params',
+            func: get_sim_clock_sim_params_evt,
+            is_singleton: true,
         })
 
+
         setTimeout(function() {
-            let data_emit = {
-                sess_id: window.sock.session_props.sess_id,
-            }
-            socket.emit('get_sim_clock_sim_params', data_emit)
+            socket.emit('ask_sim_clock_sim_params')
         }, times.wait_loop)
 
         // data_emit = {
@@ -866,12 +872,6 @@ function BaseApp() {
         }
     }
     this.get_connection_stat_div = get_connection_stat_div
-
-    // let userName_div = document.querySelector("#"+"userName_div")
-    // if(window.USER_ID !== 'None') {
-    //   userName_div.innerHTML = window.USER_ID
-    //   userName_div.style.opacity = '80%'
-    // }
 }
 
 // ------------------------------------------------------------------

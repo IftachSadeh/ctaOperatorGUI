@@ -119,7 +119,6 @@ sock.widget_table[main_script_tag] = function(opt_in) {
 // -------------------------------------------------------------------
 let sock_comment_sched = function(opt_in) {
     // let widget_type   = opt_in.widget_type;
-    // let widget_source = opt_in.widget_source;
     // // -------------------------------------------------------------------
     // // get data from the server for a given telescope
     // // -------------------------------------------------------------------
@@ -130,7 +129,7 @@ let sock_comment_sched = function(opt_in) {
     //   data.tel_id    = opt_in.tel_id;
     //   data.propId   = opt_in.propId;
     //   let emit_data = {
-    //     "widget_source":widget_source, "widget_name":widget_type, "widget_id":widget_id,
+    //     "widget_name":widget_type, "widget_id":widget_id,
     //     "method_name":"comment_schedAskTelData",
     //     "method_arg":data
     //   };
@@ -690,15 +689,17 @@ let main_comment_sched = function(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({
+
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: icon_divs,
         })
 
@@ -910,7 +911,7 @@ let main_comment_sched = function(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function sync_state_send(data_in) {
+    function send_sync_state_to_server(data_in) {
         if (sock.con_stat.is_offline()) {
             return
         }

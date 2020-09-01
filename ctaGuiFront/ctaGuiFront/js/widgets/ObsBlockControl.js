@@ -133,15 +133,16 @@ let main_obs_block_control = function(opt_in) {
     //
     // -------------------------------------------------------------------
     function init_data(data_in) {
-        if (sock.multiple_inits({
+        let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
-        })) {
+        })
+        if (mult_inits) {
             return
         }
 
         sock.set_icon_badge({
-            n_icon: data_in.n_icon,
+            data: data_in,
             icon_divs: icon_divs,
         })
 
@@ -160,7 +161,7 @@ let main_obs_block_control = function(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function sync_state_send(data_in) {
+    function send_sync_state_to_server(data_in) {
         if (sock.con_stat.is_offline()) {
             return
         }
@@ -177,7 +178,7 @@ let main_obs_block_control = function(opt_in) {
     // -------------------------------------------------------------------
     let prev_sync = {
     }
-    function get_sync_state(data_in) {
+    function update_sync_state(data_in) {
         if (document.hidden) {
             return
         }
@@ -185,7 +186,7 @@ let main_obs_block_control = function(opt_in) {
             return
         }
 
-        let sess_widget_ids = data_in.sess_widget_ids
+        let sess_widget_ids = data_in.metadata.sess_widget_ids
         if (sess_widget_ids.indexOf(widget_id) < 0 || widget_id === data_in.widget_id) {
             return
         }
@@ -200,7 +201,7 @@ let main_obs_block_control = function(opt_in) {
             }
         }
     }
-    this.get_sync_state = get_sync_state
+    this.update_sync_state = update_sync_state
 
     // -------------------------------------------------------------------
     //
@@ -489,7 +490,7 @@ let main_obs_block_control = function(opt_in) {
                 g_box: gTelBox,
                 box_data: telScrolBoxData,
                 vor_click: function(opt_in) {
-                    sync_state_send({
+                    send_sync_state_to_server({
                         type: 'sync_tel_focus',
                         sync_time: Date.now(),
                         zoom_state: 1,
@@ -1209,7 +1210,7 @@ let main_obs_block_control = function(opt_in) {
                 telSummary.update()
             }
 
-            sync_state_send({
+            send_sync_state_to_server({
                 type: 'syncObFocus',
                 sync_time: Date.now(),
                 obs_block_id: com.focus.obs_block_id,

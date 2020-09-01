@@ -1,23 +1,14 @@
 import sys
 import redis
-from gevent import GreenletExit
-from msgpack import packb, unpackb
-
-# redis_port = 6378
-# redis_port = dict()
-# redis_port["N"] = 6379
-# redis_port["S"] = 6379
-# #  ugly temporery hack for development:
-# if userName == "verdingi":
-#   has_acs = False
-#   redis_port["N"] += 1
-#   redis_port["S"] += 1
+from ctaGuiUtils.py.Serialisation import Serialisation
 
 
 # ------------------------------------------------------------------
-#
-# ------------------------------------------------------------------
-class RedisBase(object):
+class RedisBase():
+    """interface class for the redis database
+    """
+
+    # ------------------------------------------------------------------
     def __init__(self, name='', log=None):
         self.name = name
         self.log = log
@@ -25,278 +16,368 @@ class RedisBase(object):
         return
 
     # ------------------------------------------------------------------
-    #
+    def pack(self, data):
+        return Serialisation.pack(data, log=self.log)
+
     # ------------------------------------------------------------------
-    def set(self, name=None, data=None, expire=None, packed=False):
+    def unpack(self, data):
+        return Serialisation.unpack(data, log=self.log)
+
+    # ------------------------------------------------------------------
+    def is_empty(self, data, check_pipe=True):
+        is_pipe = check_pipe and (self.base is not self.redis)
+
+        if not is_pipe:
+            out = Serialisation.is_empty_obj(data)
+        else:
+            out = True
+
+        return out
+
+    # ------------------------------------------------------------------
+    def flush(self):
+        self.redis.flushall()
+        return
+
+    # ------------------------------------------------------------------
+    def set(self, name=None, data=None, expire_sec=None):
         try:
-            if (name is None):
-                raise
+            if name is None:
+                raise Exception('redis.set(): name is None')
 
-            if packed and (data is not None):
-                data = packb(data)
-
+            if data is None:
+                data = ''
+            data = self.pack(data)
             out = self.base.set(name, data)
 
-            if expire is not None:
-                out = self.base.expire(name, expire)
+            if expire_sec is not None:
+                out = self.base.expire(name, expire_sec)
 
-            return out
+        except Exception as e:
+            self.log.error([['r', 'redis.set(): '], ['o', name, data, expire_sec]])
+            raise e
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.set() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+        return out
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def h_set(self, name=None, key=None, data=None, packed=False):
+    def h_set(self, name=None, key=None, data=None):
         try:
             if (name is None) or (key is None):
-                raise
+                raise Exception('redis.h_set(): name/key is None', name, key)
 
-            if packed and (data is not None):
-                data = packb(data)
-
+            if data is None:
+                data = ''
+            else:
+                data = self.pack(data)
             out = self.base.hset(name, key, data)
-            return out
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.hset() for ',
-                    str(key), ' in ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+        except Exception as e:
+            self.log.error([['r', 'redis.h_set(): '], ['o', name, key, data]])
+            raise e
 
-    # ------------------------------------------------------------------
-    #
+        return out
+
     # ------------------------------------------------------------------
     def h_del(self, name=None, key=None):
         try:
             if (name is None) or (key is None):
-                raise
+                raise Exception('redis.h_del(): name/key is None', name, key)
 
             out = self.base.hdel(name, key)
-            return out
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.h_del() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+        except Exception as e:
+            self.log.error([['r', 'redis.h_del(): '], ['o', name, key]])
+            raise e
+
+        return out
 
     # ------------------------------------------------------------------
-    #
+    def h_get_keys(self, name=None, default_val=[]):
+        try:
+            if name is None:
+                raise Exception('redis.h_get_keys(): name is None', name)
+
+            data = self.base.hkeys(name)
+
+            if self.is_empty(data):
+                data = default_val
+            else:
+                data = self.unpack(data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.h_get_keys(): '], ['o', name, key]])
+            raise e
+
+        return data
+
     # ------------------------------------------------------------------
-    def h_get(self, name=None, key=None, packed=False, default_val=None):
+    def h_get(self, name=None, key=None, default_val=None):
         try:
             if (name is None) or (key is None):
-                raise
+                raise Exception('redis.h_get(): name/key is None', name, key)
 
+            # return value for this key
             data = self.base.hget(name, key)
 
-            if is_empty(data):
+            if self.is_empty(data):
                 data = default_val
-            elif packed:
-                data = unpack_object(data)
+            else:
+                data = self.unpack(data)
 
-        except GreenletExit:
-            pass
-            return default_val
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.hget() for ',
-                    str(key), ' in ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            data = None
+        except Exception as e:
+            self.log.error([['r', 'redis.h_get(): '], ['o', name, key]])
+            raise e
 
         return data
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def h_m_get(self, name=None, key=None, packed=False, filter=False):
+    def h_m_get(self, name=None, key=None, keys=None, filter_out=False, default_val=None):
         try:
-            if (name is None) or (key is None):
-                raise
+            if name is None:
+                raise Exception('redis.h_m_get(): name/key is None', name)
 
-            if key == []:
-                return []
+            if (int(key is None) + int(keys is None)) != 1:
+                raise Exception(
+                    'redis.h_m_get(): must provide exactly one of key,keys',
+                    (name, key, keys),
+                )
+
+            if key is not None and not isinstance(key, str):
+                raise Exception(
+                    'redis.h_m_get(): key must be of type str',
+                    (name, key, keys),
+                )
+
+            if keys is not None and not isinstance(keys, (list, set, tuple)):
+                raise Exception(
+                    'redis.h_m_get(): keys must be one of (list, set, tuple)',
+                    (name, key, keys),
+                )
+
+            if keys is not None and len(keys) == 0:
+                return default_val
 
             # returns a list of entries (if empty, gives [None])
-            data = self.base.hmget(name, key)
+            data = self.base.hmget(name, (key if keys is None else keys))
 
-            if filter:
-                if isinstance(data, list):
+            if filter_out:
+                if isinstance(data, (list, set, tuple)):
                     data = [x for x in data if x is not None]
 
-            if packed:
-                if not is_empty(data) and data != [None]:
-                    data = unpack_object(data)
+            if isinstance(data, (list, set, tuple)):
+                if all([d is None for d in data]):
+                    return default_val
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.hmget() for ',
-                    str(key), ' in ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            data = None
+            if self.is_empty(data):
+                return default_val
+            else:
+                data = self.unpack(data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.h_m_get(): '], ['o', name, key, keys]])
+            raise e
 
         return data
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def r_push(self, name=None, data=None, packed=False):
+    def r_push(self, name=None, data=None):
         try:
-            if (name is None):
-                raise
+            if (name is None) or (data is None):
+                raise Exception('redis.r_push(): name/data is None', name, data)
+            # if name is None:
+            #     raise Exception('redis.r_push(): name is None', name)
 
-            if packed and (data is not None):
-                if isinstance(data, list):
-                    data = [packb(v) for v in data]
-                else:
-                    data = packb(data)
+            # if data is None:
+            #     data = ''
+            if isinstance(data, list):
+                data = [self.pack(v) for v in data]
+            else:
+                data = self.pack(data)
 
             out = self.base.rpush(name, data)
-            return out
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.r_push() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+        except Exception as e:
+            self.log.error([['r', 'redis.r_push(): '], ['o', name, data]])
+            raise e
+
+        return out
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def l_rem(self, name=None, data=None, packed=False):
+    def s_add(self, name=None, data=None, expire_sec=None):
         try:
-            if (name is None):
-                raise
+            if (name is None) or (data is None):
+                raise Exception('redis.s_add(): name/data is None', name, data)
 
-            if packed and (data is not None):
-                data = unpack_object(data)
+            if isinstance(data, list):
+                data = [self.pack(v) for v in data]
+            else:
+                data = self.pack(data)
+
+            out = self.base.sadd(name, data)
+
+            if expire_sec is not None:
+                out = self.base.setex(name, expire_sec, data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.s_add(): '], ['o', name, data]])
+            raise e
+
+        return out
+
+    # ------------------------------------------------------------------
+    def s_get(self, name=None, default_val={}):
+        try:
+            if name is None:
+                raise Exception('redis.s_get(): name is None', name)
+
+            data = self.base.smembers(name=name)
+
+            if self.is_empty(data):
+                data = default_val
+            else:
+                data = self.unpack(data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.s_get(): '], ['o', name]])
+            raise e
+
+        return data
+
+    # ------------------------------------------------------------------
+    def s_rem(self, name=None, data=None):
+        try:
+            if name is None:
+                raise Exception('redis.s_rem(): name is None', name)
+
+            if data is not None:
+                data = self.pack(data)
+
+            out = self.base.srem(name, data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.s_rem(): '], ['o', name, data]])
+            raise e
+
+        return out
+
+    # ------------------------------------------------------------------
+    def s_exists(self, name, data=None):
+        exists = False
+
+        try:
+            if name is None:
+                raise Exception('redis.s_exists(): name is None', name)
+
+            if data is None:
+                exists = self.exists(name)
+            else:
+                data = self.pack(data)
+                exists = self.redis.sismember(name, data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.s_exists(): '], ['o', name]])
+            raise e
+
+        return exists
+
+    # ------------------------------------------------------------------
+    def l_rem(self, name=None, data=None):
+        try:
+            if name is None:
+                raise Exception('redis.l_rem(): name is None', name)
+
+            if data is not None:
+                data = self.pack(data)
 
             out = self.base.lrem(name=name, value=data, count=0)
-            return out
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.l_rem() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+        except Exception as e:
+            self.log.error([['r', 'redis.l_rem(): '], ['o', name, data]])
+            raise e
+
+        return out
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def z_add(
-        self,
-        name=None,
-        score=None,
-        data=None,
-        packed=False,
-        clip_score=None,
-        packed_score=False
-    ):
+    def z_add(self, name=None, score=None, data=None, clip_score=None):
         try:
             if (name is None) or (score is None):
-                raise
+                raise Exception('redis.z_add(): name/score is None', name, score)
 
-            if packed_score:
-                data = packb({'data': data})
-            elif packed and (data is not None):
-                data = packb(data)
-
-            out = self.base.zadd(name, score, data)
+            data = self.pack({'data': data})
+            out = self.base.zadd(name, {data: score})
 
             # ------------------------------------------------------------------
             # temporary inefficient way to clip the time series.........
-            if (clip_score is not None):
+            if clip_score is not None:
                 out = self.base.zremrangebyscore(name, 0, clip_score)
             # ------------------------------------------------------------------
-            # if name == 'inst_health;Lx03;camera_1':
-            #     print('add', name, score, clip_score)
 
-            return out
+        except Exception as e:
+            self.log.error([
+                ['r', 'redis.z_add(): '],
+                ['o', name, score, data, clip_score],
+            ])
+            raise e
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.z_add() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+        return out
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def expire(self, name=None, expire=None):
+    def expire_sec(self, name=None, expire_sec=None):
         try:
-            if (name is None) or (expire is None):
-                raise
+            if (name is None) or (expire_sec is None):
+                raise Exception(
+                    'redis.expire_sec(): name/expire_sec is None', name, expire_sec
+                )
 
-            out = self.base.expire(name, expire)
-            return out
+            out = self.base.expire(name, expire_sec)
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.expire() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+        except Exception as e:
+            self.log.error([['r', 'redis.expire_sec(): '], ['o', name, expire_sec]])
+            raise e
 
-    # ------------------------------------------------------------------
-    #
+        return out
+
     # ------------------------------------------------------------------
     def delete(self, name=None):
         try:
-            if (name is None):
-                raise
+            if name is None:
+                raise Exception('redis.delete(): name is None', name)
 
             out = self.base.delete(name)
-            return out
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.delete() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+        except Exception as e:
+            self.log.error([['r', 'redis.delete(): '], ['o', name]])
+            raise e
+
+        return out
+
+    # ------------------------------------------------------------------
+    def scan(self, cursor=0, match=None, count=None, _type=None):
+        try:
+            # if name is None:
+            #     raise Exception('redis.set(): name is None')
+
+            data = self.base.scan(cursor=cursor, match=match, count=count, _type=_type)
+            out = self.unpack(data)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.set(): '], ['o', cursor, match, count, _type]])
+            raise e
+
+        return out
 
 
-# ------------------------------------------------------------------
-#
 # ------------------------------------------------------------------
 class RedisManager(RedisBase):
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def __init__(self, name='', log=None, port=None, host='localhost'):
-        super(RedisManager, self).__init__(name=name, log=log)
-
+    def __init__(self, name='', log=None, base_config=None, host='localhost'):
         self.name = name
         self.log = log
 
+        port = base_config.redis_port
         self.redis = redis.StrictRedis(host=host, port=port, db=0)
-        self.pipe = RedisPipeManager(name=name, log=log, redis=self.redis)
+        # self.pipe = RedisPipeManager(name=name, log=log, redis=self.redis)
         self.base = self.redis
 
         self.pubsub = dict()
@@ -304,180 +385,146 @@ class RedisManager(RedisBase):
         return
 
     # ------------------------------------------------------------------
-    #
+    def get_pipe(self):
+        return RedisPipeManager(name=self.name, log=self.log, redis=self.redis)
+
     # ------------------------------------------------------------------
-    def get(self, name=None, packed=False, default_val=None):
+    def get(self, name=None, default_val=None):
         data = default_val
 
         try:
             if self.exists(name):
                 data = self.redis.get(name)
 
-            if is_empty(data):
+            if self.is_empty(data):
                 data = default_val
-            elif packed:
-                data = unpack_object(data)
+            else:
+                data = self.unpack(data)
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.get() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
+        except Exception as e:
+            self.log.error([['r', 'redis.get(): '], ['o', name]])
+            raise e
 
         return data
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def h_get_all(self, name=None, packed=False):
+    def h_get_all(self, name=None, key=None, default_val=None):
+
         try:
             if name is None:
-                raise
+                raise Exception('redis.h_get_all(): name is None', name)
+
+            if key is not None:
+                return self.h_get(name=name, key=key, default_val=default_val)
 
             data = self.redis.hgetall(name)
 
-            if packed and not is_empty(data):
-                data = unpack_object(data)
+            if self.is_empty(data):
+                data = default_val
+            else:
+                data = self.unpack(data)
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.h_get_all() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            data = {}
+        except Exception as e:
+            self.log.error([['r', 'redis.h_get_all(): '], ['o', name]])
+            raise e
 
         return data
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def z_get(self, name=None, packed=False, packed_score=False):
+    def z_get(self, name=None):
         try:
-            if (name is None):
-                raise
+            if name is None:
+                raise Exception('redis.z_get(): name is None', name)
 
             data = self.base.zrevrange(
                 name=name, start=0, end=-1, withscores=True, score_cast_func=int
             )
 
-            if (packed or packed_score) and not is_empty(data):
-                data = unpack_object(data)
+            if not self.is_empty(data):
+                data = self.unpack(data)
 
             if isinstance(data, list):
                 data = [x for x in data if x[0] is not None]
             else:
-                raise
+                raise Exception('redis.z_get(): problem with data: ', data)
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.z_get() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return []
+        except Exception as e:
+            self.log.error([['r', 'redis.z_get(): '], ['o', name]])
+            raise e
 
         return data
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def l_get(self, name=None, packed=False):
+    def l_get(self, name=None):
         try:
-            if (name is None):
-                raise
+            if name is None:
+                raise Exception('redis.l_get(): name is None', name)
 
             data = self.base.lrange(name=name, start=0, end=-1)
 
-            if packed and not is_empty(data):
-                data = unpack_object(data)
+            if not self.is_empty(data):
+                data = self.unpack(data)
 
-        except GreenletExit:
-            pass
-            return []
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.l_get() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return []
+        except Exception as e:
+            self.log.error([['r', 'redis.l_get(): '], ['o', name]])
+            raise e
 
         return data
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def exists(self, name):
         exists = False
 
         try:
             if name is None:
-                raise
+                raise Exception('redis.exists(): name is None', name)
 
             exists = self.redis.exists(name)
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.exists() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
+        except Exception as e:
+            self.log.error([['r', 'redis.exists(): '], ['o', name]])
+            raise e
 
         return exists
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def h_exists(self, name=None, key=None):
         exists = False
 
         try:
             if (name is None) or (key is None):
-                raise
+                raise Exception('redis.h_exists(): name/key is None', name, key)
 
             exists = self.redis.hexists(name, key)
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.h_exists() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
+        except Exception as e:
+            self.log.error([['r', 'redis.h_exists(): '], ['o', name, key]])
+            raise e
 
         return exists
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def publish(self, channel=None, message='', packed=False):
+    def publish(self, channel=None, message=''):
         try:
             if channel is None:
-                raise
+                raise Exception('redis.publish(): channel is None', channel)
 
-            if packed and not is_empty(message):
-                message = packb(message)
+            if not self.is_empty(message):
+                message = self.pack(message)
 
             out = self.redis.publish(channel, message)
-            return out
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.publish() for ',
-                    str(channel)
-                ], ['r', ' ' + str(sys.exc_info())]])
+        except Exception as e:
+            self.log.error([['r', 'redis.publish(): '], ['o', channel, message]])
+            raise e
 
-            return False
+        return out
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def set_pubsub(self, key=None, ignore_subscribe_messages=True):
         try:
             if key is None:
-                raise
+                raise Exception('redis.set_pubsub(): key is None', key)
 
             if key not in self.pubsub:
                 pubsub = self.redis.pubsub(
@@ -486,72 +533,47 @@ class RedisManager(RedisBase):
                 pubsub.subscribe(key)
 
                 self.pubsub[key] = pubsub
+                out = self.pubsub[key] if key in self.pubsub else None
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.set_pubsub() for ',
-                    str(key)
-                ], ['r', ' ' + str(sys.exc_info())]])
+        except Exception as e:
+            self.log.error([['r', 'redis.set_pubsub(): '], ['o', key]])
+            raise e
 
-        pubsub = self.pubsub[key] if key in self.pubsub else None
-        return pubsub
+        return out
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def get_pubsub(self, key=None, timeout=3600, packed=False):
+    def get_pubsub(self, key=None, timeout=0, ignore_subscribe_messages=True):
         msg = None
 
         try:
             if (key is None) or (key not in self.pubsub):
-                raise
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - undefined key',
-                    str(key), ' for redis.pubsub() ...'
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return msg
+                raise Exception(
+                    'redis.get_pubsub(): key is None/not registered',
+                    key,
+                    self.pubsub.keys(),
+                )
 
-        try:
-            msg = self.pubsub[key].get_message(timeout=timeout)
+            msg = self.pubsub[key].get_message(
+                timeout=timeout,
+                ignore_subscribe_messages=ignore_subscribe_messages,
+            )
 
-            if packed and isinstance(msg, dict):
-                if 'data' in msg:
-                    if not is_empty(msg['data']):
-                        msg['data'] = unpack_object(msg['data'])
+            if isinstance(msg, dict):
+                if 'data' in msg and not self.is_empty(msg['data']):
+                    msg['data'] = self.unpack(msg['data'])
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.get_pubsub() for ',
-                    str(key)
-                ], ['r', ' ' + str(sys.exc_info())]])
+        except Exception as e:
+            self.log.error([['r', 'redis.get_pubsub(): '], ['o', key, timeout]])
+            raise e
 
         return msg
 
-    # # ------------------------------------------------------------------
-    # #
-    # # ------------------------------------------------------------------
-    # def has_pubsub(self, key=None, timeout=3600, packed=False):
-    #     if not ((key is None) or (key not in self.pubsub)):
-    #         msg = self.pubsub[key].get_message(timeout=timeout)
-    #         print(msg)
-    #     return not ((key is None) or (key not in self.pubsub))
 
-
-# ------------------------------------------------------------------
-#
 # ------------------------------------------------------------------
 class RedisPipeManager(RedisBase):
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def __init__(self, name='', log=None, redis=None):
-        super(RedisPipeManager, self).__init__(name=name, log=log)
-
         self.name = name
         self.log = log
         self.redis = redis
@@ -562,33 +584,24 @@ class RedisPipeManager(RedisBase):
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def get(self, name=None):
         try:
-            if (name is None):
-                raise
+            if name is None:
+                raise Exception('redis.pipe.get(): name is None', name)
 
             out = self.pipe.get(name)
 
-            return out
+        except Exception as e:
+            self.log.error([['r', 'redis.pipe.get(): '], ['o', name]])
+            raise e
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.get() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
+        return out
 
-            return False
-
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def z_get(self, name=None, withscores=True, score_cast_func=int):
         try:
-            if (name is None):
-                raise
+            if name is None:
+                raise Exception('redis.pipe.z_get(): name is None', name)
 
             out = self.pipe.zrevrange(
                 name=name,
@@ -598,102 +611,43 @@ class RedisPipeManager(RedisBase):
                 score_cast_func=score_cast_func
             )
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.z_get() for ',
-                    str(name)
-                ], ['r', ' ' + str(sys.exc_info())]])
-
-            return False
+        except Exception as e:
+            self.log.error([['r', 'redis.pipe.z_get(): '], ['o', name]])
+            raise e
 
         return out
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def execute(self, packed=False, packed_score=False):
-        data = []
-
+    def execute(self):
         try:
             data = self.pipe.execute()
 
             if data is None or data == '':
                 data = []
             else:
-                data = [x for x in data if not is_empty(x)]
-                # data = filter(lambda x: x is not None, self.pipe.execute())
+                data = [
+                    self.unpack(x)
+                    for x in data
+                    if not self.is_empty(x, check_pipe=False)
+                ]
 
-            if (packed or packed_score) and not is_empty(data):
-                data = unpack_object(data)
+            if not self.is_empty(data):
+                data = self.unpack(data, check_pipe=False)
                 data = [] if data is None else data
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.pipe.execute() ...'
-                ], ['r', ' ' + str(sys.exc_info())]])
+        except Exception as e:
+            self.log.error([['r', 'redis.pipe.execute()']])
+            raise e
 
         return data
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def reset(self):
         try:
             self.pipe.reset()
-            return True
 
-        except Exception:
-            if self.log:
-                self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.pipe.reset()'
-                ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+        except Exception as e:
+            self.log.error([['r', 'redis.pipe.reset()']])
+            raise e
 
-
-# ------------------------------------------------------------------
-#
-# ------------------------------------------------------------------
-def unpack_object(data_in, log=None):
-    try:
-        if isinstance(data_in, str):
-            data = unpackb(data_in)
-
-        elif isinstance(data_in, list):
-            data = []
-            for data_now_0 in data_in:
-                data += [unpack_object(data_now_0, log)]
-
-        elif isinstance(data_in, dict):
-            data = dict()
-            for k, v in data_in.iteritems():
-                data[k] = unpack_object(v, log)
-
-        elif isinstance(data_in, tuple):
-            data = ()
-            for v in data_in:
-                data += (unpack_object(v, log), )
-
-        elif isinstance(data_in, (int, long, float, complex)) or (data_in is None):
-            data = data_in
-
-        else:
-            raise
-
-    except Exception:
-        if log:
-            log.error([[
-                'wr', ' - ', self.name, ' - could not do unpack_object() for ',
-                str(data_in)
-            ], ['r', ' ' + str(sys.exc_info())]])
-        data = None
-
-    return data
-
-
-# ------------------------------------------------------------------
-#
-# ------------------------------------------------------------------
-def is_empty(data):
-    return (data is None or data == '')
+        return True

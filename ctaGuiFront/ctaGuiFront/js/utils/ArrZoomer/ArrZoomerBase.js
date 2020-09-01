@@ -42,6 +42,7 @@ window.load_script({
     script: '/js/utils/ArrZoomer/ArrZoomerMore.js',
 })
 
+
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
@@ -50,7 +51,6 @@ window.ArrZoomerBase = function(opt_in_top) {
     let my_unique_id = unique()
     let run_loop = opt_in_top.run_loop
     let widget_id = opt_in_top.widget_id
-    let widget_source = opt_in_top.widget_source
     let locker = opt_in_top.locker
     let is_south = opt_in_top.is_south
     let widget_type = opt_in_top.widget_type
@@ -852,52 +852,69 @@ window.ArrZoomerBase = function(opt_in_top) {
     // is a full update of all the data)
     // ------------------------------------------------------------------
     run_loop.init({
-        tag: '_s00_update_' + my_unique_id,
+        tag: '_s0_update_' + my_unique_id,
         func: update_s0,
         n_keep: -1,
         wait: 500,
     })
     run_loop.init({
-        tag: '_s11_update_' + my_unique_id,
+        tag: '_s1_update_' + my_unique_id,
         func: update_s1,
         n_keep: 1,
         wait: 500,
     })
-    run_loop.init({
-        tag: 'sub_arr_update' + my_unique_id,
-        func: sub_arr_update,
-        n_keep: 1,
-        wait: 500,
-    })
+    // run_loop.init({
+    //     tag: '_sub_arr_update_' + my_unique_id,
+    //     func: sub_arr_update,
+    //     n_keep: 1,
+    //     wait: 500,
+    // })
 
-    function update_data(data_in) {
+
+    function update_data_s0(data_in) {
+        // console.log(data_in)
+        if (!locker.is_free(lock_init_key)) {
+            return
+        }
+        run_loop.push({
+            tag: '_s0_update_' + my_unique_id,
+            data: data_in,
+        })
+    }
+    this_top.update_data_s0 = update_data_s0
+
+    function update_data_s1(data_in) {
+        // console.log(data_in)
         if (!locker.is_free(lock_init_key)) {
             return
         }
 
-        if (data_in.type === 's00') {
-            run_loop.push({
-                tag: '_s00_update_' + my_unique_id,
-                data: data_in,
-            })
-        }
-        else if (data_in.type === 's11') {
-            run_loop.push({
-                tag: '_s11_update_' + my_unique_id,
-                data: data_in,
-            })
-        }
-        else if (data_in.type === 'sub_arr') {
-            run_loop.push({
-                tag: 'sub_arr_update' + my_unique_id,
-                data: data_in,
-            })
-        }
-        else {
-            console.error('undefined tag for data_in = ', data_in, ' !!!!!! ')
-        }
+        run_loop.push({
+            tag: '_s1_update_' + my_unique_id,
+            data: data_in,
+        })
+        // else if (data_in.type === 'sub_arr') {
+        //     console.log(data_in.data)
+        //     run_loop.push({
+        //         tag: '_sub_arr_update_' + my_unique_id,
+        //         data: data_in,
+        //     })
+        // }
     }
-    this_top.update_data = update_data
+    this_top.update_data_s1 = update_data_s1
+
+    // function update_data_sub_arr(data_in) {
+    //     // console.log(data_in)
+    //     if (!locker.is_free(lock_init_key)) {
+    //         return
+    //     }
+
+    //     run_loop.push({
+    //         tag: '_sub_arr_update_' + my_unique_id,
+    //         data: data_in,
+    //     })
+    // }
+    // this_top.update_data_sub_arr = update_data_sub_arr
 
     // ------------------------------------------------------------------
     // update the data for s0
@@ -966,8 +983,10 @@ window.ArrZoomerBase = function(opt_in_top) {
         // update the underlying data
         // ------------------------------------------------------------------
         let props_now = get_tel_props(
-            Object.keys(insts.data.prop_data_s1[tel_id]), tel_id)
-    
+            Object.keys(insts.data.prop_data_s1[tel_id]),
+            tel_id,
+        )
+
         $.each(props_now, function(index, porp_now) {
             // update the data container with the s0 updated health
             insts.data.prop_data_s1[tel_id][porp_now].val = (
@@ -1004,34 +1023,34 @@ window.ArrZoomerBase = function(opt_in_top) {
         locker.remove('data_change')
     }
 
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    function sub_arr_update(data_in) {
-        if (!locker.are_free([ 'zoom', 'auto_zoom_target', 'data_change' ])) {
-            setTimeout(function() {
-                sub_arr_update(data_in)
-            }, 10)
-            return
-        }
+    // // ------------------------------------------------------------------
+    // //
+    // // ------------------------------------------------------------------
+    // function sub_arr_update(data_in) {
+    //     if (!locker.are_free([ 'zoom', 'auto_zoom_target', 'data_change' ])) {
+    //         setTimeout(function() {
+    //             sub_arr_update(data_in)
+    //         }, 10)
+    //         return
+    //     }
 
-        get_ele('main').set_tel_layout({
-            id: 'sub_arr',
-            data: data_in.data,
-            updtId: false,
-        })
+    //     get_ele('main').set_tel_layout({
+    //         id: 'sub_arr',
+    //         data: data_in.data,
+    //         updtId: false,
+    //     })
 
-        return
-    }
+    //     return
+    // }
 
-    function set_tel_layout(id_now) {
-        get_ele('main').set_tel_layout({
-            id: id_now,
-            data: null,
-            updtId: true,
-        })
-    }
-    this_top.set_tel_layout = set_tel_layout
+    // function set_tel_layout(id_now) {
+    //     get_ele('main').set_tel_layout({
+    //         id: id_now,
+    //         data: null,
+    //         updtId: true,
+    //     })
+    // }
+    // this_top.set_tel_layout = set_tel_layout
 
     // ------------------------------------------------------------------
     //
@@ -1187,29 +1206,33 @@ window.ArrZoomerBase = function(opt_in_top) {
     let prev_sync = {
     }
     function get_sync_tel_focus(data_in) {
+        let data = data_in.data
+        let metadata = data_in.metadata
+        
         if (document.hidden || sock.con_stat.is_offline()) {
             return
         }
-        let is_old_sync = sock.is_old_sync(prev_sync, data_in.data)
+        let is_old_sync = sock.is_old_sync(prev_sync, data)
         if (is_old_sync) {
             return
         }
         
         let has_widget_id = (
-            data_in.sess_widget_ids.indexOf(widget_id) >= 0
+            metadata.sess_widget_ids.indexOf(widget_id) >= 0
         )
-        let same_widget_id = (widget_id === data_in.widget_id)
-        let same_zoomer_id = (data_in.data.arr_zoomer_id === arr_zoomer_id)
+        let same_widget_id = (widget_id === data.widget_id)
+        let same_zoomer_id = (data.arr_zoomer_id === arr_zoomer_id)
+
         if (!has_widget_id || same_widget_id || same_zoomer_id) {
             return
         }
 
-        let type = data_in.type
-        prev_sync[type] = data_in.data
+        let type = data.type
+        prev_sync[type] = data.data
 
         // react to specific events by type
         if (type === 'sync_tel_focus') {
-            sync_tel_focus(data_in.data)
+            sync_tel_focus(data.data)
         }
 
         return
@@ -1258,10 +1281,9 @@ window.ArrZoomerBase = function(opt_in_top) {
         }
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: widget_id,
-            method_name: 'arr_zoomer_ask_init_data',
+            method_name: 'arr_zoomer_ask_for_init_data',
             method_arg: init_opts,
         }
         sock.socket.emit('widget', emit_data)
@@ -1270,20 +1292,72 @@ window.ArrZoomerBase = function(opt_in_top) {
     }
 
     // ------------------------------------------------------------------
-    // get update for state1 data which was explicitly asked for by a given module
+    // interface for the server to ask for specific parameters
     // ------------------------------------------------------------------
-    sock.socket.on('arr_zoomer_get_init_data', function(data_in) {
-        if (data_in.data.arr_zoomer_id !== arr_zoomer_id) {
+    let ask_arr_zoomer_param_from_client_evt =  function(data_in) {
+        let params = data_in.data.params
+
+        let data_send = {
+        }
+        $.each(params, function(_, param) {
+            data_send[param] = this_top[param]
+
+            if (!is_def(this_top[param])) {
+                sock.socket.server_log({
+                    data: {
+                        msg: [
+                            'ask_arr_zoomer_param_from_client_evt() '
+                            + 'asked for undefined parameter',
+                            param,
+                        ]
+                    },
+                    is_verb: true,
+                    log_level: LOG_LEVELS.ERROR,
+                })
+            }
+        })
+
+        let emit_data = {
+            widget_name: widget_type,
+            widget_id: widget_id,
+            method_name: 'get_arr_zoomer_param_from_client',
+            method_arg: data_send,
+        }
+        sock.socket.emit('widget', emit_data)
+
+    }
+    sock.socket.add_event({
+        name: 'ask_arr_zoomer_param_from_client',
+        func: ask_arr_zoomer_param_from_client_evt,
+        is_singleton: false,
+    })
+
+    // ------------------------------------------------------------------
+    // initialisation for an individual instance, destinguised by arr_zoomer_id, where
+    // different instances may be zoomed in on different instrument, and so
+    // the data are different for each instance
+    // ------------------------------------------------------------------
+    let arr_zoomer_get_init_data_evt =  function(data_in) {
+        let data = data_in.data
+        // let metadata = data_in.metadata
+
+        if (data.arr_zoomer_id !== arr_zoomer_id) {
             return
         }
+
         run_when_ready({
             pass: function() {
                 return !sock.con_stat.is_offline()
             },
             execute: function() {
-                init_data(data_in.data)
+                init_data(data)
             },
         })
+    }
+    sock.socket.add_event({
+        name: 'arr_zoomer_get_init_data',
+        func: arr_zoomer_get_init_data_evt,
+        is_singleton: false,
     })
 
     // ------------------------------------------------------------------
@@ -1301,10 +1375,9 @@ window.ArrZoomerBase = function(opt_in_top) {
         data.zoom_target = opt_in.zoom_target
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: widget_id,
-            method_name: 'arr_zoomer_ask_data_s1',
+            method_name: 'arr_zoomer_ask_for_data_s1',
             method_arg: data,
         }
 
@@ -1347,7 +1420,6 @@ window.ArrZoomerBase = function(opt_in_top) {
         data_widget.zoom_target_prop = tree_widget_state.zoom_target_prop
 
         let emit_data = {
-            widget_source: widget_source,
             widget_name: widget_type,
             widget_id: widget_id,
             method_name: 'arr_zoomer_set_widget_state',
@@ -1362,57 +1434,103 @@ window.ArrZoomerBase = function(opt_in_top) {
 
 
     // ------------------------------------------------------------------
-    // get update for state1 data which was explicitly asked for by a given module
+    // update for an individual instance, destinguised by arr_zoomer_id, where
+    // different instances may be zoomed in on different instrument, and so
+    // the data are different for each instance
     // ------------------------------------------------------------------
-    sock.socket.on('arr_zoomer_get_data_s1', function(data_in) {
+    let arr_zoomer_get_data_s1_evt = function(data_in) {
+        let data = data_in.data
+        let metadata = data_in.metadata
+
         if (sock.con_stat.is_offline()) {
             return
         }
-        if (data_in.arr_zoomer_id !== arr_zoomer_id) {
+        if (data.arr_zoomer_id !== arr_zoomer_id) {
             return
+        }
+
+        if (data.id !== '' && data.type === 's11') {
+            // console.log('-server- get_data_s1 ',data);
+            if (is_def(sock.widget_funcs[widget_type].widgets[metadata.widget_id])) {
+                this_top.get_data_s1(metadata.widget_id, data)
+            }
         }
         
-        if (data_in.id !== '' && data_in.type === 's11') {
-            // console.log('-server- get_data_s1 ',data_in);
-            if (is_def(sock.all_widgets[widget_type].widgets[data_in.widget_id])) {
-                this_top.get_data_s1(data_in.widget_id, data_in)
-            }
-        }
+        return
+    }
+    sock.socket.add_event({
+        name: 'arr_zoomer_get_data_s1',
+        func: arr_zoomer_get_data_s1_evt,
+        is_singleton: false,
     })
 
     // ------------------------------------------------------------------
-    //
+    // global update for all widgets in all sessions
+    // in this case, there is no check on arr_zoomer_id, since the data
+    // are the same for all instances (arr_zoomer_id is not defined in the event)
     // ------------------------------------------------------------------
-    sock.socket.on('arr_zoomer_update_data', function(data_in) {
+    let arr_zoomer_update_data_s0_evt = function(data_in) {
+        let data = data_in.data
+        let metadata = data_in.metadata
+
         if (sock.con_stat.is_offline()) {
             return
         }
 
-        let widgets = sock.all_widgets[widget_type].widgets
-        $.each(widgets, function(widget_id_now, module_now) {
-            if (data_in.sess_widget_ids.indexOf(widget_id_now) >= 0) {
-                this_top.update_data(data_in)
-            }
-        })
+        this_top.update_data_s0(data_in.data)
+        return
+    }
+    sock.socket.add_event({
+        name: 'arr_zoomer_update_data_s0',
+        func: arr_zoomer_update_data_s0_evt,
+        is_singleton: false,
     })
+
+
+    // ------------------------------------------------------------------
+    // update for an individual instance, destinguised by arr_zoomer_id, where
+    // different instances may be zoomed in on different instrument, and so
+    // the data are different for each instance
+    // ------------------------------------------------------------------
+    let arr_zoomer_update_data_s1_evt = function(data_in) {
+        let data = data_in.data
+        // let metadata = data_in.metadata
+
+        if (sock.con_stat.is_offline()) {
+            return
+        }
+        if (data.arr_zoomer_id !== arr_zoomer_id) {
+            return
+        }
+
+        this_top.update_data_s1(data)
+        
+        return
+    }
+    sock.socket.add_event({
+        name: 'arr_zoomer_update_data_s1',
+        func: arr_zoomer_update_data_s1_evt,
+        is_singleton: false,
+    })
+
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
     run_loop.init({
-        tag: 'sync_state_send' + my_unique_id,
+        tag: 'send_sync_state_to_server' + my_unique_id,
         func: sync_state_send_now,
         n_keep: 1,
         wait: times.wait_sync_state,
     })
 
-    function sync_state_send(data_in) {
+    function send_sync_state_to_server(data_in) {
         run_loop.push({
-            tag: 'sync_state_send' + my_unique_id,
+            tag: 'send_sync_state_to_server' + my_unique_id,
             data: data_in,
         })
     }
-    this_top.sync_state_send = sync_state_send
+    this_top.send_sync_state_to_server = send_sync_state_to_server
 
     function sync_state_send_now(data_in) {
         if (sock.con_stat.is_offline()) {
@@ -1426,7 +1544,7 @@ window.ArrZoomerBase = function(opt_in_top) {
             ]
             if (!locker.are_free(sync_locks)) {
                 setTimeout(function() {
-                    sync_state_send(data_in)
+                    send_sync_state_to_server(data_in)
                 }, times.anim)
                 return
             }

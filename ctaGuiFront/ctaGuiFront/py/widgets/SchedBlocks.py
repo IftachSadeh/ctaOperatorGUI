@@ -51,21 +51,21 @@ class SchedBlocks(BaseWidget):
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.send_init_widget(opt_in=opt_in)
+        self.socket_manager.send_widget_init_data(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates
         # to all sessions in the group
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.add_widget_tread(opt_in=opt_in)
+        self.socket_manager.add_widget_loop(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def back_from_offline(self):
+    async def back_from_offline(self, data):
         # standard common initialisations
-        BaseWidget.back_from_offline(self)
+        await BaseWidget.back_from_offline(self, data)
 
         # with SchedBlocks.lock:
         #     print('-- back_from_offline',self.widget_name,self.widget_id)
@@ -145,7 +145,7 @@ class SchedBlocks(BaseWidget):
     def get_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_events")
-        redis_data = self.redis.pipe.execute(packed=True)
+        redis_data = self.redis.pipe.execute()
 
         SchedBlocks.external_events = redis_data
 
@@ -154,7 +154,7 @@ class SchedBlocks(BaseWidget):
     def get_clock_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_clock_events")
-        redis_data = self.redis.pipe.execute(packed=True)
+        redis_data = self.redis.pipe.execute()
 
         SchedBlocks.external_clock_events = redis_data
 
@@ -169,7 +169,7 @@ class SchedBlocks(BaseWidget):
             for key in keys_now:
                 self.redis.pipe.get('obs_block_ids_' + key)
 
-            data = self.redis.pipe.execute(packed=True)
+            data = self.redis.pipe.execute()
             obs_block_ids = sum(data, [])  # flatten the list of lists
             # obs_block_ids = [] if data is None else sum(data, []) # flatten the list of lists
 
@@ -178,7 +178,7 @@ class SchedBlocks(BaseWidget):
                 self.redis.pipe.get(obs_block_id)
 
             key = keys_now[0]
-            blocks = self.redis.pipe.execute(packed=True)
+            blocks = self.redis.pipe.execute()
             SchedBlocks.blocks[key] = sorted(
                 blocks,
                 cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
@@ -196,17 +196,17 @@ class SchedBlocks(BaseWidget):
         # self.redis.pipe.get('obs_block_ids_'+'cancel')
         # self.redis.pipe.get('obs_block_ids_'+'fail')
 
-        # data = self.redis.pipe.execute(packed=True)
+        # data = self.redis.pipe.execute()
         # obs_block_ids = sum(data, [])  # flatten the list of lists
         # # print 'wwwwwwww',obs_block_ids
-        # # obs_block_ids = self.redis.get(key=('obs_block_ids_'+'all'), packed=True, default_val=[])
+        # # obs_block_ids = self.redis.get(key=('obs_block_ids_'+'all'), default_val=[])
         # # print 'xxxxxxxx',obs_block_ids
 
         # self.redis.pipe.reset()
         # for obs_block_id in obs_block_ids:
         #     self.redis.pipe.get(obs_block_id)
 
-        # blocks = self.redis.pipe.execute(packed=True)
+        # blocks = self.redis.pipe.execute()
         # SchedBlocks.blocks = sorted(blocks, cmp=lambda a, b: int(
         #     a['timestamp']) - int(b['timestamp']))
         # # print SchedBlocks.blocks

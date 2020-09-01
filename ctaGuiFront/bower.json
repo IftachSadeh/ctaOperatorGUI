@@ -2,7 +2,7 @@
   "name": "ctaOperatorGUI",
   "private": false,
   "dependencies": {
-    "gevent-socketio": "git://github.com/abourget/gevent-socketio.git#master",
+    "gevent-socketio-py3": "git://github.com/henokalem/gevent-socketio-py3.git#master",
     "jquery": "^3.1.0",
     "d3": "^4.12.2",
     "textures": "^1.2.0"
@@ -12,3 +12,4 @@
   },
   "ignore": []
 }
+
