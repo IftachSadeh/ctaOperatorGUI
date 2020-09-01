@@ -1056,6 +1056,9 @@ let main_sched_blocksInspector = function(opt_in) {
         initBackground()
 
         shared.data.server = data_in.data
+        shared.data.server.time_of_night.date_start = new Date(shared.data.server.time_of_night.start * 1000)
+        shared.data.server.time_of_night.date_now = new Date(shared.data.server.time_of_night.now * 1000)
+        shared.data.server.time_of_night.date_end = new Date(shared.data.server.time_of_night.end * 1000)
         shared.data.server.sched_blocks = create_sched_blocks(shared.data.server.blocks)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
@@ -1103,6 +1106,9 @@ let main_sched_blocksInspector = function(opt_in) {
         locker.add('update_data')
 
         shared.data.server = data_in.data
+        shared.data.server.time_of_night.date_start = new Date(shared.data.server.time_of_night.start * 1000)
+        shared.data.server.time_of_night.date_now = new Date(shared.data.server.time_of_night.now * 1000)
+        shared.data.server.time_of_night.date_end = new Date(shared.data.server.time_of_night.end * 1000)
         shared.data.server.sched_blocks = create_sched_blocks(shared.data.server.blocks)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
@@ -2870,7 +2876,7 @@ let main_sched_blocksInspector = function(opt_in) {
                         },
                     },
                     timeBars: {
-                        enabled: true,
+                        enabled: false,
                         g: undefined,
                         box: {
                             x: 0,
@@ -3103,7 +3109,7 @@ let main_sched_blocksInspector = function(opt_in) {
                         },
                     },
                     timeBars: {
-                        enabled: true,
+                        enabled: false,
                         g: undefined,
                         box: {
                             x: 0,
@@ -3402,12 +3408,12 @@ let main_sched_blocksInspector = function(opt_in) {
                 time: shared.data.server.time_of_night.now,
             }
             let start_time_sec = {
-                date: axisTop[0],
-                time: shared.data.server.time_of_night.start,
+                date: new Date(shared.data.server.time_of_night.date_start),
+                time: Number(axisTop[0] / 1000),
             }
             let end_time_sec = {
-                date: axisTop[1],
-                time: shared.data.server.time_of_night.end,
+                date: new Date(shared.data.server.time_of_night.date_end),
+                time: Number(axisTop[1] / 1000),
             }
 
             blockQueue.update_data({
@@ -4361,12 +4367,12 @@ let main_sched_blocksInspector = function(opt_in) {
 
             let axisTop = brushZoom.get_axis().axis.scale().domain()
             let start_time_sec = {
-                date: axisTop[0],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0]) / -1000,
+                date: axisTop[0] / 1000,
+                time: axisTop[0] / 1000,
             }
             let end_time_sec = {
-                date: axisTop[1],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1]) / -1000,
+                date: axisTop[1] / 1000,
+                time: axisTop[1] / 1000,
             }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])
@@ -5004,12 +5010,12 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             let axisTop = brushZoom.get_axis().axis.scale().domain()
             let start_time_sec = {
-                date: axisTop[0],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0]) / -1000,
+                date: new Date(shared.data.server.time_of_night.date_start),
+                time: Number(axisTop[0] / 1000),
             }
             let end_time_sec = {
-                date: axisTop[1],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1]) / -1000,
+                date: new Date(shared.data.server.time_of_night.date_end),
+                time: Number(axisTop[1] / 1000),
             }
             reserved.drag.timescale = d3.scaleLinear()
                 .range([ 0, reserved.drag.box.w ])
@@ -5289,17 +5295,16 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             let axisTop = brushZoom.get_axis().axis.scale().domain()
             let start_time_sec = {
-                date: axisTop[0],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0]) / -1000,
+                date: new Date(shared.data.server.time_of_night.date_start),
+                time: Number(axisTop[0] / 1000),
             }
             let end_time_sec = {
-                date: axisTop[1],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1]) / -1000,
+                date: new Date(shared.data.server.time_of_night.date_end),
+                time: Number(axisTop[1] / 1000),
             }
             reserved.drag.timescale = d3.scaleLinear()
                 .range([ 0, reserved.drag.box.w ])
                 .domain([ start_time_sec.time, end_time_sec.time ])
-
             reserved.drag.position = {
                 width: reserved.drag.timescale(d.time.end) - reserved.drag.timescale(d.time.start),
                 left: reserved.drag.timescale(d.time.start),
@@ -5363,6 +5368,7 @@ let main_sched_blocksInspector = function(opt_in) {
             reserved.drag.mode.previous = 'general'
             reserved.drag.atLeastOneTick = false
             reserved.drag.locked = true
+
         }
         this.dragStart = dragStart
         function dragTick(d) {
@@ -5376,7 +5382,9 @@ let main_sched_blocksInspector = function(opt_in) {
             reserved.drag.atLeastOneTick = true
 
             if (d3.event.dx < 0
-        && Math.floor(reserved.drag.timescale.invert(reserved.drag.position.left + d3.event.dx)) < Number(shared.data.server.time_of_night.now)) {
+              && Math.floor(reserved.drag.timescale
+                  .invert(reserved.drag.position.left + d3.event.dx))
+              < Number(shared.data.server.time_of_night.now)) {
                 return
             }
             reserved.drag.position.left += d3.event.dx
@@ -5384,8 +5392,10 @@ let main_sched_blocksInspector = function(opt_in) {
             if (reserved.drag.position.left < 0) {
                 reserved.drag.position.left = 0
             }
-            if (reserved.drag.position.left + reserved.drag.position.width > reserved.drag.box.w) {
-                reserved.drag.position.left = reserved.drag.box.w - reserved.drag.position.width
+            if (reserved.drag.position.left + reserved.drag.position.width
+              > reserved.drag.box.w) {
+                reserved.drag.position.left
+                  = reserved.drag.box.w - reserved.drag.position.width
             }
 
             reserved.drag.position.right = reserved.drag.position.left + reserved.drag.position.width
@@ -8709,7 +8719,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     },
                 },
                 schedule: {
-                    editabled: true,
+                    editable: true,
                     box: allBox.time,
                     events: {
                         change: updateBlockState,
