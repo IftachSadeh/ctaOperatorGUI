@@ -322,7 +322,7 @@ window.ObsblockForm = function(opt_in) {
             let palette = blockStyle(schedB.blocks[i])
             g.append('rect')
                 .attr('id', schedB.blocks[i].obs_block_id)
-                .attr('x', 2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editable ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * i))
+                .attr('x', 2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * i))
                 .attr('y', box.h * 0.9 - dimPoly * 0.7)
                 .attr('width', dimPoly * 0.8)
                 .attr('height', dimPoly * 0.8)
@@ -347,12 +347,12 @@ window.ObsblockForm = function(opt_in) {
                 .style('font-weight', '')
                 .style('font-size', txt_size + 'px')
                 .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editable ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * i) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txt_size * 0.3) + ')')
+                .attr('transform', 'translate(' + (2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * i) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txt_size * 0.3) + ')')
                 .style('pointer-events', 'none')
         }
-        if (com.schedule.editable) {
+        if (com.schedule.editabled) {
             g.append('rect')
-                .attr('x', 2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editable ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * schedB.blocks.length))
+                .attr('x', 2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * schedB.blocks.length))
                 .attr('y', box.h * 0.9 - dimPoly * 0.7)
                 .attr('width', dimPoly * 0.8)
                 .attr('height', dimPoly * 0.8)
@@ -377,7 +377,7 @@ window.ObsblockForm = function(opt_in) {
                 .style('font-weight', 'bold')
                 .style('font-size', txt_size + 'px')
                 .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editable ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * schedB.blocks.length) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txt_size * 0.3) + ')')
+                .attr('transform', 'translate(' + (2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * schedB.blocks.length) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txt_size * 0.3) + ')')
                 .style('pointer-events', 'none')
         }
     }
@@ -402,72 +402,52 @@ window.ObsblockForm = function(opt_in) {
         g.select('#minute').select('input').property('value', min)
         g.select('#second').select('input').property('value', sec)
     }
-
-    // function change_block_time_absolute(type, time) {
-    //     switch (type) {
-    //     case 'start_time_sec':
-    //         com.data.block.time.start = time
-    //         com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
-    //         break
-    //     case 'duration':
-    //         com.data.block.time.duration = time
-    //         com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
-    //         break
-    //     case 'end_time_sec':
-    //         com.data.block.time.start = com.data.block.time.end - com.data.block.time.duration
-    //         com.data.block.time.end = time
-    //         break
-    //     default:
-    //         return
-    //     }
-    //     change_block_time()
-    // }
-    function change_block_time_relative(type, time) {
+    function changeBlockTime(type, hour, min, sec) {
+        let start_time_sec = new Date(com.data.time_of_night.date_start)
+        let end_time_sec = new Date(com.data.time_of_night.date_end)
         switch (type) {
         case 'start_time_sec':
-            com.data.block.time.start += time
+            if (Number(hour) >= 0 && Number(hour) <= end_time_sec.getHours()) {
+                end_time_sec.setHours(Number(hour))
+                end_time_sec.setMinutes(Number(min))
+                end_time_sec.setSeconds(Number(sec))
+            }
+            else {
+                end_time_sec = new Date(com.data.time_of_night.date_start)
+                end_time_sec.setHours(Number(hour))
+                end_time_sec.setMinutes(Number(min))
+                end_time_sec.setSeconds(Number(sec))
+            }
+            com.data.block.time.start = (end_time_sec - start_time_sec) / 1000
             com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
             break
         case 'duration':
-            com.data.block.time.duration += time
-            if (com.data.block.time.duration < 0) {
-                com.data.block.time.duration = 0
-            }
-            if (com.data.block.time.duration
-              > (com.data.time_of_night.end - com.data.time_of_night.start)) {
-                com.data.block.time.duration
-                = com.data.time_of_night.end - com.data.time_of_night.start
-            }
+            com.data.block.time.duration = Number(hour) * 3600 + Number(min) * 60 + Number(sec)
             com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
             break
         case 'end_time_sec':
-            com.data.block.time.end += time
-            com.data.block.time.start = com.data.block.time.end - com.data.block.time.duration
+            if (Number(hour) >= 0 && Number(hour) <= end_time_sec.getHours()) {
+                end_time_sec.setHours(Number(hour))
+                end_time_sec.setMinutes(Number(min))
+                end_time_sec.setSeconds(Number(sec))
+            }
+            else {
+                end_time_sec = new Date(com.data.time_of_night.date_start)
+                end_time_sec.setHours(Number(hour))
+                end_time_sec.setMinutes(Number(min))
+                end_time_sec.setSeconds(Number(sec))
+            }
+            com.data.block.time.end = (end_time_sec - start_time_sec) / 1000
+            com.data.block.time.duration = com.data.block.time.end - com.data.block.time.start
             break
         default:
             return
         }
-        if (com.data.block.time.start < com.data.time_of_night.start) {
-            let diff = com.data.time_of_night.start - com.data.block.time.start
-            com.data.block.time.start += diff
-            com.data.block.time.end += diff
-        }
-        else if (com.data.block.time.end > com.data.time_of_night.end) {
-            let diff = com.data.block.time.end - com.data.time_of_night.end
-            com.data.block.time.start -= diff
-            com.data.block.time.end -= diff
-        }
-        console.log(com.data.block.time, com.data.time_of_night.end, com.data.time_of_night.start )
-        change_block_time()
-    }
-    function change_block_time(type) {
-        let start_time_sec = new Date(com.data.time_of_night.date_start)
+
+        start_time_sec = new Date(com.data.time_of_night.date_start)
         start_time_sec.setSeconds(start_time_sec.getSeconds() + com.data.block.time.start)
-        let end_time_sec = new Date(com.data.time_of_night.date_start)
-        end_time_sec.setSeconds(
-            end_time_sec.getSeconds()
-          + com.data.block.time.start
-          + com.data.block.time.duration)
+        end_time_sec = new Date(com.data.time_of_night.date_start)
+        end_time_sec.setSeconds(end_time_sec.getSeconds() + com.data.block.time.start + com.data.block.time.duration)
         let duration = new Date(end_time_sec)
         duration.setHours(duration.getHours() - start_time_sec.getHours())
         duration.setMinutes(duration.getMinutes() - start_time_sec.getMinutes())
@@ -478,11 +458,7 @@ window.ObsblockForm = function(opt_in) {
 
         com.schedule.events.click()
         com.events.conflict(com.data.block)
-        com.events.modification(
-            com.data.block,
-            false,
-            (type === 'start_time_sec' ? 'start_time_sec' : 'duration'))
-
+        com.events.modification(com.data.block, false, (type === 'start_time_sec' ? 'start_time_sec' : 'duration'))
     }
     function changeState(newState) {
         com.schedule.events.change(com.data.block, newState)
@@ -496,7 +472,28 @@ window.ObsblockForm = function(opt_in) {
         let g = com.main.g.append('g')
             .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
         com.schedule.g = g
+        // g.append('text')
+        //   .text('Schedule')
+        //   .style('fill', colorPalette.dark.stroke)
+        //   .style('font-weight', 'bold')
+        //   .style('font-size', title_size + 'px')
+        //   .attr('text-anchor', 'start')
+        //   .attr('transform', 'translate(' + (0) + ',' + (0) + ')')
+        // g.append('line')
+        //   .attr('x1', 0)
+        //   .attr('y1', 2)
+        //   .attr('x2', box.w)
+        //   .attr('y2', 2)
+        //   .attr('stroke', colorPalette.dark.stroke)
+        //   .attr('stroke-width', 0.2)
 
+        // g.append('rect')
+        //   .attr('id', 'headerStrip')
+        //   .attr('x', 0)
+        //   .attr('y', 3)
+        //   .attr('width', box.w)
+        //   .attr('height', headerSize)
+        //   .attr('fill', colorPalette.dark.stroke)
         let label = [
             {
                 x: box.w * 0.0,
@@ -614,7 +611,7 @@ window.ObsblockForm = function(opt_in) {
                         },
                     },
                     events: {
-                        click: () => {
+                        click: (d) => {
                             let oldValue = parseInt(stock[type].property('value'))
                             let new_val = oldValue
                             if (oldValue > stock[type + 'Opts'].min) {
@@ -624,15 +621,7 @@ window.ObsblockForm = function(opt_in) {
                                 new_val = stock[type + 'Opts'].max
                             }
                             stock[type].property('value', ('0' + new_val).slice(-2))
-                            if (type === 'hour') {
-                                change_block_time_relative (id, -3600)
-                            }
-                            else if (type === 'minute') {
-                                change_block_time_relative (id, -60)
-                            }
-                            else if (type === 'second') {
-                                change_block_time_relative (id, -1)
-                            }
+                            changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), stock.second.property('value'))
                         },
                     },
                 })
@@ -701,7 +690,7 @@ window.ObsblockForm = function(opt_in) {
                         },
                     },
                     events: {
-                        click: () => {
+                        click: (d) => {
                             let oldValue = parseInt(stock[type].property('value'))
                             let new_val = oldValue
                             if (oldValue < stock[type + 'Opts'].max) {
@@ -711,15 +700,7 @@ window.ObsblockForm = function(opt_in) {
                                 new_val = stock[type + 'Opts'].min
                             }
                             stock[type].property('value', ('0' + new_val).slice(-2))
-                            if (type === 'hour') {
-                                change_block_time_relative (id, 3600)
-                            }
-                            else if (type === 'minute') {
-                                change_block_time_relative (id, 60)
-                            }
-                            else if (type === 'second') {
-                                change_block_time_relative (id, 1)
-                            }
+                            changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), stock.second.property('value'))
                         },
                     },
                 })
@@ -730,7 +711,7 @@ window.ObsblockForm = function(opt_in) {
             let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
             let hbox = {
                 x: x - 6,
-                y: y + (com.schedule.editable ? 0 : headerSize * 0.35),
+                y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
                 w: 14,
                 h: headerSize * 2,
             }
@@ -738,14 +719,14 @@ window.ObsblockForm = function(opt_in) {
             let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
             let mbox = {
                 x: x + 16,
-                y: y + (com.schedule.editable ? 0 : headerSize * 0.35),
+                y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
                 w: 14,
                 h: headerSize * 2,
             }
             let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
             let sbox = {
                 x: x + 38,
-                y: y + (com.schedule.editable ? 0 : headerSize * 0.35),
+                y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
                 w: 14,
                 h: headerSize * 2,
             }
@@ -754,7 +735,7 @@ window.ObsblockForm = function(opt_in) {
                 .attr('transform', 'translate(' + ((w - (14 * 3)) * 0.33) + ',0)')
 
             stock.hourOpts = {
-                disabled: !com.schedule.editable,
+                disabled: !com.schedule.editabled,
                 value: hour,
                 min: 0,
                 max: 23,
@@ -765,25 +746,23 @@ window.ObsblockForm = function(opt_in) {
                 'hour',
                 stock.hourOpts,
                 {
-                    change: (d, delta) => {
-                        change_block_time_relative(id, delta * 3600)
+                    change: (d) => {
+                        changeBlockTime(id, d, stock.minute.property('value'), stock.second.property('value'))
                     },
-                    wheel: (d, delta) => {
-                        change_block_time_relative(id, delta * 3600)
-                    },
-                    enter: () => {
+                    enter: (d) => {
                         stock.minute.node().focus()
                     },
                 })
+            createInput('hour', ig, hbox)
             ig.append('text')
                 .text(':')
                 .style('fill', colorPalette.dark.stroke)
                 .style('font-size', headerSize + 'px')
                 .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editable ? 0 : headerSize * 0.35)) + ')')
+                .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
 
             stock.minuteOpts = {
-                disabled: !com.schedule.editable,
+                disabled: !com.schedule.editabled,
                 value: min,
                 min: 0,
                 max: 60,
@@ -794,25 +773,23 @@ window.ObsblockForm = function(opt_in) {
                 'minute',
                 stock.minuteOpts,
                 {
-                    change: (d, delta) => {
-                        change_block_time_relative(id, delta * 60)
+                    change: (d) => {
+                        changeBlockTime(id, stock.hour.property('value'), d, stock.second.property('value'))
                     },
-                    wheel: (d, delta) => {
-                        change_block_time_relative(id, delta * 60)
-                    },
-                    enter: () => {
+                    enter: (d) => {
                         stock.second.node().focus()
                     },
                 })
+            createInput('minute', ig, mbox)
             ig.append('text')
                 .text(':')
                 .style('fill', colorPalette.dark.stroke)
                 .style('font-size', headerSize + 'px')
                 .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editable ? 0 : headerSize * 0.35)) + ')')
+                .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
 
             stock.secondOpts = {
-                disabled: !com.schedule.editable,
+                disabled: !com.schedule.editabled,
                 value: sec,
                 min: 0,
                 max: 60,
@@ -823,22 +800,14 @@ window.ObsblockForm = function(opt_in) {
                 'second',
                 stock.secondOpts,
                 {
-                    change: (d, delta) => {
-                        change_block_time_relative(id, delta * 1)
+                    change: (d) => {
+                        changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), d)
                     },
-                    wheel: (d, delta) => {
-                        change_block_time_relative(id, delta * 1)
-                    },
-                    enter: () => {
+                    enter: (d) => {
                         stock.second.node().blur()
                     },
                 })
-
-            if (com.schedule.editable) {
-                createInput('hour', ig, hbox)
-                createInput('minute', ig, mbox)
-                createInput('second', ig, sbox)
-            }
+            createInput('second', ig, sbox)
         }
 
         let start_time_sec = new Date(com.data.time_of_night.date_start)
@@ -864,7 +833,7 @@ window.ObsblockForm = function(opt_in) {
         // dropDown_div(g,
         //   sbox,
         //   'state',
-        //   {disabled: !com.schedule.editable, value: data.exe_state.state, options: options},
+        //   {disabled: !com.schedule.editabled, value: data.exe_state.state, options: options},
         //   {change: (d) => { changeState(d) }, enter: (d) => { changeState(d) }})
         let gdropstate = g.append('g').attr('transform', 'translate(' + label[0].x + ',' + (3 + headerSize) + ')')
         let dropState = new dropdown_d3()
@@ -925,7 +894,7 @@ window.ObsblockForm = function(opt_in) {
             },
             options: {
                 value: data.exe_state.state,
-                blocked: com.schedule.editable,
+                blocked: false,
                 keepDropOpen: false,
                 list: options,
                 dim: {
@@ -1000,7 +969,7 @@ window.ObsblockForm = function(opt_in) {
     // dropDown_div(g,
     //   tbox,
     //   'target',
-    //   {disabled: !com.schedule.editable, value: data.pointing_name.split('/')[0], options: ['target_1', 'target_2', 'target_3', 'target_4', 'target_5', 'target_6', 'target_7']},
+    //   {disabled: !com.schedule.editabled, value: data.pointing_name.split('/')[0], options: ['target_1', 'target_2', 'target_3', 'target_4', 'target_5', 'target_6', 'target_7']},
     //   {change: (d) => { changeTarget(d) }, enter: (d) => { changeTarget(d) }})
     // let pbox = {
     //   x: label[4].x + label[4].w * 0.5,
@@ -1011,7 +980,7 @@ window.ObsblockForm = function(opt_in) {
     // dropDown_div(g,
     //   pbox,
     //   'pointing',
-    //   {disabled: !com.schedule.editable, value: data.pointing_name.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
+    //   {disabled: !com.schedule.editabled, value: data.pointing_name.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
     //   {change: (d) => { changePointing(d) }, enter: (d) => { changePointing(d) }})
     }
     function updateTime_information() {
@@ -1216,7 +1185,7 @@ window.ObsblockForm = function(opt_in) {
                 // dropDown_div(addPointingg,
                 //   {x: -2, y: -6, w: sizeNewPointing * 2, h: sizeNewPointing * 1.3},
                 //   'trg',
-                //   {disabled: !com.schedule.editable, value: '', options: com.data.target.map(x => x.name), 'font-size': '0px'},
+                //   {disabled: !com.schedule.editabled, value: '', options: com.data.target.map(x => x.name), 'font-size': '0px'},
                 //   {change: (d) => {
                 //     let chooseTarget = g.select('g#chooseTarget')
                 //     chooseTarget.selectAll('*').remove()
@@ -2063,7 +2032,7 @@ window.ObsblockForm = function(opt_in) {
             // let selector = dropDown_div(addPointingg,
             //   {x: -(label[1].x - sizeNewPointing), y: -8, w: label[0].w + label[1].w, h: sizeNewPointing * 1.3},
             //   'trg',
-            //   {disabled: !com.schedule.editable, value: '', options: ['coordinates', 'divergentes'], 'font-size': '0px'},
+            //   {disabled: !com.schedule.editabled, value: '', options: ['coordinates', 'divergentes'], 'font-size': '0px'},
             //   {change: (d) => { addNewPointing(d) }, enter: (d) => { addNewPointing(d) }})
 
             let picon = pointing_icon(gdropPointing.append('g'), {
@@ -3628,15 +3597,15 @@ window.ObsblockForm = function(opt_in) {
             },
             interaction: {
                 delete: {
-                    enabled: com.schedule.editable,
+                    enabled: com.schedule.editabled,
                     event: () => {},
                 },
                 drag: {
-                    enabled: com.schedule.editable,
+                    enabled: com.schedule.editabled,
                     event: () => {},
                 },
                 switch: {
-                    enabled: com.schedule.editable,
+                    enabled: com.schedule.editabled,
                     event: () => {},
                 },
             },
@@ -3679,7 +3648,7 @@ window.ObsblockForm = function(opt_in) {
 
         function createInput(tel_type, g, innerbox) {
             com.telescope.tels[tel_type + 'Opts'] = {
-                disabled: !com.schedule.editable,
+                disabled: !com.schedule.editabled,
                 value: com.data.block.telescopes[tel_type].min,
                 min: 0,
                 max: com.data.block.telescopes[tel_type].max,
@@ -3855,7 +3824,7 @@ window.ObsblockForm = function(opt_in) {
                 },
             })
         }
-        if (com.schedule.editable) {
+        if (com.schedule.editabled) {
             com.telescope.tels = {
             }
 

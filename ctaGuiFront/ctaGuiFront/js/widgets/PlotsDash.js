@@ -1082,86 +1082,86 @@ let main_plots_dash = function(opt_in) {
                 range: [ scrollBoxPlot.h, 0 ],
             })
 
-            // focusedPlot.add_axis({
-            //     id: 'bottom',
-            //     location: 'bottom',
-            //     type: 'band',
-            //     profile: 'focus',
-            //     // axis: {
-            //     //     profile: 'context',
-            //     //     display: false,
-            //     //     track: 'a1',
-            //     //     orientation: 'out',
-            //     // },
-            //     // azerty: {
-            //     //     profile: 'context',
-            //     //     display: false,
-            //     // },
-            //     domain: [ 'EUROPE', 'AMERIQUEWWWWWWWWWWWWWWW', 'AFRIQUEwwwwwwwwwwwwwwwwwwwwwwwww', 'ANTARTIQUEwwwwwwwwwwwwwwwwwwwwwwwww', 'ASIE' ],
-            //     // domain: [ previousDate.getTime(), currentDate.getTime() ],
-            //     // domain: {
-            //     //     context: [ 0, 100 ],
-            //     //     focus: [ 0, 100 ],
-            //     // },
-            //     range: [ 0, scrollBoxPlot.w ],
-            //     // style: {
-            //     //     text: {
-            //     //         visible: true,
-            //     //         size: 13,
-            //     //         stroke: colorPalette.medium.stroke,
-            //     //         fill: colorPalette.medium.stroke,
-            //     //     },
-            //     //     path: {
-            //     //         visible: true,
-            //     //         stroke: colorPalette.medium.stroke,
-            //     //         fill: colorPalette.medium.stroke,
-            //     //     },
-            //     //     axis: {
-            //     //         visible: true,
-            //     //     },
-            //     // },
-            // })
-            //
-            // focusedPlot.add_axis({
-            //     id: 'top',
-            //     location: 'top',
-            //     type: 'band',
-            //     profile: 'context',
-            //     // box: {
-            //     //     x: 0,
-            //     //     y: -55,
-            //     //     w: scrollBoxPlot.w,
-            //     //     h: 25,
-            //     // },
-            //     domain: [ 'EUROPE', 'REPUBLIQUE DEMOCARTIQUE DU CONGO', 'AFRIQUE', 'ANTARTIQUE', 'ASIE' ],
-            //     //domain: [ previousDate.getTime(), currentDate.getTime() ],
-            //     range: [ 0, scrollBoxPlot.w ],
-            //
-            // })
-            // focusedPlot.add_axis({
-            //     id: 'right',
-            //     location: 'right',
-            //     type: 'band',
-            //     profile: 'context',
-            //     // box: {
-            //     //     x: scrollBoxPlot.w + 30,
-            //     //     y: 0,
-            //     //     w: 25,
-            //     //     h: scrollBoxPlot.h,
-            //     // },
-            //     domain: [ 'EUROPE', 'REPUBLIQUE DEMOCARTIQUE DU CONGO', 'AFRIQUE', 'ANTARTIQUE', 'ASIE' ],
-            //     //domain: [ previousDate.getTime(), currentDate.getTime() ],
-            //     range: [ scrollBoxPlot.h, 0 ],
-            //
-            // })
             focusedPlot.add_axis({
                 id: 'bottom',
                 location: 'bottom',
-                type: 'time',
-                profile: 'context',
-                domain: [ previousDate.getTime(), currentDate.getTime() ],
+                type: 'band',
+                profile: 'focus',
+                // axis: {
+                //     profile: 'context',
+                //     display: false,
+                //     track: 'a1',
+                //     orientation: 'out',
+                // },
+                // azerty: {
+                //     profile: 'context',
+                //     display: false,
+                // },
+                domain: [ 'EUROPE', 'AMERIQUEWWWWWWWWWWWWWWW', 'AFRIQUEwwwwwwwwwwwwwwwwwwwwwwwww', 'ANTARTIQUEwwwwwwwwwwwwwwwwwwwwwwwww', 'ASIE' ],
+                // domain: [ previousDate.getTime(), currentDate.getTime() ],
+                // domain: {
+                //     context: [ 0, 100 ],
+                //     focus: [ 0, 100 ],
+                // },
                 range: [ 0, scrollBoxPlot.w ],
+                // style: {
+                //     text: {
+                //         visible: true,
+                //         size: 13,
+                //         stroke: colorPalette.medium.stroke,
+                //         fill: colorPalette.medium.stroke,
+                //     },
+                //     path: {
+                //         visible: true,
+                //         stroke: colorPalette.medium.stroke,
+                //         fill: colorPalette.medium.stroke,
+                //     },
+                //     axis: {
+                //         visible: true,
+                //     },
+                // },
             })
+
+            focusedPlot.add_axis({
+                id: 'top',
+                location: 'top',
+                type: 'band',
+                profile: 'context',
+                // box: {
+                //     x: 0,
+                //     y: -55,
+                //     w: scrollBoxPlot.w,
+                //     h: 25,
+                // },
+                domain: [ 'EUROPE', 'REPUBLIQUE DEMOCARTIQUE DU CONGO', 'AFRIQUE', 'ANTARTIQUE', 'ASIE' ],
+                //domain: [ previousDate.getTime(), currentDate.getTime() ],
+                range: [ 0, scrollBoxPlot.w ],
+
+            })
+            focusedPlot.add_axis({
+                id: 'right',
+                location: 'right',
+                type: 'band',
+                profile: 'context',
+                // box: {
+                //     x: scrollBoxPlot.w + 30,
+                //     y: 0,
+                //     w: 25,
+                //     h: scrollBoxPlot.h,
+                // },
+                domain: [ 'EUROPE', 'REPUBLIQUE DEMOCARTIQUE DU CONGO', 'AFRIQUE', 'ANTARTIQUE', 'ASIE' ],
+                //domain: [ previousDate.getTime(), currentDate.getTime() ],
+                range: [ scrollBoxPlot.h, 0 ],
+
+            })
+            // focusedPlot.add_axis({
+            //     id: 'top',
+            //     scale_location: 'top',
+            //     scale_type: 'time',
+            //     profile: 'context',
+            //     domain: [ previousDate.getTime(), currentDate.getTime() ],
+            //     range: [ 0, scrollBoxPlot.w ],
+            // })
             // focusedPlot.add_axis({
             //     id: 'left',
             //     scale_location: 'left',
@@ -1185,23 +1185,23 @@ let main_plots_dash = function(opt_in) {
             //     focusedPlot.add_data(all_data[i])
             // }
 
-            let temp_batch = []
-            for (let i = 0; i < 100; i++) {
-                temp_batch.push(
-                    {
-                        x: previousDate.getTime() + (((currentDate.getTime() - previousDate.getTime()) / 100) * i),
-                        y: Math.floor(Math.random() * Math.floor(60)),
-                    }
-                )
-            }
-            focusedPlot.add_data({
-                id: 'temp',
-                data: temp_batch,
-                drawing_method: 'plotline',
-                shape: 'circle',
-                axis_x: 'bottom',
-                axis_y: 'left',
-            })
+            // let temp_batch = []
+            // for (let i = 0; i < 100; i++) {
+            //     temp_batch.push(
+            //         {
+            //             x: previousDate.getTime() + (((currentDate.getTime() - previousDate.getTime()) / 100) * i),
+            //             y: Math.floor(Math.random() * Math.floor(60)),
+            //         }
+            //     )
+            // }
+            // focusedPlot.add_data({
+            //     id: 'temp',
+            //     data: temp_batch,
+            //     drawing_method: 'plotline',
+            //     shape: 'circle',
+            //     axis_x: 'bottom',
+            //     axis_y: 'left',
+            // })
 
 
             // let scatter_batch = []
