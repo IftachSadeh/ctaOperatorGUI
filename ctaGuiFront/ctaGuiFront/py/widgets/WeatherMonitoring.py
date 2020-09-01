@@ -46,21 +46,21 @@ class WeatherMonitoring(BaseWidget):
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.send_widget_init_data(opt_in=opt_in)
+        self.socket_manager.send_init_widget(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates to
         # all sessions in the group
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.add_widget_loop(opt_in=opt_in)
+        self.socket_manager.add_widget_tread(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    def back_from_offline(self):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        BaseWidget.back_from_offline(self)
 
         # with WeatherMonitoring.lock:
         #     print('-- back_from_offline',self.widget_name,self.widget_id)
@@ -101,7 +101,7 @@ class WeatherMonitoring(BaseWidget):
                     self.redis.pipe.z_get(
                         'inst_health;' + self.tel_ids[index] + ';' + key
                     )
-            data = self.redis.pipe.execute()
+            data = self.redis.pipe.execute(packed_score=True)
             n_ele = sum([len(v) for k, v in keys_now.items()])
             if len(data) != n_ele:
                 print keys_now
@@ -127,7 +127,8 @@ class WeatherMonitoring(BaseWidget):
                                 'y': x[0]['data']['value'],
                             })
                     data_out[index].append({
-                        'id': self.tel_ids[index] + ';' + key,
+                        'id':
+                        self.tel_ids[index] + ';' + key,
                         'data': innerData
                     })
 
@@ -141,7 +142,7 @@ class WeatherMonitoring(BaseWidget):
     def send_rnd_message(self, data):
         # self.log.info([
         #     ['y', ' - got event: send_rnd_message('],
-        #     ['g', str(data['my_message'])], ['y', ")"]
+        #     ['g', str(data['myMessage'])], ['y', ")"]
         # ])
 
         return

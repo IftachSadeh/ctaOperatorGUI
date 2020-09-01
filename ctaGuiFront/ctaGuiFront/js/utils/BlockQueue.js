@@ -2082,16 +2082,16 @@ window.BlockQueue = function(opt_in) {
             .duration(times.anim)
             .style('opacity', 0)
             .remove()
-        // ------------------------------------------------------------------
-        //
-        // ------------------------------------------------------------------
-        // let text = g
-        //   .selectAll('text.' + com.main_tag + 'blocks')
-        //   .data(data, function (d) {
-        //     return d.id
-        //   })
-        // text
-        //   .enter()
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    // let text = g
+    //   .selectAll('text.' + com.main_tag + 'blocks')
+    //   .data(data, function (d) {
+    //     return d.id
+    //   })
+    // text
+    //   .enter()
 
     // text
     //   .exit()
@@ -2222,7 +2222,7 @@ window.BlockQueue = function(opt_in) {
             .attr('width', function(d, i) {
                 return d.w
             })
-        // .attr("height", function(d,i) { return d.h; })
+    // .attr("height", function(d,i) { return d.h; })
 
     // rectNow.exit()
     //   .transition("in_out").duration(times.anim/2)

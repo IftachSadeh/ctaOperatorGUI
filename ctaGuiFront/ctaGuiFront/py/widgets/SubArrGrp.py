@@ -40,21 +40,21 @@ class SubArrGrp(BaseWidget):
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.send_widget_init_data(opt_in=opt_in)
+        self.socket_manager.send_init_widget(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates
         # to all sessions in the group
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.add_widget_loop(opt_in=opt_in)
+        self.socket_manager.add_widget_tread(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    def back_from_offline(self):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        BaseWidget.back_from_offline(self)
 
         # with SubArrGrp.lock:
         #     print('-- back_from_offline',self.widget_name,self.widget_id)
@@ -76,9 +76,11 @@ class SubArrGrp(BaseWidget):
                 n_tries += 1
                 sleep(0.5)
 
-        sub_arrs = self.redis.get(name="sub_arrs", default_val=[])
-        obs_block_ids = self.redis.get(name=('obs_block_ids_' + 'run'), default_val=[])
-        inst_pos = self.redis.h_get_all(name='inst_pos', default_val={})
+        sub_arrs = self.redis.get(name="sub_arrs", packed=True, default_val=[])
+        obs_block_ids = self.redis.get(
+            name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+        )
+        inst_pos = self.redis.h_get_all(name="inst_pos", packed=True)
 
         data = {
             "tel": [],
@@ -93,7 +95,7 @@ class SubArrGrp(BaseWidget):
         self.redis.pipe.reset()
         for obs_block_id in obs_block_ids:
             self.redis.pipe.get(obs_block_id)
-        blocks = self.redis.pipe.execute()
+        blocks = self.redis.pipe.execute(packed=True)
 
         #
         all_tel_ids = copy.deepcopy(self.tel_ids)

@@ -52,21 +52,21 @@ class CommentSched(BaseWidget):
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.send_widget_init_data(opt_in=opt_in)
+        self.socket_manager.send_init_widget(opt_in=opt_in)
 
         # start a thread which will call update_data() and send
         # 1Hz data updates to all sessions in the group
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.add_widget_loop(opt_in=opt_in)
+        self.socket_manager.add_widget_tread(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    def back_from_offline(self):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        BaseWidget.back_from_offline(self)
 
         # with CommentSched.lock:
         #     print('-- back_from_offline',self.widget_name,self.widget_id)
@@ -117,7 +117,7 @@ class CommentSched(BaseWidget):
     def get_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_events")
-        redis_data = self.redis.pipe.execute()
+        redis_data = self.redis.pipe.execute(packed=True)
 
         CommentSched.external_events = redis_data
 
@@ -126,7 +126,7 @@ class CommentSched(BaseWidget):
     def get_clock_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_clock_events")
-        redis_data = self.redis.pipe.execute()
+        redis_data = self.redis.pipe.execute(packed=True)
 
         CommentSched.external_clock_events = redis_data
 
@@ -156,7 +156,7 @@ class CommentSched(BaseWidget):
             for key in keys_now:
                 self.redis.pipe.get('obs_block_ids_' + key)
 
-            data = self.redis.pipe.execute()
+            data = self.redis.pipe.execute(packed=True)
             obs_block_ids = sum(data, [])  # flatten the list of lists
 
             self.redis.pipe.reset()
@@ -164,7 +164,7 @@ class CommentSched(BaseWidget):
                 self.redis.pipe.get(obs_block_id)
 
             key = keys_now[0]
-            blocks = self.redis.pipe.execute()
+            blocks = self.redis.pipe.execute(packed=True)
             CommentSched.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['start_time_sec'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['start_time_sec'],"%Y-%m-%d %H:%M:%S")).total_seconds())

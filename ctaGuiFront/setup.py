@@ -13,22 +13,21 @@ def _read(path):
 
     return data
 
-
 README = ''
 CHANGES = ''
 
 requires = [
     'pyramid'
-    # , 'gevent-socketio'
-    # , 'pyramid_mako'
-    # , 'gevent-websocket'
-    # , 'SQLAlchemy'
-    # , 'transaction'
-    # , 'zope.sqlalchemy'
+    , 'gevent-socketio'
+    , 'pyramid_mako'
+    , 'gevent-websocket'
+    , 'SQLAlchemy'
+    , 'transaction'
+    , 'zope.sqlalchemy'
 ]
 
-# if sys.version_info[:3] < (2, 5, 0):
-#     requires.append('pysqlite')
+if sys.version_info[:3] < (2, 5, 0):
+    requires.append('pysqlite')
 
 
 class PyTest(Command):
@@ -45,32 +44,30 @@ class PyTest(Command):
         errno = subprocess.call('py.test')
         raise SystemExit(errno)
 
-
-setup(
-    name='ctaGuiFront',
-    version='0.0',
-    description='ctaGuiFront',
-    long_description=README + '\n\n' + CHANGES,
-    classifiers=[
+setup(name='ctaGuiFront',
+      version='0.0',
+      description='ctaGuiFront',
+      long_description=README + '\n\n' + CHANGES,
+      classifiers=[
         "Programming Language :: Python",
         "Framework :: Pylons",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-    ],
-    author='',
-    author_email='',
-    url='',
-    keywords='web wsgi bfg pylons pyramid',
-    packages=find_packages(),
-    include_package_data=True,
-    zip_safe=False,
-    test_suite='ctaGuiFront',
-    install_requires=requires,
-    entry_points="""\
+        ],
+      author='',
+      author_email='',
+      url='',
+      keywords='web wsgi bfg pylons pyramid',
+      packages=find_packages(),
+      include_package_data=True,
+      zip_safe=False,
+      test_suite='ctaGuiFront',
+      install_requires=requires,
+      entry_points="""\
       [paste.app_factory]
       main = ctaGuiFront:main
       [console_scripts]
       initialize_tutorial_db = ctaGuiFront.scripts.initializedb:main
       """,
-    paster_plugins=['pyramid'],
-)
+      paster_plugins=['pyramid'],
+      )

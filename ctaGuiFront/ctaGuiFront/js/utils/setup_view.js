@@ -107,18 +107,12 @@ setup_view.view200 = function() {
         has_icon: true,
         has_drawer: true,
     })
-    sock.add_widget({
-        name_tag: 'ArrZoomerView',
-        table_title: 'Telescope health',
-        has_icon: true,
-        has_drawer: true,
-    })
-    sock.add_widget({
-        name_tag: 'EmptyExample',
-        table_title: 'empty_example',
-        has_icon: true,
-        has_drawer: false,
-    })
+    // sock.add_widget({
+    //   name_tag: 'azPlots',
+    //   table_title: 'Telescope health plots',
+    //   has_icon: true,
+    //   has_drawer: false
+    // })
 }
 
 // -------------------------------------------------------------------
@@ -149,12 +143,6 @@ setup_view.view202 = function() {
 // PanelSync
 // -------------------------------------------------------------------
 setup_view.view203 = function() {
-    sock.add_widget({
-        name_tag: 'PanelSync',
-        table_title: 'Panel synchronization',
-        has_icon: false,
-        has_drawer: false,
-    })
     sock.add_widget({
         name_tag: 'PanelSync',
         table_title: 'Panel synchronization',
@@ -242,14 +230,7 @@ setup_view.view000 = function() {
 
     sock.add_widget({
         name_tag: 'EmptyExample',
-        table_title: 'empty_example 0',
-        has_icon: true,
-        has_drawer: false,
-    })
-
-    sock.add_widget({
-        name_tag: 'EmptyExample',
-        table_title: 'empty_example 1',
+        table_title: 'empty_example',
         has_icon: true,
         has_drawer: false,
     })

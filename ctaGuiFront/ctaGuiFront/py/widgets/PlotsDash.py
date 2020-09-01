@@ -167,7 +167,7 @@ class PlotsDash(BaseWidget):
             'widget': self,
             'data_func': self.get_data,
         }
-        self.socket_manager.send_widget_init_data(opt_in=opt_in)
+        self.socket_manager.send_init_widget(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates to
         # all sessions in the group
@@ -176,16 +176,16 @@ class PlotsDash(BaseWidget):
             'is_group_thread': False,
             'data_func': self.get_data,
         }
-        self.socket_manager.add_widget_loop(opt_in=opt_in)
+        self.socket_manager.add_widget_tread(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    def back_from_offline(self):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        BaseWidget.back_from_offline(self)
 
         # with PlotsDash.lock:
         #     print('-- back_from_offline',self.widget_name,self.widget_id)
@@ -199,7 +199,7 @@ class PlotsDash(BaseWidget):
         self.inst_health_sub_flat = dict()
         self.inst_health_sub_fields = dict()
 
-        self.inst_health_sub = self.socket_manager.inst_data.get_inst_healths()
+        self.inst_health_sub = self.socket_manager.inst_data.get_tel_healths()
 
         # a flat dict with references to each level of the original dict
         self.inst_health_sub_flat = dict()
@@ -215,7 +215,7 @@ class PlotsDash(BaseWidget):
             }
 
             self.inst_health_sub_fields[id_now] = []
-            for key, val in self.inst_health_sub_flat[id_now].items():
+            for key, val in self.inst_health_sub_flat[id_now].iteritems():
                 if 'val' in val['data']:
                     self.inst_health_sub_fields[id_now] += [key]
 
@@ -338,7 +338,7 @@ class PlotsDash(BaseWidget):
         for index in range(len(self.tel_ids)):
             for key in self.tel_key:
                 self.redis.pipe.z_get('inst_health;' + self.tel_ids[index] + ';' + key)
-            data = self.redis.pipe.execute()
+            data = self.redis.pipe.execute(packed_score=True)
             n_ele_now = 0
             for key in self.tel_key:
                 data_now = data[n_ele_now]
@@ -350,7 +350,8 @@ class PlotsDash(BaseWidget):
                             'y': x[0]['data']['value'],
                         })
                 inst_health.append({
-                    'id': self.tel_ids[index] + '-' + key,
+                    'id':
+                    self.tel_ids[index] + '-' + key,
                     'keys': [self.tel_ids[index], key],
                     'data': innerData
                 })
@@ -381,7 +382,7 @@ class PlotsDash(BaseWidget):
         data = {}
         for key in keys_now:
             self.redis.pipe.z_get('inst_health;' + id + ';' + key)
-            data[key] = self.redis.pipe.execute()
+            data[key] = self.redis.pipe.execute(packed_score=True)
         # n_ele = sum([len(v) for v in keys_now])
         # if len(data) != n_ele:
         #     print keys_now
@@ -397,7 +398,7 @@ class PlotsDash(BaseWidget):
     def send_rnd_message(self, data):
         # self.log.info([
         #     ['y', ' - got event: send_rnd_message('],
-        #     ['g', str(data['my_message'])], ['y', ")"]
+        #     ['g', str(data['myMessage'])], ['y', ")"]
         # ])
 
         return
@@ -408,7 +409,7 @@ class PlotsDash(BaseWidget):
     def get_sub_arr_grp(self):
         #print 'get_sub_arr_grp'
         with PlotsDash.lock:
-            sub_arrs = self.redis.get(name="sub_arrs", default_val=[])
+            sub_arrs = self.redis.get(name="sub_arrs", packed=True, default_val=[])
             self.sub_arr_grp = {"id": "sub_arr", "children": sub_arrs}
 
         return

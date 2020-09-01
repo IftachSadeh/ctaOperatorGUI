@@ -53,21 +53,21 @@ class SchedBlockInspector(BaseWidget):
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.send_widget_init_data(opt_in=opt_in)
+        self.socket_manager.send_init_widget(opt_in=opt_in)
 
         # start a thread which will call update_data() and send
         # 1Hz data updates to all sessions in the group
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.add_widget_loop(opt_in=opt_in)
+        self.socket_manager.add_widget_tread(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    def back_from_offline(self):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        BaseWidget.back_from_offline(self)
 
         # with SchedBlockInspector.lock:
         #     print('-- back_from_offline',self.widget_name,self.widget_id)
@@ -138,7 +138,7 @@ class SchedBlockInspector(BaseWidget):
     def get_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_events")
-        redis_data = self.redis.pipe.execute()
+        redis_data = self.redis.pipe.execute(packed=True)
 
         SchedBlockInspector.external_events = redis_data
 
@@ -150,7 +150,7 @@ class SchedBlockInspector(BaseWidget):
     def get_clock_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_clock_events")
-        redis_data = self.redis.pipe.execute()
+        redis_data = self.redis.pipe.execute(packed=True)
 
         SchedBlockInspector.external_clock_events = redis_data
 
@@ -177,10 +177,12 @@ class SchedBlockInspector(BaseWidget):
     def get_target(self):
         self.redis.pipe.reset()
 
-        SchedBlockInspector.target_ids = self.redis.get(name='target_ids', default_val=[])
+        SchedBlockInspector.target_ids = self.redis.get(
+            name='target_ids', packed=True, default_val=[]
+        )
         for id in SchedBlockInspector.target_ids:
             self.redis.pipe.get(id)
-        SchedBlockInspector.targets = self.redis.pipe.execute()
+        SchedBlockInspector.targets = self.redis.pipe.execute(packed=True)
         return
 
     # ------------------------------------------------------------------
@@ -192,7 +194,7 @@ class SchedBlockInspector(BaseWidget):
             for key in keys_now:
                 self.redis.pipe.get('obs_block_ids_' + key)
 
-            data = self.redis.pipe.execute()
+            data = self.redis.pipe.execute(packed=True)
             obs_block_ids = sum(data, [])  # flatten the list of lists
 
             self.redis.pipe.reset()
@@ -200,7 +202,7 @@ class SchedBlockInspector(BaseWidget):
                 self.redis.pipe.get(obs_block_id)
 
             key = keys_now[0]
-            blocks = self.redis.pipe.execute()
+            blocks = self.redis.pipe.execute(packed=True)
             SchedBlockInspector.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['start_time_sec'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['start_time_sec'],"%Y-%m-%d %H:%M:%S")).total_seconds())
@@ -211,11 +213,11 @@ class SchedBlockInspector(BaseWidget):
 
     # data.zoom_target = name of telescope focus on (ex: L_2)
     def sched_block_inspector_push_schedule(self, *args):
-        self.expire_sec = 86400  # one day
+        self.expire = 86400  # one day
         print 'sched_block_inspector_push_schedule'
         data = args[0]['newSchedule']
         self.redis.pipe.reset()
-        self.redis.pipe.set(name='obs_block_update', data=data)
+        self.redis.pipe.set(name='obs_block_update', data=data, packed=True)
         # obs_block_ids = {"wait": [], "run": [], "done": [], "cancel": [], "fail": []}
         # new_blocks = []
         # for key in data:
@@ -223,11 +225,11 @@ class SchedBlockInspector(BaseWidget):
         #         if self.redis.exists(data[key][i]["obs_block_id"]):
         #             obs_block_ids[data[key][i]['exe_state']['state']].append(data[key][i]["obs_block_id"])
         #             self.redis.pipe.set(
-        #                 name=data[key][i]["obs_block_id"], data=data[key][i], expire_sec=self.expire_sec)
+        #                 name=data[key][i]["obs_block_id"], data=data[key][i], expire=self.expire, packed=True)
         #         else:
         #             new_blocks.append(data[key][i])
-        # for key, val in obs_block_ids.items():
-        #     self.redis.pipe.set(name='obs_block_ids_'+key, data=val)
+        # for key, val in obs_block_ids.iteritems():
+        #     self.redis.pipe.set(name='obs_block_ids_'+key, data=val, packed=True)
 
         self.redis.pipe.execute()
         # print new_blocks

@@ -10,39 +10,11 @@
 // ------------------------------------------------------------------
 // unique identification
 // ------------------------------------------------------------------
-function get_rnd_once(n_digits) {
-    let rnd_min = Math.pow(10, n_digits-1)
-    let rnd_max = Math.pow(10, n_digits)
-    let rnd_now = Math.random() * (rnd_max - rnd_min) + rnd_min
-    rnd_now = (Math.min(Math.floor(rnd_now), rnd_max - 1)).toString()
-    return rnd_now
-}
-
-window.unique = function(opt_in) {
-    if (!is_def(opt_in)) {
-        opt_in = {}
-    }
-    let n_digits = is_def(opt_in['n_digits']) ? opt_in['n_digits'] : 20
-    let prefix = is_def(opt_in['prefix']) ? opt_in['prefix'] : '_'
-    let postfix = is_def(opt_in['postfix']) ? opt_in['postfix'] : ''
-
-    n_digits = Math.max(n_digits, 1)
-
-    let rnd_now = ''
-    let ntry = 0
-    let rnd_precision = 10
-    while (true) {
-        let n_digits_now = Math.floor(Math.min(n_digits, rnd_precision))
-        n_digits -= n_digits_now
-        ntry += 1
-        if (n_digits_now < 1 || ntry > 100) {
-            break
-        }
-        rnd_now += get_rnd_once(n_digits_now)
-    }
-
-    return prefix + rnd_now + postfix
-    // return prefix + get_time_msec().toString() + postfix
+window.unique = function() {
+    let postfix_0 = '00000'
+    let rnd_now = Math.floor(Math.random() * 1e5).toString()
+    let postfix = (postfix_0 + rnd_now).slice(-1 * postfix_0.length)
+    return '_' + Date.now().toString() + postfix
 }
 let unique = window.unique
 
@@ -525,7 +497,7 @@ window.col_purple = function(index) {
 
     return cols_purples[index % cols_purples.length]
 }
-window.col_mix = function(index) {
+window.colMix = function(index) {
     if (!is_def(index)) {
         index = 0
     }
@@ -535,17 +507,6 @@ window.col_mix = function(index) {
 
     return cols_mix[index % cols_mix.length]
 }
-
-// ------------------------------------------------------------------
-// colours for different states (red, yellow, green)
-// ------------------------------------------------------------------
-let LOG_LEVELS = {
-    ERROR: 'ERROR',
-    WARNING: 'WARNING',
-    INFO: 'INFO',
-    DEBUG: 'DEBUG',
-}
-window.LOG_LEVELS = LOG_LEVELS
 
 // ------------------------------------------------------------------
 // commonly used units and symbols
@@ -816,7 +777,7 @@ window.inst_health_frac = function(health) {
 // ------------------------------------------------------------------
 
 // ------------------------------------------------------------------
-// transition times (if the window/tab is inactive, flush_hidden_d3() makes sure all animations
+// transition times (if the window/tab is inactive, check_is_hidden() makes sure all animations
 // are flushed, and these times are ignored
 // ------------------------------------------------------------------
 let timescale = 1
@@ -1161,7 +1122,7 @@ window.Locker = function(opt_init) {
     // turn a counter on or off
     function add(opt_in) {
         let id = default_cntr
-        let expire_sec = -1
+        let expire = -1
         let override = false
         if (is_def(opt_in)) {
             if (typeof opt_in === 'string') {
@@ -1171,8 +1132,8 @@ window.Locker = function(opt_init) {
                 if (is_def(opt_in.id)) {
                     id = opt_in.id
                 }
-                if (is_def(opt_in.expire_sec)) {
-                    expire_sec = opt_in.expire_sec
+                if (is_def(opt_in.expire)) {
+                    expire = opt_in.expire
                 }
                 if (is_def(opt_in.override)) {
                     override = opt_in.override
@@ -1190,10 +1151,10 @@ window.Locker = function(opt_init) {
             counters[id] = Math.max(0, counters[id] + 1)
         }
 
-        if (expire_sec > 0) {
+        if (expire > 0) {
             remove({
                 id: id,
-                delay: expire_sec,
+                delay: expire,
             })
         }
     // if(id == 'zoom_to_target') console.log('Locker add',id,counters[id]);
@@ -1478,7 +1439,7 @@ window.RunLoop = function(opt_in) {
             return
         }
 
-        let time = parseInt(is_def(opt_in.time) ? opt_in.time : get_time_msec())
+        let time = parseInt(is_def(opt_in.time) ? opt_in.time : Date.now())
         runs[opt_in.tag].push({
             data: opt_in.data,
             time: time,
@@ -2574,11 +2535,6 @@ window.date_to_string = function(date_in) {
     //        +date_in.getHours()+":"+date_in.getMinutes()+":"+date_in.getSeconds();
 }
 
-// the number of milliseconds elapsed since January 1, 1970 00:00:00 UTC
-window.get_time_msec = function() {
-    return Date.now()
-}
-
 // ------------------------------------------------------------------
 // numerical
 // ------------------------------------------------------------------
@@ -3105,7 +3061,7 @@ window.add_accordion_div = function(opt_in) {
 //   function checkSetZoomFunc() {
 //     if(prevWheel < 0) return;
 
-//     let time_dif = get_time_msec() - prevWheel;
+//     let time_dif = Date.now() - prevWheel;
 //     if(time_dif > timeWheel) {
 //       exeFunc( ((countWheel > 0) ? 1 : -1) );
 
@@ -3120,7 +3076,7 @@ window.add_accordion_div = function(opt_in) {
 //   // ------------------------------------------------------------------
 //   function doIntMouse(){
 //     countWheel += (event.detail<0) ? 1 : (event.wheelDelta>0) ? 1 : -1;;
-//     prevWheel   = get_time_msec();
+//     prevWheel   = Date.now();
 //     return;
 //   };
 

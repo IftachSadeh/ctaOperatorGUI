@@ -1,18 +1,16 @@
+import gevent
+from gevent import sleep
 from math import floor
 import random
 from random import Random
 import copy
 from datetime import datetime
 
-from time import sleep
-from threading import Lock
-
-from ctaGuiUtils.py.ThreadManager import ThreadManager
+from ctaGuiUtils.py.utils import has_acs
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.utils import get_rnd, get_time, get_rnd_seed
 from ctaGuiUtils.py.RedisManager import RedisManager
 from ctaGuiBack.py.MockSched import MockSched
-from ctaGuiUtils.py.utils import has_acs
 
 if has_acs:
     # from Acspy.Clients.SimpleClient import PySimpleClient
@@ -26,25 +24,17 @@ if has_acs:
 
 
 # ------------------------------------------------------------------
-class SchedulerACS(ThreadManager):
-    has_active = False
-    lock = Lock()
-
-    def __init__(self, base_config, interrupt_sig):
+#
+# ------------------------------------------------------------------
+class SchedulerACS():
+    def __init__(self, base_config):
         self.log = LogParser(base_config=base_config, title=__name__)
-        # self.log.info([['y', ' - SchedulerACS - '], ['g', base_config.site_type]])
-
-        if SchedulerACS.has_active:
-            raise Exception('Can not instantiate SchedulerACS more than once...')
-        else:
-            SchedulerACS.has_active = True
+        self.log.info([['y', ' - SchedulerACS - '], ['g', base_config.site_type]])
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
         self.clock_sim = self.base_config.clock_sim
         self.inst_data = self.base_config.inst_data
-
-        self.interrupt_sig = interrupt_sig
 
         self.tel_ids = self.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
@@ -52,12 +42,12 @@ class SchedulerACS(ThreadManager):
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, base_config=self.base_config, log=self.log
+            name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
 
         self.debug = not True
-        self.expire_sec = 86400  # one day
-        # self.expire_sec = 5
+        self.expire = 86400  # one day
+        # self.expire = 5
 
         self.MockSched = None
 
@@ -83,17 +73,15 @@ class SchedulerACS(ThreadManager):
 
         self.az_min_max = [-180, 180]
 
-        self.loop_sleep_sec = 3
+        self.loop_sleep = 3
 
         rnd_seed = get_rnd_seed()
         # rnd_seed = 10987268332
         self.rnd_gen = Random(rnd_seed)
 
-        self.setup_threads()
+        gevent.spawn(self.loop)
 
-        self.MockSched = MockSched(
-            base_config=self.base_config, interrupt_sig=self.interrupt_sig
-        )
+        self.MockSched = MockSched(base_config=self.base_config)
 
         # ------------------------------------------------------------------
         # temporary hack to be consistent with SchedulerStandalone
@@ -105,11 +93,8 @@ class SchedulerACS(ThreadManager):
 
         return
 
-    # ---------------------------------------------------------------------------
-    def setup_threads(self):
-        self.add_thread(target=self.loop_main)
-        return
-
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def reset_blocks(self):
         debug_tmp = False
@@ -140,9 +125,7 @@ class SchedulerACS(ThreadManager):
         blocks_run = []
         active = sched_blocks['active']
 
-        pipe = self.redis.get_pipe()
-
-        for sched_blk_id, schBlock in sched_blocks['blocks'].items():
+        for sched_blk_id, schBlock in sched_blocks['blocks'].iteritems():
 
             sub_array_tels = (
                 schBlock['sched_block'].config.instrument.sub_array.telescopes
@@ -229,19 +212,19 @@ class SchedulerACS(ThreadManager):
 
                 telescopes = {
                     'large': {
-                        'min': int(len(list(filter(lambda x: 'L' in x, tel_ids))) / 2),
+                        'min': int(len(filter(lambda x: 'L' in x, tel_ids)) / 2),
                         'max': 4,
-                        'ids': list(filter(lambda x: 'L' in x, tel_ids))
+                        'ids': filter(lambda x: 'L' in x, tel_ids)
                     },
                     'medium': {
-                        'min': int(len(list(filter(lambda x: 'M' in x, tel_ids))) / 2),
+                        'min': int(len(filter(lambda x: 'M' in x, tel_ids)) / 2),
                         'max': 25,
-                        'ids': list(filter(lambda x: 'M' in x, tel_ids))
+                        'ids': filter(lambda x: 'M' in x, tel_ids)
                     },
                     'small': {
-                        'min': int(len(list(filter(lambda x: 'S' in x, tel_ids))) / 2),
+                        'min': int(len(filter(lambda x: 'S' in x, tel_ids)) / 2),
                         'max': 70,
-                        'ids': list(filter(lambda x: 'S' in x, tel_ids))
+                        'ids': filter(lambda x: 'S' in x, tel_ids)
                     }
                 }
 
@@ -272,22 +255,27 @@ class SchedulerACS(ThreadManager):
 
                 obs_block_ids[state].append(obs_block_id)
 
-                pipe.set(
-                    name=obs_block_id,
-                    data=block,
-                    expire_sec=self.expire_sec,
-                    packed=True
+                self.redis.pipe.set(
+                    name=obs_block_id, data=block, expire=self.expire, packed=True
                 )
 
-        pipe.set(name='obs_block_ids_' + 'wait', data=obs_block_ids['wait'], packed=True)
-        pipe.set(name='obs_block_ids_' + 'run', data=obs_block_ids['run'], packed=True)
-        pipe.set(name='obs_block_ids_' + 'done', data=obs_block_ids['done'], packed=True)
-        pipe.set(
+        self.redis.pipe.set(
+            name='obs_block_ids_' + 'wait', data=obs_block_ids['wait'], packed=True
+        )
+        self.redis.pipe.set(
+            name='obs_block_ids_' + 'run', data=obs_block_ids['run'], packed=True
+        )
+        self.redis.pipe.set(
+            name='obs_block_ids_' + 'done', data=obs_block_ids['done'], packed=True
+        )
+        self.redis.pipe.set(
             name='obs_block_ids_' + 'cancel', data=obs_block_ids['cancel'], packed=True
         )
-        pipe.set(name='obs_block_ids_' + 'fail', data=obs_block_ids['fail'], packed=True)
+        self.redis.pipe.set(
+            name='obs_block_ids_' + 'fail', data=obs_block_ids['fail'], packed=True
+        )
 
-        pipe.execute()
+        self.redis.pipe.execute()
 
         update_sub_arrs(self=self, blocks=blocks_run)
 
@@ -299,16 +287,14 @@ class SchedulerACS(ThreadManager):
     # def update_sub_arrs(self, blocks=None):
     #     # inst_pos = self.redis.h_get_all(name='inst_pos')
 
-    #     pipe = self.redis.get_pipe()
-
     #     if blocks is None:
     #         obs_block_ids = self.redis.get(
     #             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
     #         )
     #         for obs_block_id in obs_block_ids:
-    #             pipe.get(obs_block_id)
+    #             self.redis.pipe.get(obs_block_id)
 
-    #         blocks = pipe.execute(packed=True)
+    #         blocks = self.redis.pipe.execute(packed=True)
 
     #     # sort so last is first in the list (latest sub-array defined gets the telescope)
     #     blocks = sorted(
@@ -353,53 +339,44 @@ class SchedulerACS(ThreadManager):
     #     return
 
     # ------------------------------------------------------------------
-    def loop_main(self):
-        self.log.info([['g', ' - starting SchedulerACS.loop_main ...']])
+    #
+    # ------------------------------------------------------------------
+    def loop(self):
+        self.log.info([['g', ' - starting SchedulerACS.loop ...']])
 
-        pipe = self.redis.get_pipe()
+        self.redis.pipe.set(name='obs_block_ids_' + 'wait', data='')
+        self.redis.pipe.set(name='obs_block_ids_' + 'run', data='')
+        self.redis.pipe.set(name='obs_block_ids_' + 'done', data='')
+        self.redis.pipe.set(name='obs_block_ids_' + 'cancel', data='')
+        self.redis.pipe.set(name='obs_block_ids_' + 'fail', data='')
 
-        pipe.set(name='obs_block_ids_' + 'wait', data='')
-        pipe.set(name='obs_block_ids_' + 'run', data='')
-        pipe.set(name='obs_block_ids_' + 'done', data='')
-        pipe.set(name='obs_block_ids_' + 'cancel', data='')
-        pipe.set(name='obs_block_ids_' + 'fail', data='')
-
-        pipe.execute()
+        self.redis.pipe.execute()
 
         update_sub_arrs(self=self, blocks=[])
 
-        while self.can_loop():
-            sleep(self.loop_sleep_sec)
+        while True:
+            self.reset_blocks()
 
-            with SchedulerACS.lock:
-                self.reset_blocks()
-
-        self.log.info([['c', ' - ending SchedulerACS.loop_main ...']])
+            sleep(self.loop_sleep)
 
         return
 
 
 # ------------------------------------------------------------------
-class SchedulerStandalone(ThreadManager):
-    has_active = False
-    lock = Lock()
-
+#
+# ------------------------------------------------------------------
+class SchedulerStandalone():
     # ------------------------------------------------------------------
-    def __init__(self, base_config, interrupt_sig):
+    #
+    # ------------------------------------------------------------------
+    def __init__(self, base_config):
         self.log = LogParser(base_config=base_config, title=__name__)
-        # self.log.info([['y', ' - SchedulerStandalone - ']])
-
-        if SchedulerStandalone.has_active:
-            raise Exception('Can not instantiate SchedulerStandalone more than once...')
-        else:
-            SchedulerStandalone.has_active = True
+        self.log.info([['y', ' - SchedulerStandalone - ']])
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
         self.clock_sim = self.base_config.clock_sim
         self.inst_data = self.base_config.inst_data
-
-        self.interrupt_sig = interrupt_sig
 
         self.tel_ids = self.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
@@ -407,21 +384,19 @@ class SchedulerStandalone(ThreadManager):
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, base_config=self.base_config, log=self.log
+            name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
 
         self.debug = not True
-        self.expire_sec = 86400  # one day
-        # self.expire_sec = 5
+        self.expire = 86400  # one day
+        # self.expire = 5
 
+        # ------------------------------------------------------------------
+        #
         # ------------------------------------------------------------------
         self.max_n_obs_block = 4 if self.site_type == 'N' else 7
         self.max_n_obs_block = min(self.max_n_obs_block, floor(len(self.tel_ids) / 4))
-
-        # sleep duration for thread loops
-        self.loop_sleep_sec = 1
-        # minimal real-time delay between randomisations (once every self.loop_act_rate sec)
-        self.loop_act_rate = max(int(2 / self.loop_sleep_sec), 1)
+        self.loop_sleep = 4
 
         self.max_n_cycles = 100
         self.min_n_sched_block = 2  # 2
@@ -463,6 +438,7 @@ class SchedulerStandalone(ThreadManager):
         self.phase_rnd_frac['finish'] = 0.1
         self.phase_rnd_frac['cancel'] = 0.06
         self.phase_rnd_frac['fail'] = 0.1
+        self.loop_sleep = 2
 
         # 1800 = 30 minutes
         self.obs_block_sec = 1800
@@ -477,8 +453,6 @@ class SchedulerStandalone(ThreadManager):
         self.n_init_cycle = -1
         self.n_nights = -1
 
-        self.update_name = 'obs_block_update'
-
         rnd_seed = get_rnd_seed()
         # rnd_seed = 10987268332
         self.rnd_gen = Random(rnd_seed)
@@ -486,19 +460,16 @@ class SchedulerStandalone(ThreadManager):
         self.external_clock_events = []
         external_generate_clock_events(self)
 
-        self.redis.delete(self.update_name)
+        self.redis.pipe.delete('obs_block_update')
 
         self.init()
 
-        self.setup_threads()
+        gevent.spawn(self.loop)
 
         return
 
-    # ---------------------------------------------------------------------------
-    def setup_threads(self):
-        self.add_thread(target=self.loop_main)
-        return
-
+    # ------------------------------------------------------------------
+    #
     # ------------------------------------------------------------------
     def init(self):
         self.log.info([['p', ' - SchedulerStandalone.init() ...']])
@@ -530,11 +501,9 @@ class SchedulerStandalone(ThreadManager):
         # tot_sched_duration_sec = 0
         # max_block_duration_sec = self.duration_night - self.obs_block_sec
 
-        pipe = self.redis.get_pipe()
-
         # target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
         # for obs_block_id in obs_block_ids:
-        #     pipe.get(obs_block_id)
+        #     self.redis.pipe.get(obs_block_id)
 
         while True:
             can_break = not ((tot_sched_duration_sec < max_block_duration_sec) and
@@ -573,6 +542,8 @@ class SchedulerStandalone(ThreadManager):
 
             sched_block_duration_sec = []
 
+            # ------------------------------------------------------------------
+            #
             # ------------------------------------------------------------------
             for n_sched_block_now in range(n_sched_blocks):
                 sched_block_id = 'sched_block_' + base_name + str(n_sched_block_now)
@@ -681,27 +652,21 @@ class SchedulerStandalone(ThreadManager):
                     telescopes = {
                         'large': {
                             'min':
-                            int(len(list(filter(lambda x: 'L' in x, sched_tel_ids))) / 2),
-                            'max':
-                            4,
-                            'ids':
-                            list(filter(lambda x: 'L' in x, sched_tel_ids))
+                            int(len(filter(lambda x: 'L' in x, sched_tel_ids)) / 2),
+                            'max': 4,
+                            'ids': filter(lambda x: 'L' in x, sched_tel_ids)
                         },
                         'medium': {
                             'min':
-                            int(len(list(filter(lambda x: 'M' in x, sched_tel_ids))) / 2),
-                            'max':
-                            25,
-                            'ids':
-                            list(filter(lambda x: 'M' in x, sched_tel_ids))
+                            int(len(filter(lambda x: 'M' in x, sched_tel_ids)) / 2),
+                            'max': 25,
+                            'ids': filter(lambda x: 'M' in x, sched_tel_ids)
                         },
                         'small': {
                             'min':
-                            int(len(list(filter(lambda x: 'S' in x, sched_tel_ids))) / 2),
-                            'max':
-                            70,
-                            'ids':
-                            list(filter(lambda x: 'S' in x, sched_tel_ids))
+                            int(len(filter(lambda x: 'S' in x, sched_tel_ids)) / 2),
+                            'max': 70,
+                            'ids': filter(lambda x: 'S' in x, sched_tel_ids)
                         }
                     }
 
@@ -718,10 +683,10 @@ class SchedulerStandalone(ThreadManager):
                     block['pointings'] = pointings
                     block['tel_ids'] = sched_tel_ids
 
-                    pipe.set(
+                    self.redis.pipe.set(
                         name=block['obs_block_id'],
                         data=block,
-                        expire_sec=self.expire_sec,
+                        expire=self.expire,
                         packed=True
                     )
 
@@ -737,12 +702,14 @@ class SchedulerStandalone(ThreadManager):
             # the maximal duration of all blocks within this cycle
             tot_sched_duration_sec += max(sched_block_duration_sec)
 
-        pipe.set(name='external_events', data=self.external_events, packed=True)
-        pipe.set(
+        self.redis.pipe.set(
+            name='external_events', data=self.external_events, packed=True
+        )
+        self.redis.pipe.set(
             name='external_clock_events', data=self.external_clock_events, packed=True
         )
 
-        pipe.execute()
+        self.redis.pipe.execute()
 
         self.update_exe_statuses()
 
@@ -838,14 +805,11 @@ class SchedulerStandalone(ThreadManager):
             x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'wait')
         ]
 
-        pipe = self.redis.get_pipe()
-
         has_change = False
         for block in wait_blocks:
-            if time_now_sec < block['time']['start'] - (self.loop_sleep_sec
-                                                        * self.loop_act_rate):
+            if time_now_sec < block['time']['start'] - self.loop_sleep:
                 # datetime.strptime(block['start_time_sec'], '%Y-%m-%d %H:%M:%S'):
-                # - deltatime((self.loop_sleep_sec * self.loop_act_rate))
+                # - deltatime(self.loop_sleep)
                 continue
 
             block['exe_state']['state'] = 'run'
@@ -854,15 +818,12 @@ class SchedulerStandalone(ThreadManager):
             block['run_phase'] = copy.deepcopy(self.phases_exe['start'])
 
             has_change = True
-            pipe.set(
-                name=block['obs_block_id'],
-                data=block,
-                expire_sec=self.expire_sec,
-                packed=True
+            self.redis.pipe.set(
+                name=block['obs_block_id'], data=block, expire=self.expire, packed=True
             )
 
         if has_change:
-            pipe.execute()
+            self.redis.pipe.execute()
 
             # ------------------------------------------------------------------
             # check for blocks which cant begin as their time is already past
@@ -901,15 +862,15 @@ class SchedulerStandalone(ThreadManager):
                     self.exe_phase[block['obs_block_id']] = ''
 
                     has_change = True
-                    pipe.set(
+                    self.redis.pipe.set(
                         name=block['obs_block_id'],
                         data=block,
-                        expire_sec=self.expire_sec,
+                        expire=self.expire,
                         packed=True
                     )
 
             if has_change:
-                pipe.execute()
+                self.redis.pipe.execute()
 
         return
 
@@ -934,8 +895,6 @@ class SchedulerStandalone(ThreadManager):
         # #   return
 
         runs = [x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'run')]
-
-        pipe = self.redis.get_pipe()
 
         has_change = False
         for block in runs:
@@ -981,15 +940,12 @@ class SchedulerStandalone(ThreadManager):
                 self.exe_phase[block['obs_block_id']] = next_phase
 
             has_change = True
-            pipe.set(
-                name=block['obs_block_id'],
-                data=block,
-                expire_sec=self.expire_sec,
-                packed=True
+            self.redis.pipe.set(
+                name=block['obs_block_id'], data=block, expire=self.expire, packed=True
             )
 
         if has_change:
-            pipe.execute()
+            self.redis.pipe.execute()
 
         return
 
@@ -1001,8 +957,6 @@ class SchedulerStandalone(ThreadManager):
         time_now_sec = self.clock_sim.get_time_now_sec()
 
         runs = [x for x in self.all_obs_blocks if x['exe_state']['state'] == 'run']
-
-        pipe = self.redis.get_pipe()
 
         has_change = False
         for block in runs:
@@ -1041,17 +995,14 @@ class SchedulerStandalone(ThreadManager):
             block['run_phase'] = []
 
             has_change = True
-            pipe.set(
-                name=block['obs_block_id'],
-                data=block,
-                expire_sec=self.expire_sec,
-                packed=True
+            self.redis.pipe.set(
+                name=block['obs_block_id'], data=block, expire=self.expire, packed=True
             )
 
             self.exe_phase[block['obs_block_id']] = ''
 
         if has_change:
-            pipe.execute()
+            self.redis.pipe.execute()
 
         return
 
@@ -1061,8 +1012,6 @@ class SchedulerStandalone(ThreadManager):
     def update_exe_statuses(self):
         blocks_run = []
         obs_block_ids = {'wait': [], 'run': [], 'done': [], 'cancel': [], 'fail': []}
-
-        pipe = self.redis.get_pipe()
 
         for block in self.all_obs_blocks:
             obs_block_id = block['obs_block_id']
@@ -1074,10 +1023,10 @@ class SchedulerStandalone(ThreadManager):
                 if exe_state == 'run':
                     blocks_run += [block]
 
-        for key, val in obs_block_ids.items():
-            pipe.set(name='obs_block_ids_' + key, data=val, packed=True)
+        for key, val in obs_block_ids.iteritems():
+            self.redis.pipe.set(name='obs_block_ids_' + key, data=val, packed=True)
 
-        pipe.execute()
+        self.redis.pipe.execute()
 
         update_sub_arrs(self=self, blocks=blocks_run)
 
@@ -1087,15 +1036,14 @@ class SchedulerStandalone(ThreadManager):
     # #
     # # ------------------------------------------------------------------
     # def update_sub_arrs(self, blocks=None):
-    #     pipe = self.redis.get_pipe()
     #     if blocks is None:
     #         obs_block_ids = self.redis.get(
     #             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
     #         )
     #         for obs_block_id in obs_block_ids:
-    #             pipe.get(obs_block_id)
+    #             self.redis.pipe.get(obs_block_id)
 
-    #         blocks = pipe.execute(packed=True)
+    #         blocks = self.redis.pipe.execute(packed=True)
 
     #     #
     #     sub_arrs = []
@@ -1140,16 +1088,16 @@ class SchedulerStandalone(ThreadManager):
     #     return
 
     # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def external_add_new_redis_blocks(self):
-        obs_block_update = self.redis.get(self.update_name, default_val=None)
-        if obs_block_update is None:
+        if not self.redis.exists('obs_block_update'):
             return
-
-        pipe = self.redis.get_pipe()
 
         # for key in self.all_obs_blocks[0]:
         #     self.log.info([['g', key, self.all_obs_blocks[0][key]]])
-
+        self.redis.pipe.get('obs_block_update')
+        obs_block_update = self.redis.pipe.execute(packed=True)[0]
         # self.log.info([['g', obs_block_update]])
         self.log.info([['g', len(obs_block_update), len(self.all_obs_blocks)]])
 
@@ -1176,20 +1124,20 @@ class SchedulerStandalone(ThreadManager):
 
                 total += 1
 
-                pipe.set(
+                self.redis.pipe.set(
                     name=obs_block_update[i]['obs_block_id'],
                     data=obs_block_update[i],
-                    expire_sec=self.expire_sec,
+                    expire=self.expire,
                     packed=True
                 )
                 current = obs_block_update[i]
 
             else:
                 self.all_obs_blocks.append(obs_block_update[i])
-                pipe.set(
+                self.redis.pipe.set(
                     name=obs_block_update[i]['obs_block_id'],
                     data=obs_block_update[i],
-                    expire_sec=self.expire_sec,
+                    expire=self.expire,
                     packed=True
                 )
 
@@ -1198,52 +1146,42 @@ class SchedulerStandalone(ThreadManager):
         #     exe_state = block['exe_state']['state']
         #     self.log.info([['g', block['metadata']['block_name'] + ' ' + exe_state]])
 
-        pipe.delete(self.update_name)
-        pipe.execute(packed=True)
+        self.redis.pipe.delete('obs_block_update')
+        self.redis.pipe.execute(packed=True)
 
         self.log.info([['g', total, len(obs_block_update), len(self.all_obs_blocks)]])
 
         return
 
     # ------------------------------------------------------------------
-    def loop_main(self):
-        self.log.info([['g', ' - starting SchedulerStandalone.loop_main ...']])
-        sleep(0.1)
+    #
+    # ------------------------------------------------------------------
+    def loop(self):
+        self.log.info([['g', ' - starting SchedulerStandalone.loop ...']])
+        sleep(2)
 
-        n_loop = 0
-        while self.can_loop():
-            n_loop += 1
-            sleep(self.loop_sleep_sec)
-            if n_loop % self.loop_act_rate != 0:
-                continue
-
-            with SchedulerStandalone.lock:
-                if self.n_nights < self.clock_sim.get_n_nights():
+        while True:
+            if self.n_nights < self.clock_sim.get_n_nights():
+                self.init()
+            else:
+                self.external_add_new_redis_blocks()
+                wait_blocks = [
+                    x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'wait')
+                ]
+                runs = [
+                    x for x in self.all_obs_blocks if (x['exe_state']['state'] == 'run')
+                ]
+                if len(wait_blocks) + len(runs) == 0:
                     self.init()
                 else:
-                    self.external_add_new_redis_blocks()
-                    wait_blocks = [
-                        x for x in self.all_obs_blocks
-                        if (x['exe_state']['state'] == 'wait')
-                    ]
-                    runs = [
-                        x for x in self.all_obs_blocks
-                        if (x['exe_state']['state'] == 'run')
-                    ]
-                    # print('wait_blocks',wait_blocks)
-                    # print('runs',runs)
+                    self.wait_to_run()
+                    self.run_phases()
+                    self.run_to_done()
+                    external_generate_events(self)
 
-                    if len(wait_blocks) + len(runs) == 0:
-                        self.init()
-                    else:
-                        self.wait_to_run()
-                        self.run_phases()
-                        self.run_to_done()
-                        external_generate_events(self)
+            self.update_exe_statuses()
 
-                self.update_exe_statuses()
-
-        self.log.info([['c', ' - ending SchedulerStandalone.loop_main ...']])
+            sleep(self.loop_sleep)
 
         return
 
@@ -1254,6 +1192,8 @@ class SchedulerStandalone(ThreadManager):
 
 
 # ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
 def get_rnd_targets(self, night_duration_sec, block_duration_sec):
     target_ids_now = []
     targets = []
@@ -1262,7 +1202,7 @@ def get_rnd_targets(self, night_duration_sec, block_duration_sec):
 
     n_rnd_targets = max(1, int(self.rnd_gen.random() * 3))
 
-    for _ in range(n_rnd_targets):
+    for z in range(n_rnd_targets):
         n_id = (block_duration_sec / (night_duration_sec / len(target_ids)))
         n_id += 0.75
         n_id = int(n_id + ((self.rnd_gen.random() - 0.5) * 3))
@@ -1278,16 +1218,18 @@ def get_rnd_targets(self, night_duration_sec, block_duration_sec):
 
 
 # ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
 def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_obs_now):
     pointings = []
     n_rnd_divs = max(1, int(self.rnd_gen.random() * 5))
     all_tel_ids = copy.deepcopy(tel_ids)
 
-    for n_rnd_div in range(n_rnd_divs):
+    for z in range(n_rnd_divs):
         trg = targets[max(0, int(self.rnd_gen.random() * len(targets)))]
         pnt = {
             'id': sched_block_id + '_' + obs_block_id,
-            'name': trg['name'] + '/p_' + str(n_obs_now) + '-' + str(n_rnd_div)
+            'name': trg['name'] + '/p_' + str(n_obs_now) + '-' + str(z)
         }
 
         point_pos = copy.deepcopy(trg['pos'])
@@ -1304,7 +1246,7 @@ def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_ob
 
         rnd_tels = random.sample(all_tel_ids, int(len(tel_ids) / n_rnd_divs))
 
-        if n_rnd_div == n_rnd_divs - 1:
+        if z == n_rnd_divs - 1:
             rnd_tels = all_tel_ids
 
         # and remove them from allTels list
@@ -1315,19 +1257,19 @@ def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_ob
 
 
 # ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
 def update_sub_arrs(self, blocks=None):
     # inst_pos = self.redis.h_get_all(name='inst_pos')
-
-    pipe = self.redis.get_pipe()
 
     if blocks is None:
         obs_block_ids = self.redis.get(
             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
         )
         for obs_block_id in obs_block_ids:
-            pipe.get(obs_block_id)
+            self.redis.pipe.get(obs_block_id)
 
-        blocks = pipe.execute(packed=True)
+        blocks = self.redis.pipe.execute(packed=True)
 
     #
     sub_arrs = []
@@ -1373,6 +1315,8 @@ def update_sub_arrs(self, blocks=None):
 
 
 # ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
 def external_generate_events(self):
     time_now_sec = self.clock_sim.get_time_now_sec()
 
@@ -1417,6 +1361,8 @@ def external_generate_events(self):
 
 
 # ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
 def external_generate_clock_events(self):
     new_event = {}
     new_event['start_date'] = datetime(2018, 9, 16, 21, 42).strftime('%Y-%m-%d %H:%M:%S')
@@ -1428,7 +1374,7 @@ def external_generate_clock_events(self):
     self.external_clock_events.append(new_event)
 
     new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 16, 23, 7).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['start_date'] = datetime(2018, 9, 16, 23, 07).strftime('%Y-%m-%d %H:%M:%S')
     new_event['end_date'] = datetime(2018, 9, 17, 4, 30).strftime('%Y-%m-%d %H:%M:%S')
     new_event['icon'] = 'rain.svg'
     new_event['name'] = 'Raining'
@@ -1437,8 +1383,8 @@ def external_generate_clock_events(self):
     self.external_clock_events.append(new_event)
 
     new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 17, 1, 3).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['end_date'] = datetime(2018, 9, 17, 2, 0).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['start_date'] = datetime(2018, 9, 17, 1, 03).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['end_date'] = datetime(2018, 9, 17, 2, 00).strftime('%Y-%m-%d %H:%M:%S')
     new_event['icon'] = 'storm.svg'
     new_event['name'] = 'Storm'
     new_event['comment'] = ''

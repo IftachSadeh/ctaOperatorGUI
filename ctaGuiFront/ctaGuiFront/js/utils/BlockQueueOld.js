@@ -1129,7 +1129,7 @@ window.BlockQueueOld = function() {
             .attr('width', function(d, i) {
                 return d.w
             })
-        // .attr("height", function(d,i) { return d.h; })
+    // .attr("height", function(d,i) { return d.h; })
 
     // rectNow.exit()
     //   .transition("in_out").duration(times.anim/2)
