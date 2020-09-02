@@ -133,10 +133,7 @@ def parse_args(app_name):
             'app_prefix': 'cta',
             'app_host': '0.0.0.0',
             'log_file': log_dir + '/' + app_name + '_server.log',
-            # 'log_level': 'DEBUG',
             'log_level': 'INFO',
-            # 'log_level': 'WARN',
-            # 'log_level': 'ERROR',
             'pyramid.reload_templates': 'true',
             'sqlalchemy.url': sqlite,
             'module_names': module_names,
@@ -146,13 +143,13 @@ def parse_args(app_name):
 
         if input_args['site_type'] == 'N':
             settings.update({
-                'app_port': '8090' if (app_name == 'ctaGuiFront') else '8091',
-                'redis_port': '8092',
+                'app_port': '8090',
+                'redis_port': '8091',
             })
         elif input_args['site_type'] == 'S':
             settings.update({
-                'app_port': '8093' if (app_name == 'ctaGuiFront') else '8094',
-                'redis_port': '8095',
+                'app_port': '8095',
+                'redis_port': '8096',
             })
         else:
             raise ValueError('must specify --site_type as "N" or "S"')
@@ -174,9 +171,14 @@ def parse_args(app_name):
                 True if (debug in input_debugs) else allowed_debug_opts[debug]
             )
 
+        # update by user-parameters
         for k, v in input_args.items():
             if v is not None:
                 settings[k] = v
+
+        # some sanity checks after accepting the user-parameters
+        if settings['log_level'] not in ['DEBUG', 'INFO', 'WARN', 'ERROR']:
+            raise Exception('unsupported log_level', settings['log_level'])
 
     except Exception as e:
         raise e
