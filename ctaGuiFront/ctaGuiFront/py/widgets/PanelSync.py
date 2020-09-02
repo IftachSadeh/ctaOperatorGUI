@@ -157,7 +157,27 @@ class PanelSync(BaseWidget):
     # ------------------------------------------------------------------
     async def panel_sync_get_groups(self, n_try=0):
 
-        max_n_try = 100
+        async def clean_and_retry():
+            max_n_try = 10
+            if n_try >= max_n_try:
+                raise Exception(
+                    'reached recursion limit for attempted cleaning ...',
+                    widget_ids,
+                    widget_info,
+                    sync_groups,
+                )
+            
+            clean_widget_ids = []
+            for _n_sync_type in range(len(sync_states)):
+                for [_widget_id, _icon_id] in sync_states[_n_sync_type]:
+                    if _widget_id not in widget_ids:
+                        clean_widget_ids += [_widget_id]
+
+            await self.sm.cleanup_widget(widget_ids=clean_widget_ids)
+            await asyncio.sleep(0.1)
+
+            return
+
 
         widget_ids = self.redis.l_get(
             'ws;user_widget_ids;' + self.sm.user_id
@@ -198,6 +218,7 @@ class PanelSync(BaseWidget):
             children_1 = []
             for n_sync_type in range(len(sync_states)):
                 children_2 = []
+
                 for [widget_id, icon_id] in sync_states[n_sync_type]:
                     try:
                         n_widget = widget_ids.index(widget_id) 
@@ -209,22 +230,12 @@ class PanelSync(BaseWidget):
                             'n_icon': widget_info[n_widget]['n_icon']
                         })
 
-                    except ValueError as e:
-                        if widget_id not in widget_ids:
-                            if n_try >= max_n_try:
-                                raise Exception(
-                                    'reached recursion limit for attempted cleaning ...',
-                                    widget_ids,
-                                    widget_info,
-                                    sync_groups,
-                                )
-                            
-                            await self.sm.cleanup_widget(widget_ids=[widget_id])
-                            await asyncio.sleep(0.01)
-                            
-                            n_try += 1
-                            all_groups = await self.panel_sync_get_groups(n_try=n_try)
-                            return all_groups
+                    except ValueError:
+                        await clean_and_retry()
+                        
+                        n_try += 1
+                        all_groups = await self.panel_sync_get_groups(n_try=n_try)
+                        return all_groups
 
                     except Exception as e:
                         raise e

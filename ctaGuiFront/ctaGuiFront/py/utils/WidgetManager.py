@@ -336,7 +336,7 @@ class WidgetManager():
             to eg have consistent initialisation, or loop states etc.
 
             - sync_groups --> 
-                - not persistified after server restart for recovered sees
+                - not persistified after server restart for recovered sees 
         '''
         # =============================================================
         # =============================================================
