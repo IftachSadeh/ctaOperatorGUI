@@ -350,7 +350,7 @@ function SocketManager() {
             if (this_top.debug_sess_id && (user_name_div.style.opacity < 0.01)) {
                 user_name_div.style.opacity = 1
                 user_name_div.innerHTML += (
-                    ' ; ' + this_top.sess_id 
+                    ' ; ' + this_top.sess_id
                 )
             }
 

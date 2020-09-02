@@ -92,6 +92,9 @@ class EmptyExample(BaseWidget):
     async def send_rnd_message(self, data):
         debug_msg = False
         if debug_msg:
-            self.log.info([['y', ' - got event: send_rnd_message('],
-                           ['g', str(data['my_message'])], ['y', ')'],])
+            self.log.info([
+                ['y', ' - got event: send_rnd_message('],
+                ['g', str(data['my_message'])],
+                ['y', ')'],
+            ])
         return

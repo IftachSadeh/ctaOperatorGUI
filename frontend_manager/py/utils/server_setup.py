@@ -124,9 +124,7 @@ def setup_app():
         # see: http://docs.pylonsproject.org/projects/pyramid_cookbook/en/latest/pylons/static.html
         # ------------------------------------------------------------------
         rel_path = '../../'
-        static_views = [
-            'js', 'fonts', 'static', 'styles', 'templates'
-        ]
+        static_views = ['js', 'fonts', 'static', 'styles', 'templates']
         for static_view in static_views:
             config.add_static_view(
                 static_view, rel_path + static_view, cache_max_age=3600

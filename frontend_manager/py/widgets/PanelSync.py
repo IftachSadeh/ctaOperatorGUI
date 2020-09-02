@@ -69,7 +69,6 @@ class PanelSync(BaseWidget):
         }
         return data
 
-
     # ------------------------------------------------------------------
     async def ask_data(self):
         opt_in = {
@@ -86,9 +85,7 @@ class PanelSync(BaseWidget):
     async def set_sync_groups(self, *args):
         data = args[0]
 
-        widget_ids = self.redis.l_get(
-            'ws;user_widget_ids;' + self.sm.user_id
-        )
+        widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.sm.user_id)
 
         sync_groups = []
         for child_0 in data['data']['children']:
@@ -120,17 +117,23 @@ class PanelSync(BaseWidget):
         # get the current set of widgest which need an update
         sess_widget_ids = [[], []]
 
-        widget_ids = self.redis.l_get(
-            'ws;user_widget_ids;' + self.sm.user_id
+        widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.sm.user_id)
+        widget_info = self.redis.h_m_get(
+            name='ws;widget_info',
+            keys=widget_ids,
+            default_val=[],
         )
-        widget_info = self.redis.h_m_get(name='ws;widget_info', keys=widget_ids, default_val=[],)
 
         for n_widget in range(len(widget_ids)):
             try:
                 widget_id = widget_ids[n_widget]
                 widget_now = widget_info[n_widget]
             except IndexError as e:
-                self.log.warn([['r', ' - mismatch between widget_ids, widget_info ?!'], ['o', widget_ids], ['y', widget_info],])
+                self.log.warn([
+                    ['r', ' - mismatch between widget_ids, widget_info ?!'],
+                    ['o', widget_ids],
+                    ['y', widget_info],
+                ])
                 sess_widget_ids = [[], []]
                 break
             if widget_now is None:
@@ -156,7 +159,6 @@ class PanelSync(BaseWidget):
 
     # ------------------------------------------------------------------
     async def panel_sync_get_groups(self, n_try=0):
-
         async def clean_and_retry():
             max_n_try = 10
             if n_try >= max_n_try:
@@ -166,7 +168,7 @@ class PanelSync(BaseWidget):
                     widget_info,
                     sync_groups,
                 )
-            
+
             clean_widget_ids = []
             for _n_sync_type in range(len(sync_states)):
                 for [_widget_id, _icon_id] in sync_states[_n_sync_type]:
@@ -178,11 +180,12 @@ class PanelSync(BaseWidget):
 
             return
 
-
-        widget_ids = self.redis.l_get(
-            'ws;user_widget_ids;' + self.sm.user_id
+        widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.sm.user_id)
+        widget_info = self.redis.h_m_get(
+            name='ws;widget_info',
+            keys=widget_ids,
+            default_val=[],
         )
-        widget_info = self.redis.h_m_get(name='ws;widget_info', keys=widget_ids, default_val=[],)
 
         all_sync_widgets = []
         for n_widget in range(len(widget_ids)):
@@ -198,7 +201,11 @@ class PanelSync(BaseWidget):
                         'n_icon': widget_now['n_icon']
                     })
             except IndexError as e:
-                self.log.warn([['r', ' - mismatch between widget_ids, widget_info ?!'], ['o', widget_ids], ['y', widget_info],])
+                self.log.warn([
+                    ['r', ' - mismatch between widget_ids, widget_info ?!'],
+                    ['o', widget_ids],
+                    ['y', widget_info],
+                ])
                 all_sync_widgets = []
                 break
             except Exception as e:
@@ -221,7 +228,7 @@ class PanelSync(BaseWidget):
 
                 for [widget_id, icon_id] in sync_states[n_sync_type]:
                     try:
-                        n_widget = widget_ids.index(widget_id) 
+                        n_widget = widget_ids.index(widget_id)
 
                         n_widget_group += 1
                         children_2.append({
@@ -232,7 +239,7 @@ class PanelSync(BaseWidget):
 
                     except ValueError:
                         await clean_and_retry()
-                        
+
                         n_try += 1
                         all_groups = await self.panel_sync_get_groups(n_try=n_try)
                         return all_groups

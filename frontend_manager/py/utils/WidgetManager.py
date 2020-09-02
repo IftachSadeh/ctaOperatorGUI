@@ -106,9 +106,7 @@ class WidgetManager():
 
             async with self.locker.locks.acquire('serv'):
                 widget_inits = await self.get_server_attr(name='widget_inits')
-                widget_inits[widget_id] = widget_cls(
-                    widget_id=widget_id, sm=self
-                )
+                widget_inits[widget_id] = widget_cls(widget_id=widget_id, sm=self)
 
             # make sure the requested widget has been registered as a legitimate class
             is_not_synced = (widget_name in self.allowed_widget_types['not_synced'])
@@ -458,20 +456,20 @@ class WidgetManager():
 
         # name of event to transmit to the client
         event_name = opt_in['event_name']
-        
+
         # interval to sleep between transmisions in se
         sleep_sec = (
             opt_in['sleep_sec'] if 'sleep_sec' in opt_in else self.basic_widget_sleep_sec
         )
-        
+
         # function to call to get the dat to transmit
         data_func_args = opt_in['data_func_args'] if 'data_func_args' in opt_in else None
-        
+
         # function to call to modify the data, metadate to transmit
         update_data_func = (
             opt_in['update_data_func'] if 'update_data_func' in opt_in else None
         )
-        
+
         # function to call to verify that the event should be transmitted
         verify_data = opt_in['verify_data'] if 'verify_data' in opt_in else None
 
@@ -537,20 +535,20 @@ class WidgetManager():
 
         # name of event to transmit to the client
         event_name = opt_in['event_name']
-        
+
         # interval to sleep between transmisions in se
         sleep_sec = (
             opt_in['sleep_sec'] if 'sleep_sec' in opt_in else self.basic_widget_sleep_sec
         )
-        
+
         # function to call to get the dat to transmit
         data_func_args = opt_in['data_func_args'] if 'data_func_args' in opt_in else None
-        
+
         # function to call to modify the metadate to transmit
         update_data_func = (
             opt_in['update_data_func'] if 'update_data_func' in opt_in else None
         )
-        
+
         # function to call to verify that the event should be transmitted
         verify_data = opt_in['verify_data'] if 'verify_data' in opt_in else None
 
@@ -577,7 +575,7 @@ class WidgetManager():
                 if sess_id in sent_sess_ids:
                     continue
                 sent_sess_ids += [sess_id]
-                
+
                 widget_id = loop_widget['widget_id']
 
                 metadata = {
@@ -588,7 +586,7 @@ class WidgetManager():
 
                 if update_data_func is not None:
                     data, metadata = await update_data_func(data, metadata)
-                
+
                 if verify_data is not None:
                     if not await verify_data(data, metadata):
                         continue

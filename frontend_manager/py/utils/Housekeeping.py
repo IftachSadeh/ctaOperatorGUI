@@ -266,7 +266,9 @@ class Housekeeping():
         )
 
         for widget_id in widget_ids:
-            widget_info = self.redis.h_get(name='ws;widget_info', key=widget_id, default_val={})
+            widget_info = self.redis.h_get(
+                name='ws;widget_info', key=widget_id, default_val={}
+            )
             if 'sess_id' in widget_info:
                 self.redis.delete('ws;sess_widget_ids;' + widget_info['sess_id'])
 
@@ -368,7 +370,7 @@ class Housekeeping():
                 self.redis.delete(name=name)
 
             self.redis.h_del(name='ws;server_user_widgets' + self.serv_id, key=user_id)
-            
+
             self.redis.h_del(name='ws;active_widget', key=user_id)
             self.redis.delete(name='ws;user_widget_ids;' + user_id)
 

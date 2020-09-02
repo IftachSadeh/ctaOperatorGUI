@@ -91,6 +91,7 @@ def parse_args(app_name):
             'view205',
             'view206',
             'view207',
+            # 'myNewView',
         ]
 
         # for safety, make sure registered widgets can be requested by the client
@@ -110,6 +111,7 @@ def parse_args(app_name):
                 'SchedBlockController',
                 'SchedBlockInspector',
                 'WeatherMonitoring',
+                # 'TestExample',
             ],
             'not_synced': [
                 'PanelSync',

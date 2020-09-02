@@ -298,14 +298,14 @@ class ArrZoomer():
         await self.sm.emit_widget_event(opt_in=opt_in)
 
         return
-    
+
     # ------------------------------------------------------------------
     async def get_arr_zoomer_param_from_client(self, *args):
         """interface to get a list of requested parameters from the client
         """
-        
+
         data_in = args[0]
-        for (k,v) in data_in.items():
+        for (k, v) in data_in.items():
             setattr(self, k, v)
 
         return
@@ -453,7 +453,7 @@ class ArrZoomer():
             arr_zoomer_id = self.arr_zoomer_id
 
         except AttributeError as e:
-            await self.ask_arr_zoomer_param_from_client() 
+            await self.ask_arr_zoomer_param_from_client()
             await asyncio.sleep(0.01)
             await self.arr_zoomer_ask_for_data_s1(*args)
             return

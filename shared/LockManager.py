@@ -203,7 +203,7 @@ class RedisLock():
 
             self._sync_lock_enter_check(names=names)
             self._lock_enter_set(names=names)
-            
+
             return
 
         # ------------------------------------------------------------------
@@ -238,18 +238,18 @@ class RedisLock():
 
         # ------------------------------------------------------------------
         def _lock_get_names(self):
-            
+
             names_check = [self.parent.get_lock_name(name) for name in self.lock_names]
-            
+
             names = []
             for name in names_check:
                 if self.can_exist:
                     if self.redis.exists(name):
                         continue
                 names += [name]
-            
+
             return names
-        
+
         # ------------------------------------------------------------------
         async def _async_lock_enter_check(self, names):
             for name in names:

@@ -354,7 +354,7 @@ class PropertyMonitorLocal:
         """
         cb = MonitorCB(rkey_local)
         # creates the monitor from the generated string
-        exec (
+        exec(
             self.sub_monitoring(
                 props[key]['component_name'],
                 props[key]["Monitor"]["additional_parameters"],

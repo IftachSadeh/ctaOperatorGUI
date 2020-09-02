@@ -255,6 +255,20 @@ setup_view.view000 = function() {
     })
 }
 
+
+// -------------------------------------------------------------------
+// corresponding to the README.md example for adding a new view
+// -------------------------------------------------------------------
+// setup_view.myNewView = function() {
+//     sock.add_widget({
+//         name_tag: 'TestExample',
+//         table_title: 'TestExample 0',
+//         has_icon: true,
+//         has_drawer: false,
+//     })
+// }
+
+
 // -------------------------------------------------------------------
 // refresh all other views on a refresh of this particular view
 // -------------------------------------------------------------------

@@ -26,6 +26,9 @@
     <link rel="icon" type="image/x-icon" href="/static/icon-batman.png"/>
 
     <script type="text/javascript" src="/static/d3/d3.js"></script>
+    <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
+    <!-- <script src="https://d3js.org/d3.v6.min.js"></script> -->
+
     <script type="text/javascript" src="/static/d3_hexbin/d3-hexbin.v0.2.min.js"></script>
     <script type="text/javascript" src="/static/textures/dist/textures.js"></script>
     <script type="text/javascript" src="/static/jquery/dist/jquery.min.js"></script>

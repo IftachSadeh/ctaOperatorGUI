@@ -967,6 +967,12 @@ function add_site_nav_menu(parent_ele) {
                 window.location.href = 'view000'
             },
         },
+        // {
+        //     text: 'Test Example',
+        //     on_click: function() {
+        //         window.location.href = 'myNewView'
+        //     },
+        // },
     ]
 
     $.each(btns, function(i, d) {

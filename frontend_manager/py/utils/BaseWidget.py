@@ -57,8 +57,8 @@ class BaseWidget():
         self.log = LogParser(
             base_config=self.base_config,
             title=(
-                str(self.sm.user_id) + '/' + str(self.sm.sess_id)
-                + '/' + __name__ + '/' + self.widget_id
+                str(self.sm.user_id) + '/' + str(self.sm.sess_id) + '/' + __name__ + '/'
+                + self.widget_id
             ),
         )
 

@@ -73,7 +73,7 @@ class SessionManager():
         # ------------------------------------------------------------------
         # for development, its conveniet to reload if the server was restarted, but
         # for deployment, the same session can simply be restored
-        if self.base_config.debug_opts['dev'] and 0:
+        if self.base_config.debug_opts['dev'] and 1:
             if is_existing_sess:
                 self.sess_id = data['metadata']['sess_id']
                 await self.emit(event_name='reload_session')
@@ -83,8 +83,8 @@ class SessionManager():
         if is_existing_sess:
             self.sess_id = data['metadata']['sess_id']
             self.log.info([
-                ['wr', ' - restoring existing session: '],
-                ['o', self.sess_id],
+                ['r', ' - restoring existing session:'],
+                ['o', '', self.sess_id],
             ])
 
         async with self.locker.locks.acquire('sess'):
@@ -280,7 +280,7 @@ class SessionManager():
             if widget_id in widget_inits:
                 method_func = getattr(widget_inits[widget_id], 'back_from_offline')
                 await method_func(data)
-        
+
         return
 
     # ------------------------------------------------------------------
@@ -350,7 +350,7 @@ class SessionManager():
                         sync_ids.append(id_now)
 
         # self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
-        
+
         data_send = {
             'widget_id': data['widget_id'],
             'type': data['type'],
@@ -405,7 +405,7 @@ class SessionManager():
 
         elif data['metadata']['log_level'] == 'DEBUG':
             self.log.debug([['b', ' - client_log:'], ['p', '', self.sess_id, ''],
-                           ['y', data]])
+                            ['y', data]])
 
         else:
             raise Exception('unrecognised logging level from client', self.sess_id, data)
