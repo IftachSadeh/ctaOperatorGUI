@@ -1,8 +1,8 @@
 *****************
-InstHealth
+InstData
 *****************
 
-.. autoclass:: ctaGuiBack.py.InstHealth.InstHealth
+.. autoclass:: shared.InstData.InstData
     :members:
     :undoc-members:
 

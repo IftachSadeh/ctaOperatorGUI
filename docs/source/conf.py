@@ -13,7 +13,7 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-root_for_relative_js_paths = '../../ctaGuiFront/ctaGuiFront/js/'
+root_for_relative_js_paths = '../../frontend_manager/js/'
 js_source_path = [
     root_for_relative_js_paths + 'widgets/',
     root_for_relative_js_paths + 'utils/',

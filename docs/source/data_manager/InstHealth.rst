@@ -1,8 +1,8 @@
 *****************
-ArrZoomer
+InstHealth
 *****************
 
-.. autoclass:: ctaGuiFront.py.utils.ArrZoomer.ArrZoomer
+.. autoclass:: data_manager.InstHealth.InstHealth
     :members:
     :undoc-members:
 

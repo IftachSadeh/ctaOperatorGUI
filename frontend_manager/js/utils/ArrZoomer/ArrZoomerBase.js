@@ -43,9 +43,15 @@ window.load_script({
 })
 
 
-// ------------------------------------------------------------------
-//
-// ------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+/**
+ * description
+ *
+ * @param {type} param_name param_description
+ *
+ * @returns {type} return_description
+ */
+// ---------------------------------------------------------------------------
 window.ArrZoomerBase = function(opt_in_top) {
     let this_top = this
     let my_unique_id = unique()

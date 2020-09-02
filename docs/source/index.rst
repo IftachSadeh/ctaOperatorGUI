@@ -9,26 +9,26 @@ Welcome to CTA_HMI's documentation!
 
 .. _ctaGuiFront:
 .. toctree::
-    :caption: ctaGuiFront
+    :caption: frontend_manager
     :maxdepth: 1
 
-    ctaGuiFront/ctaGuiFront/py/utils/ArrZoomer
-    ctaGuiFront/ctaGuiFront/py/utils/security
-    ctaGuiFront/ctaGuiFront/js/utils/SocketManager
+    frontend_manager/py/utils/ArrZoomer
+    frontend_manager/py/utils/security
+    frontend_manager/js/utils/SocketManager
 
 .. _ctaGuiBack:
 .. toctree::
-    :caption: ctaGuiBack
+    :caption: data_manager
     :maxdepth: 1
 
-    ctaGuiBack/ctaGuiBack/py/InstHealth
+    data_manager/InstHealth
 
 .. _ctaGuiUtils:
 .. toctree::
-    :caption: ctaGuiUtils
+    :caption: shared
     :maxdepth: 1
 
-    ctaGuiUtils/py/InstData
+    shared/InstData
 
 
 Indices and tables

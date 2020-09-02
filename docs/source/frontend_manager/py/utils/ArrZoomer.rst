@@ -1,8 +1,8 @@
 *****************
-InstData
+ArrZoomer
 *****************
 
-.. autoclass:: ctaGuiUtils.py.InstData.InstData
+.. autoclass:: frontend_manager.py.utils.ArrZoomer.ArrZoomer
     :members:
     :undoc-members:
 

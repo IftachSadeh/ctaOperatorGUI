@@ -70,8 +70,7 @@ For additional information, see:
 The following details the minimal procedure to add a new widget, `TestExample`, bootstrapped from the `EmptyExample` widget. In this example, the new widget will be added to a new view, called `TestView`. In general, any widget may be added to an existing view (i.e., skip steps 3-4 below, to avoid creating a dedicated view).
 
 - Create a copy of the `EmptyExample` JavaScript/python files with the new widget name. Notice that we need to replace the the listed permutations of capitalisation in different places:
-```bash
-
+  ```bash
   cd frontend_manager
   sed "s/EmptyExample/TestExample/g" js/widgets/EmptyExample.js | sed "s/empty_example/test_example/g" > js/widgets/TestExample.js
   sed "s/EmptyExample/TestExample/g" py/widgets/EmptyExample.py | sed "s/empty_example/test_example/g" > py/widgets/TestExample.py
@@ -181,6 +180,14 @@ The local server, running under `http://localhost:8090/cta`, will then be served
 - The python code complies with `pep8`/[`yapf`](https://github.com/google/yapf). One can e.g., do `$VENV/bin/yapf --style=linters/yapf -i -r frontend_manager/py/`, etc. The rules are defined in `linters/yapf`.
 - The JavaScript code complies with the [`eslint`](https://eslint.org/). One can e.g., do `eslint --c linters/eslintrc.json --fix frontend_manager/js/widgets/EmptyExample.js`. The rules are defined in `linters/eslintrc.json`.
 
+### Documentation
+
+- Buildthe documentation with:
+  ```bash
+  cd docs/
+  make html
+  ```
+  which is then available at `docs/build/html/index.html`.
 
 ### Credits
 
