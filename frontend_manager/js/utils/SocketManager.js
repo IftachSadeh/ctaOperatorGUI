@@ -95,12 +95,25 @@ function SocketManager() {
         }
 
         // open the WebSocket and add interfaces
+        let has_opened = 0
         function setup_websocket() {
+
             ws = new WebSocket(window.WEBSOCKET_ROUTE)
 
             //
             ws.onopen = function(event) {
                 // console.log(' -ZZZ- onopen - ')
+                if (has_opened == 2) {
+                    this_top.socket.server_log({
+                        data: {
+                            event_name: 'ws reopening',
+                            event: event,
+                        },
+                        is_verb: true,
+                        log_level: LOG_LEVELS.INFO,
+                    })
+                }
+                has_opened = 1
                 return
             }
 
@@ -153,7 +166,7 @@ function SocketManager() {
                 // try to reconnect the session
                 setTimeout(function() {
                     setup_websocket()
-                }, 100)
+                }, 250)
                 // window.location.reload()
 
                 return
@@ -161,14 +174,17 @@ function SocketManager() {
 
             ws.onerror = function(event) {
                 // console.log(' -ZZZ- onerror - ', event)
-                this_top.socket.server_log({
-                    data: {
-                        event_name: 'ws.onerror',
-                        event: event,
-                    },
-                    is_verb: true,
-                    log_level: LOG_LEVELS.ERROR,
-                })
+                if (has_opened == 1) {
+                    this_top.socket.server_log({
+                        data: {
+                            event_name: 'ws error',
+                            event: event,
+                        },
+                        is_verb: true,
+                        log_level: LOG_LEVELS.ERROR,
+                    })
+                }
+                has_opened = 2
              
                 return
             }
@@ -260,6 +276,7 @@ function SocketManager() {
             
             let metadata = {
                 log_level: log_level,
+                date: (new Date()).toString(),
             }
 
             this_sock_int.emit(event_name, data_in.data, metadata)
@@ -298,7 +315,7 @@ function SocketManager() {
      */
     // ---------------------------------------------------------------------------
     function setup_socket() {
-        let widget_name = window.WIDGET_NAME
+        let widget_type = window.WIDGET_TYPE
 
         this_top.socket = new SocketInterface()
         this_top.socket.setup_websocket()
@@ -413,8 +430,8 @@ function SocketManager() {
 
 
             if (is_first) {
-                if (is_def(setup_view[widget_name])) {
-                    setup_view[widget_name]()
+                if (is_def(setup_view[widget_type])) {
+                    setup_view[widget_type]()
                 }
                 this_top.has_joined_session = true
             }
@@ -540,15 +557,15 @@ function SocketManager() {
                 let state = null
                 if (ping_compare_delay_msec < this_top.sess_ping.max_interval_good_msec) {
                     state = this_top.con_states.CONNECTED
-                    // console.log('            GOOD connection ?!')
+                    // console.log('            GOOD connection')
                 }
                 else if (ping_compare_delay_msec < this_top.sess_ping.max_interval_slow_msec) {
                     state = this_top.con_states.SLOW_CONNECTION
-                    // console.log(' SLOW_CONNECTION connection ?!')
+                    // console.log(' SLOW_CONNECTION connection')
                 }
                 else {
                     state = this_top.con_states.NOT_CONNECTED
-                    // console.log('              NO  connection ?!')
+                    // console.log('              NO  connection')
                 }
 
                 let prev_state = this_top.con_stat.get_server_con_state()
@@ -689,8 +706,8 @@ function SocketManager() {
         // // -------------------------------------------------------------------
         // this_top.socket.add_event('join_session_data', function(data_in) {
         //     if (!this_top.has_joined_session) {
-        //         if (is_def(setup_view[widget_name])) {
-        //             setup_view[widget_name]()
+        //         if (is_def(setup_view[widget_type])) {
+        //             setup_view[widget_type]()
         //         }
         //         this_top.has_joined_session = true
         //         this_top.session_props = data_in.session_props
@@ -1061,7 +1078,7 @@ function SocketManager() {
         }
         
         let data_out = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: widget_id,
             method_name: 'setup',
             n_icon: n_icon,

@@ -38,7 +38,7 @@ class WebsocketBase():
         self.sess_ping_time = None
 
         self.basic_widget_sleep_sec = 1
-        self.sess_expire = 10
+        self.sess_expire = 15
         self.cleanup_sleep = 60
         self.valid_loop_sleep_sec = 0.01
         self.n_id_digits = 4
@@ -77,6 +77,13 @@ class WebsocketBase():
         self.log = LogParser(base_config=self.base_config, title=__name__)
 
         self.allowed_widget_types = self.base_config.allowed_widget_types
+        self.all_widget_types = [
+            a for a in (
+                self.base_config.allowed_widget_types['synced']
+                + self.base_config.allowed_widget_types['not_synced']
+            )
+        ]
+
         self.redis_port = self.base_config.redis_port
         self.site_type = self.base_config.site_type
         self.allow_panel_sync = self.base_config.allow_panel_sync
@@ -489,7 +496,7 @@ class __old_SocketManager__():
     #     # ------------------------------------------------------------------
     #     widget_id = data['widget_id']
     #     widget_source = 'widgets.' + data['widget_source']
-    #     widget_name = data['widget_name']
+    #     widget_type = data['widget_type']
     #     n_sync_group = data['n_sync_group'] if 'n_sync_group' in data else 0
     #     sync_type = data['sync_type'] if 'sync_type' in data else 0
 
@@ -497,11 +504,11 @@ class __old_SocketManager__():
     #         n_sync_group = -1
 
     #     # first make sure the requested widget has been registered as a legitimate class
-    #     is_not_synced = (widget_name in self.allowed_widget_types['not_synced'])
-    #     is_synced = widget_name in self.allowed_widget_types['synced']
+    #     is_not_synced = (widget_type in self.allowed_widget_types['not_synced'])
+    #     is_synced = widget_type in self.allowed_widget_types['synced']
     #     if not is_not_synced and not is_synced:
     #         self.log.critical([
-    #             ['wr', ' - widget_name =', widget_name, ''],
+    #             ['wr', ' - widget_type =', widget_type, ''],
     #             ['wr', 'has not been registered in allowed_widget_types ?!?!'],
     #             ['wr', ' --> Will terminate!'],
     #         ])
@@ -528,7 +535,7 @@ class __old_SocketManager__():
 
     #         with __old_SocketManager__.lock:
     #             __old_SocketManager__.widget_inits[widget_id] = getattr(
-    #                 widget_module, widget_name
+    #                 widget_module, widget_type
     #             )(widget_id=widget_id, socket_manager=self)
 
     #         with __old_SocketManager__.lock:
@@ -536,7 +543,7 @@ class __old_SocketManager__():
     #                 n_sync_group = -1
     #                 n_icon = -1
     #             else:
-    #                 n_icon = self.allowed_widget_types['synced'].index(widget_name)
+    #                 n_icon = self.allowed_widget_types['synced'].index(widget_type)
     #                 while True:
     #                     widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.user_id)
     #                     if len(widget_ids) == 0:
@@ -558,7 +565,7 @@ class __old_SocketManager__():
     #             widget_now['n_icon'] = n_icon
     #             widget_now['user_id'] = self.user_id
     #             widget_now['sess_id'] = self.sess_id
-    #             widget_now['widget_name'] = widget_name
+    #             widget_now['widget_type'] = widget_type
     #             widget_now['widget_state'] = dict()
 
     #             # register the new widget
@@ -744,14 +751,14 @@ class __old_SocketManager__():
 
     #     with widget.lock:
     #         emit_data = {
-    #             'widget_type': widget.widget_name,
+    #             'widget_type': widget.widget_type,
     #             'event_name': asy_func_group,
     #             'n_icon': widget.n_icon,
     #             'data': data_func()
     #         }
 
     #         widget.log.info([['y', ' - sending - ('],
-    #                          ['b', widget.widget_name, asy_func_group], ['y', ','],
+    #                          ['b', widget.widget_type, asy_func_group], ['y', ','],
     #                          ['g', self.sess_id, '/', widget.widget_id], ['y', ')']])
 
     #         # print('widget.widget_id',widget.widget_id, asy_func_group, emit_data)
@@ -814,7 +821,7 @@ class __old_SocketManager__():
         sleep_sec = opt_in['sleep_sec'] if 'sleep_sec' in opt_in else 5
         is_group_asy_func = opt_in['is_group_asy_func']
 
-        emit_data = {'widget_type': widget.widget_name, 'event_name': asy_func_group}
+        emit_data = {'widget_type': widget.widget_type, 'event_name': asy_func_group}
 
         sleep(sleep_sec)
 

@@ -565,7 +565,7 @@ def get_clock_sim_data(parent):
 
     if len(clock_sim) != len(red_keys):
         parent.log.warning([
-            ['r', ' - ', parent.widget_name, ' - could not get clock_sim - '],
+            ['r', ' - ', parent.widget_type, ' - could not get clock_sim - '],
             ['p', str(clock_sim)],
             ['r', ' - will use fake range ...'],
         ])

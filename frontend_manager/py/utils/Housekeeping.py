@@ -359,13 +359,13 @@ class Housekeeping():
             self.redis.h_del(name='ws;sync_groups', key=user_id)
 
             # cleanup widgets
-            widget_names = self.redis.h_get(
+            widget_types = self.redis.h_get(
                 name='ws;server_user_widgets' + self.serv_id, key=user_id, default_val=[]
             )
-            for widget_name in widget_names:
+            for widget_type in widget_types:
                 name = (
                     'ws;server_user_widget_loops;' + self.serv_id + ';' + user_id + ';'
-                    + widget_name
+                    + widget_type
                 )
                 self.redis.delete(name=name)
 

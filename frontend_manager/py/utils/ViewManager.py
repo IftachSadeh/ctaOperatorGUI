@@ -65,7 +65,7 @@ class ViewManager():
             app_prefix=self.app_prefix,
             ns_type=self.site_type,
             websocket_route=self.websocket_route['client'],
-            widget_name=view_name,
+            widget_type=view_name,
             display_user_id=self.get_display_user_id(request),
             display_user_group=self.get_display_user_group(request),
         )
@@ -98,7 +98,7 @@ class ViewManager():
         return dict(
             ns_type=self.site_type,
             websocket_route=self.websocket_route['client'],
-            widget_name=view_name,
+            widget_type=view_name,
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
             came_from=request.route_url(view_name),
@@ -122,7 +122,7 @@ class ViewManager():
         return dict(
             ns_type=self.site_type,
             websocket_route=self.websocket_route['client'],
-            widget_name=view_name,
+            widget_type=view_name,
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
             location=request.route_url(view_name),
@@ -140,7 +140,7 @@ class ViewManager():
         return dict(
             ns_type=self.site_type,
             websocket_route=self.websocket_route['client'],
-            widget_name=view_name,
+            widget_type=view_name,
             app_prefix=self.app_prefix,
             login=request.authenticated_userid,
             came_from=request.route_url(view_name),

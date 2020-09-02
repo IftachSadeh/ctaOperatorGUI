@@ -56,7 +56,7 @@ class PanelSync(BaseWidget):
         await BaseWidget.back_from_offline(self, data)
 
         # with panel_sync.lock:
-        #     print('-- back_from_offline',self.widget_name,self.widget_id)
+        #     print('-- back_from_offline',self.widget_type,self.widget_id)
         return
 
     # ------------------------------------------------------------------
@@ -138,7 +138,7 @@ class PanelSync(BaseWidget):
                 break
             if widget_now is None:
                 continue
-            if widget_now['widget_name'] != self.widget_name:
+            if widget_now['widget_type'] != self.widget_type:
                 continue
             if ignore_id is not None and ignore_id == widget_id:
                 continue

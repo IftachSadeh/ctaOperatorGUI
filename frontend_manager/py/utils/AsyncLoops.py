@@ -53,8 +53,8 @@ class AsyncLoops():
             name = prefix + ';' + postfix
 
         elif scope == 'widget':
-            if postfix is None:
-                raise Exception('must provide widget_name as postfix for loop group')
+            if postfix not in self.all_widget_types:
+                raise Exception('must provide widget_type from',self.all_widget_types,'as postfix for heartbeat',)
             name = prefix + ';' + postfix + ';serv;' + self.serv_id + ';user;' + self.user_id
 
         # elif scope == 'widget_id':
@@ -101,15 +101,14 @@ class AsyncLoops():
                 postfix = self.sess_id
             name = prefix + ';' + postfix
 
-        # elif scope == 'widget':
-        #     # if postfix is None:
-        #     #     raise Exception('must provide widget_name as postfix for heartbeat')
-        #     # name = prefix + ';' + self.serv_id + ';' + postfix
-        #     name = prefix + ';serv;' + self.serv_id + ';user;' + self.user_id
+        # elif scope == 'widget': 
+        #     if postfix not in self.all_widget_types:
+        #         raise Exception('must provide widget_type from',self.all_widget_types,'as postfix for heartbeat',)
+        #     name = prefix + ';' + postfix + ';serv;' + self.serv_id + ';user;' + self.user_id
 
         # elif scope == 'widget_id':
         #     if postfix is None:
-        #         raise Exception('must provide widget_name as postfix for heartbeat')
+        #         raise Exception('must provide widget_type as postfix for heartbeat')
         #     name = prefix + ';' + self.sess_id + ';' + postfix
 
         else:
@@ -391,33 +390,47 @@ class AsyncLoops():
             ['c', self.serv_id],
         ])
 
-        sleep_sec = min(1, max(ceil(self.sess_expire * 0.1), 10))
-        sess_expire = ceil(max(self.sess_expire, sleep_sec * 5))
-        server_expire = ceil(sess_expire * 2)
-        user_expire = ceil(sess_expire * 1.5)
+        # heartbeats = []
+        # heartbeats += [self.get_heartbeat_name(scope='sess', postfix=sess_id),]
+
+        sleep_sec = int(min(2, max(ceil(self.sess_expire * 0.1), 10)))
+        sess_expire = int(ceil(max(self.sess_expire, sleep_sec * 5)))
+        server_expire = int(ceil(sess_expire * 2))
+        user_expire = int(ceil(sess_expire * 1.5))
+
+        pipe = self.redis.get_pipe()
 
         while self.get_loop_state(loop_info):
+            has_sess = False
             sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.serv_id)
             for sess_id in sess_ids:
-                if not self.redis.exists(self.get_heartbeat_name(scope='sess',
-                                                                 postfix=sess_id)):
-                    continue
+                heartbeat_name = self.get_heartbeat_name(scope='sess', postfix=sess_id)
+                if self.redis.exists(heartbeat_name):
+                    # at lease one session is alive
+                    has_sess = True
+                    
+                    # heartbeat for this session renews itself
+                    pipe.expire_sec(name=heartbeat_name, expire_sec=sess_expire)
 
+            if has_sess:
                 # heartbeat for any session renews the server
-                self.redis.expire_sec(
+                pipe.expire_sec(
                     name=self.get_heartbeat_name(scope='serv'), expire_sec=server_expire
                 )
 
                 # heartbeat for any session renews the user
-                self.redis.expire_sec(
+                pipe.expire_sec(
                     name=self.get_heartbeat_name(scope='user'), expire_sec=user_expire
                 )
 
-                # heartbeat for this session renews itself
-                self.redis.expire_sec(
-                    name=self.get_heartbeat_name(scope='sess', postfix=sess_id),
-                    expire_sec=sess_expire
-                )
+                # # heartbeat for any session renews the widgets for this server/user
+                # for widget_type in self.all_widget_types:
+                #     pipe.expire_sec(
+                #         name=self.get_heartbeat_name(scope='widget', postfix=widget_type),
+                #         expire_sec=user_expire,
+                #     )
+            
+                pipe.execute()
 
             await asyncio.sleep(sleep_sec)
 
@@ -431,6 +444,93 @@ class AsyncLoops():
         ])
 
         return
+
+    
+
+
+    # # ------------------------------------------------------------------
+    # async def widget_heartbeat_loop(self, loop_info):
+    #     """renew session heartbeat tokens
+
+    #         run in asy_func so long as there are active sessions
+    #         renewes all sessions which belong to this server
+    #         (registered in redis:('ws;all_sess_ids'))
+
+    #         sessiosns which are not meaintained by any running server will expire_sec, and
+    #         thier cleanup will be handled by self.cleanup_loop()
+        
+    #         Parameters
+    #         ----------
+    #         loop_info : dict
+    #             metadata needed to determine when is the loop should continue
+    #     """
+
+    #     self.log.info([
+    #         ['y', ' - starting '],
+    #         ['b', 'server_sess_heartbeat_loop'],
+    #         ['y', ' by: '],
+    #         ['c', self.sess_id],
+    #         ['y', ' for server: '],
+    #         ['c', self.serv_id],
+    #     ])
+
+    #     # heartbeats = []
+    #     # heartbeats += [self.get_heartbeat_name(scope='sess', postfix=sess_id),]
+
+    #     sleep_sec = int(min(2, max(ceil(self.sess_expire * 0.1), 10)))
+    #     sess_expire = int(ceil(max(self.sess_expire, sleep_sec * 5)))
+    #     server_expire = int(ceil(sess_expire * 2))
+    #     user_expire = int(ceil(sess_expire * 1.5))
+
+    #     pipe = self.redis.get_pipe()
+
+    #     while self.get_loop_state(loop_info):
+    #         has_sess = False
+    #         sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.serv_id)
+    #         for sess_id in sess_ids:
+    #             heartbeat_name = self.get_heartbeat_name(scope='sess', postfix=sess_id)
+    #             if self.redis.exists(heartbeat_name):
+    #                 # at lease one session is alive
+    #                 has_sess = True
+                    
+    #                 # heartbeat for this session renews itself
+    #                 pipe.expire_sec(name=heartbeat_name, expire_sec=sess_expire)
+
+    #         if has_sess:
+    #             # heartbeat for any session renews the server
+    #             pipe.expire_sec(
+    #                 name=self.get_heartbeat_name(scope='serv'), expire_sec=server_expire
+    #             )
+
+    #             # heartbeat for any session renews the user
+    #             pipe.expire_sec(
+    #                 name=self.get_heartbeat_name(scope='user'), expire_sec=user_expire
+    #             )
+
+    #             # heartbeat for any session renews the widgets for this server/user
+    #             for widget_type in self.all_widget_types:
+    #                 pipe.expire_sec(
+    #                     name=self.get_heartbeat_name(scope='widget', postfix=widget_type),
+    #                     expire_sec=user_expire,
+    #                 )
+            
+    #             pipe.execute()
+
+    #         await asyncio.sleep(sleep_sec)
+
+    #     await self.cleanup_server(serv_id=self.serv_id)
+
+    #     self.log.info([
+    #         ['r', ' - ending '],
+    #         ['b', 'server_sess_heartbeat_loop'],
+    #         ['r', ' for server: '],
+    #         ['c', self.serv_id],
+    #     ])
+
+    #     return
+
+
+
 
     # ------------------------------------------------------------------
     async def client_sess_heartbeat_loop(self, loop_info):

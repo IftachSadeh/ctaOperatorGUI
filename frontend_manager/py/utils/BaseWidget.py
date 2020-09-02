@@ -24,12 +24,12 @@ class BaseWidget():
         # the shared basic configuration class
         self.base_config = self.sm.base_config
         # widget-class and widget group names
-        self.widget_name = self.__class__.__name__
+        self.widget_type = self.__class__.__name__
         # for common threading
-        self.widget_group = (self.sm.user_group_id + '_' + self.widget_name)
+        self.widget_group = (self.sm.user_group_id + '_' + self.widget_type)
         # redis interface
         self.redis = RedisManager(
-            name=self.widget_name, base_config=self.base_config, log=self.log
+            name=self.widget_type, base_config=self.base_config, log=self.log
         )
         # turn on periodic data updates
         self.do_data_updates = True

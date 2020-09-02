@@ -125,7 +125,7 @@ let sock_sched_block_controller = function(opt_in) {
     //   data.tel_id    = opt_in.tel_id;
     //   data.propId   = opt_in.propId;
     //   let emit_data = {
-    //     'widget_name':widget_type, 'widget_id':widget_id,
+    //     'widget_type':widget_type, 'widget_id':widget_id,
     //     'method_name':'sched_block_controllerAskTelData',
     //     'method_arg':data
     //   };
@@ -145,7 +145,7 @@ let sock_sched_block_controller = function(opt_in) {
         data.new_block_queue = opt_in.new_block_queue
 
         let emit_data = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: data.widget_id,
             method_name: 'sched_block_controller_push_queue',
             method_arg: data,

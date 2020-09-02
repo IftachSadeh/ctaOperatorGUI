@@ -129,7 +129,7 @@ let sock_comment_sched = function(opt_in) {
     //   data.tel_id    = opt_in.tel_id;
     //   data.propId   = opt_in.propId;
     //   let emit_data = {
-    //     "widget_name":widget_type, "widget_id":widget_id,
+    //     "widget_type":widget_type, "widget_id":widget_id,
     //     "method_name":"comment_schedAskTelData",
     //     "method_arg":data
     //   };

@@ -84,8 +84,8 @@ class WidgetManager():
         async with self.locker.locks.acquire('sess'):
             data = data_in['data']
             widget_id = data['widget_id']
-            widget_source = self.widget_module_dir + '.' + data['widget_name']
-            widget_name = data['widget_name']
+            widget_source = self.widget_module_dir + '.' + data['widget_type']
+            widget_type = data['widget_type']
             n_icon = data['n_icon']
             icon_id = data['icon_id']
             n_sync_group = data['n_sync_group'] if 'n_sync_group' in data else 0
@@ -102,18 +102,18 @@ class WidgetManager():
                 widget_source,
                 package=None,
             )
-            widget_cls = getattr(widget_module, widget_name)
+            widget_cls = getattr(widget_module, widget_type)
 
             async with self.locker.locks.acquire('serv'):
                 widget_inits = await self.get_server_attr(name='widget_inits')
                 widget_inits[widget_id] = widget_cls(widget_id=widget_id, sm=self)
 
             # make sure the requested widget has been registered as a legitimate class
-            is_not_synced = (widget_name in self.allowed_widget_types['not_synced'])
-            is_synced = widget_name in self.allowed_widget_types['synced']
+            is_not_synced = (widget_type in self.allowed_widget_types['not_synced'])
+            is_synced = widget_type in self.allowed_widget_types['synced']
             if not (is_not_synced or is_synced):
                 raise Exception(
-                    ' - widget_name =', widget_name,
+                    ' - widget_type =', widget_type,
                     '' + 'has not been registered in allowed_widget_types'
                 )
 
@@ -130,7 +130,7 @@ class WidgetManager():
             # if it is a synced panel, derive the icon as the next one after all
             # existing panels
             if is_synced and n_icon < 0:
-                n_icon = self.allowed_widget_types['synced'].index(widget_name)
+                n_icon = self.allowed_widget_types['synced'].index(widget_type)
                 while True:
                     user_widget_ids = self.redis.l_get(
                         'ws;user_widget_ids;' + self.user_id
@@ -155,7 +155,7 @@ class WidgetManager():
             widget_now['icon_id'] = icon_id
             widget_now['user_id'] = self.user_id
             widget_now['sess_id'] = self.sess_id
-            widget_now['widget_name'] = widget_name
+            widget_now['widget_type'] = widget_type
             widget_now['widget_state'] = dict()
 
             # register the new widget
@@ -210,7 +210,7 @@ class WidgetManager():
                     data=sync_groups,
                 )
 
-        if widget_name in ['PanelSync']:
+        if widget_type in ['PanelSync']:
             await self.update_sync_group()
 
         return
@@ -247,7 +247,7 @@ class WidgetManager():
         event_name = opt_in['event_name']
 
         metadata = {
-            'widget_type': widget.widget_name,
+            'widget_type': widget.widget_type,
             'widget_id': widget.widget_id,
             'n_icon': widget.n_icon,
             'icon_id': widget.icon_id,
@@ -292,20 +292,22 @@ class WidgetManager():
         loop_id = opt_in['loop_id']
 
         if opt_in['loop_group'] == 'widget_id':
-            heartbeat = self.get_heartbeat_name(scope='sess', )
-            loop_group = self.get_loop_group_name(scope='sess', )
+            heartbeat = self.get_heartbeat_name(scope='sess')
+            loop_group = self.get_loop_group_name(scope='sess')
             if loop_func is None:
                 loop_func = self.loop_widget_id
             loop_id = 'widget;' + widget.widget_id + ';' + loop_id
 
-        elif opt_in['loop_group'] == 'widget_name':
-            heartbeat = self.get_heartbeat_name(scope='user', )
+        elif opt_in['loop_group'] == 'widget_type':
+            # heartbeat = self.get_heartbeat_name(scope='widget', postfix=widget.widget_type)
+
+            heartbeat = self.get_heartbeat_name(scope='user')
             loop_group = self.get_loop_group_name(
                 scope='widget',
-                postfix=widget.widget_name,
+                postfix=widget.widget_type,
             )
             if loop_func is None:
-                loop_func = self.loop_widget_name
+                loop_func = self.loop_widget_type
 
         else:
             raise Exception('unknown loop_group for: ', opt_in)
@@ -314,10 +316,6 @@ class WidgetManager():
         # =============================================================
         # =============================================================
         '''
-            - setup lists for all_server_widget_ids
-            - spawn heatbeat loop like server_sess_heartbeat_loop but for the widget_ids
-            - spawn the data_update loop itself that send the updates to all widgets of this type in this server, and it will live in the context of the heatbeat
-            - cleanup func for individual widget_ids --> will moderate the widget type heartbeat
             - general widget type heartbeat cleanup if list of widget_ids of a given type is empty
 
             - ALL LOCKS must include server name (also user)
@@ -348,28 +346,28 @@ class WidgetManager():
             name = 'ws;sess_widget_loops;' + widget.widget_id
             self.redis.r_push(name=name, data=data)
 
-        elif opt_in['loop_group'] == 'widget_name':
+        elif opt_in['loop_group'] == 'widget_type':
             data = {
                 'sess_id': self.sess_id,
                 'widget_id': widget.widget_id,
             }
             name = (
                 'ws;server_user_widget_loops;' + self.serv_id + ';' + self.user_id + ';'
-                + widget.widget_name
+                + widget.widget_type
             )
             self.redis.r_push(name=name, data=data)
 
-            widget_names = self.redis.h_get(
+            widget_types = self.redis.h_get(
                 name='ws;server_user_widgets' + self.serv_id,
                 key=self.user_id,
                 default_val=[],
             )
-            if widget.widget_name not in widget_names:
-                widget_names += [widget.widget_name]
+            if widget.widget_type not in widget_types:
+                widget_types += [widget.widget_type]
                 self.redis.h_set(
                     name='ws;server_user_widgets' + self.serv_id,
                     key=self.user_id,
-                    data=widget_names,
+                    data=widget_types,
                 )
 
         loop_info = {
@@ -382,7 +380,7 @@ class WidgetManager():
         # if not self.get_loop_state(loop_info):
         #     print('+'*80) ; print(loop_info) ; print('-'*120) ; print()
 
-        widget_lock_name = self.get_widget_lock_name(widget.widget_name)
+        widget_lock_name = self.get_widget_lock_name(widget.widget_type)
         async with self.locker.locks.acquire(names=(widget_lock_name, 'user')):
             if not self.get_loop_state(loop_info):
                 await self.set_loop_state(state=True, loop_info=loop_info)
@@ -447,7 +445,7 @@ class WidgetManager():
             ['y', ' with '],
             ['c', loop_info['group']],
             ['y', ' for '],
-            ['c', widget.widget_name],
+            ['c', widget.widget_type],
             ['y', ' / '],
             ['c', widget.widget_id],
             ['y', ' / '],
@@ -482,7 +480,7 @@ class WidgetManager():
                 data = await opt_in['data_func'](data_func_args)
 
             metadata = {
-                'widget_type': widget.widget_name,
+                'widget_type': widget.widget_type,
                 'widget_id': widget.widget_id,
                 # 'sess_widget_ids': [widget.widget_id],
             }
@@ -506,7 +504,7 @@ class WidgetManager():
             ['r', ' with '],
             ['c', loop_info['group']],
             ['r', ' for '],
-            ['c', widget.widget_name],
+            ['c', widget.widget_type],
             ['r', ' / '],
             ['c', widget.widget_id],
             ['r', ' / '],
@@ -516,7 +514,7 @@ class WidgetManager():
         return
 
     # ------------------------------------------------------------------
-    async def loop_widget_name(self, loop_info, opt_in):
+    async def loop_widget_type(self, loop_info, opt_in):
         """loop for emitting an event to all widgets of a type (within this server)
         """
 
@@ -524,11 +522,11 @@ class WidgetManager():
 
         self.log.info([
             ['y', ' - starting '],
-            ['b', 'loop_widget_name'],
+            ['b', 'loop_widget_type'],
             ['y', ' with '],
             ['c', loop_info['group']],
             ['y', ' for '],
-            ['c', widget.widget_name],
+            ['c', widget.widget_type],
             ['y', ' / '],
             ['c', opt_in['event_name']],
         ])
@@ -557,7 +555,7 @@ class WidgetManager():
 
             name = (
                 'ws;server_user_widget_loops;' + self.serv_id + ';' + self.user_id + ';'
-                + widget.widget_name
+                + widget.widget_type
             )
             loop_widgets = self.redis.l_get(name=name)
             if len(loop_widgets) > 0:
@@ -579,7 +577,7 @@ class WidgetManager():
                 widget_id = loop_widget['widget_id']
 
                 metadata = {
-                    'widget_type': widget.widget_name,
+                    'widget_type': widget.widget_type,
                     # 'widget_id': widget_id,
                     # 'sess_widget_ids': [widget_id],
                 }
@@ -610,11 +608,11 @@ class WidgetManager():
 
         self.log.info([
             ['r', ' - ending '],
-            ['b', 'loop_widget_name'],
+            ['b', 'loop_widget_type'],
             ['r', ' with '],
             ['c', loop_info['group']],
             ['r', ' for '],
-            ['c', widget.widget_name],
+            ['c', widget.widget_type],
             ['r', ' / '],
             ['c', opt_in['event_name']],
         ])

@@ -76,7 +76,7 @@ class ArrZoomer():
         # the parent of this widget
         self.sm = parent.sm
         # widget-class and widget group names
-        self.widget_name = parent.widget_name
+        self.widget_type = parent.widget_type
         # redis interface
         self.redis = parent.redis
         # turn on periodic data updates
@@ -90,7 +90,7 @@ class ArrZoomer():
         check_init_properties = [
             'widget_id',
             'sm',
-            'widget_name',
+            'widget_type',
             'redis',
             'do_data_updates',
             'log_send_packet',
@@ -158,7 +158,7 @@ class ArrZoomer():
 
         opt_in = {
             'widget': self,
-            'loop_group': 'widget_name',
+            'loop_group': 'widget_type',
             'data_func': tel_health_s0,
             'verify_data': verify_s0,
             'sleep_sec': self.sleep_sec,

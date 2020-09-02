@@ -1287,7 +1287,7 @@ window.ArrZoomerBase = function(opt_in_top) {
         }
 
         let emit_data = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: widget_id,
             method_name: 'arr_zoomer_ask_for_init_data',
             method_arg: init_opts,
@@ -1324,7 +1324,7 @@ window.ArrZoomerBase = function(opt_in_top) {
         })
 
         let emit_data = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: widget_id,
             method_name: 'get_arr_zoomer_param_from_client',
             method_arg: data_send,
@@ -1381,7 +1381,7 @@ window.ArrZoomerBase = function(opt_in_top) {
         data.zoom_target = opt_in.zoom_target
 
         let emit_data = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: widget_id,
             method_name: 'arr_zoomer_ask_for_data_s1',
             method_arg: data,
@@ -1426,7 +1426,7 @@ window.ArrZoomerBase = function(opt_in_top) {
         data_widget.zoom_target_prop = tree_widget_state.zoom_target_prop
 
         let emit_data = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: widget_id,
             method_name: 'arr_zoomer_set_widget_state',
             method_arg: data_widget,

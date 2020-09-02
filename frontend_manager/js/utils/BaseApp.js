@@ -59,13 +59,13 @@ function BaseApp() {
     //
     // ------------------------------------------------------------------
     function init() {
-        let widget_name = window.WIDGET_NAME
+        let widget_type = window.WIDGET_TYPE
         let has_side_menu = true
         let is_socket_view = true
-        let is_login = (widget_name == 'login')
+        let is_login = (widget_type == 'login')
 
-        if (widget_name === 'not_found') {
-            console.warn('ready(base-app)...', widget_name)
+        if (widget_type === 'not_found') {
+            console.warn('ready(base-app)...', widget_type)
             // let main_div = document.querySelector('#base_app_div')
 
             let title_div = document.querySelector('#title_div')
@@ -89,7 +89,7 @@ function BaseApp() {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        if (widget_name == 'index') {
+        if (widget_type == 'index') {
             let title_div = document.querySelector('#title_div')
             title_div.innerHTML = 'CTA operator Interface'
 

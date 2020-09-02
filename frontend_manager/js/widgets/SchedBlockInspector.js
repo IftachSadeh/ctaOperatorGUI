@@ -127,7 +127,7 @@ let sock_sched_block_inspector = function(opt_in) {
     //   data.tel_id    = opt_in.tel_id;
     //   data.propId   = opt_in.propId;
     //   let emit_data = {
-    //     'widget_name':widget_type, 'widget_id':widget_id,
+    //     'widget_type':widget_type, 'widget_id':widget_id,
     //     'method_name':'sched_block_inspectorAskTelData',
     //     'method_arg':data
     //   };
@@ -147,7 +147,7 @@ let sock_sched_block_inspector = function(opt_in) {
         data.newSchedule = opt_in.newSchedule
 
         let emit_data = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: data.widget_id,
             method_name: 'sched_block_inspector_push_schedule',
             method_arg: data,

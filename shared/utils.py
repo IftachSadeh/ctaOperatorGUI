@@ -391,7 +391,7 @@ def get_time_of_night(parent):
 
     if len(time_of_night) != 3:
         parent.log.warning([[
-            'r', ' - ', parent.widget_name, ' - could not get time_of_night - '
+            'r', ' - ', parent.widget_type, ' - could not get time_of_night - '
         ], ['p', str(time_of_night)], ['r', ' - will use fake range ...']])
         time_of_night = [0, 100, 0]
 

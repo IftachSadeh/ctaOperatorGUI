@@ -46,8 +46,8 @@ class EmptyExample(BaseWidget):
 
         opt_in = {
             'widget': self,
-            'loop_group': 'widget_name',
-            'data_func': self.get_data_widget_name,
+            'loop_group': 'widget_type',
+            'data_func': self.get_data_widget_type,
             'sleep_sec': 5,
             'loop_id': 'update_data_all_widgets',
             'event_name': 'update_data_all_widgets',
@@ -77,7 +77,7 @@ class EmptyExample(BaseWidget):
         return data
 
     # ------------------------------------------------------------------
-    async def get_data_widget_name(self):
+    async def get_data_widget_type(self):
         data = {
             'rnd': get_rnd(),
             'time': get_time('msec'),

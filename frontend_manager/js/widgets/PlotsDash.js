@@ -98,7 +98,7 @@ let sock_plots_dash = function(opt_in) {
         data.newKeys = opt_in.newKeys
 
         let emit_data = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: data.widget_id,
             method_name: 'plotDash_push_new_hirch_keys',
             method_arg: data,

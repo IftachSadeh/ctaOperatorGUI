@@ -130,6 +130,7 @@ class SessionManager():
                 ['y', '', self.user_id, '/', self.user_group],
             ])
 
+
             # register the user_id for the heartbeat monitor
             # (expires on its own, inless renewed by server_sess_heartbeat_loop())
             self.redis.set(
@@ -148,6 +149,12 @@ class SessionManager():
                 name=self.get_heartbeat_name(scope='sess'),
                 expire_sec=(int(self.sess_expire) * 10),
             )
+
+            # for widget_type in self.all_widget_types:
+            #     self.redis.set(
+            #         name=self.get_heartbeat_name(scope='widget', postfix=widget_type),
+            #         expire_sec=(int(self.sess_expire) * 10),
+            #     )
 
             # start up (if not already running) loops for this server / user / session
             async with self.locker.locks.acquire(names='serv'):

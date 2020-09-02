@@ -63,7 +63,7 @@ class WeatherMonitoring(BaseWidget):
         await BaseWidget.back_from_offline(self, data)
 
         # with WeatherMonitoring.lock:
-        #     print('-- back_from_offline',self.widget_name,self.widget_id)
+        #     print('-- back_from_offline',self.widget_type,self.widget_id)
         return
 
     # ------------------------------------------------------------------

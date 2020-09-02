@@ -77,7 +77,7 @@ let sock_panel_sync = function(opt_in) {
         }
 
         let emit_data = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: opt_in.widget_id,
             method_name: 'ask_data',
         }
@@ -99,7 +99,7 @@ let sock_panel_sync = function(opt_in) {
         data.data = opt_in.data
 
         let emit_data = {
-            widget_name: widget_type,
+            widget_type: widget_type,
             widget_id: data.widget_id,
             method_name: 'set_sync_groups',
             method_arg: data,
