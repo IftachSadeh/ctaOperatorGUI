@@ -431,7 +431,7 @@ class RedisManager(RedisBase):
         return data
 
     # ------------------------------------------------------------------
-    def z_get(self, name=None):
+    def z_get(self, name=None, filter_out=False):
         try:
             if name is None:
                 raise Exception('redis.z_get(): name is None', name)
@@ -443,8 +443,9 @@ class RedisManager(RedisBase):
             if not self.is_empty(data):
                 data = self.unpack(data)
 
-            if isinstance(data, list):
-                data = [x for x in data if x[0] is not None]
+            if isinstance(data, (list, set, tuple)):
+                if filter_out:
+                    data = [x for x in data if x[0] is not None]
             else:
                 raise Exception('redis.z_get(): problem with data: ', data)
 
@@ -622,18 +623,21 @@ class RedisPipeManager(RedisBase):
         try:
             data = self.pipe.execute()
 
-            if data is None or data == '':
+            if self.is_empty(data, check_pipe=False):
                 data = []
             else:
-                data = [
-                    self.unpack(x)
-                    for x in data
-                    if not self.is_empty(x, check_pipe=False)
-                ]
+                for n_ele in range(len(data)):
+                    if not self.is_empty(data[n_ele], check_pipe=False):
+                        data[n_ele] = self.unpack(data[n_ele])
+                # data = [
+                #     self.unpack(x)
+                #     for x in data
+                #     if not self.is_empty(x, check_pipe=False)
+                # ]
 
-            if not self.is_empty(data):
-                data = self.unpack(data, check_pipe=False)
-                data = [] if data is None else data
+            # if not self.is_empty(data):
+            #     data = self.unpack(data, check_pipe=False)
+            #     data = [] if data is None else data
 
         except Exception as e:
             self.log.error([['r', 'redis.pipe.execute()']])
