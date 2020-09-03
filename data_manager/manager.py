@@ -98,7 +98,7 @@ class Manager():
 
         # service_manager = ServiceManager()
         # service_manager.unset_active_instance(parent=self, class_prefix=service_name)
-        ServiceManager.unset_active_instance(parent=self, class_prefix=service_name)
+        ServiceManager.unset_active_instance(parent=self, service_name=service_name)
 
         # if service_name == 'clock_sim_service':
         #     pass
@@ -127,7 +127,6 @@ class Manager():
         # set passive instance of the clock class, to add access functions base_config
         ClockSim(
             base_config=self.base_config,
-            service_name=service_name,
             interrupt_sig=interrupt_sig,
             is_passive=True,
         )
@@ -159,10 +158,10 @@ class Manager():
         # print(' - lock released !!!!!!')
 
         # for debugging, override the global flag
-        self.do_flush_redis = True
+        # self.do_flush_redis = True 
         if service_name == 'redis_flush':
             if self.do_flush_redis:
-                self.log.warn([['r', ' - flusing redis ...']])
+                self.log.warn([['bb', ' --- flusing redis --- ']])
                 self.redis.flush()
 
         elif service_name == 'redis_services':
@@ -174,21 +173,24 @@ class Manager():
                 lock_prefix=lock_prefix,
                 is_passive=False,
                 interrupt_sig=interrupt_sig,
+                service_name=service_name,
             )
 
-        elif service_name == 'clock_sim_service':
-            # ------------------------------------------------------------------
+        # ------------------------------------------------------------------
+        # ------------------------------------------------------------------
+        elif service_name == 'time_of_night_service':
             # start the time_of_night clock (to be phased out....)
             utils.time_of_night(
                 base_config=self.base_config,
                 service_name=service_name,
                 interrupt_sig=interrupt_sig,
             )
-            # ------------------------------------------------------------------
+        # ------------------------------------------------------------------
+        # ------------------------------------------------------------------
 
+        elif service_name == 'clock_sim_service':
             ClockSim(
                 base_config=self.base_config,
-                service_name=service_name,
                 interrupt_sig=interrupt_sig,
                 is_passive=False,
             )

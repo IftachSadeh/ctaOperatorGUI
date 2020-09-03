@@ -75,7 +75,7 @@ def parse_args(app_name):
     input_args = vars(parser.parse_args())
 
     try:
-        module_names = ['ctaGuiBack', 'ctaGuiFront', 'ctaGuiUtils']
+        module_names = ['data_manager', 'frontend_manager', 'shared']
 
         # list here all views, which use the shared view function
         # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
@@ -122,7 +122,7 @@ def parse_args(app_name):
         sqlite = 'sqlite:////' + os.path.join(pwd, (app_name + '.db'))
         # 'sqlite://///Users/sadeh/test/ctaOperatorGUI/ctaGuiFront/ctaGuiFront.db',
 
-        log_dir = './logs'
+        log_dir = '../logs'
         try:
             os.mkdir(log_dir)
         except FileExistsError:

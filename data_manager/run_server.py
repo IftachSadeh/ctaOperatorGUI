@@ -5,10 +5,10 @@ app_name = 'data_manager'
 
 # defined the directories to watch for changes (development purpose only)
 reload_dirs = []
-# base_dir = '../ctaGuiFront/ctaGuiFront/'
+# base_dir = '../frontend_manager/'
 # reload_dirs += [
-#     base_dir + 'js',
-#     base_dir + 'py',
+#     base_dir + 'js/',
+#     base_dir + 'py/',
 #     base_dir + 'templates/',
 # ]
 base_dir = '../shared/'
@@ -29,6 +29,10 @@ services = [
     },
     {
         'name': 'redis_services',
+        'is_blocking': False
+    },
+    {
+        'name': 'time_of_night_service',
         'is_blocking': False
     },
     {

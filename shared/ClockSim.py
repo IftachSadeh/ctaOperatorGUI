@@ -25,10 +25,15 @@ class ClockSim(ServiceManager):
 
     # ------------------------------------------------------------------
     def __init__(
-        self, base_config, service_name, is_passive, interrupt_sig=None, *args, **kwargs
+        self,
+        base_config,
+        is_passive,
+        interrupt_sig=None,
+        *args,
+        **kwargs,
     ):
         self.class_name = self.__class__.__name__
-        super().__init__(class_prefix=self.class_name)
+        super().__init__(service_name=self.class_name)
 
         self.log = LogParser(base_config=base_config, title=__name__)
 
@@ -42,7 +47,6 @@ class ClockSim(ServiceManager):
             name=self.class_name, base_config=base_config, log=self.log
         )
 
-        self.service_name = service_name
         self.interrupt_sig = interrupt_sig
         if self.interrupt_sig is None:
             self.interrupt_sig = multiprocessing.Event()
@@ -156,7 +160,7 @@ class ClockSim(ServiceManager):
                 raise Exception(' - ClockSim active instance can not initialise ?!?!')
             if n_loop > 0 and (n_loop % int(1 / n_sec_sleep) == 0):
                 self.log.warn([
-                    ['r', ' - ClockSim blocking ( service_name = ', self.service_name],
+                    ['r', ' - ClockSim blocking ( service_name = ', self.class_name],
                     ['r', ' ) --> waiting for the active instance to init ...'],
                 ])
 

@@ -130,7 +130,6 @@ class SessionManager():
                 ['y', '', self.user_id, '/', self.user_group],
             ])
 
-
             # register the user_id for the heartbeat monitor
             # (expires on its own, inless renewed by server_sess_heartbeat_loop())
             self.redis.set(

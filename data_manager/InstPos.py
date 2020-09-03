@@ -18,7 +18,8 @@ class InstPos(ServiceManager):
     # ------------------------------------------------------------------
     def __init__(self, base_config, service_name, interrupt_sig):
         self.class_name = self.__class__.__name__
-        super().__init__(class_prefix=self.class_name)
+        service_name = (service_name if service_name is not None else self.class_name)
+        super().__init__(service_name=service_name)
 
         self.log = LogParser(base_config=base_config, title=__name__)
 

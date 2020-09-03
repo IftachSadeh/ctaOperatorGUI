@@ -9,21 +9,21 @@ class ServiceManager():
 
     threads = []
 
-    def __init__(self, class_prefix, *args, **kwargs):
-        # if class_prefix is None:
+    def __init__(self, service_name, *args, **kwargs):
+        # if service_name is None:
         #     return
 
         # sleep duration for heartbeat loop of active instance
         self.active_expire_sec = 5
         self.loop_active_expire_sec = self.active_expire_sec * 0.25
-        self.active_instance_name = self.get_active_name(class_prefix)
+        self.active_instance_name = self.get_active_name(service_name)
 
         return
 
     # ------------------------------------------------------------------
     @classmethod
-    def get_active_name(self, class_prefix):
-        return class_prefix + ';active_instance'
+    def get_active_name(self, service_name):
+        return 'utils;active_instance;' + service_name
 
     # ------------------------------------------------------------------
     def can_loop(self, interrupt_sig=None):
@@ -86,8 +86,8 @@ class ServiceManager():
 
     # ------------------------------------------------------------------
     @classmethod
-    def unset_active_instance(self, parent, class_prefix):
-        active_instance_name = ServiceManager.get_active_name(class_prefix=class_prefix)
+    def unset_active_instance(self, parent, service_name):
+        active_instance_name = ServiceManager.get_active_name(service_name=service_name)
 
         if parent.redis.exists(active_instance_name):
             parent.log.info([

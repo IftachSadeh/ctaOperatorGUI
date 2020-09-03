@@ -29,7 +29,7 @@ reload_dirs += [
 ]
 base_dir = '../data_manager/'
 reload_dirs += [
-    base_dir + 'py/',
+    base_dir + './',
     base_dir + 'acs/',
 ]
 if is_dev:

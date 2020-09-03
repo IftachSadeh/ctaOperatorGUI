@@ -231,7 +231,7 @@ class WidgetManager():
                     widget_ids.append(widget_id)
 
         for widget_id in widget_ids:
-            getattr(widget_inits[widget_id], 'update_sync_groups')()
+            await getattr(widget_inits[widget_id], 'update_sync_groups')()
 
         return
 
@@ -317,19 +317,7 @@ class WidgetManager():
         # =============================================================
         '''
             - general widget type heartbeat cleanup if list of widget_ids of a given type is empty
-
-            - ALL LOCKS must include server name (also user)
-            - remove global lock
-            - any action accorss servers is not locked, rather it is pubsub, like clocksim
-            - at any new session, first start heartbeat expire_sec, then add to "global"
-            lists --> make sure that any cleanup listens to heartbeat --> thus avoid
-            racing condition of another server deleting the session or user from
-            the global shared redis list before the initialise of the new session can complete
-            - decide what to do with None entry in self.lock_namespace, as in
-            some cases the serv_id may not already be defined???? probably not and this
-            was just a sess_id issue....
-            - probably most locks from the cleanup are not needed. the important part is
-            to eg have consistent initialisation, or loop states etc.
+            since now we have all loops tied to the server/user, even if no widgets are alive...
 
             - sync_groups --> 
                 - not persistified after server restart for recovered sees 

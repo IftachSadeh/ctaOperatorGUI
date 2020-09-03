@@ -7,6 +7,7 @@ if base_ACS_dir not in sys.path:
 
 import subprocess
 import traceback
+import copy
 import importlib
 import multiprocessing
 from time import sleep
@@ -49,6 +50,14 @@ class SetupServer():
             settings_log += [['c', str(v)], [',  ']]
         self.log.info(settings_log)
 
+        # add all python files from the current directory to the list
+        # of reloadable modules
+        self.module_names = copy.deepcopy(self.module_names)
+        for (root, d_names, f_names) in os.walk(os.getcwd()):
+            self.module_names += [
+                f.replace('.py', '') for f in f_names if f.endswith('.py')
+            ]
+
         return
 
     # ------------------------------------------------------------------
@@ -72,7 +81,7 @@ class SetupServer():
         mods = sorted(mods, key=lambda item: item.count('.'), reverse=True)
 
         if is_verb:
-            self.log.info([['wg', ' - reloading modules:'], ['g', ' ', ', '.join(mods)]])
+            self.log.info([['wg', ' - reloading modules:'], ['c', ' ', ', '.join(mods)]])
 
         # reload modules
         for mod in mods:
@@ -148,7 +157,7 @@ class SetupServer():
                 # block the loop untill file changes are detected
                 n_sec_wait = 1
                 cmnd_watch = (
-                    'fswatch -1 -e ".pyc" -l ' + str(n_sec_wait) + ' '
+                    'fswatch -1 -e ".*" -i "\\.py$" -l ' + str(n_sec_wait) + ' '
                     + ' '.join(self.reload_dirs)
                 )
                 changed = subprocess.check_output(cmnd_watch, shell=True)
@@ -158,9 +167,9 @@ class SetupServer():
                 except Exception:
                     pass
                 self.log.info([
-                    ['r', ' - detected changes in: '],
-                    ['y', changed],
-                    ['r', ' ...'],
+                    ['o', ' - detected changes in: '],
+                    ['g', changed],
+                    ['o', ' ...'],
                 ])
 
                 # upon changes, send the interrupt signal to all asynchronous services

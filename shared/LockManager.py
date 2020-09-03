@@ -28,6 +28,7 @@ class LockManager():
         interrupt_sig=None,
         lock_timeout_sec=None,
         slow_lock_msec=None,
+        service_name=None,
     ):
         self.log = log
         self.redis = redis
@@ -40,7 +41,7 @@ class LockManager():
         self.slow_lock_msec = slow_lock_msec
 
         self.locks = RedisLock(parent=self)
-        self.semaphores = RedisSemaphore(parent=self)
+        self.semaphores = RedisSemaphore(parent=self, service_name=service_name)
 
         return
 
@@ -352,9 +353,10 @@ class RedisSemaphore(ServiceManager):
     """
 
     # ------------------------------------------------------------------
-    def __init__(self, parent):
+    def __init__(self, parent, service_name=None):
         self.class_name = self.__class__.__name__
-        super().__init__(class_prefix=self.class_name)
+        service_name = (service_name if service_name is not None else self.class_name)
+        super().__init__(service_name=service_name)
 
         self.parent = parent
         self.log = self.parent.log

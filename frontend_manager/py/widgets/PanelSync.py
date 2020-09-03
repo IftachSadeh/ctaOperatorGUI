@@ -25,7 +25,7 @@ class PanelSync(BaseWidget):
     # ------------------------------------------------------------------
     async def setup(self, *args):
         # standard common initialisations
-        BaseWidget.setup(self, *args)
+        await BaseWidget.setup(self, *args)
 
         # initialise dataset and send to client
         opt_in = {
