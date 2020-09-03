@@ -127,7 +127,7 @@ def setup_app():
         static_views = ['js', 'fonts', 'static', 'styles', 'templates']
         for static_view in static_views:
             config.add_static_view(
-                static_view, rel_path + static_view, cache_max_age=3600
+                static_view, rel_path + static_view, cache_max_age=1
             )
 
         wsgi_app = config.make_wsgi_app()

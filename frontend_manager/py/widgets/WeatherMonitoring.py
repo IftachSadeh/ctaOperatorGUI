@@ -17,10 +17,6 @@ class WeatherMonitoring(BaseWidget):
             sm=sm,
         )
 
-        # # widget-specific initialisations
-        # self.primary_grp = ['LSTS', 'MSTS', 'SSTS', 'AUX']
-        # self.primary_key = ['mirror', 'camera', 'mount', 'aux']
-
         self.tel_ids = self.sm.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
         # ArrZoomer interface
@@ -54,15 +50,6 @@ class WeatherMonitoring(BaseWidget):
             'event_name': 'update_data',
         }
         await self.sm.add_widget_loop(opt_in=opt_in)
-
-        # # initial dataset and send to client
-        # opt_in = {'widget': self, 'data_func': self.get_data}
-        # self.sm.send_widget_init_data(opt_in=opt_in)
-
-        # # start a thread which will call update_data() and send 1Hz data updates to
-        # # all sessions in the group
-        # opt_in = {'widget': self, 'data_func': self.get_data}
-        # self.sm.add_widget_loop(opt_in=opt_in)
 
         return
 
