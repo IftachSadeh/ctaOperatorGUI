@@ -158,7 +158,7 @@ class Manager():
         # print(' - lock released !!!!!!')
 
         # for debugging, override the global flag
-        # self.do_flush_redis = True 
+        self.do_flush_redis = True
         if service_name == 'redis_flush':
             if self.do_flush_redis:
                 self.log.warn([['bb', ' --- flusing redis --- ']])

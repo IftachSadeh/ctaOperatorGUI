@@ -182,7 +182,7 @@ The local server, running under `http://localhost:8090/cta`, will then be served
 
 ### Documentation
 
-- Buildthe documentation with:
+- Build the documentation with:
   ```bash
   cd docs/
   make html

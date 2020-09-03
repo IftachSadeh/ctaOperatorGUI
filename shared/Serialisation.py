@@ -66,7 +66,7 @@ class Serialisation():
                 for v in data_in:
                     data += (self.unpack(v, log), )
 
-            elif isinstance(data_in, (int, float, complex)) or (data_in is None):
+            elif isinstance(data_in, (int, float, complex, bool)) or (data_in is None):
                 data = data_in
 
             else:
@@ -98,7 +98,7 @@ class Serialisation():
             is_empty = (len(data) == 0)
         elif isinstance(data, dict):
             is_empty = (len(data.keys()) == 0)
-        elif isinstance(data, (int, float, complex)):
+        elif isinstance(data, (int, float, complex, bool)):
             is_empty = False
         else:
             raise Exception('unknown data type', data)
