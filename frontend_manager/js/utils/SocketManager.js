@@ -192,20 +192,20 @@ function SocketManager() {
         this_sock_int.setup_websocket = setup_websocket
 
         // register a function for an incoming event
-        function add_event(opt_in) {
+        function add_listener(opt_in) {
             let name = opt_in.name
             let func = opt_in.func
             let is_singleton = opt_in.is_singleton
 
             try {
                 if (typeof name !== 'string' || name === '') {
-                    throw 'name must be set as a non-empty string in add_event'
+                    throw 'name must be set as a non-empty string in add_listener'
                 }
                 if (typeof func !== 'function') {
-                    throw 'func must be set as a function in add_event'
+                    throw 'func must be set as a function in add_listener'
                 }
                 if (typeof is_singleton !== 'boolean') {
-                    throw 'is_singleton must be set as true/false in add_event'
+                    throw 'is_singleton must be set as true/false in add_listener'
                 }
             }
             catch (err) {
@@ -225,7 +225,7 @@ function SocketManager() {
             }
             return
         }
-        this_sock_int.add_event = add_event
+        this_sock_int.add_listener = add_listener
 
         // register a function for an incoming event
         function get_on_events() {
@@ -343,7 +343,7 @@ function SocketManager() {
                 initial_connect(is_first, data)
             }
         }
-        this_top.socket.add_event({
+        this_top.socket.add_listener({
             name: 'initial_connect',
             func: initial_connect_evt,
             is_singleton: true,
@@ -384,11 +384,11 @@ function SocketManager() {
                 display_user_group: window.DISPLAY_USER_GROUP,
             }
             
-            let test_log = 0
+            let test_log = false
             if (test_log) {
                 this_top.socket.server_log({
                     data: {
-                        ssssssssss: 1,
+                        message: 'im alive!',
                     },
                     is_verb: true,
                     log_level: LOG_LEVELS.INFO,
@@ -460,7 +460,7 @@ function SocketManager() {
                 window.location.reload()
             }, 100)
         }
-        this_top.socket.add_event({
+        this_top.socket.add_listener({
             name: 'reload_session',
             func: reload_session_evt,
             is_singleton: true,
@@ -498,10 +498,19 @@ function SocketManager() {
 
             // update the local variable
             ping_time_msec = get_time_msec()
+
+            // send info about the resources used by the session. in case of
+            // session restoration, this will be used to indicate the need
+            // to restart loops etc.
+            let emit_data = {
+                'sess_resources': {
+                    'sess_widgets': this_top.sess_widgets,
+                },
+            }
             // let the server know that the ping was received
-            this_top.socket.emit('heartbeat_pong')
+            this_top.socket.emit('heartbeat_pong', emit_data)
         }
-        this_top.socket.add_event({
+        this_top.socket.add_listener({
             name: 'heartbeat_ping',
             func: heartbeat_ping_evt,
             is_singleton: true,
@@ -694,7 +703,7 @@ function SocketManager() {
 
             return
         }
-        this_top.socket.add_event({
+        this_top.socket.add_listener({
             name: 'update_sync_state_from_server',
             func: update_sync_state_from_server_evt,
             is_singleton: true,
@@ -704,7 +713,7 @@ function SocketManager() {
         // // -------------------------------------------------------------------
         // //
         // // -------------------------------------------------------------------
-        // this_top.socket.add_event('join_session_data', function(data_in) {
+        // this_top.socket.add_listener('join_session_data', function(data_in) {
         //     if (!this_top.has_joined_session) {
         //         if (is_def(setup_view[widget_type])) {
         //             setup_view[widget_type]()
@@ -1013,7 +1022,7 @@ function SocketManager() {
                     init_views[metadata.widget_id] = true
                 }
             }
-            this_top.socket.add_event({
+            this_top.socket.add_listener({
                 name: 'init_data',
                 func: init_data_evt,
                 is_singleton: true,
@@ -1048,7 +1057,7 @@ function SocketManager() {
             //         }
             //     })
             // }
-            // this_top.socket.add_event({
+            // this_top.socket.add_listener({
             //     name: 'update_data',
             //     func: update_data_evt,
             //     is_singleton: true,
@@ -1421,14 +1430,14 @@ window.sock = new SocketManager()
 //     }
 // })
 // // in case we disconnect (internet is off or server is down)
-// this_top.socket.add_event('disconnect', function() {
+// this_top.socket.add_listener('disconnect', function() {
 //     console.log('disconnect',this_top.is_reload)
 //     if (!this_top.is_reload) {
 //         this_top.con_stat.set_server_con_state(this_top.con_states.NOT_CONNECTED)
 //         this_top.con_stat.set_user_con_state_opts(false)
 //     }
 // })
-// this_top.socket.add_event('error', function(obj) {
+// this_top.socket.add_listener('error', function(obj) {
 //   console.log("error", obj);
 // });
 

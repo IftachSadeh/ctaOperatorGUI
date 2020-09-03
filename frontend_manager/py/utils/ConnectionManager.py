@@ -393,9 +393,13 @@ class ConnectionManager():
                 await event_func(data)
 
             else:
-                # check if this if this is a regular function or a coroutine object/function
-                if asyncio.iscoroutine(event_func) or asyncio.iscoroutinefunction(
-                        event_func):
+                # check if this if this is a regular function or a
+                # coroutine object/function
+                iscoroutine = (
+                    asyncio.iscoroutine(event_func)
+                    or asyncio.iscoroutinefunction(event_func)
+                )
+                if iscoroutine:
                     await self.asyncio_queue.put({
                         'asy_func': event_func(data),
                         'data': data,

@@ -836,7 +836,7 @@ function BaseApp() {
             // console.log('dddddddddddd', data_in)
             update_eles(data_in.data)
         }
-        sock.socket.add_event({
+        sock.socket.add_listener({
             name: 'get_sim_clock_sim_params',
             func: get_sim_clock_sim_params_evt,
             is_singleton: true,

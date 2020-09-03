@@ -136,7 +136,7 @@ class Manager():
         lock_prefix = 'utils;lock;' + service_name + ';'
         # dynamic lock names, based on the current properties
         lock_namespace = {
-            'loop': lambda: 'loop',
+            'loop': lambda: 'service_loop',
         }
         # initialise the lock manager
         self.locker = LockManager(
@@ -148,17 +148,17 @@ class Manager():
             is_passive=True,
         )
 
-        # # simaple locker test
-        # with self.locker.locks.acquire('loop', debug=1):
+        # simaple locker test
+        # with self.locker.locks.acquire(names='loop', debug=1):
         #     print(' - now im locked 0 :)')
         #     pass
-        #     with self.locker.locks.acquire('loop', debug=1, can_exist=1):
-        #         print(' - now im locked 1 :)')
-        #         pass
+        #     # with self.locker.locks.acquire(names='loop', debug=1, can_exist=1):
+        #     #     print(' - now im locked 1 :)')
+        #     #     pass
         # print(' - lock released !!!!!!')
 
         # for debugging, override the global flag
-        self.do_flush_redis = True
+        # self.do_flush_redis = True
         if service_name == 'redis_flush':
             if self.do_flush_redis:
                 self.log.warn([['bb', ' --- flusing redis --- ']])

@@ -1,4 +1,5 @@
 import asyncio
+from math import ceil
 
 from shared.utils import get_time
 
@@ -37,7 +38,7 @@ class Housekeeping():
 
             await self.locker.semaphores.async_block(
                 is_locked=is_locked,
-                max_lock_sec=self.sess_config_expire_sec,
+                max_lock_sec=max(1, ceil(self.sess_config_expire_sec * 0.9)),
             )
 
             # add a lock impacting session configurations. the name
@@ -287,6 +288,8 @@ class Housekeeping():
                     loop_info=widget_loop,
                 )
             self.redis.delete('ws;sess_widget_loops;' + widget_id)
+
+            self.redis.delete('ws;widget_util_ids;' + widget_id)
 
             #
             for sync_group in sync_groups:

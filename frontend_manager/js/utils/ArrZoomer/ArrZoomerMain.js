@@ -39,7 +39,7 @@ window.ArrZoomerMain = function(opt_in_top) {
     )
 
     let ele_base = opt_in_top.ele_base
-    let arr_zoomer_id = ele_base.arr_zoomer_id
+    let util_id = ele_base.util_id
 
     let has_site_svg = ele_base.has_site_svg
     let site_bck_svg = ele_base.site_bck_svg
@@ -770,7 +770,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                         sync_time: Date.now(),
                         zoom_state: 0,
                         target: 'init',
-                        arr_zoomer_id: arr_zoomer_id,
+                        util_id: util_id,
                     })
                 }
             }
@@ -3712,7 +3712,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                     sync_time: Date.now(),
                     tel_id: zooms.target,
                     prop_id: arr_zoomer_prop,
-                    arr_zoomer_id: arr_zoomer_id,
+                    util_id: util_id,
                 })
             }
 
@@ -4087,7 +4087,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                     sync_time: Date.now(),
                     zoom_state: this_top.get_zoom_state(),
                     target: zooms.target,
-                    arr_zoomer_id: arr_zoomer_id,
+                    util_id: util_id,
                 })
             }
 

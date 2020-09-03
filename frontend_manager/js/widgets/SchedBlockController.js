@@ -127,7 +127,7 @@ let sock_sched_block_controller = function(opt_in) {
     //   let emit_data = {
     //     'widget_type':widget_type, 'widget_id':widget_id,
     //     'method_name':'sched_block_controllerAskTelData',
-    //     'method_arg':data
+    //     'method_args':data
     //   };
     //   sock.socket.emit('widget', emit_data);
     //   return;
@@ -148,7 +148,7 @@ let sock_sched_block_controller = function(opt_in) {
             widget_type: widget_type,
             widget_id: data.widget_id,
             method_name: 'sched_block_controller_push_queue',
-            method_arg: data,
+            method_args: data,
         }
         sock.socket.emit('widget', emit_data)
     }

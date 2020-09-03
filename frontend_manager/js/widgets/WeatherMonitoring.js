@@ -182,7 +182,7 @@ let main_weather_monitoring = function(opt_in) {
         }
         update_data(data_in)
     }
-    sock.socket.add_event({
+    sock.socket.add_listener({
         name: 'update_data',
         func: update_data_evt,
         is_singleton: false,
@@ -2984,10 +2984,10 @@ let main_weather_monitoring = function(opt_in) {
 
             if (data_sync_in.type == 'sync_arr_zoomer_prop') {
                 // check if this came from myself (even for the same widget_id one
-                // can have multiple zoomers, but arr_zoomer_id is completely unique)
+                // can have multiple zoomers, but util_id is completely unique)
                 let is_own_sync = (
-                    arr_zoomer_base.arr_zoomer_id
-                  === data_sync_in.data.arr_zoomer_id
+                    arr_zoomer_base.util_id
+                  === data_sync_in.data.util_id
                 )
                 console.log(' - example - got sync: ', is_own_sync, data_sync_in.data)
             }

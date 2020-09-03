@@ -107,18 +107,18 @@ setup_view.view200 = function() {
         has_icon: true,
         has_drawer: true,
     })
-    sock.add_widget({
-        name_tag: 'ArrZoomerView',
-        table_title: 'Telescope health',
-        has_icon: true,
-        has_drawer: true,
-    })
-    sock.add_widget({
-        name_tag: 'EmptyExample',
-        table_title: 'empty_example',
-        has_icon: true,
-        has_drawer: false,
-    })
+    // sock.add_widget({
+    //     name_tag: 'ArrZoomerView',
+    //     table_title: 'Telescope health',
+    //     has_icon: true,
+    //     has_drawer: true,
+    // })
+    // sock.add_widget({
+    //     name_tag: 'EmptyExample',
+    //     table_title: 'empty_example',
+    //     has_icon: true,
+    //     has_drawer: false,
+    // })
 }
 
 // -------------------------------------------------------------------

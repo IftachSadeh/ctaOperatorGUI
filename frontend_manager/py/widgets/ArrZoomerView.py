@@ -1,4 +1,4 @@
-from frontend_manager.py.utils.ArrZoomer import ArrZoomer
+# from frontend_manager.py.utils.ArrZoomer import ArrZoomer
 from frontend_manager.py.utils.BaseWidget import BaseWidget
 
 
@@ -15,11 +15,11 @@ class ArrZoomerView(BaseWidget):
         # optionally turn off updates for debugging
         # self.do_data_updates = False
 
-        # widget-specific initialisations
-        self.ArrZoomer = ArrZoomer(parent=self)
-        self.my_utils += [
-            self.ArrZoomer,
-        ]
+        # # widget-specific initialisations
+        # self.ArrZoomer = ArrZoomer(parent=self)
+        # self.my_utils += [
+        #     self.ArrZoomer,
+        # ]
 
         return
 
@@ -40,8 +40,8 @@ class ArrZoomerView(BaseWidget):
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    async def back_from_offline(self, data=None):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        await BaseWidget.back_from_offline(self, data=None)
 
         return

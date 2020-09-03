@@ -315,6 +315,78 @@ let main_arr_zoomer = function(opt_in) {
             svg: svg,
         })
 
+
+        // let arr_zoomer_ele_opts_0 = {
+        //     do_ele: {
+        //         main: true,
+        //         ches: !true,
+        //         mini: !true,
+        //         tree: true,
+        //         lens: !true,
+        //         more: !true,
+        //     },
+        //     trans: {
+        //     },
+        //     inst_filter: {
+        //         // inst_ids: [ 'Lx01', ],
+        //         // inst_ids: [ 'Lx01', 'Lx02', 'Lx03', 'Lx04', 'Mx01' ],
+        //         inst_ids: [ 'Lx01', 'Mx04', 'Mx10', 'Mx11', 'Mx17' ],
+        //         // inst_ids: [ 'Px00', 'Px01' ],
+        //         // inst_types: [ 'AUX', 'PROC' ],
+        //         // inst_types: [ 'LST', 'MST', 'SST' ],
+        //     },
+        //     main: {
+        //         // dblclick_zoom_in_out: false,
+        //     },
+        //     ches: {
+        //         n_cols: is_south ? 18 : 8,
+        //         aspect_ratio: is_south ? 0.25 : 0.2,
+        //         font_rect_scale: is_south ? 0.7 : 0.6,
+        //     },
+        //     mini: {
+        //         // static_zoom: false,
+        //     },
+        //     tree: {
+        //         // aspect_ratio: 6/5,
+        //         has_title: false,
+        //     },
+        //     lens: {
+        //         aspect_ratio: 4,
+        //         has_titles: true,
+        //         // pointerEvents: true,
+        //     },
+        //     more: {
+        //         aspect_ratio: 0.5,
+        //         // has_title: false,
+        //     },
+        //     base_ele_width: 100,
+        // }
+        // arr_zoomer_ele_opts_0.trans = {
+        //     main: 'translate(40,360)scale(2.5)',
+        //     // ches: 'translate(100,0)scale(4.0)',
+        //     tree: 'translate(290,360)scale(2.5)',
+        //     // mini: 'translate(5,0)scale(1)',
+        //     // lens: 'translate(10,5)scale(0.18)',
+        //     // more: 'translate(0,350)scale(5)',
+        // }
+        // let arr_zoomer_base_0 = new ArrZoomerBase({
+        //     run_loop: run_loop,
+        //     sgv_tag: sgv_tag,
+        //     svg_dims: {
+        //         w: svg_dims.w,
+        //         h: svg_dims.h,
+        //     },
+        //     widget_id: widget_id,
+        //     locker: locker,
+        //     is_south: is_south,
+        //     widget_type: widget_type,
+        //     sock: sock,
+        //     user_opts: arr_zoomer_ele_opts_0,
+        //     lock_init_key: arr_zoomer_lock_init_key,
+        //     svg: svg,
+        // })
+
+
         // ------------------------------------------------------------------
         // expose the sync function
         // ------------------------------------------------------------------
@@ -323,8 +395,8 @@ let main_arr_zoomer = function(opt_in) {
             
             // if (data_sync_in.type == 'sync_arr_zoomer_prop') {
             //     let is_own_sync = (
-            //         arr_zoomer_base.arr_zoomer_id
-            //         === data_sync_in.data.arr_zoomer_id
+            //         arr_zoomer_base.util_id
+            //         === data_sync_in.data.util_id
             //     )
             //     // console.log('got sync: ', is_own_sync, data_sync_in.data)
             // }
@@ -357,7 +429,7 @@ let main_arr_zoomer = function(opt_in) {
             })
             return
         }
-        // auto_trans_test()
+        auto_trans_test()
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
 

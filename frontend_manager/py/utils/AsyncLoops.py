@@ -599,6 +599,13 @@ class AsyncLoops():
                 client data and metadata related to the event
         """
 
+        # go over the resources use by the session, and make sure that everything
+        # is registered as expected (not not be registered e.g., in case of session
+        # restoration, when previous cleanup removed registries from redis)
+        sess_resources = data['data']['sess_resources']
+        sess_widgets = sess_resources['sess_widgets']
+        await self.validate_sess_widgets(sess_widgets)
+
         # if eg we are offline or just back from offline
         if self.sess_ping_time is None or self.is_sess_offline:
             return
