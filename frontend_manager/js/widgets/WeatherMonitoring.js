@@ -48,7 +48,7 @@ window.load_script({
 })
 window.load_script({
     source: main_script_tag,
-    script: '/js/utils/ArrZoomer/ArrZoomerBase.js',
+    script: '/js/utils/ArrZoomerUtil/ArrZoomerBase.js',
 })
 
 // load additional js files:

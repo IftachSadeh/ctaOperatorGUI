@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from shared.utils import get_time_of_night
-from frontend_manager.py.utils.ArrZoomer import ArrZoomer
 from frontend_manager.py.utils.BaseWidget import BaseWidget
 
 

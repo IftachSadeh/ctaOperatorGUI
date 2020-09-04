@@ -1,8 +1,7 @@
-# from frontend_manager.py.utils.ArrZoomer import ArrZoomer
 from frontend_manager.py.utils.BaseWidget import BaseWidget
 
 
-class ArrZoomerView(BaseWidget):
+class ArrayZoomer(BaseWidget):
     # ------------------------------------------------------------------
     def __init__(self, widget_id='', sm=None, *args, **kwargs):
         # standard common initialisations
@@ -15,12 +14,6 @@ class ArrZoomerView(BaseWidget):
         # optionally turn off updates for debugging
         # self.do_data_updates = False
 
-        # # widget-specific initialisations
-        # self.ArrZoomer = ArrZoomer(parent=self)
-        # self.my_utils += [
-        #     self.ArrZoomer,
-        # ]
-
         return
 
     # ------------------------------------------------------------------
@@ -30,7 +23,7 @@ class ArrZoomerView(BaseWidget):
 
         # send initialisation event. for this view, no data are sent, as
         # all the interesting stuff happens as part of the arr_zoomer_ask_for_init_data
-        # event, which is part of the ArrZoomer utility
+        # event, which is part of the ArrZoomerUtil utility
         opt_in = {
             'widget': self,
             'event_name': 'init_data',

@@ -8,7 +8,7 @@
 // main_script_tag used locally (will be overriden by other scripts...)
 // must be compatible with the name of this js file, according to:
 //    "/js/widgets/"+main_script_tag+".js"
-var main_script_tag = 'ArrZoomerView'
+var main_script_tag = 'ArrayZoomer'
 // ------------------------------------------------------------------
 
 /* global $ */
@@ -24,7 +24,7 @@ var main_script_tag = 'ArrZoomerView'
 
 window.load_script({
     source: main_script_tag,
-    script: '/js/utils/ArrZoomer/ArrZoomerBase.js',
+    script: '/js/utils/ArrZoomerUtil/ArrZoomerBase.js',
 })
 
 // ------------------------------------------------------------------

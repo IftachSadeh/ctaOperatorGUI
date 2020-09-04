@@ -5,13 +5,13 @@ from shared.LogParser import LogParser
 
 
 # ------------------------------------------------------------------
-class ArrZoomer():
+class ArrZoomerUtil():
 
     # ------------------------------------------------------------------
     def __init__(self, util_id, parent):
         self.class_name = self.__class__.__name__
 
-        ArrZoomer.log = LogParser(
+        ArrZoomerUtil.log = LogParser(
             base_config=parent.base_config,
             title=(parent.log.get_title() + '/' + __name__),
         )
@@ -103,8 +103,8 @@ class ArrZoomer():
 
         for init_property in check_init_properties:
             if not hasattr(parent, init_property):
-                ArrZoomer.log.error([
-                    ['wr', ' - bad initialisation of ArrZoomer()...', 'Missing: '],
+                ArrZoomerUtil.log.error([
+                    ['wr', ' - bad initialisation of ArrZoomerUtil()...', 'Missing: '],
                     ['yr', init_property, ''],
                 ])
                 print('FIXME - need proper exception handling ...')
@@ -480,7 +480,7 @@ class ArrZoomer():
 
     # # ------------------------------------------------------------------
     # def get_sub_arr_grp(self):
-    #     # with ArrZoomer.lock:
+    #     # with ArrZoomerUtil.lock:
     #     if 1:
     #         sub_arrs = self.redis.get(
     #             name='sub_arrs',
@@ -514,7 +514,7 @@ class ArrZoomer():
     #         if msg is not None:
     #             self.get_sub_arr_grp()
 
-    #             data_now = ArrZoomer.send_data['s_0']
+    #             data_now = ArrZoomerUtil.send_data['s_0']
     #             sess_ids = data_now['sess_id']
     #             widget_ids = data_now['widget_id']
     #             data = {

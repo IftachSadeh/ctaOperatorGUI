@@ -23,23 +23,23 @@ let load_script_tag = 'ArrZoomerBase'
 
 window.load_script({
     source: load_script_tag,
-    script: '/js/utils/ArrZoomer/ArrZoomerMain.js',
+    script: '/js/utils/ArrZoomerUtil/ArrZoomerMain.js',
 })
 window.load_script({
     source: load_script_tag,
-    script: '/js/utils/ArrZoomer/ArrZoomerMini.js',
+    script: '/js/utils/ArrZoomerUtil/ArrZoomerMini.js',
 })
 window.load_script({
     source: load_script_tag,
-    script: '/js/utils/ArrZoomer/ArrZoomerChes.js',
+    script: '/js/utils/ArrZoomerUtil/ArrZoomerChes.js',
 })
 window.load_script({
     source: load_script_tag,
-    script: '/js/utils/ArrZoomer/ArrZoomerTree.js',
+    script: '/js/utils/ArrZoomerUtil/ArrZoomerTree.js',
 })
 window.load_script({
     source: load_script_tag,
-    script: '/js/utils/ArrZoomer/ArrZoomerMore.js',
+    script: '/js/utils/ArrZoomerUtil/ArrZoomerMore.js',
 })
 
 
@@ -83,7 +83,7 @@ window.ArrZoomerBase = function(opt_in_top) {
             : '/static/site_layouts/site_layout_North.svg'
     )
 
-    let util_type = 'ArrZoomer'
+    let util_type = 'ArrZoomerUtil'
     this_top.util_type = util_type
     
     let util_id = 'arr_zoomer' + my_unique_id
