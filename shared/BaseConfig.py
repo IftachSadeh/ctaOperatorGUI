@@ -79,3 +79,9 @@ class BaseConfig():
             BaseConfig.widget_info = []
 
         return
+
+    # ------------------------------------------------------------------
+    def set_rnd_seed(self, rnd_seed):
+        BaseConfig.rnd_seed = rnd_seed
+        BaseConfig.rnd_gen_unique = Random(rnd_seed)
+        return

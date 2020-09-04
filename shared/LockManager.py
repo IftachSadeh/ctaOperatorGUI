@@ -64,6 +64,7 @@ class RedisLock():
         self.lock_timeout_sec = self.parent.lock_timeout_sec
         if self.lock_timeout_sec is None:
             self.lock_timeout_sec = 10
+        self.lock_timeout_sec = int(ceil(self.lock_timeout_sec))
 
         # maximal nominal delay time for locking
         self.slow_lock_msec = self.parent.slow_lock_msec
@@ -80,7 +81,6 @@ class RedisLock():
 
     # ------------------------------------------------------------------
     def get_lock_id(self):
-
         lock_id = self.lock_id_prefix + '_{:08d}'.format(self.n_locks)
         self.n_locks += 1
 
@@ -172,9 +172,9 @@ class RedisLock():
             self.parent = parent
             self.log = self.parent.log
             self.redis = self.parent.redis
+            self.get_lock_id = self.parent.get_lock_id
             self.lock_timeout_sec = self.parent.lock_timeout_sec
             self.slow_lock_msec = self.parent.slow_lock_msec
-            self.get_lock_id = self.parent.get_lock_id
 
             self.lock_names = lock_names
             if isinstance(self.lock_names, str):
@@ -183,11 +183,16 @@ class RedisLock():
             self.can_exist = can_exist
 
             self.debug_lock = False
-            # self.debug_lock = True
             if debug is not None:
                 self.debug_lock = debug
+            # self.debug_lock = True
 
             self.locks = []
+
+            self.time_0_msec = get_time('msec')
+            self.time_1_msec = self.time_0_msec
+            self.timeout_0_msec = 0
+            self.timeout_1_msec = 0
 
             return
 
@@ -201,9 +206,7 @@ class RedisLock():
             """
 
             names = self._lock_get_names()
-
-            self._sync_lock_enter_check(names=names)
-            self._lock_enter_set(names=names)
+            self._sync_lock_enter(names=names)
 
             return
 
@@ -217,9 +220,7 @@ class RedisLock():
             """
 
             names = self._lock_get_names()
-
-            await self._async_lock_enter_check(names=names)
-            self._lock_enter_set(names=names)
+            await self._async_lock_enter(names=names)
 
             return
 
@@ -252,88 +253,89 @@ class RedisLock():
             return names
 
         # ------------------------------------------------------------------
-        async def _async_lock_enter_check(self, names):
+        async def _async_lock_enter(self, names):
+            lock_id = self.get_lock_id()
+
             for name in names:
                 if self.can_exist:
                     if self.redis.exists(name):
-                        return
+                        break
                 else:
-                    time_0 = get_time('msec')
-                    time_1, timeout_0, timeout_1 = time_0, 0, 0
-                    while self.redis.exists(name):
+                    while True:
+                        is_set = self._lock_enter(name=name, lock_id=lock_id, in_loop=True,)
+                        if is_set:
+                            break
+
                         await asyncio.sleep(0.01)
 
-                        timeout_0 = get_time('msec') - time_0
-                        timeout_1 = get_time('msec') - time_1
-                        if timeout_0 >= self.slow_lock_msec:
-                            time_0 = get_time('msec')
-                            self.log.warn([
-                                ['r', ' - slow lock for '],
-                                ['b', name],
-                                ['r', ' waiting for '],
-                                ['c', timeout_1],
-                                ['r', ' msec ...'],
-                            ])
-
-                    if timeout_0 >= self.lock_timeout_sec * 1e3:
-                        time_0 = get_time('msec')
-                        raise Exception(
-                            ' - lock for ' + str(name) + ' seems to have expired'
-                            + ' (not released) after ' + str(timeout_1) + ' msec'
-                        )
+                    self._lock_enter(name=name, lock_id=lock_id, in_loop=False)
+            
             return
 
         # ------------------------------------------------------------------
-        def _sync_lock_enter_check(self, names):
+        def _sync_lock_enter(self, names):
+            lock_id = self.get_lock_id()
+
             for name in names:
                 if self.can_exist:
                     if self.redis.exists(name):
-                        return
+                        break
                 else:
-                    time_0 = get_time('msec')
-                    time_1, timeout_0, timeout_1 = time_0, 0, 0
-                    while self.redis.exists(name):
+                    while True:
+                        is_set = self._lock_enter(name=name, lock_id=lock_id, in_loop=True,)
+                        if is_set:
+                            break
+
                         time.sleep(0.01)
 
-                        timeout_0 = get_time('msec') - time_0
-                        timeout_1 = get_time('msec') - time_1
-                        if timeout_0 >= self.slow_lock_msec:
-                            time_0 = get_time('msec')
-                            self.log.warn([
-                                ['r', ' - slow lock for '],
-                                ['b', name],
-                                ['r', ' waiting for '],
-                                ['c', timeout_1],
-                                ['r', ' msec ...'],
-                            ])
-
-                    if timeout_0 >= self.lock_timeout_sec * 1e3:
-                        time_0 = get_time('msec')
-                        raise Exception(
-                            ' - lock for ' + str(name) + ' seems to have expired'
-                            + ' (not released) after ' + str(timeout_1) + ' msec'
-                        )
+                    self._lock_enter(name=name, lock_id=lock_id, in_loop=False)
+            
             return
 
         # ------------------------------------------------------------------
-        def _lock_enter_set(self, names):
-            for name in names:
-                lock_id = self.get_lock_id()
+        def _lock_enter(self, name, lock_id, in_loop):
+            is_set = False
 
-                self.redis.set(
+            if in_loop:
+                # try to set the name (works only if it does not already exist)
+                set_try = self.redis.set_nx(
                     name=name,
                     data=lock_id,
                     expire_sec=self.lock_timeout_sec,
                 )
+
+                self.timeout_0_msec = get_time('msec') - self.time_0_msec
+                self.timeout_1_msec = get_time('msec') - self.time_1_msec
+                
+                if self.timeout_0_msec >= self.slow_lock_msec:
+                    self.time_0_msec = get_time('msec')
+                    self.log.warn([
+                        ['r', ' - slow lock for '],
+                        ['b', name],
+                        ['r', ' waiting for '],
+                        ['c', self.timeout_1_msec],
+                        ['r', ' msec ...'],
+                    ])
+                
+                is_set = set_try['set_nx']
+
+            else:
+                if self.timeout_0_msec >= self.lock_timeout_sec * 1e3:
+                    raise Exception(
+                        ' - lock for ' + str(name) + ' seems to have expired'
+                        + ' (not released) after ' + str(self.timeout_1_msec) + ' msec'
+                    )
+
                 self.locks += [{
                     'name': name,
+                    'lock_time': get_time('msec'),
                     'lock_id': lock_id,
                 }]
 
                 if self.debug_lock:
                     self.log.info([['b', ' ++ add  ', lock_id, '  ', name]])
 
-            return
+            return is_set
 
         # ------------------------------------------------------------------
         def _lock_exit(self, exc_type, exc, tb):
@@ -342,9 +344,44 @@ class RedisLock():
                 if lock_id == lock['lock_id']:
                     self.redis.delete(name=lock['name'])
 
+                    lock_time_diff = get_time('msec') - lock['lock_time']
+                    
                     if self.debug_lock:
-                        self.log.info([['c', ' -- del  ', lock_id, '  ', lock['name']]])
+                        self.log.info([['c', ' -- del  ', lock_id, '  ', lock['name']], ['o', '  (was locked for: '], ['y', lock_time_diff], ['o', ' msec)'],])
+
+                    slow_threshold = min(
+                        self.slow_lock_msec, self.lock_timeout_sec * 1e3,
+                    )
+                    if lock_time_diff >= slow_threshold:
+                        self.log.warn([
+                            ['r', ' - slow lock release for '],
+                            ['b', lock['name']],
+                            ['r', ' took '],
+                            ['b', lock_time_diff],
+                            ['r', ' msec, given thresholds: '],
+                            ['b', (self.slow_lock_msec, self.lock_timeout_sec)],
+                        ])
+
             return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ------------------------------------------------------------------

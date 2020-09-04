@@ -95,8 +95,8 @@ class BaseWidget():
         # instantiate the util class
         self.my_utils[util_id] = util_cls(util_id=util_id, parent=self)
 
-        # add a lock for initialisation (needed in case of restoration
-        # of sessions, in order to make sure the initialisation)
+        # add a lock for initialisation. needed in case of restoration
+        # of sessions, in order to make sure the initialisation
         # method is called before any other
         self.my_utils[util_id].locker.semaphores.add(
             name=self.get_util_lock_name(util_id),

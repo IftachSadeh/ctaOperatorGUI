@@ -41,6 +41,7 @@ class RedisBase():
 
     # ------------------------------------------------------------------
     def set(self, name=None, data=None, expire_sec=None):
+        out, ex_out = None, None
         try:
             if name is None:
                 raise Exception('redis.set(): name is None')
@@ -51,13 +52,46 @@ class RedisBase():
             out = self.base.set(name, data)
 
             if expire_sec is not None:
-                out = self.base.expire(name, expire_sec)
+                ex_out = self.base.expire(name, expire_sec)
 
         except Exception as e:
             self.log.error([['r', 'redis.set(): '], ['o', name, data, expire_sec]])
             raise e
 
-        return out
+        output = {
+            'set': out,
+            'expire': ex_out,
+        }
+        return output
+
+
+    # ------------------------------------------------------------------
+    def set_nx(self, name=None, data=None, expire_sec=None):
+        out, ex_out = None, None
+        try:
+            if name is None:
+                raise Exception('redis.set_nx(): name is None')
+
+            if data is None:
+                data = ''
+            data = self.pack(data)
+            out = self.base.setnx(name, data)
+
+            if expire_sec is not None:
+                ex_out = self.base.expire(name, expire_sec)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.set_nx(): '], ['o', name, data, expire_sec]])
+            raise e
+
+        output = {
+            'set_nx': out,
+            'expire': ex_out,
+        }
+        return output
+
+
+
 
     # ------------------------------------------------------------------
     def h_set(self, name=None, key=None, data=None):
@@ -543,8 +577,14 @@ class RedisManager(RedisBase):
         return out
 
     # ------------------------------------------------------------------
-    def get_pubsub(self, key=None, timeout=0, ignore_subscribe_messages=True):
+    def get_pubsub(self, key=None, timeout=None, ignore_subscribe_messages=True):
         msg = None
+
+        # for loops monitoring pubsub events, the delay between messages
+        # is integrated in the loop, therefore redis itself should 
+        # NOT be blocking --> timeout is extreemly tiny
+        if timeout is None:
+            timeout = 0.001
 
         try:
             if (key is None) or (key not in self.pubsub):
