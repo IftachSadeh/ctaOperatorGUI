@@ -77,7 +77,12 @@ class SessionManager():
         if self.base_config.debug_opts['dev'] and self.can_restore_existing_sess:
             if is_existing_sess:
                 self.sess_id = data['metadata']['sess_id']
-                await self.emit(event_name='reload_session')
+
+                # add a delay before reloading, to let the server time to
+                # restart in case of a complete reload
+                reload_data = {'delay_msec': 750}
+                await self.emit(event_name='reload_session', data=reload_data)
+
                 return
         # ------------------------------------------------------------------
 

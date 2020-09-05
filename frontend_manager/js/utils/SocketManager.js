@@ -466,9 +466,14 @@ function SocketManager() {
 
         //
         let reload_session_evt = function(data_in) {
+            let data = data_in.data
+            let delay = is_def(data['delay_msec']) ? data['delay_msec'] : 250
+            
             setTimeout(function() {
                 window.location.reload()
-            }, 100)
+            }, delay)
+
+            return
         }
         this_top.socket.add_listener({
             name: 'reload_session',
@@ -489,7 +494,7 @@ function SocketManager() {
         // -------------------------------------------------------------------
         // get/send heartbeat ping/pong messages to the server
         // -------------------------------------------------------------------
-        let ping_event_time_msec = 0
+        let ping_event_time_msec = get_time_msec()
         let ping_visible_time_msec, ping_latest_delay_msec
         function reset_ping() {
             ping_visible_time_msec = null
@@ -499,6 +504,8 @@ function SocketManager() {
         reset_ping()
         
         let heartbeat_ping_evt = function(data_in) {
+            ping_event_time_msec = get_time_msec()
+
             // console.log(' - got heartbeat_ping', data_in)
             // if this is not the first ping, check that the delay is within the allowed range
             if (document.hidden) {
@@ -518,7 +525,6 @@ function SocketManager() {
 
             // update the local variable
             ping_visible_time_msec = get_time_msec()
-            ping_event_time_msec = ping_visible_time_msec
 
             // send info about the resources used by the session. in case of
             // session restoration, this will be used to indicate the need
@@ -543,101 +549,104 @@ function SocketManager() {
         // -------------------------------------------------------------------
         function check_ping_delay() {
             setTimeout(function() {
+                _check_ping_delay()
+            }, 500)
+            return
+        }
+        function _check_ping_delay() {
+            // this_top.socket.emit('test_socket_evt', {test: 1})
 
-                // this_top.socket.emit('test_socket_evt', {test: 1})
+            let ping_event_total_delay_msec = 0
+            if (!document.hidden) {
+                let ping_interval_msec = get_time_msec() - ping_event_time_msec
 
-                let ping_event_total_delay_msec = 0
-                if (!document.hidden) {
-                    let ping_interval_msec = get_time_msec() - ping_event_time_msec
-
-                    ping_event_total_delay_msec = (
-                        ping_interval_msec - this_top.sess_ping.send_interval_msec * 2
-                    )
-                }
-
-                // if this is not the first ping, check that the delay is within the allowed range
-                let ping_visible_delay_msec = 0
-                if (is_def(ping_visible_time_msec)) {
-                    let ping_interval_msec = get_time_msec() - ping_visible_time_msec
-                    ping_visible_delay_msec = (
-                        ping_interval_msec - this_top.sess_ping.send_interval_msec
-                    )
-                }
-
-                // mostly ping_visible_delay_msec will be negative if the connecition is ok
-                // and so the latest (event) delay will be taken
-                let ping_compare_delay_msec = Math.max(
-                    ping_latest_delay_msec, ping_visible_delay_msec, ping_event_total_delay_msec,
+                ping_event_total_delay_msec = (
+                    ping_interval_msec - this_top.sess_ping.send_interval_msec
                 )
+            }
 
-                if (!this_top.con_stat.do_check_heartbeat()) {
-                    // after setting the state in the previous iteration (to make
-                    // sure we do not attempt to send further messages), close the socket
-                    if (this_top.socket.is_ws_open()) {
-                        let do_ws_close = (
-                            ping_compare_delay_msec > this_top.sess_ping.max_interval_bad_msec
-                        )
-                        if (do_ws_close) {
-                            this_top.socket.close_ws()
-                        }
+            // if this is not the first ping, check that the delay is within the allowed range
+            let ping_visible_delay_msec = 0
+            if (is_def(ping_visible_time_msec)) {
+                let ping_interval_msec = get_time_msec() - ping_visible_time_msec
+                ping_visible_delay_msec = (
+                    ping_interval_msec - this_top.sess_ping.send_interval_msec
+                )
+            }
+
+            // mostly ping_visible_delay_msec will be negative if the connecition is ok
+            // and so the latest (event) delay will be taken
+            let ping_compare_delay_msec = Math.max(
+                ping_latest_delay_msec, ping_visible_delay_msec, ping_event_total_delay_msec,
+            )
+
+            if (!this_top.con_stat.do_check_heartbeat()) {
+                // after setting the state in the previous iteration (to make
+                // sure we do not attempt to send further messages), close the socket
+                if (this_top.socket.is_ws_open()) {
+                    let do_ws_close = (
+                        ping_compare_delay_msec > this_top.sess_ping.max_interval_bad_msec
+                    )
+                    if (do_ws_close) {
+                        this_top.socket.close_ws()
                     }
-
-                    check_ping_delay()
-                    return
-                }
-
-                let state = null
-                if (ping_compare_delay_msec < this_top.sess_ping.max_interval_good_msec) {
-                    state = this_top.con_states.CONNECTED
-                    // console.log('            GOOD connection')
-                }
-                else if (ping_compare_delay_msec < this_top.sess_ping.max_interval_slow_msec) {
-                    state = this_top.con_states.SLOW_CONNECTION
-                    // console.log(' SLOW_CONNECTION connection')
-                }
-                else {
-                    state = this_top.con_states.NOT_CONNECTED
-                    // console.log('              NO  connection')
-                }
-
-                let prev_state = this_top.con_stat.get_server_con_state()
-                
-                if (prev_state !== state) {
-                    // send a log entry to the server
-                    if (!document.hidden) {
-                        if (state !== this_top.con_states.CONNECTED) {
-                            let level = (
-                                state === this_top.con_states.NOT_CONNECTED
-                                    ? LOG_LEVELS.ERROR
-                                    : LOG_LEVELS.WARNING
-                            )
-                            if (this_top.send_connection_logs) {
-                                this_top.socket.server_log({
-                                    data: {
-                                        event_name: state,
-                                        ping_latest_delay_msec: ping_latest_delay_msec,
-                                        ping_visible_delay_msec: ping_visible_delay_msec,
-                                        ping_event_total_delay_msec: ping_event_total_delay_msec,
-                                    },
-                                    is_verb: true,
-                                    log_level: level,
-                                })
-                            }
-                        }
-                    }
-
-                    // modify the connection state of the client
-                    let is_con = (state !== this_top.con_states.NOT_CONNECTED)
-
-                    this_top.con_stat.set_server_con_state(state)
-                    this_top.con_stat.set_user_con_state_opts(is_con)
-                    this_top.con_stat.set_check_heartbeat(is_con)
                 }
 
                 check_ping_delay()
                 return
+            }
 
-            }, 500)
+            let state = null
+            if (ping_compare_delay_msec < this_top.sess_ping.max_interval_good_msec) {
+                state = this_top.con_states.CONNECTED
+                // console.log('            GOOD connection')
+            }
+            else if (ping_compare_delay_msec < this_top.sess_ping.max_interval_slow_msec) {
+                state = this_top.con_states.SLOW_CONNECTION
+                // console.log(' SLOW_CONNECTION connection')
+            }
+            else {
+                state = this_top.con_states.NOT_CONNECTED
+                // console.log('              NO  connection')
+            }
+
+            let prev_state = this_top.con_stat.get_server_con_state()
+            
+            if (prev_state !== state) {
+                // send a log entry to the server
+                if (!document.hidden) {
+                    if (state !== this_top.con_states.CONNECTED) {
+                        let level = (
+                            state === this_top.con_states.NOT_CONNECTED
+                                ? LOG_LEVELS.ERROR
+                                : LOG_LEVELS.WARNING
+                        )
+                        if (this_top.send_connection_logs) {
+                            this_top.socket.server_log({
+                                data: {
+                                    event_name: state,
+                                    ping_latest_delay_msec: ping_latest_delay_msec,
+                                    ping_visible_delay_msec: ping_visible_delay_msec,
+                                    ping_event_total_delay_msec: ping_event_total_delay_msec,
+                                },
+                                is_verb: true,
+                                log_level: level,
+                            })
+                        }
+                    }
+                }
+
+                // modify the connection state of the client
+                let is_con = (state !== this_top.con_states.NOT_CONNECTED)
+
+                this_top.con_stat.set_server_con_state(state)
+                this_top.con_stat.set_user_con_state_opts(is_con)
+                this_top.con_stat.set_check_heartbeat(is_con)
+            }
+
+            check_ping_delay()
+            return
+
         }
 
         // -------------------------------------------------------------------
