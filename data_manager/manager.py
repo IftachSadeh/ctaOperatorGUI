@@ -130,12 +130,15 @@ class Manager():
                 is_passive=True,
             )
 
-            self.log.info([['o', ' -- trying to acquire locks for '], ['c', service_name]])
+            self.log.info([['o', ' -- trying to acquire locks for '], ['c',
+                                                                       service_name]])
             with locker.locks.acquire(names='loop', debug=True, can_exist=False):
-                self.log.info([['y', ' --   now i am locked 0 ... '], ['c', service_name]])
+                self.log.info([['y', ' --   now i am locked 0 ... '], ['c',
+                                                                       service_name]])
                 sleep(0.3)
                 with locker.locks.acquire(names='loop', debug=True, can_exist=True):
-                    self.log.info([['y', '   -- now i am locked 1 ... '], ['c', service_name]])
+                    self.log.info([['y', '   -- now i am locked 1 ... '],
+                                   ['c', service_name]])
                     sleep(0.2)
             self.log.info([['o', ' -- released locks for '], ['c', service_name]])
         # ------------------------------------------------------------------
@@ -162,7 +165,7 @@ class Manager():
         )
 
         # for debugging, override the global flag
-        # self.do_flush_redis = True    
+        # self.do_flush_redis = True
         if service_name == 'redis_flush':
             if self.do_flush_redis:
                 self.log.warn([['bb', ' --- flusing redis --- ']])

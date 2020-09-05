@@ -237,31 +237,51 @@ class WidgetManager():
         return
 
     # ------------------------------------------------------------------
-    async def validate_sess_widgets(self, sess_widgets):
+    async def validate_sess_widgets(self, sess_id, sess_widgets):
         """check that widgets listed as session resources
            are valid
         """
 
-        for widget_id, widget_info in sess_widgets.items():
-            if 'utils' in widget_info:
+        for widget_id, info in sess_widgets.items():
+            widget_info = self.redis.h_get(
+                name='ws;widget_info',
+                key=widget_id,
+                default_val=None,
+            )
+
+            # possibly, the widget will not be registered, (eg redis has been
+            # flushed). recovery is then not possible - we make sure the session
+            # heartbeat is stopped and the session does not try to restore itself
+            if widget_info is None:
+                # forcibly stop the heartbeat
+                loop_info = {
+                    'id': 'client_sess_heartbeat_loop',
+                    'group': self.get_loop_group_name(scope='sess', postfix=sess_id),
+                }
+                await self.set_loop_state(state=False, loop_info=loop_info)
+
+                # send the client a kill event, to prevent further attempts at connection
+                await self.emit(event_name='kill_socket_connection')
+
+            elif 'utils' in info:
                 await self.validate_widget_utils(
                     widget_id=widget_id,
-                    utils=widget_info['utils'],
+                    widget_info=widget_info,
+                    utils=info['utils'],
                 )
+
         return
 
     # ------------------------------------------------------------------
-    async def validate_widget_utils(self, widget_id, utils):
+    async def validate_widget_utils(self, widget_id, widget_info, utils):
         """check that widget utilities listed as session resources
            are registered in redis. in case of a mismatch, send the
            corresponding back_from_offline event, which will allow
            them to ask the client to go through initialisation
         """
 
-        widget_info = self.redis.h_get(name='ws;widget_info', key=widget_id)
         util_ids = widget_info['util_ids']
-
-        miss_util_ids = [ u['util_id'] for u in utils if u['util_id'] not in util_ids ]
+        miss_util_ids = [u['util_id'] for u in utils if u['util_id'] not in util_ids]
 
         if len(miss_util_ids) > 0:
             widget_info['util_ids'] += miss_util_ids

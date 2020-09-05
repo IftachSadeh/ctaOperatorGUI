@@ -84,8 +84,8 @@ class SessionManager():
         if is_existing_sess:
             self.sess_id = data['metadata']['sess_id']
             self.log.info([
-                ['r', ' - restoring existing session:'],
-                ['o', '', self.sess_id],
+                ['g', ' - restoring existing session:'],
+                ['p', '', self.sess_id],
             ])
 
         async with self.locker.locks.acquire('sess'):
@@ -104,7 +104,10 @@ class SessionManager():
                 )
                 return locked
 
-            max_lock_sec = self.get_expite_sec(name='cleanup_loop_expire', is_lock_check=True,)
+            max_lock_sec = self.get_expite_sec(
+                name='cleanup_loop_expire',
+                is_lock_check=True,
+            )
             await self.locker.semaphores.async_block(
                 is_locked=is_locked,
                 max_lock_sec=max_lock_sec,

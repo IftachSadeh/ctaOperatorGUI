@@ -64,7 +64,6 @@ class RedisBase():
         }
         return output
 
-
     # ------------------------------------------------------------------
     def set_nx(self, name=None, data=None, expire_sec=None):
         out, ex_out = None, None
@@ -89,9 +88,6 @@ class RedisBase():
             'expire': ex_out,
         }
         return output
-
-
-
 
     # ------------------------------------------------------------------
     def h_set(self, name=None, key=None, data=None):
@@ -575,7 +571,7 @@ class RedisManager(RedisBase):
         msg = None
 
         # for loops monitoring pubsub events, the delay between messages
-        # is integrated in the loop, therefore redis itself should 
+        # is integrated in the loop, therefore redis itself should
         # NOT be blocking --> timeout is extreemly tiny
         if timeout is None:
             timeout = 0.001
@@ -598,7 +594,10 @@ class RedisManager(RedisBase):
                     msg['data'] = self.unpack(msg['data'])
 
         except Exception as e:
-            self.log.error([['r', 'redis.pubsub_get_message(): '], ['o', timeout, ignore_subscribe_messages],])
+            self.log.error([
+                ['r', 'redis.pubsub_get_message(): '],
+                ['o', timeout, ignore_subscribe_messages],
+            ])
             raise e
 
         return msg

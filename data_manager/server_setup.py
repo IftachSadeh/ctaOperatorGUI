@@ -86,12 +86,14 @@ class SetupServer():
         # make sure to start with those modules which others depend on
         # such as BaseConfig (for which class attributes used eg by utils)
         ordered_items = ['shared.BaseConfig', 'shared.LogParser', 'InstPos']
+
         def sort_key(item):
             if item in ordered_items:
                 order = ordered_items.index(item)
             else:
                 order = len(ordered_items) + 1 / (1 + item.count('.'))
             return order
+
         mods = sorted(mods, key=sort_key, reverse=False)
         # mods = sorted(mods, key=lambda item: item.count('.'), reverse=True)
 

@@ -328,7 +328,6 @@ class AsyncLoops():
         ])
         sleep_sec = 0.1
 
-
         # setup the channel once
         pubsub = self.redis.pubsub_subscribe(pubsub_tag)
 
@@ -604,7 +603,10 @@ class AsyncLoops():
         # restoration, when previous cleanup removed registries from redis)
         sess_resources = data['data']['sess_resources']
         sess_widgets = sess_resources['sess_widgets']
-        await self.validate_sess_widgets(sess_widgets)
+        await self.validate_sess_widgets(
+            sess_id=data['metadata']['sess_id'],
+            sess_widgets=sess_widgets,
+        )
 
         # if eg we are offline or just back from offline
         if self.sess_ping_time is None or self.is_sess_offline:

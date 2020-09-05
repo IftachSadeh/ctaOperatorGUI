@@ -262,14 +262,18 @@ class RedisLock():
                         break
                 else:
                     while True:
-                        is_set = self._lock_enter(name=name, lock_id=lock_id, in_loop=True,)
+                        is_set = self._lock_enter(
+                            name=name,
+                            lock_id=lock_id,
+                            in_loop=True,
+                        )
                         if is_set:
                             break
 
                         await asyncio.sleep(0.01)
 
                     self._lock_enter(name=name, lock_id=lock_id, in_loop=False)
-            
+
             return
 
         # ------------------------------------------------------------------
@@ -282,14 +286,18 @@ class RedisLock():
                         break
                 else:
                     while True:
-                        is_set = self._lock_enter(name=name, lock_id=lock_id, in_loop=True,)
+                        is_set = self._lock_enter(
+                            name=name,
+                            lock_id=lock_id,
+                            in_loop=True,
+                        )
                         if is_set:
                             break
 
                         time.sleep(0.01)
 
                     self._lock_enter(name=name, lock_id=lock_id, in_loop=False)
-            
+
             return
 
         # ------------------------------------------------------------------
@@ -306,7 +314,7 @@ class RedisLock():
 
                 self.timeout_0_msec = get_time('msec') - self.time_0_msec
                 self.timeout_1_msec = get_time('msec') - self.time_1_msec
-                
+
                 if self.timeout_0_msec >= self.slow_lock_msec:
                     self.time_0_msec = get_time('msec')
                     self.log.warn([
@@ -316,7 +324,7 @@ class RedisLock():
                         ['c', self.timeout_1_msec],
                         ['r', ' msec ...'],
                     ])
-                
+
                 is_set = set_try['set_nx']
 
             else:
@@ -345,12 +353,18 @@ class RedisLock():
                     self.redis.delete(name=lock['name'])
 
                     lock_time_diff = get_time('msec') - lock['lock_time']
-                    
+
                     if self.debug_lock:
-                        self.log.info([['c', ' -- del  ', lock_id, '  ', lock['name']], ['o', '  (was locked for: '], ['y', lock_time_diff], ['o', ' msec)'],])
+                        self.log.info([
+                            ['c', ' -- del  ', lock_id, '  ', lock['name']],
+                            ['o', '  (was locked for: '],
+                            ['y', lock_time_diff],
+                            ['o', ' msec)'],
+                        ])
 
                     slow_threshold = min(
-                        self.slow_lock_msec, self.lock_timeout_sec * 1e3,
+                        self.slow_lock_msec,
+                        self.lock_timeout_sec * 1e3,
                     )
                     if lock_time_diff >= slow_threshold:
                         self.log.warn([
@@ -363,25 +377,6 @@ class RedisLock():
                         ])
 
             return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # ------------------------------------------------------------------

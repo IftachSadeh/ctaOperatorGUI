@@ -260,7 +260,6 @@ class ArrZoomerUtil():
 
         return
 
-
     # ------------------------------------------------------------------
     async def util_init(self, data_in):
         """initialise dataset and send to client when the client asks for it

@@ -36,7 +36,10 @@ class Housekeeping():
                 locked = any(s in sess_ids for s in sess_locks)
                 return locked
 
-            max_lock_sec = self.get_expite_sec(name='sess_config_expire', is_lock_check=True,)
+            max_lock_sec = self.get_expite_sec(
+                name='sess_config_expire',
+                is_lock_check=True,
+            )
             await self.locker.semaphores.async_block(
                 is_locked=is_locked,
                 max_lock_sec=max_lock_sec,

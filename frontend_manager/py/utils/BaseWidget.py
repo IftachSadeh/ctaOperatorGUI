@@ -99,7 +99,7 @@ class BaseWidget():
         # of sessions, in order to make sure the initialisation
         # method is called before any other
         expire_sec = self.my_utils[util_id].sm.get_expite_sec(name='widget_init_expire')
-        
+
         self.my_utils[util_id].locker.semaphores.add(
             name=self.get_util_lock_name(util_id),
             key=util_id,
@@ -112,7 +112,7 @@ class BaseWidget():
         widget_info = self.redis.h_get(name='ws;widget_info', key=self.widget_id)
         if util_id not in widget_info['util_ids']:
             widget_info['util_ids'] += [util_id]
-        
+
         self.redis.h_set(name='ws;widget_info', key=self.widget_id, data=widget_info)
 
         return
@@ -146,7 +146,10 @@ class BaseWidget():
 
         # block non-initialisation calls if initialisation has not finished yet
         if not is_init_func:
-            max_lock_sec = self.sm.get_expite_sec(name='widget_init_expire', is_lock_check=True,)
+            max_lock_sec = self.sm.get_expite_sec(
+                name='widget_init_expire',
+                is_lock_check=True,
+            )
             await self.my_utils[util_id].locker.semaphores.async_block(
                 is_locked=await self.is_util_init_locked(util_id),
                 max_lock_sec=max_lock_sec,
@@ -200,7 +203,7 @@ class BaseWidget():
 
         widget_info = self.redis.h_get(name='ws;widget_info', key=self.widget_id)
         util_ids = widget_info['util_ids']
-        util_ids = [ u for u in util_ids if u not in self.my_utils.keys() ]
+        util_ids = [u for u in util_ids if u not in self.my_utils.keys()]
 
         for util_id in util_ids:
             opt_in = {

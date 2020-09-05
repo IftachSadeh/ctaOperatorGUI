@@ -105,7 +105,6 @@ class ClockSim(ServiceManager):
             from_redis=self.init_sim_params_from_redis,
         )
 
-
         # make sure this is the only active instance
         self.init_active_instance()
 

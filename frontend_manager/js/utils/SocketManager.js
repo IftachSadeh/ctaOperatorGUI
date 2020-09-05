@@ -62,6 +62,7 @@ function SocketManager() {
     this_top.sess_widgets = {
     }
 
+    this_top.can_reconnect = true
     this_top.has_joined_session = false
     this_top.session_props = null
 
@@ -164,9 +165,18 @@ function SocketManager() {
                 this_top.con_stat.set_check_heartbeat(false)
 
                 // try to reconnect the session
-                setTimeout(function() {
-                    setup_websocket()
-                }, 250)
+                if (this_top.can_reconnect) {
+                    setTimeout(function() {
+                        setup_websocket()
+                    }, 250)
+                }
+                else {
+                    // local message - cant be sent to the server, since
+                    // at this point we can no longer connect to it...
+                    console.error(
+                        'received socket sess kill signal - will not try to reconnect ...'
+                    )
+                }
                 // window.location.reload()
 
                 return
@@ -466,13 +476,23 @@ function SocketManager() {
             is_singleton: true,
         })
 
+        let kill_connection_evt = function(data_in) {
+            this_top.can_reconnect = false
+            return
+        }
+        this_top.socket.add_listener({
+            name: 'kill_socket_connection',
+            func: kill_connection_evt,
+            is_singleton: true,
+        })
 
         // -------------------------------------------------------------------
         // get/send heartbeat ping/pong messages to the server
         // -------------------------------------------------------------------
-        let ping_time_msec, ping_latest_delay_msec
+        let ping_event_time_msec = 0
+        let ping_visible_time_msec, ping_latest_delay_msec
         function reset_ping() {
-            ping_time_msec = null
+            ping_visible_time_msec = null
             ping_latest_delay_msec = 0
             return
         }
@@ -486,8 +506,8 @@ function SocketManager() {
                 return
             }
 
-            if (is_def(ping_time_msec)) {
-                let ping_interval_msec = get_time_msec() - ping_time_msec
+            if (is_def(ping_visible_time_msec)) {
+                let ping_interval_msec = get_time_msec() - ping_visible_time_msec
                 ping_latest_delay_msec = Math.abs(
                     ping_interval_msec - data_in.data.ping_interval_msec
                 )
@@ -497,7 +517,8 @@ function SocketManager() {
             }
 
             // update the local variable
-            ping_time_msec = get_time_msec()
+            ping_visible_time_msec = get_time_msec()
+            ping_event_time_msec = ping_visible_time_msec
 
             // send info about the resources used by the session. in case of
             // session restoration, this will be used to indicate the need
@@ -523,28 +544,30 @@ function SocketManager() {
         function check_ping_delay() {
             setTimeout(function() {
 
-                // // let is_offline = this_top.con_stat.is_offline()
-                // if (document.hidden) {
-                //     reset_ping()
-                //     return
-                // }
-
                 // this_top.socket.emit('test_socket_evt', {test: 1})
 
-                // if this is not the first ping, check that the delay is within the allowed range
-                let ping_total_delay_msec = 0
-                if (is_def(ping_time_msec)) {
-                    let ping_interval_msec = get_time_msec() - ping_time_msec
-                    ping_total_delay_msec = (
-                        ping_interval_msec - this_top.sess_ping.send_interval_msec
+                let ping_event_total_delay_msec = 0
+                if (!document.hidden) {
+                    let ping_interval_msec = get_time_msec() - ping_event_time_msec
+
+                    ping_event_total_delay_msec = (
+                        ping_interval_msec - this_top.sess_ping.send_interval_msec * 2
                     )
-                    // console.log('check_ping_delay:', ping_latest_delay_msec, ping_total_delay_msec)
                 }
 
-                // mostly ping_total_delay_msec will be negative if the connecition is ok
+                // if this is not the first ping, check that the delay is within the allowed range
+                let ping_visible_delay_msec = 0
+                if (is_def(ping_visible_time_msec)) {
+                    let ping_interval_msec = get_time_msec() - ping_visible_time_msec
+                    ping_visible_delay_msec = (
+                        ping_interval_msec - this_top.sess_ping.send_interval_msec
+                    )
+                }
+
+                // mostly ping_visible_delay_msec will be negative if the connecition is ok
                 // and so the latest (event) delay will be taken
                 let ping_compare_delay_msec = Math.max(
-                    ping_latest_delay_msec, ping_total_delay_msec
+                    ping_latest_delay_msec, ping_visible_delay_msec, ping_event_total_delay_msec,
                 )
 
                 if (!this_top.con_stat.do_check_heartbeat()) {
@@ -593,7 +616,8 @@ function SocketManager() {
                                     data: {
                                         event_name: state,
                                         ping_latest_delay_msec: ping_latest_delay_msec,
-                                        ping_total_delay_msec: ping_total_delay_msec,
+                                        ping_visible_delay_msec: ping_visible_delay_msec,
+                                        ping_event_total_delay_msec: ping_event_total_delay_msec,
                                     },
                                     is_verb: true,
                                     log_level: level,
