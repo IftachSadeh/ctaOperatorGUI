@@ -53,10 +53,10 @@ class BaseWidget():
     async def setup(self, *args):
         self.setup_args = args
 
-        wgt = self.redis.h_get(name='ws;widget_info', key=self.widget_id)
+        widget_info = self.redis.h_get(name='ws;widget_info', key=self.widget_id)
         if self.n_icon == -1:
-            self.n_icon = wgt['n_icon']
-            self.icon_id = wgt['icon_id']
+            self.n_icon = widget_info['n_icon']
+            self.icon_id = widget_info['icon_id']
 
         # override the global logging variable with a
         # name corresponding to the current session id
@@ -98,16 +98,22 @@ class BaseWidget():
         # add a lock for initialisation. needed in case of restoration
         # of sessions, in order to make sure the initialisation
         # method is called before any other
+        expire_sec = self.my_utils[util_id].sm.get_expite_sec(name='widget_init_expire')
+        
         self.my_utils[util_id].locker.semaphores.add(
             name=self.get_util_lock_name(util_id),
             key=util_id,
-            expire_sec=self.my_utils[util_id].sm.widget_init_expire_sec,
+            expire_sec=expire_sec,
         )
 
         # run the setup function of the util
         await self.my_utils[util_id].setup(self.setup_args)
 
-        self.redis.s_add(name='ws;widget_util_ids;' + self.widget_id, data=util_id)
+        widget_info = self.redis.h_get(name='ws;widget_info', key=self.widget_id)
+        if util_id not in widget_info['util_ids']:
+            widget_info['util_ids'] += [util_id]
+        
+        self.redis.h_set(name='ws;widget_info', key=self.widget_id, data=widget_info)
 
         return
 
@@ -140,9 +146,10 @@ class BaseWidget():
 
         # block non-initialisation calls if initialisation has not finished yet
         if not is_init_func:
+            max_lock_sec = self.sm.get_expite_sec(name='widget_init_expire', is_lock_check=True,)
             await self.my_utils[util_id].locker.semaphores.async_block(
                 is_locked=await self.is_util_init_locked(util_id),
-                max_lock_sec=max(1, ceil(self.sm.widget_init_expire_sec * 0.9)),
+                max_lock_sec=max_lock_sec,
             )
 
         # execute the requested method
@@ -190,8 +197,10 @@ class BaseWidget():
 
         # check if any util is missing (e.g., in case we are back
         # after a session recovery) and ask the client to respond
-        util_ids = self.redis.s_get('ws;widget_util_ids;' + self.widget_id)
-        util_ids = [u for u in util_ids if u not in self.my_utils.keys()]
+
+        widget_info = self.redis.h_get(name='ws;widget_info', key=self.widget_id)
+        util_ids = widget_info['util_ids']
+        util_ids = [ u for u in util_ids if u not in self.my_utils.keys() ]
 
         for util_id in util_ids:
             opt_in = {

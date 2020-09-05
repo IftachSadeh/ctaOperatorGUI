@@ -1332,51 +1332,6 @@ window.ArrZoomerBase = function(opt_in_top) {
     })
 
     // ------------------------------------------------------------------
-    // interface for the server to ask for specific parameters
-    // ------------------------------------------------------------------
-    let ask_arr_zoomer_param_from_client_evt =  function(data_in) {
-        let params = data_in.data.params
-
-        let data_send = {
-        }
-        $.each(params, function(_, param) {
-            data_send[param] = this_top[param]
-
-            if (!is_def(this_top[param])) {
-                sock.socket.server_log({
-                    data: {
-                        msg: [
-                            'ask_arr_zoomer_param_from_client_evt() '
-                            + 'asked for undefined parameter',
-                            param,
-                        ]
-                    },
-                    is_verb: true,
-                    log_level: LOG_LEVELS.ERROR,
-                })
-            }
-        })
-
-        let emit_data = {
-            widget_type: widget_type,
-            widget_id: widget_id,
-            method_name: 'util_func',
-            method_args: {
-                util_id: util_id,
-                util_type: util_type,
-                method_name: 'get_param_from_client',
-                method_args: data_send,
-            },
-        }
-        sock.socket.emit('widget', emit_data)
-    }
-    sock.socket.add_listener({
-        name: 'ask_arr_zoomer_param_from_client',
-        func: ask_arr_zoomer_param_from_client_evt,
-        is_singleton: false,
-    })
-
-    // ------------------------------------------------------------------
     // initialisation for an individual instance, destinguised by util_id, where
     // different instances may be zoomed in on different instrument, and so
     // the data are different for each instance

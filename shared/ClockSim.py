@@ -62,9 +62,6 @@ class ClockSim(ServiceManager):
         """setup the active instance of the class
         """
 
-        # make sure this is the only active instance
-        self.init_active_instance()
-
         self.rnd_gen = Random(11)
         self.debug_datetime_now = False
 
@@ -108,6 +105,10 @@ class ClockSim(ServiceManager):
             from_redis=self.init_sim_params_from_redis,
         )
 
+
+        # make sure this is the only active instance
+        self.init_active_instance()
+
         self.init_night_times()
 
         self.setup_threads()
@@ -122,7 +123,6 @@ class ClockSim(ServiceManager):
 
         self.add_thread(target=self.loop_main)
         self.add_thread(target=self.pubsub_sim_params)
-        self.add_thread(target=self.loop_active_heartbeat)
 
         return
 
@@ -514,14 +514,13 @@ class ClockSim(ServiceManager):
 
         # setup the channel once
         pubsub_tag = 'clock_sim_set_sim_params'
-        while self.redis.set_pubsub(pubsub_tag) is None:
-            sleep(0.1)
+        pubsub = self.redis.pubsub_subscribe(pubsub_tag)
 
         # listen to changes on the channel and do stuff
         while self.can_loop():
             sleep(self.pubsub_sleep_sec)
 
-            msg = self.redis.get_pubsub(pubsub_tag)
+            msg = self.redis.pubsub_get_message(pubsub=pubsub)
             if msg is None:
                 continue
 

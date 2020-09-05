@@ -120,10 +120,8 @@ class ServiceManager():
                     self.active_instance_name,
                 )
 
-        # set the heartbeat (uninitialised state) for a long expiration
-        # to allow the heartbeat thread to start later
-        active_init_expire = self.active_expire_sec * 100
-        self.set_active_instance(has_init=False, expire_sec=active_init_expire)
+        # register the heartbeat thread
+        self.add_thread(target=self.loop_active_heartbeat)
 
         return
 
@@ -138,6 +136,9 @@ class ServiceManager():
             ['y', self.active_instance_name],
             ['g', ' ...'],
         ])
+
+        # set the active instance once, in order to satisfy can_loop()
+        self.set_active_instance(has_init=False, expire_sec=self.active_expire_sec)
 
         while self.can_loop():
             self.set_active_instance(

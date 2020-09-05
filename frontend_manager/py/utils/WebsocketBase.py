@@ -1,5 +1,6 @@
 import asyncio
 from random import Random
+from math import ceil
 
 from shared.utils import get_time
 from shared.utils import get_rnd
@@ -146,16 +147,26 @@ class WebsocketBase():
         self.sess_config_lock = 'sess_config_lock'
         # name of lock for cleanup loop
         self.cleanup_loop_lock = 'cleanup_loop_lock'
+        
         # maximal time to keep the lock for a session to configure
         # (init or cleanup), in case nominal cleanup fails
-        self.sess_config_expire_sec = 25
-        # same for the cleanup loop
-        self.cleanup_loop_expire_sec = 30
-        # same for widget initialisations
-        self.widget_init_expire_sec = 25
+        self.expires_sec = {
+            'sess_config_expire': 25,
+            # same for the cleanup loop
+            'cleanup_loop_expire': 30,
+            # same for widget initialisations
+            'widget_init_expire': 25,
+        }
 
         return locker
 
+    # ------------------------------------------------------------------
+    def get_expite_sec(self, name, is_lock_check=False):
+        expire_sec = self.expires_sec[name]
+        if is_lock_check:
+            expire_sec = max(1, ceil(expire_sec * 0.9)),
+        return expire_sec
+    
     # ------------------------------------------------------------------
     def update_lock_namespace(self):
         """after the session id has been set, update the widget locks

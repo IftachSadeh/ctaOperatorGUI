@@ -93,7 +93,7 @@ class SessionManager():
             self.locker.semaphores.add(
                 name=self.sess_config_lock,
                 key=self.sess_id,
-                expire_sec=self.sess_config_expire_sec,
+                expire_sec=self.get_expite_sec(name='sess_config_expire'),
             )
 
             # wait for the cleanup loop from this server to complete
@@ -104,9 +104,10 @@ class SessionManager():
                 )
                 return locked
 
+            max_lock_sec = self.get_expite_sec(name='cleanup_loop_expire', is_lock_check=True,)
             await self.locker.semaphores.async_block(
                 is_locked=is_locked,
-                max_lock_sec=max(1, ceil(self.cleanup_loop_expire_sec * 0.9)),
+                max_lock_sec=max_lock_sec,
             )
 
             # get and validate the user id

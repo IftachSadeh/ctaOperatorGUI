@@ -36,9 +36,10 @@ class Housekeeping():
                 locked = any(s in sess_ids for s in sess_locks)
                 return locked
 
+            max_lock_sec = self.get_expite_sec(name='sess_config_expire', is_lock_check=True,)
             await self.locker.semaphores.async_block(
                 is_locked=is_locked,
-                max_lock_sec=max(1, ceil(self.sess_config_expire_sec * 0.9)),
+                max_lock_sec=max_lock_sec,
             )
 
             # add a lock impacting session configurations. the name
@@ -47,7 +48,7 @@ class Housekeeping():
             self.locker.semaphores.add(
                 name=self.cleanup_loop_lock,
                 key=self.serv_id,
-                expire_sec=self.cleanup_loop_expire_sec,
+                expire_sec=self.get_expite_sec(name='cleanup_loop_expire'),
             )
 
             # run the cleanup for this server
@@ -182,7 +183,7 @@ class Housekeeping():
             self.locker.semaphores.add(
                 name=self.sess_config_lock,
                 key=sess_id,
-                expire_sec=self.sess_config_expire_sec,
+                expire_sec=self.get_expite_sec(name='sess_config_expire'),
             )
 
             self.log.info([['c', ' - cleanup-session '], ['p', sess_id], ['c', ' ...']])
@@ -288,8 +289,6 @@ class Housekeeping():
                     loop_info=widget_loop,
                 )
             self.redis.delete('ws;sess_widget_loops;' + widget_id)
-
-            self.redis.delete('ws;widget_util_ids;' + widget_id)
 
             #
             for sync_group in sync_groups:

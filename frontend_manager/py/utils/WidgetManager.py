@@ -157,6 +157,7 @@ class WidgetManager():
             widget_now['sess_id'] = self.sess_id
             widget_now['widget_type'] = widget_type
             widget_now['widget_state'] = dict()
+            widget_now['util_ids'] = []
 
             # register the new widget
             self.redis.h_set(name='ws;widget_info', key=widget_id, data=widget_now)
@@ -257,13 +258,16 @@ class WidgetManager():
            them to ask the client to go through initialisation
         """
 
-        for util in utils:
-            util_id = util['util_id']
+        widget_info = self.redis.h_get(name='ws;widget_info', key=widget_id)
+        util_ids = widget_info['util_ids']
 
-            util_ids = self.redis.s_get('ws;widget_util_ids;' + widget_id)
-            if util_id not in util_ids:
-                self.redis.s_add(name='ws;widget_util_ids;' + widget_id, data=util_id)
+        miss_util_ids = [ u['util_id'] for u in utils if u['util_id'] not in util_ids ]
 
+        if len(miss_util_ids) > 0:
+            widget_info['util_ids'] += miss_util_ids
+            self.redis.h_set(name='ws;widget_info', key=widget_id, data=widget_info)
+
+            for util in miss_util_ids:
                 async with self.locker.locks.acquire('serv'):
                     widget_inits = await self.get_server_attr(name='widget_inits')
                 if widget_id in widget_inits.keys():

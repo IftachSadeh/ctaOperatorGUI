@@ -110,12 +110,6 @@ class ArrZoomerUtil():
                 print('FIXME - need proper exception handling ...')
                 raise
 
-        # self.parent.get_param_from_client = (
-        #     self.get_param_from_client
-        # )
-        # # functional interface - get_zoomer_state
-        # self.parent.get_zoomer_state = self.get_zoomer_state
-
         return
 
     # ------------------------------------------------------------------
@@ -175,19 +169,10 @@ class ArrZoomerUtil():
 
             await self.update_tel_health_s1(id_in=zoom_target)
 
-            try:
-                data = {
-                    'util_id': self.util_id,
-                    'data': self.get_flat_tel_health(zoom_target),
-                }
-            except AttributeError:
-                # AttributeError can arise for a restored session, for which
-                # we do not repeat util_init(),
-                # and so util_id is not set
-                await self.ask_arr_zoomer_param_from_client()
-                data = None
-            except Exception as e:
-                raise e
+            data = {
+                'util_id': self.util_id,
+                'data': self.get_flat_tel_health(zoom_target),
+            }
 
             return data
 
@@ -215,7 +200,6 @@ class ArrZoomerUtil():
 
     # ------------------------------------------------------------------
     async def back_from_offline(self, data=None):
-        await self.ask_arr_zoomer_param_from_client()
         return
 
     # ------------------------------------------------------------------
@@ -276,35 +260,6 @@ class ArrZoomerUtil():
 
         return
 
-    # ------------------------------------------------------------------
-    async def ask_arr_zoomer_param_from_client(self):
-        """interface to ask for a list of requested parameters from the client
-        """
-
-        data = {
-            'params': ['util_id'],
-        }
-
-        opt_in = {
-            'widget': self,
-            'data': data,
-            'event_name': 'ask_arr_zoomer_param_from_client',
-        }
-
-        await self.sm.emit_widget_event(opt_in=opt_in)
-
-        return
-
-    # ------------------------------------------------------------------
-    async def get_param_from_client(self, *args):
-        """interface to get a list of requested parameters from the client
-        """
-
-        data_in = args[0]
-        for (k, v) in data_in.items():
-            setattr(self, k, v)
-
-        return
 
     # ------------------------------------------------------------------
     async def util_init(self, data_in):
@@ -433,21 +388,6 @@ class ArrZoomerUtil():
     # ------------------------------------------------------------------
     async def ask_for_data_s1(self, *args):
         data = args[0]
-
-        # AttributeError can arise for a restored session, for which
-        # we do not repeat util_init(),
-        # and so util_id is not set
-        try:
-            util_id = self.util_id
-
-        except AttributeError as e:
-            await self.ask_arr_zoomer_param_from_client()
-            await asyncio.sleep(0.01)
-            await self.ask_for_data_s1(*args)
-            return
-
-        except Exception as e:
-            raise e
 
         self.log.debug([
             ['b', ' - ask_for_data_s1 '],

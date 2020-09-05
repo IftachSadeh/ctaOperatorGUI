@@ -328,14 +328,14 @@ class AsyncLoops():
         ])
         sleep_sec = 0.1
 
+
         # setup the channel once
-        while self.redis.set_pubsub(pubsub_tag) is None:
-            await asyncio.sleep(sleep_sec)
+        pubsub = self.redis.pubsub_subscribe(pubsub_tag)
 
         while self.get_loop_state(loop_info):
             await asyncio.sleep(sleep_sec)
 
-            msg = self.redis.get_pubsub(key=pubsub_tag)
+            msg = self.redis.pubsub_get_message(pubsub=pubsub)
             if msg is None:
                 continue
 
