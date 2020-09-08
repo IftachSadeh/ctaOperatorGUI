@@ -11,7 +11,7 @@ class BaseWidget():
     widget_group_sess = dict()
 
     # ------------------------------------------------------------------
-    def __init__(self, widget_id='', sm=None, *args, **kwargs):
+    def __init__(self, widget_id=None, sm=None, *args, **kwargs):
         self.log = LogParser(base_config=sm.base_config, title=__name__)
 
         # the parent of this widget
@@ -24,7 +24,7 @@ class BaseWidget():
         # widget-class and widget group names
         self.widget_type = self.__class__.__name__
         # for common threading
-        self.widget_group = (self.sm.user_group_id + '_' + self.widget_type)
+        self.widget_group = self.sm.user_group_id + '_' + self.widget_type
 
         # redis interface
         self.redis = RedisManager(
@@ -174,7 +174,8 @@ class BaseWidget():
         """
 
         lock_name = (
-            'ws;' + self.my_utils[util_id].class_name + ';'
+            'ws;base_widget;util_func;'
+            + self.my_utils[util_id].class_name + ';'
             + self.my_utils[util_id].util_id
         )
 

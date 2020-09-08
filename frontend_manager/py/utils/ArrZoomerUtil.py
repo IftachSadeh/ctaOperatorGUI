@@ -2,22 +2,19 @@ import asyncio
 
 from shared.utils import flatten_dict
 from shared.LogParser import LogParser
-
+from frontend_manager.py.utils.BaseUtil import BaseUtil
 
 # ------------------------------------------------------------------
-class ArrZoomerUtil():
+class ArrZoomerUtil(BaseUtil):
 
     # ------------------------------------------------------------------
     def __init__(self, util_id, parent):
-        self.class_name = self.__class__.__name__
-
-        ArrZoomerUtil.log = LogParser(
-            base_config=parent.base_config,
-            title=(parent.log.get_title() + '/' + __name__),
+        # standard common initialisations
+        BaseUtil.__init__(
+            self,
+            util_id=util_id,
+            parent=parent,
         )
-
-        self.util_id = util_id
-        self.set_parent_widget(parent)
 
         self.inst_data = parent.base_config.inst_data
         self.inst_ids = self.inst_data.get_inst_ids()
@@ -68,54 +65,9 @@ class ArrZoomerUtil():
         return
 
     # ------------------------------------------------------------------
-    def set_parent_widget(self, parent):
-        """copy & validate parent properties, add local function interfaces
-        """
-
-        # keep a reference of the parent widget
-        self.parent = parent
-        # the id of this instance
-        self.widget_id = parent.widget_id
-        # the parent of this widget
-        self.sm = parent.sm
-        # widget-class and widget group names
-        self.widget_type = parent.widget_type
-        # redis interface
-        self.redis = parent.redis
-        # turn on periodic data updates
-        self.do_data_updates = parent.do_data_updates
-        # some etra logging messages for this module
-        self.log_send_packet = parent.log_send_packet
-        # locker
-        self.locker = self.sm.locker
-
-        # validate that all required properties have been defined
-        check_init_properties = [
-            'widget_id',
-            'sm',
-            'widget_type',
-            'redis',
-            'do_data_updates',
-            'log_send_packet',
-            'n_icon',
-            'icon_id',
-        ]
-
-        for init_property in check_init_properties:
-            if not hasattr(parent, init_property):
-                ArrZoomerUtil.log.error([
-                    ['wr', ' - bad initialisation of ArrZoomerUtil()...', 'Missing: '],
-                    ['yr', init_property, ''],
-                ])
-                print('FIXME - need proper exception handling ...')
-                raise
-
-        return
-
-    # ------------------------------------------------------------------
     async def setup(self, *args):
-        self.n_icon = self.parent.n_icon
-        self.icon_id = self.parent.icon_id
+        # standard common setup
+        await BaseUtil.setup(self, args,)
 
         widget_info = self.redis.h_get(
             name='ws;widget_info',
@@ -200,7 +152,55 @@ class ArrZoomerUtil():
 
     # ------------------------------------------------------------------
     async def back_from_offline(self, data=None):
+        # standard common actions
+        await BaseUtil.back_from_offline(self, data=data,)
         return
+
+    # ------------------------------------------------------------------
+    async def util_init(self, data_in):
+        """initialise dataset and send to client when the client asks for it
+        """
+
+        self.filter_inst(data_in['inst_filter'])
+
+        if not data_in['is_first']:
+            return
+
+        # data access function for the socket
+        async def get_data():
+            inst_prop_types = dict()
+
+            for id_now in self.inst_ids:
+                inst_prop_types[id_now] = []
+                for val in self.inst_tel_health[id_now].values():
+                    inst_prop_types[id_now] += [{
+                        'id': val['id'],
+                        'title': val['title'],
+                    }]
+
+            data = {
+                'util_id': self.util_id,
+                # 'sub_arr': self.sub_arr_grp,
+                'arr_init': self.inst_info,
+                'arr_props': await self.get_tel_health_s0(),
+                'tel_prop_types': inst_prop_types,
+                'tel_types': self.inst_types,
+                'health_tag': self.inst_data.health_tag,
+                'health_title': self.inst_data.health_title,
+            }
+
+            return data
+
+        opt_in = {
+            'widget': self,
+            'data_func': get_data,
+            'event_name': 'arr_zoomer_get_init_data',
+        }
+
+        await self.sm.emit_widget_event(opt_in=opt_in)
+
+        return
+
 
     # ------------------------------------------------------------------
     def get_zoomer_state(self):
@@ -257,51 +257,6 @@ class ArrZoomerUtil():
         self.inst_info = (
             dict((k, v) for (k, v) in self.inst_info.items() if k in self.inst_ids)
         )
-
-        return
-
-    # ------------------------------------------------------------------
-    async def util_init(self, data_in):
-        """initialise dataset and send to client when the client asks for it
-        """
-
-        self.filter_inst(data_in['inst_filter'])
-
-        if not data_in['is_first']:
-            return
-
-        # data access function for the socket
-        async def get_data():
-            inst_prop_types = dict()
-
-            for id_now in self.inst_ids:
-                inst_prop_types[id_now] = []
-                for val in self.inst_tel_health[id_now].values():
-                    inst_prop_types[id_now] += [{
-                        'id': val['id'],
-                        'title': val['title'],
-                    }]
-
-            data = {
-                'util_id': self.util_id,
-                # 'sub_arr': self.sub_arr_grp,
-                'arr_init': self.inst_info,
-                'arr_props': await self.get_tel_health_s0(),
-                'tel_prop_types': inst_prop_types,
-                'tel_types': self.inst_types,
-                'health_tag': self.inst_data.health_tag,
-                'health_title': self.inst_data.health_title,
-            }
-
-            return data
-
-        opt_in = {
-            'widget': self,
-            'data_func': get_data,
-            'event_name': 'arr_zoomer_get_init_data',
-        }
-
-        await self.sm.emit_widget_event(opt_in=opt_in)
 
         return
 
