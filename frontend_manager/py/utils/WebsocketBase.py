@@ -38,10 +38,12 @@ class WebsocketBase():
         self.log_send_packet = False
         self.sess_ping_time = None
         self.can_restore_existing_sess = True
-        self.can_restore_existing_sess = False
+        # self.can_restore_existing_sess = False
 
         self.basic_widget_sleep_sec = 1
         self.sess_expire = 15
+        self.serv_expire = 30
+        self.user_expire = 43200
         self.cleanup_sleep = 60
         self.valid_loop_sleep_sec = 0.01
         self.n_id_digits = 4
@@ -73,7 +75,10 @@ class WebsocketBase():
 
         self.loop_prefix = 'ws;loop;'
         self.heartbeat_prefix = 'ws;heartbeat;'
-        self.sync_group_prefix = 'grp_'
+        
+        self.sync_group_id_prefix = 'grp_'
+        self.sync_group_title_prefix = 'Group '
+        
         self.icon_prefix = 'icn_'
 
         self.asyncio_queue = asyncio.Queue()

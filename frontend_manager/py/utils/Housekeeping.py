@@ -21,7 +21,7 @@ class Housekeeping():
         # self.cleanup_sleep = 5
         # self.cleanup_sleep = 5
         # self.cleanup_sleep = 5
-        # self.cleanup_sleep = 1
+        self.cleanup_sleep = 1
 
         while self.get_loop_state(loop_info):
             await asyncio.sleep(self.cleanup_sleep)
@@ -85,8 +85,12 @@ class Housekeeping():
             # run the cleanup for possible zombie loops
             await self.cleanup_loops()
 
-            # run the cleanup for users who have no active sessions
-            await self.cleanup_users()
+            # run the cleanup for users who have no heartbeats
+            all_user_ids = self.redis.s_get('ws;all_user_ids')
+            for user_id in all_user_ids:
+                heartbeat_name = self.get_heartbeat_name(scope='user', postfix=user_id)
+                if not self.redis.exists(heartbeat_name):
+                    await self.cleanup_users(user_ids=user_id)
 
             # sanity check: make sure that the local manager has been cleaned
             sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.serv_id)
@@ -291,7 +295,7 @@ class Housekeeping():
                 )
             self.redis.delete('ws;sess_widget_loops;' + widget_id)
 
-            #
+            # synchronisation groups
             for sync_group in sync_groups:
                 for sync_states in sync_group['sync_states']:
                     rm_elements = []
@@ -335,8 +339,7 @@ class Housekeeping():
 
     # ------------------------------------------------------------------
     async def cleanup_users(self, user_ids=None):
-        """clean up all user lists in case this use has no more sessions
-           alive (sessions might belong to any server)
+        """clean up all user lists in case this use has heartbeat
         """
 
         if user_ids is None:

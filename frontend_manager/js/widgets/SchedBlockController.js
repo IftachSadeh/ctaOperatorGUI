@@ -543,11 +543,11 @@ let main_sched_blockController = function(opt_in) {
     // switchMainMode()
     }
     this.init_data = init_data
-    function update_dataOnce(data_in) {
+    function update_data_once(data_in) {
         if (!locker.are_free([ 'pushNewSchedule' ])) {
             // console.log('pushing...');
             setTimeout(function() {
-                update_dataOnce(data_in)
+                update_data_once(data_in)
             }, 10)
             return
         }
@@ -576,7 +576,7 @@ let main_sched_blockController = function(opt_in) {
     this.update_data = update_data
     run_loop.init({
         tag: 'update_data',
-        func: update_dataOnce,
+        func: update_data_once,
         n_keep: 1,
     })
 

@@ -60,7 +60,7 @@ class BaseUtil():
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         # do common stuff here
         pass
 

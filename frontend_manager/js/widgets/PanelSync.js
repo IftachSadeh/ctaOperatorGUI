@@ -218,14 +218,15 @@ let main_panel_sync = function(opt_in) {
 
         this_top.scale_r = scale_r
 
-        // sync_group_prefix, icon_prefix come from the server as part of init_data
-        this_top.sync_group_prefix = ''
+        // sync_group_id_prefix, icon_prefix come from the server as part of init_data
+        this_top.sync_group_id_prefix = ''
+        this_top.sync_group_title_prefix = ''
         this_top.icon_prefix = ''
 
         this_top.empty_icn_tag = 'empty_icn'
 
         function get_grp_id(index_0, index_1) {
-            let grp_id = this_top.sync_group_prefix + index_0
+            let grp_id = this_top.sync_group_id_prefix + index_0
             if (is_def(index_1)) {
                 grp_id += '_' + index_1
             }
@@ -245,7 +246,7 @@ let main_panel_sync = function(opt_in) {
 
 
         function get_grp_title(n_grp) {
-            return 'Group ' + n_grp
+            return this_top.sync_group_title_prefix + n_grp
         }
         // let arc_prev = {}
         // arc_prev.ang = {}
@@ -328,6 +329,7 @@ let main_panel_sync = function(opt_in) {
                                 child_now_2.trg_widg_id, child_now_2.id,
                             ])
                         }
+                        console.log([n_child_0, n_child_1, n_child_2], child_now_2.trg_widg_id, child_now_2.id, )
                     })
                 })
 
@@ -351,7 +353,8 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         function init_data(data_in) {
             grps.data = data_in.groups
-            this_top.sync_group_prefix = data_in.sync_group_prefix
+            this_top.sync_group_id_prefix = data_in.sync_group_id_prefix
+            this_top.sync_group_title_prefix = data_in.sync_group_title_prefix
             this_top.icon_prefix = data_in.icon_prefix
 
             if (is_def(svg.svg)) {
@@ -763,7 +766,7 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         run_loop.init({
             tag: 'update_data',
-            func: update_dataOnce,
+            func: update_data_once,
             n_keep: 1,
         })
 
@@ -785,7 +788,7 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function update_dataOnce(data_in) {
+        function update_data_once(data_in) {
             if (!locker.is_free(tag_main + 'in_drag')) {
                 return
             }
@@ -1846,8 +1849,8 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             if (locker.is_free(tag_main + 'in_drag')) {
                 grps.data.children = grps.data.children.sort(function(x, y) {
-                    let id_x = parseInt(x.id.replace(this_top.sync_group_prefix, ''))
-                    let id_y = parseInt(y.id.replace(this_top.sync_group_prefix, ''))
+                    let id_x = parseInt(x.id.replace(this_top.sync_group_id_prefix, ''))
+                    let id_y = parseInt(y.id.replace(this_top.sync_group_id_prefix, ''))
 
                     return id_x - id_y
                 })

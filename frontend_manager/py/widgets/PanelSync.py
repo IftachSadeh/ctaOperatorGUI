@@ -51,9 +51,9 @@ class PanelSync(BaseWidget):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data=None)
+        await BaseWidget.back_from_offline(self, args)
 
         # with panel_sync.lock:
         #     print('-- back_from_offline',self.widget_type,self.widget_id)
@@ -63,7 +63,8 @@ class PanelSync(BaseWidget):
     async def get_init_data(self):
         data = {
             'icon_prefix': self.sm.icon_prefix,
-            'sync_group_prefix': self.sm.sync_group_prefix,
+            'sync_group_id_prefix': self.sm.sync_group_id_prefix,
+            'sync_group_title_prefix': self.sm.sync_group_title_prefix,
             'groups': await self.panel_sync_get_groups(),
             'allow_panel_sync': self.sm.check_panel_sync(),
         }
@@ -84,6 +85,8 @@ class PanelSync(BaseWidget):
     # ------------------------------------------------------------------
     async def set_sync_groups(self, *args):
         data = args[0]
+
+        print('--------', data['data']['children'] )
 
         widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.sm.user_id)
 
@@ -171,7 +174,7 @@ class PanelSync(BaseWidget):
 
             clean_widget_ids = []
             for _n_sync_type in range(len(sync_states)):
-                for [_widget_id, _icon_id] in sync_states[_n_sync_type]:
+                for (_widget_id, _icon_id) in sync_states[_n_sync_type]:
                     if _widget_id not in widget_ids:
                         clean_widget_ids += [_widget_id]
 
@@ -226,7 +229,7 @@ class PanelSync(BaseWidget):
             for n_sync_type in range(len(sync_states)):
                 children_2 = []
 
-                for [widget_id, icon_id] in sync_states[n_sync_type]:
+                for (widget_id, icon_id) in sync_states[n_sync_type]:
                     try:
                         n_widget = widget_ids.index(widget_id)
 

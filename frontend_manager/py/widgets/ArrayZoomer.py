@@ -33,8 +33,8 @@ class ArrayZoomer(BaseWidget):
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data=None)
+        await BaseWidget.back_from_offline(self, args)
 
         return

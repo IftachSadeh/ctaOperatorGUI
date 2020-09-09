@@ -155,12 +155,9 @@ class ArrZoomerUtil(BaseUtil):
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         # standard common actions
-        await BaseUtil.back_from_offline(
-            self,
-            data=data,
-        )
+        await BaseUtil.back_from_offline(self, args)
         return
 
     # ------------------------------------------------------------------

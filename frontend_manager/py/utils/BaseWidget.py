@@ -194,7 +194,7 @@ class BaseWidget():
         return is_locked
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         """interface function for back-from-offline events
         """
 
@@ -214,6 +214,6 @@ class BaseWidget():
 
         # loop over utils
         for util_now in self.my_utils.values():
-            await util_now.back_from_offline()
+            await util_now.back_from_offline(args)
 
         return

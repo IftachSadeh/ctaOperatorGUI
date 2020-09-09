@@ -534,13 +534,13 @@ let main_weather_monitoring = function(opt_in) {
         // svgPlotDisplay.init_data()
     }
     this.init_data = init_data
-    function update_dataOnce(data_in) {
+    function update_data_once(data_in) {
         if (shared.mode === 'standby') {
             return
         }
         if (!locker.are_free([ 'pushNewSchedule' ])) {
             setTimeout(function() {
-                update_dataOnce(data_in)
+                update_data_once(data_in)
             }, 10)
             return
         }
@@ -571,7 +571,7 @@ let main_weather_monitoring = function(opt_in) {
     this.update_data = update_data
     run_loop.init({
         tag: 'update_data',
-        func: update_dataOnce,
+        func: update_data_once,
         n_keep: 1,
     })
 

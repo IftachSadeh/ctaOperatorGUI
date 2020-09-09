@@ -178,12 +178,15 @@ class WidgetManager():
                     name='ws;sync_groups', key=self.user_id, default_val=[]
                 )
 
+                # print(widget_id)
+                # print(sync_groups)
+
                 # add new empty sync group if needed
                 group_indices = []
                 if len(sync_groups) > 0:
                     group_indices = [
                         i for (i, x) in enumerate(sync_groups)
-                        if x['id'] == self.sync_group_prefix + str(n_sync_group)
+                        if x['id'] == self.sync_group_id_prefix + str(n_sync_group)
                     ]
                 if len(group_indices) > 0:
                     group_index = group_indices[0]
@@ -193,8 +196,8 @@ class WidgetManager():
                     # the sync_group['id'] must correspond to the pattern defined
                     # by the client for new groups (e.g., 'grp_0') !!!
                     sync_group = dict()
-                    sync_group['id'] = self.sync_group_prefix + str(n_sync_group)
-                    sync_group['title'] = 'Group 0'
+                    sync_group['id'] = self.sync_group_id_prefix + str(n_sync_group)
+                    sync_group['title'] = self.sync_group_title_prefix + str(n_sync_group)
                     sync_group['sync_states'] = [[], [], []]
                     sync_group['sync_types'] = dict()
 
@@ -291,7 +294,8 @@ class WidgetManager():
                 async with self.locker.locks.acquire('serv'):
                     widget_inits = await self.get_server_attr(name='widget_inits')
                 if widget_id in widget_inits.keys():
-                    await getattr(widget_inits[widget_id], 'back_from_offline')()
+                    method_func = getattr(widget_inits[widget_id], 'back_from_offline')
+                    await method_func()
         return
 
     # ------------------------------------------------------------------

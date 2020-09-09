@@ -225,8 +225,6 @@ class SessionManager():
                 key=self.sess_id,
             )
 
-        self.init_user_sync_loops()
-
         # # simple locker test
         # async with self.locker.locks.acquire('serv', debug=1):
         #     print(' - now im locked 0 :)')
@@ -265,7 +263,7 @@ class SessionManager():
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
 
         self.log.warn([[
             'o', ' - back_from_offline needs you     ', self.sess_id, '!' * 50
@@ -279,7 +277,7 @@ class SessionManager():
         for widget_id in sess_widget_ids:
             if widget_id in widget_inits:
                 method_func = getattr(widget_inits[widget_id], 'back_from_offline')
-                await method_func()
+                await method_func(args)
 
         return
 
@@ -296,14 +294,6 @@ class SessionManager():
 
         return
 
-    # ------------------------------------------------------------------
-    # is this still needed ?!?!?!?!?!?!?!?!
-    # is this still needed ?!?!?!?!?!?!?!?!
-    # ------------------------------------------------------------------
-    def init_user_sync_loops(self):
-        print('need init_user_sync_loops ... ?')
-        # self.log.warn([['g', ' - need init_user_sync_loops ... ?']])
-        return
 
     # ------------------------------------------------------------------
     def update_sync_state_from_client(self, data_in):

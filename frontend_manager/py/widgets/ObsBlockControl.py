@@ -68,9 +68,9 @@ class ObsBlockControl(BaseWidget):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data=None)
+        await BaseWidget.back_from_offline(self, args)
 
         # with ObsBlockControl.lock:
         #     print('-- back_from_offline',self.widget_type,self.widget_id)

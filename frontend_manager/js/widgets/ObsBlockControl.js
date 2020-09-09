@@ -961,7 +961,7 @@ let main_obs_block_control = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            update_dataOnce(data_in)
+            update_data_once(data_in)
 
             // -------------------------------------------------------------------
             // for debugging
@@ -1004,7 +1004,7 @@ let main_obs_block_control = function(opt_in) {
         // -------------------------------------------------------------------
         run_loop.init({
             tag: 'update_data',
-            func: update_dataOnce,
+            func: update_data_once,
             n_keep: 1,
         })
 
@@ -1022,7 +1022,7 @@ let main_obs_block_control = function(opt_in) {
             })
         }
 
-        function update_dataOnce(data_in) {
+        function update_data_once(data_in) {
             // return;
             if (
                 !locker.are_free([
@@ -1031,14 +1031,14 @@ let main_obs_block_control = function(opt_in) {
                     tagBlockQueueOld + 'zoom',
                 ])
             ) {
-                // console.log('will delay updateRecData',locker.get_actives([tagObsBlkCnt+"update_dataOnce", tagTelScroll+"_zoom", tagBlockQueueOld+"_zoom"]));
+                // console.log('will delay updateRecData',locker.get_actives([tagObsBlkCnt+"update_data_once", tagTelScroll+"_zoom", tagBlockQueueOld+"_zoom"]));
                 setTimeout(function() {
                     update_data(data_in)
                 }, 10)
                 return
             }
             locker.add(tagObsBlkCnt + 'update_data')
-            // locker.add({ id:tagObsBlkCnt+"update_dataOnce", override:true });
+            // locker.add({ id:tagObsBlkCnt+"update_data_once", override:true });
 
             // -------------------------------------------------------------------
             //
@@ -1103,7 +1103,7 @@ let main_obs_block_control = function(opt_in) {
             locker.remove({
                 id: tagObsBlkCnt + 'update_data',
             })
-            // locker.remove({ id:tagObsBlkCnt+"update_dataOnce", override:true });
+            // locker.remove({ id:tagObsBlkCnt+"update_data_once", override:true });
 
             block_focus({
                 id: com.focus.obs_block_id,
