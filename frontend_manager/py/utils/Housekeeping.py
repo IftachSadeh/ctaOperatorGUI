@@ -229,8 +229,6 @@ class Housekeeping():
                 key=sess_id,
             )
 
-        self.on_leave_session_()
-
         return
 
     # ------------------------------------------------------------------

@@ -225,11 +225,6 @@ class SessionManager():
                 key=self.sess_id,
             )
 
-        # function which may be overloaded, setting up individual
-        # properties for a given session-type
-        if not is_existing_sess:
-            self.on_join_session_()
-
         self.init_user_sync_loops()
 
         # # simple locker test
@@ -248,18 +243,6 @@ class SessionManager():
         """as the final step within the lock, flag the session as initialised
         """
         self.has_init_sess = True
-        return
-
-    # ------------------------------------------------------------------
-    def on_join_session_(self):
-        """placeholder for overloaded method, to be run as part of on_join_session
-        """
-        return
-
-    # ------------------------------------------------------------------
-    def on_leave_session_(self):
-        """placeholder for overloaded method, to be run as part of on_leave_session
-        """
         return
 
     # ------------------------------------------------------------------

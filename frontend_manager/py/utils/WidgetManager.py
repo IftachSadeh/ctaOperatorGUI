@@ -324,22 +324,6 @@ class WidgetManager():
 
         return
 
-        if 0:
-            # ------------------------------------------------------------------
-            def socket_event_widgets(
-                self, event_name='', data={}, sess_ids=None, widget_ids=None
-            ):
-                message = {
-                    'event_name': event_name,
-                    'data': data,
-                    'sess_ids': sess_ids,
-                    'widget_ids': widget_ids
-                }
-
-                self.redis.publish(channel='socket_event_widgets', message=message)
-
-                return
-
     # ------------------------------------------------------------------
     async def add_widget_loop(self, opt_in=None):
 

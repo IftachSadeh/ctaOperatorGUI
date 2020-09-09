@@ -174,8 +174,7 @@ class BaseWidget():
         """
 
         lock_name = (
-            'ws;base_widget;util_func;'
-            + self.my_utils[util_id].class_name + ';'
+            'ws;base_widget;util_func;' + self.my_utils[util_id].class_name + ';'
             + self.my_utils[util_id].util_id
         )
 

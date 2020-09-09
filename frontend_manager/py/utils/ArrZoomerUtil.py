@@ -4,6 +4,7 @@ from shared.utils import flatten_dict
 from shared.LogParser import LogParser
 from frontend_manager.py.utils.BaseUtil import BaseUtil
 
+
 # ------------------------------------------------------------------
 class ArrZoomerUtil(BaseUtil):
 
@@ -67,7 +68,10 @@ class ArrZoomerUtil(BaseUtil):
     # ------------------------------------------------------------------
     async def setup(self, *args):
         # standard common setup
-        await BaseUtil.setup(self, args,)
+        await BaseUtil.setup(
+            self,
+            args,
+        )
 
         widget_info = self.redis.h_get(
             name='ws;widget_info',
@@ -153,7 +157,10 @@ class ArrZoomerUtil(BaseUtil):
     # ------------------------------------------------------------------
     async def back_from_offline(self, data=None):
         # standard common actions
-        await BaseUtil.back_from_offline(self, data=data,)
+        await BaseUtil.back_from_offline(
+            self,
+            data=data,
+        )
         return
 
     # ------------------------------------------------------------------
@@ -200,7 +207,6 @@ class ArrZoomerUtil(BaseUtil):
         await self.sm.emit_widget_event(opt_in=opt_in)
 
         return
-
 
     # ------------------------------------------------------------------
     def get_zoomer_state(self):

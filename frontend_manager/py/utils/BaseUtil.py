@@ -11,7 +11,7 @@ class BaseUtil():
     # ------------------------------------------------------------------
     def __init__(self, util_id=None, parent=None, *args, **kwargs):
         self.class_name = self.__class__.__name__
-        
+
         self.log = LogParser(base_config=parent.base_config, title=__name__)
 
         # the parent of this widget
@@ -85,4 +85,3 @@ class BaseUtil():
         """
 
         return
-
