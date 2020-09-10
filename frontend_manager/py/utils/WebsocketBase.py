@@ -37,15 +37,24 @@ class WebsocketBase():
         self.is_sess_open = False
         self.log_send_packet = False
         self.sess_ping_time = None
+
+        # is it allowed to restore sessions as part of development
+        # or do we always reload web pages on server reloads
         self.can_restore_existing_sess = True
         # self.can_restore_existing_sess = False
 
-        self.basic_widget_sleep_sec = 1
-        self.sess_expire = 15
-        self.serv_expire = 30
-        self.user_expire = 43200
-        self.cleanup_sleep = 60
+        # validate all session widgets on every few seconds
+        self.validate_widget_time_sec = 0
+        self.min_validate_widget_time_sec = 10
+
         self.valid_loop_sleep_sec = 0.01
+        self.basic_widget_sleep_sec = 1
+        self.sess_expire_sec = 15
+        self.serv_expire_sec = 30
+        self.user_expire_sec = 43200
+        self.widget_expire_sec = self.user_expire_sec
+        self.cleanup_sleep_sec = 60
+
         self.n_id_digits = 4
         self.n_serv_msg = 0
 
@@ -75,10 +84,10 @@ class WebsocketBase():
 
         self.loop_prefix = 'ws;loop;'
         self.heartbeat_prefix = 'ws;heartbeat;'
-        
+
         self.sync_group_id_prefix = 'grp_'
         self.sync_group_title_prefix = 'Group '
-        
+
         self.icon_prefix = 'icn_'
 
         self.asyncio_queue = asyncio.Queue()
@@ -130,6 +139,7 @@ class WebsocketBase():
             'serv': lambda: 'serv;' + str(self.serv_id),
             'user': lambda: 'serv;' + str(self.serv_id) + ';user;' + str(self.user_id),
             'sess': lambda: 'serv;' + str(self.serv_id) + ';sess;' + str(self.sess_id),
+            'sync': lambda: 'sync;' + ';user;' + str(self.user_id),
             # 'sess_redis':
             # lambda: 'redis;serv' + str(self.serv_id) + ';sess' + str(self.sess_id),
         }

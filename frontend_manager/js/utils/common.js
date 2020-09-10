@@ -42,7 +42,7 @@ window.unique = function(opt_in) {
     }
 
     return prefix + rnd_now + postfix
-    // return prefix + get_time_msec().toString() + postfix
+    // return prefix + get_time_now_msec().toString() + postfix
 }
 let unique = window.unique
 
@@ -1479,7 +1479,7 @@ window.RunLoop = function(opt_in) {
             return
         }
 
-        let time = parseInt(is_def(opt_in.time) ? opt_in.time : get_time_msec())
+        let time = parseInt(is_def(opt_in.time) ? opt_in.time : get_time_now_msec())
         runs[opt_in.tag].push({
             data: opt_in.data,
             time: time,
@@ -2087,7 +2087,7 @@ window.IconBadge = function() {
             '/static/piggy-bank.svg',
         ]
 
-        if (n_icon < 0) {
+        if (!is_def(n_icon) || n_icon < 0) {
             return [ '', null ]
         }
 
@@ -2576,8 +2576,14 @@ window.date_to_string = function(date_in) {
 }
 
 // the number of milliseconds elapsed since January 1, 1970 00:00:00 UTC
-window.get_time_msec = function() {
+window.get_time_now_msec = function() {
     return Date.now()
+}
+
+// the number of milliseconds elapsed since January 1, 1970 00:00:00 UTC
+// with reference to date_time
+window.get_date_time = function(date_time) {
+    return new Date(date_time)
 }
 
 // ------------------------------------------------------------------
@@ -3106,7 +3112,7 @@ window.add_accordion_div = function(opt_in) {
 //   function checkSetZoomFunc() {
 //     if(prevWheel < 0) return;
 
-//     let time_dif = get_time_msec() - prevWheel;
+//     let time_dif = get_time_now_msec() - prevWheel;
 //     if(time_dif > timeWheel) {
 //       exeFunc( ((countWheel > 0) ? 1 : -1) );
 
@@ -3121,7 +3127,7 @@ window.add_accordion_div = function(opt_in) {
 //   // ------------------------------------------------------------------
 //   function doIntMouse(){
 //     countWheel += (event.detail<0) ? 1 : (event.wheelDelta>0) ? 1 : -1;;
-//     prevWheel   = get_time_msec();
+//     prevWheel   = get_time_now_msec();
 //     return;
 //   };
 

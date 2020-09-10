@@ -50,7 +50,10 @@ class ObsBlockControl(BaseWidget):
             wgt = self.redis.h_get(
                 name='ws;widget_info',
                 key=self.widget_id,
+                default_val=None,
             )
+            # do stuff on None!!!!!!!!!!!!!!
+
             self.widget_state = wgt["widget_state"]
             self.widget_state["focus_id"] = ""
 

@@ -44,7 +44,7 @@
 
     <div id="title_div" class="menu_header site_header"></div>
     
-    <div class="menu_header" style="opacity: 0; padding-left: 24px; padding-bottom: 5px; margin-top: -40px; font-size: 15px;" id="debug_text_div">${display_user_id}</div>
+    <div class="menu_header" style="opacity: 0;" id="debug_text_div"></div>
 
     <div id="base_app_div"></div>
 

@@ -822,10 +822,17 @@ class PlotsDash(BaseWidget):
 
         self.redis.pipe.reset()
         for id_now in idV:
-            self.redis.pipe.h_m_get(name="inst_health;" + str(id_now), key=fields[id_now])
+            self.redis.pipe.h_m_get(
+                name="inst_health;" + str(id_now),
+                key=fields[id_now],
+                default_val=[],
+            )
         redis_data = self.redis.pipe.execute()
 
         for i in range(len(redis_data)):
+            if redis_data[i] is None:
+                continue
+
             id_now = idV[i]
             data[id_now] = dict()
 

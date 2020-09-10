@@ -47,7 +47,7 @@ class BaseUtil():
             'do_data_updates',
             'log_send_packet',
             'n_icon',
-            'icon_id',
+            # 'icon_id',
         ]
 
         for init_property in check_init_properties:
@@ -73,7 +73,7 @@ class BaseUtil():
            implemented in BaseWidget.util_func())
         """
         self.n_icon = self.parent.n_icon
-        self.icon_id = self.parent.icon_id
+        # self.icon_id = self.parent.icon_id
 
         return
 

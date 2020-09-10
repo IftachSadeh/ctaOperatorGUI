@@ -18,13 +18,11 @@ class Housekeeping():
             ['c', self.serv_id],
         ])
 
-        # self.cleanup_sleep = 5
-        # self.cleanup_sleep = 5
-        # self.cleanup_sleep = 5
-        self.cleanup_sleep = 1
+        # self.cleanup_sleep_sec = 5
+        # self.cleanup_sleep_sec = 3
 
         while self.get_loop_state(loop_info):
-            await asyncio.sleep(self.cleanup_sleep)
+            await asyncio.sleep(self.cleanup_sleep_sec)
 
             # wait for all session configurations from this server to complete
             async def is_locked():
@@ -71,7 +69,7 @@ class Housekeeping():
                 heartbeat_name = self.get_heartbeat_name(scope='sess', postfix=sess_id)
                 if not self.redis.exists(heartbeat_name):
                     # explicitly take care of the widget
-                    await self.cleanup_widget(widget_ids=widget_id)
+                    await self.cleanup_sess_widget(widget_ids=widget_id)
                     # for good measure, make sure the session is also gone
                     await self.cleanup_session(sess_id=sess_id)
 
@@ -137,6 +135,9 @@ class Housekeeping():
                             server_sess_ids
                         )
 
+            # cleanup widgets by their own heartbeat
+            await self.cleanup_widgets()
+
             # ------------------------------------------------------------------
             # ------------------------------------------------------------------
             check_all_ws_keys = False
@@ -180,7 +181,6 @@ class Housekeeping():
            have the identical self.user_id or self.serv_id (as another user
            # potentially using a different server, might have initiated this function)
         """
-        print('widget_inits can come from any server!!!!!!!! update_sync_group()')
 
         if sess_id is None:
             return
@@ -225,7 +225,7 @@ class Housekeeping():
             # clean up all widgets for this session
             sess_widget_ids = self.redis.l_get('ws;sess_widget_ids;' + sess_id)
             for widget_id in sess_widget_ids:
-                await self.cleanup_widget(widget_ids=widget_id)
+                await self.cleanup_sess_widget(widget_ids=widget_id)
 
             # remove the lock impacting the cleanup loop
             self.locker.semaphores.remove(
@@ -257,20 +257,43 @@ class Housekeeping():
         return
 
     # ------------------------------------------------------------------
-    async def cleanup_widget(self, widget_ids):
+    async def cleanup_widgets(self):
+        """cleanup widgets by their own heartbeat
+        """
+
+        reco_info = self.redis.h_get_all(
+            'ws;widget_recovery_info',
+            default_val={},
+        )
+
+        widget_ids = []
+        for widget_id in reco_info.keys():
+            heartbeat_name = self.get_heartbeat_name(scope='widget_id', postfix=widget_id)
+            if not self.redis.exists(heartbeat_name):
+                widget_ids += [widget_id]
+
+        if len(widget_ids) > 0:
+            self.redis.h_del(
+                'ws;widget_recovery_info',
+                keys=widget_ids,
+            )
+            await self.cleanup_sess_widget(widget_ids=widget_ids)
+
+        return
+
+    # ------------------------------------------------------------------
+    async def cleanup_sess_widget(self, widget_ids):
         """clean up a list of input widget ids
         """
 
         if not isinstance(widget_ids, (list, set)):
             widget_ids = [widget_ids]
+        if len(widget_ids) == 0:
+            return
 
         self.log.info([['c', ' - cleanup-widget_ids '], ['p', widget_ids]])
 
         all_user_ids = self.redis.s_get('ws;all_user_ids')
-
-        sync_groups = self.redis.h_get(
-            name='ws;sync_groups', key=self.user_id, default_val=[]
-        )
 
         for widget_id in widget_ids:
             widget_info = self.redis.h_get(
@@ -295,17 +318,23 @@ class Housekeeping():
                 )
             self.redis.delete('ws;sess_widget_loops;' + widget_id)
 
-            # synchronisation groups
-            for sync_group in sync_groups:
-                for sync_states in sync_group['sync_states']:
-                    rm_elements = []
-                    for sync_info in sync_states:
-                        if sync_info[0] == widget_id:
-                            rm_elements.append(sync_info)
-                    for rm_element in rm_elements:
-                        sync_states.remove(rm_element)
+        # synchronisation groups
+        async with self.locker.locks.acquire('sync'):
+            sync_groups = self.redis.h_get(
+                name='ws;sync_groups', key=self.user_id, default_val=[]
+            )
 
-        self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
+            for widget_id in widget_ids:
+                for sync_group in sync_groups:
+                    for sync_states in sync_group['sync_states']:
+                        rm_elements = []
+                        for sync_info in sync_states:
+                            if sync_info[0] == widget_id:
+                                rm_elements.append(sync_info)
+                        for rm_element in rm_elements:
+                            sync_states.remove(rm_element)
+
+            self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
 
         await self.update_sync_group()
 
@@ -362,7 +391,9 @@ class Housekeeping():
             ])
 
             self.redis.s_rem(name='ws;all_user_ids', data=user_id)
-            self.redis.h_del(name='ws;sync_groups', key=user_id)
+
+            async with self.locker.locks.acquire('sync'):
+                self.redis.h_del(name='ws;sync_groups', key=user_id)
 
             # cleanup widgets
             widget_types = self.redis.h_get(

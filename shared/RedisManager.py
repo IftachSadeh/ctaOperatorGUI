@@ -108,12 +108,33 @@ class RedisBase():
         return out
 
     # ------------------------------------------------------------------
-    def h_del(self, name=None, key=None):
+    def h_del(self, name=None, key=None, keys=None):
         try:
-            if (name is None) or (key is None):
-                raise Exception('redis.h_del(): name/key is None', name, key)
+            if name is None:
+                raise Exception('redis.h_del(): name is None', name)
 
-            out = self.base.hdel(name, key)
+            if (int(key is None) + int(keys is None)) != 1:
+                raise Exception(
+                    'redis.h_del(): must provide exactly one of key,keys',
+                    (name, key, keys),
+                )
+
+            if key is not None and not isinstance(key, str):
+                raise Exception(
+                    'redis.h_del(): key must be of type str',
+                    (name, key, keys),
+                )
+
+            if keys is not None and not isinstance(keys, (list, set, tuple)):
+                raise Exception(
+                    'redis.h_del(): keys must be one of (list, set, tuple)',
+                    (name, key, keys),
+                )
+
+            if key is not None:
+                out = self.base.hdel(name, key)
+            else:
+                out = [self.base.hdel(name, k) for k in keys]
 
         except Exception as e:
             self.log.error([['r', 'redis.h_del(): '], ['o', name, key]])
@@ -161,10 +182,12 @@ class RedisBase():
         return data
 
     # ------------------------------------------------------------------
-    def h_m_get(self, name=None, key=None, keys=None, filter_out=False, default_val=None):
+    def h_m_get(
+        self, name=None, key=None, keys=None, filter_none=False, default_val=None
+    ):
         try:
             if name is None:
-                raise Exception('redis.h_m_get(): name/key is None', name)
+                raise Exception('redis.h_m_get(): name is None', name)
 
             if (int(key is None) + int(keys is None)) != 1:
                 raise Exception(
@@ -190,13 +213,9 @@ class RedisBase():
             # returns a list of entries (if empty, gives [None])
             data = self.base.hmget(name, (key if keys is None else keys))
 
-            if filter_out:
+            if filter_none:
                 if isinstance(data, (list, set, tuple)):
                     data = [x for x in data if x is not None]
-
-            if isinstance(data, (list, set, tuple)):
-                if all([d is None for d in data]):
-                    return default_val
 
             if self.is_empty(data):
                 return default_val
@@ -352,22 +371,6 @@ class RedisBase():
         return out
 
     # ------------------------------------------------------------------
-    def expire_sec(self, name=None, expire_sec=None):
-        try:
-            if (name is None) or (expire_sec is None):
-                raise Exception(
-                    'redis.expire_sec(): name/expire_sec is None', name, expire_sec
-                )
-
-            out = self.base.expire(name, expire_sec)
-
-        except Exception as e:
-            self.log.error([['r', 'redis.expire_sec(): '], ['o', name, expire_sec]])
-            raise e
-
-        return out
-
-    # ------------------------------------------------------------------
     def delete(self, name=None):
         try:
             if name is None:
@@ -459,7 +462,7 @@ class RedisManager(RedisBase):
         return data
 
     # ------------------------------------------------------------------
-    def z_get(self, name=None, filter_out=False):
+    def z_get(self, name=None, filter_none=False):
         try:
             if name is None:
                 raise Exception('redis.z_get(): name is None', name)
@@ -472,7 +475,7 @@ class RedisManager(RedisBase):
                 data = self.unpack(data)
 
             if isinstance(data, (list, set, tuple)):
-                if filter_out:
+                if filter_none:
                     data = [x for x in data if x[0] is not None]
             else:
                 raise Exception('redis.z_get(): problem with data: ', data)
@@ -531,6 +534,32 @@ class RedisManager(RedisBase):
             raise e
 
         return exists
+
+    # ------------------------------------------------------------------
+    def expire_sec(self, name=None, expire_sec=None):
+        """set expiration for an existing redis key
+
+           this is not implemented for the pipe, as then it would not be possible
+           to effectively check the existance of keys with any performance boost
+        """
+
+        try:
+            if (name is None) or (expire_sec is None):
+                raise Exception(
+                    'redis.expire_sec(): name/expire_sec is None', name, expire_sec
+                )
+
+            out = self.base.expire(name, expire_sec)
+            if not out:
+                raise Exception(
+                    'redis.expire_sec(): trying to expire non-existing name', name
+                )
+
+        except Exception as e:
+            self.log.error([['r', 'redis.expire_sec(): '], ['o', name, expire_sec]])
+            raise e
+
+        return out
 
     # ------------------------------------------------------------------
     def publish(self, channel=None, message=''):

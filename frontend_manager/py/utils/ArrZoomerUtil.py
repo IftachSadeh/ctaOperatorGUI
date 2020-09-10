@@ -79,6 +79,8 @@ class ArrZoomerUtil(BaseUtil):
             default_val=None,
         )
 
+        # if not yet defined, do nothing else, and give the util
+        # a chance to propery setup and initialise on the nexr socket event
         if widget_info is None:
             return
 
@@ -281,6 +283,8 @@ class ArrZoomerUtil(BaseUtil):
 
         data = dict()
         for n_id in range(len(redis_data)):
+            if redis_data[n_id] is None:
+                continue
             id_now = ids[n_id]
             data[id_now] = dict()
 

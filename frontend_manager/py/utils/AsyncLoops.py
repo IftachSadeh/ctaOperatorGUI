@@ -110,10 +110,10 @@ class AsyncLoops():
         #         raise Exception('must provide widget_type from',self.all_widget_types,'as postfix for heartbeat',)
         #     name = prefix + ';' + postfix + ';serv;' + self.serv_id + ';user;' + self.user_id
 
-        # elif scope == 'widget_id':
-        #     if postfix is None:
-        #         raise Exception('must provide widget_type as postfix for heartbeat')
-        #     name = prefix + ';' + self.sess_id + ';' + postfix
+        elif scope == 'widget_id':
+            if postfix is None:
+                raise Exception('must provide widget_id as postfix for heartbeat')
+            name = prefix + ';' + postfix
 
         else:
             raise Exception('unknown scope for heartbeat')
@@ -404,10 +404,9 @@ class AsyncLoops():
             ['c', self.serv_id],
         ])
 
-
-        sleep_sec = int(min(2, max(ceil(self.sess_expire * 0.1), 10)))
-        sess_expire = int(ceil(max(self.sess_expire, sleep_sec * 5)))
-        server_expire = int(ceil(max(self.serv_expire, sess_expire)))
+        sleep_sec = int(min(2, max(ceil(self.sess_expire_sec * 0.1), 10)))
+        sess_expire_sec = int(ceil(max(self.sess_expire_sec, sleep_sec * 5)))
+        server_expire = int(ceil(max(self.serv_expire_sec, sess_expire_sec)))
 
         pipe = self.redis.get_pipe()
 
@@ -421,19 +420,19 @@ class AsyncLoops():
                     has_sess = True
 
                     # heartbeat for this session renews itself
-                    pipe.expire_sec(name=heartbeat_name, expire_sec=sess_expire)
+                    pipe.set(name=heartbeat_name, expire_sec=sess_expire_sec)
 
             if has_sess:
                 # heartbeat for any session renews the server
-                pipe.expire_sec(
+                pipe.set(
                     name=self.get_heartbeat_name(scope='serv'), expire_sec=server_expire
                 )
 
                 # # heartbeat for any session renews the widgets for this server/user
                 # for widget_type in self.all_widget_types:
-                #     pipe.expire_sec(
+                #     pipe.set(
                 #         name=self.get_heartbeat_name(scope='widget', postfix=widget_type),
-                #         expire_sec=user_expire,
+                #         expire_sec=user_expire_sec,
                 #     )
 
                 pipe.execute()
@@ -480,10 +479,10 @@ class AsyncLoops():
         ])
 
         # short delay for the loop, based on the one for session heartbeats
-        sleep_sec = int(min(2, max(ceil(self.sess_expire * 0.1), 10)))
+        sleep_sec = int(min(2, max(ceil(self.sess_expire_sec * 0.1), 10)))
 
         # long heartbeat life for the user
-        user_expire = int(ceil(max(self.user_expire, sleep_sec * 5)))
+        user_expire_sec = int(ceil(max(self.user_expire_sec, sleep_sec * 5)))
 
         while self.get_loop_state(loop_info):
             has_sess = False
@@ -494,7 +493,8 @@ class AsyncLoops():
                 if self.redis.exists(heartbeat_name):
                     # heartbeat for any session renews the user
                     self.redis.expire_sec(
-                        name=self.get_heartbeat_name(scope='user'), expire_sec=user_expire
+                        name=self.get_heartbeat_name(scope='user'),
+                        expire_sec=user_expire_sec
                     )
                     break
 
@@ -512,8 +512,6 @@ class AsyncLoops():
         ])
 
         return
-
-
 
     # ------------------------------------------------------------------
     async def client_sess_heartbeat_loop(self, loop_info):
@@ -584,18 +582,32 @@ class AsyncLoops():
                 client data and metadata related to the event
         """
 
+        # if eg we are offline
+        if self.is_sess_offline:
+            return
+
         # go over the resources use by the session, and make sure that everything
         # is registered as expected (not not be registered e.g., in case of session
         # restoration, when previous cleanup removed registries from redis)
-        sess_resources = data['data']['sess_resources']
-        sess_widgets = sess_resources['sess_widgets']
-        await self.validate_sess_widgets(
-            sess_id=data['metadata']['sess_id'],
-            sess_widgets=sess_widgets,
-        )
+        # this is done after coming back from offline, or if min_validate_widget_time_sec
+        # time has passed since the previous validation
+        validate_widgets = ((self.sess_ping_time is None)
+                            or ((get_time('sec') - self.validate_widget_time_sec) >
+                                self.min_validate_widget_time_sec))
 
-        # if eg we are offline or just back from offline
-        if self.sess_ping_time is None or self.is_sess_offline:
+        if validate_widgets:
+            sess_resources = data['data']['sess_resources']
+            sess_widgets = sess_resources['sess_widgets']
+
+            await self.validate_sess_widgets(
+                sess_id=data['metadata']['sess_id'],
+                sess_widgets=sess_widgets,
+            )
+
+            self.validate_widget_time_sec = get_time('sec')
+
+        # if eg we are just back from offline
+        if self.sess_ping_time is None:
             return
 
         ping_delay = data['metadata']['send_time_msec'] - self.sess_ping_time
