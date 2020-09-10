@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from shared.ClockSim import get_clock_sim_data
-from frontend_manager.py.utils.ArrZoomer import ArrZoomer
+from frontend_manager.py.utils.ArrZoomerUtil import ArrZoomerUtil
 from frontend_manager.py.utils.BaseWidget import BaseWidget
 
 
