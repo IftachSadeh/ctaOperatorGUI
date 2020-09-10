@@ -494,6 +494,8 @@ window.PlotTimeSeries = function() {
                     brush: reserved.brush,
                     zoom: reserved.zoom,
                 })
+
+                console.log(reserved.zoom, reserved.brush)
             })
     }
     function set_brush_zoom_factor(new_brush_zoom_factor) {

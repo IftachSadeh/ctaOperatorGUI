@@ -2473,6 +2473,36 @@ window.merge_obj = function (sources, overwrite) {
     return merge_object
 }
 
+window.overwrite_obj = function (sources, overwrite) {
+    let overwrite_object = {}
+
+    function inner_overwrite(obj, sources, overwrite) {
+      for (let key in sources) {
+          if (!overwrite.hasOwnProperty(key)) {
+              if (isObject(sources[key])) {
+                obj[key] = {}
+                inner_overwrite(obj[key], sources[key], {})
+              } else {
+                obj[key] = sources[key]
+              }
+          } else {
+            if (isObject(sources[key])) {
+              if (isObject(overwrite[key])) {
+                obj[key] = {}
+                inner_overwrite(obj[key], sources[key], overwrite[key])
+              } else {
+                inner_overwrite(obj[key], sources[key], {})
+              }
+            } else {
+              obj[key] = overwrite[key]
+            }
+          }
+      }
+    }
+    inner_overwrite(overwrite_object, sources, overwrite)
+    return overwrite_object
+}
+
 window.deep_copy = function(obj_in) {
     if (Array.isArray(obj_in)) {
         return obj_in.slice(0, obj_in.length)

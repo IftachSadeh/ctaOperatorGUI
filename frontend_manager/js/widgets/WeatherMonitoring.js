@@ -36,6 +36,10 @@ window.load_script({
 })
 window.load_script({
     source: main_script_tag,
+    script: '/js/utils/PanZoomBox.js',
+})
+window.load_script({
+    source: main_script_tag,
     script: '/js/utils/PlotTimeBar.js',
 })
 window.load_script({
@@ -127,14 +131,20 @@ let main_weather_monitoring = function(opt_in) {
 
     // -1 for value => fit 100% of remaining space
     let box = {
-        urgent: {
+        time_information: {
             x: 0,
             y: 0,
+            w: 200,
+            h: 65,
+        },
+        urgent: {
+            x: 0,
+            y: 65,
             w: 200,
             h: -1,
         },
         overview: {
-            x: 200,
+            x: 260,
             y: 0,
             w: 250,
             h: -1,
@@ -189,6 +199,17 @@ let main_weather_monitoring = function(opt_in) {
     })
 
 
+    // TO MOVE TO COMMON
+    function format_to_date_on_site(millisec) {
+        return new Date(millisec)
+    }
+    function format_to_date_local(millisec) {
+        return new Date(millisec)
+    }
+    function first_letter_upper(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1)
+    }
+
     function init_data(data_in) {
         function initSvg() {
             svg_dims.w = {
@@ -217,7 +238,7 @@ let main_weather_monitoring = function(opt_in) {
             }
 
             function adjustDim() {
-                box.urgent.h = svg_dims.h[0]
+                box.urgent.h = svg_dims.h[0] - box.time_information.h
                 box.overview.h = svg_dims.h[0] - box.external.h
                 box.external.w = svg_dims.w[0] - box.urgent.w
                 box.focus = {
@@ -234,9 +255,16 @@ let main_weather_monitoring = function(opt_in) {
                 })
             adjustDim()
 
+
             svg.back = svg.svg.append('g')
             svg.g = svg.svg.append('g')
 
+            svg.svg.append('g').attr('id', 'time_information')
+                .attr('transform', 'translate('
+            + box.time_information.x
+            + ','
+            + box.time_information.y
+            + ')')
             svg.svg.append('g').attr('id', 'urgent')
                 .attr('transform', 'translate('
             + box.urgent.x
@@ -358,18 +386,12 @@ let main_weather_monitoring = function(opt_in) {
             // fo.appendChild(iframe)
         }
         function initBox() {
-            box.urgent_date = {
-                x: 0,
-                y: 0,
-                w: box.urgent.w,
-                h: 100,
-            }
-            box.urgent_supervision = {
-                x: 0,
-                y: 100,
-                w: box.urgent.w,
-                h: box.urgent.h - 100,
-            }
+            // box.urgent_supervision = {
+            //     x: 0,
+            //     y: 0,
+            //     w: box.urgent.w,
+            //     h: box.urgent.h,
+            // }
 
             box.overview_time_options = {
                 x: 0,
@@ -432,10 +454,6 @@ let main_weather_monitoring = function(opt_in) {
             }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
-                // let end_time_sec = is_def(opt_in.end_time_sec)
-                //   ? opt_in.end_time_sec
-                //   : undefined
-                // if (end_time_sec < Number(shared.data.server.time_of_night.now)) return colorPalette.blocks.shutdown
                 let state = is_def(opt_in.exe_state.state)
                     ? opt_in.exe_state.state
                     : undefined
@@ -512,10 +530,8 @@ let main_weather_monitoring = function(opt_in) {
         initBox()
 
         shared.server = data_in.data
-        shared.time.current = new Date(shared.server.time_of_night.date_now)
-        shared.time.range = 1000 * (3600 * parseInt(3) + 60 * parseInt(0))
-        shared.time.from = new Date()
-        shared.time.from.setTime(shared.time.current.getTime() - shared.time.range)
+        console.log(data_in.data)
+        console.log(new Date(data_in.data.time_information.night_start_sec * 1000))
         loadMesures()
 
         svg_main_measures_tracking.init_data()
@@ -523,7 +539,7 @@ let main_weather_monitoring = function(opt_in) {
 
         createUrgentList()
 
-        svgFMDate.init_data()
+        svg_time_information.init_data()
         svgFMTimeline.init_data()
         svgFMSupervision.init_data()
         svgObservationSite.init_data()
@@ -551,13 +567,12 @@ let main_weather_monitoring = function(opt_in) {
             shared.server[key] = data_in.data[key]
         }
         // svgPlotDisplay.update_data()
-        shared.time.current = new Date(shared.server.time_of_night.date_now)
         updateMesures()
         createUrgentList()
 
         svg_main_measures_tracking.update_data()
         // svgPlotDisplay.update_data()
-        svgFMDate.update_data()
+        svg_time_information.update_data()
         svgFMSupervision.update_data()
 
         locker.remove('update_data')
@@ -575,55 +590,7 @@ let main_weather_monitoring = function(opt_in) {
         n_keep: 1,
     })
 
-    function initScrollBox(tag, g, box, background, isVertical) {
-        if (background.enabled) {
-            g.append('rect')
-                .attr('class', 'background')
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('width', box.w)
-                .attr('height', box.h)
-                .style('fill', background.fill)
-                .style('stroke', background.stroke)
-                .style('stroke-width', background.strokeWidth)
-        }
-
-        let scrollBox = new ScrollBox()
-        scrollBox.init({
-            tag: tag,
-            g_box: g,
-            box_data: {
-                x: 0,
-                y: 0,
-                w: box.w,
-                h: box.h,
-            },
-            use_relative_coords: true,
-            locker: new Locker(),
-            lockers: [ tag + 'update_data' ],
-            lock_zoom: {
-                all: tag + 'zoom',
-                during: tag + 'zoom_during',
-                end: tag + 'zoom_end',
-            },
-            run_loop: new RunLoop({
-                tag: tag,
-            }),
-            can_scroll: true,
-            scrollVertical: isVertical,
-            scroll_horizontal: !isVertical,
-            scroll_height: 0,
-            scroll_width: 0,
-            background: 'transparent',
-            scroll_rec_h: {
-                h: 4,
-            },
-            scroll_recs: {
-                w: 4,
-            },
-        })
-        return scrollBox
-    }
+    // TO REMOVE TO USE REAL DATA
     function addDataToPlot(data) {
         for (let i = 0; i < shared.data.length; i++) {
             if (shared.data[i].id === data.id) {
@@ -668,8 +635,8 @@ let main_weather_monitoring = function(opt_in) {
                 previous: [],
             }
             status.current = deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[0])
-            status.current.x = new Date(shared.server.time_of_night.date_now)
-            for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
+            status.current.x = new Date(shared.server.time_information.time_now_sec)
+            for (let i = 0; i < (shared.server.time_information.history_duration_sec / shared.server.time_information.history_step_sec); i++) {
                 if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined
           || shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
                     break
@@ -698,9 +665,9 @@ let main_weather_monitoring = function(opt_in) {
                 previous: [],
             }
             status.current = deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[0])
-            status.current.x = new Date(shared.server.time_of_night.date_now)
+            status.current.x = new Date(shared.server.time_information.time_now_sec)
             status.gradient = Math.floor((Math.random() * 20) - 10)
-            for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
+            for (let i = 0; i < (shared.server.time_information.history_duration_sec / shared.server.time_information.history_step_sec); i++) {
                 if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined
           || shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
                     break
@@ -901,6 +868,7 @@ let main_weather_monitoring = function(opt_in) {
             // }
         }
     }
+    // TO REMOVE TO USE REAL DATA
 
     let SvgPlotDisplay = function() {
         let maing
@@ -1246,12 +1214,12 @@ let main_weather_monitoring = function(opt_in) {
 
         function update_data() {
             let start_time_sec = {
-                date: new Date(shared.time.from),
-                time: Number(shared.time.from.getTime()),
+                date: new Date(shared.time_information.history_start_sec),
+                time: Number(shared.server.time_information.history_start_sec),
             }
             let end_time_sec = {
-                date: new Date(shared.server.time_of_night.date_now),
-                time: Number(shared.server.time_of_night.now),
+                date: new Date(shared.server.time_information.time_now_sec),
+                time: Number(shared.server.time_information.time_now_sec),
             }
             // plot.updateAxis({
             //     id: 'bottom',
@@ -1284,67 +1252,194 @@ let main_weather_monitoring = function(opt_in) {
         this.update = update
     }
 
-    let SvgFMDate = function() {
+    let Svg_time_information = function() {
+        let inner_boxes = {
+            default: {
+                box: {
+                    x: 0,
+                    y: 0,
+                },
+                day_month: {
+                    x: box.time_information.h,
+                    y: 0,
+                    w: box.time_information.w - box.time_information.h,
+                    h: box.time_information.h / 3,
+                },
+                hour_minute: {
+                    x: box.time_information.h,
+                    y: box.time_information.h / 3,
+                    w: box.time_information.w - box.time_information.h,
+                    h: box.time_information.h / 3 * 2,
+                },
+                weather_icon: {
+                    x: 0,
+                    y: 0,
+                    w: box.time_information.h,
+                    h: box.time_information.h,
+                },
+            },
+            on_site: {
+                box: {
+                    x: 0,
+                    y: 0,
+                },
+                day_month: {
+                    x: 0,
+                    y: 0,
+                    w: box.time_information.w / 3,
+                    h: box.time_information.h / 2,
+                },
+                hour_minute: {
+                    x: box.time_information.w / 3 * 1,
+                    y: 0,
+                    w: box.time_information.w / 3,
+                    h: box.time_information.h / 2,
+                },
+                weather_icon: {
+                    x: box.time_information.w / 3 * 2,
+                    y: 0,
+                    w: box.time_information.w / 3,
+                    h: box.time_information.h / 2,
+                },
+            },
+            local: {
+                box: {
+                    x: 0,
+                    y: box.time_information.h / 2,
+                },
+                day_month: {
+                    x: box.time_information.w / 3 * 2,
+                    y: box.time_information.h / 2,
+                    w: box.time_information.w / 3,
+                    h: box.time_information.h / 2,
+                },
+                hour_minute: {
+                    x: box.time_information.w / 3 * 1,
+                    y: box.time_information.h / 2,
+                    w: box.time_information.w / 3,
+                    h: box.time_information.h / 2,
+                },
+                weather_icon: {
+                    x: 0,
+                    y: box.time_information.h / 2,
+                    w: box.time_information.w / 3,
+                    h: box.time_information.h / 2,
+                },
+            },
+        }
 
+        function init_date(localization) {
+            let g = svg.svg.select('#time_information')
+                .append('g')
+                .attr('id', 'date_' + localization)
+                .attr('transform', 'translate('
+                + inner_boxes.on_site.box.x
+                + ','
+                + inner_boxes.on_site.box.y
+                + ')')
+            g.append('text')
+                .attr('id', 'current_day_month')
+                .attr('transform', 'translate('
+                + (inner_boxes[localization].day_month.x
+                + inner_boxes[localization].day_month.w * 0.5)
+                + ','
+                + (inner_boxes[localization].day_month.y
+                + inner_boxes[localization].day_month.h * 0.5)
+                + ')')
+                .attr('stroke', colorPalette.bright.stroke)
+                .attr('stroke-width', 0.0)
+                .attr('fill', colorPalette.bright.stroke)
+                .attr('x', 0)
+                .attr('y', (inner_boxes[localization].hour_minute.h / 3) * 0.5)
+                .style('font-weight', 'bold')
+                .attr('text-anchor', 'middle')
+                .style('font-size', (inner_boxes[localization].hour_minute.h / 3) + screen_unit)
+                .style('pointer-events', 'none')
+                .style('user-select', 'none')
+            g.append('text')
+                .attr('id', 'current_hour_minute')
+                .attr('transform', 'translate('
+                + (inner_boxes[localization].hour_minute.x
+                + inner_boxes[localization].hour_minute.w * 0.5)
+                + ','
+                + (inner_boxes[localization].hour_minute.y
+                + inner_boxes[localization].hour_minute.h * 0.5)
+                + ')')
+                .attr('stroke', colorPalette.bright.stroke)
+                .attr('stroke-width', 0.0)
+                .attr('fill', colorPalette.bright.stroke)
+                .attr('x', 0)
+                .attr('y', (inner_boxes[localization].hour_minute.h / 3 * 2) * 0.5)
+                .style('font-weight', 'bold')
+                .attr('text-anchor', 'middle')
+                .style('font-size', (inner_boxes[localization].hour_minute.h / 3 * 2) + screen_unit)
+                .style('pointer-events', 'none')
+                .style('user-select', 'none')
+            g.append('rect')
+                .attr('x', inner_boxes[localization].weather_icon.x)
+                .attr('y', inner_boxes[localization].weather_icon.y)
+                .attr('width', inner_boxes[localization].weather_icon.w)
+                .attr('height', inner_boxes[localization].weather_icon.h)
+                .attr('fill', 'none')
+                .attr('stroke-width', 0)
+                .attr('stroke', '#000000')
+            g.append('svg:image')
+                .attr('xlink:href', './frontend_manager/static/icons/moon.svg')
+                .attr('x', inner_boxes[localization].weather_icon.x)
+                .attr('y', inner_boxes[localization].weather_icon.y)
+                .attr('width', inner_boxes[localization].weather_icon.w)
+                .attr('height', inner_boxes[localization].weather_icon.h)
+                .style('opacity', 0.5)
+                .style('pointer-events', 'none')
+        }
+        function update_date(localization) {
+            let currentTime
+            = format_to_date_on_site(
+                shared.server.time_information.time_now_sec
+              * 1000)
+            svg.svg.select('#time_information')
+                .select('#date_' + localization)
+                .select('#current_day_month')
+                .text(
+                    d3.timeFormat('%m/%d/%Y')(currentTime)
+                    // d3.timeFormat('%b %a %d, %Y')(currentTime.date)
+                )
+            svg.svg.select('#time_information')
+                .select('#date_' + localization)
+                .select('#current_hour_minute')
+                .text(
+                    d3.timeFormat('%H:%M:%S')(currentTime)
+                )
+        }
         function init_data() {
-            let main = svg.svg.select('#urgent').append('g').attr('id', 'fmdate')
-
-            main.append('rect')
-                .attr('x', box.urgent_date.x)
-                .attr('y', box.urgent_date.y)
-                .attr('width', box.urgent_date.w)
-                .attr('height', box.urgent_date.h)
-                .attr('fill', colorPalette.darkest.stroke)
-                .attr('stroke', colorPalette.darkest.stroke)
+            svg.svg.select('g#time_information').append('rect')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', box.time_information.w)
+                .attr('height', box.time_information.h)
+                .attr('fill', colorPalette.bright.background)
+                .attr('stroke', colorPalette.bright.background)
                 .attr('stroke-width', 0.3)
                 .attr('rx', 0)
-            main.append('text')
-                .attr('id', 'currentHourTop')
-                .attr('stroke', colorPalette.bright.background)
-                .attr('stroke-width', 0.0)
-                .attr('fill', colorPalette.bright.background)
-                .attr('x', box.urgent_date.w * 0.5)
-                .attr('y', box.urgent_date.h * 0.4)
-                .style('font-weight', 'bold')
-                .attr('text-anchor', 'middle')
-                .style('font-size', '18' + screen_unit)
-                .style('pointer-events', 'none')
-                .style('user-select', 'none')
-            main.append('text')
-                .attr('id', 'currentHourBottom')
-                .attr('stroke', colorPalette.bright.background)
-                .attr('stroke-width', 0.0)
-                .attr('fill', colorPalette.bright.background)
-                .attr('x', box.urgent_date.w * 0.5)
-                .attr('y', box.urgent_date.h * 0.8)
-                .style('font-weight', 'bold')
-                .attr('text-anchor', 'middle')
-                .style('font-size', '20' + screen_unit)
-                .style('pointer-events', 'none')
-                .style('user-select', 'none')
-
+            init_date('default')
             update_data()
         }
         this.init_data = init_data
 
         function update_data() {
-            let currentTime = {
-                date: new Date(shared.server.time_of_night.date_now),
-            }
-            svg.svg.select(
-                'g#fmdate text#currentHourTop').text(
-                d3.timeFormat('%b %a %d, %Y')(currentTime.date)
-            )
-            svg.svg.select(
-                'g#fmdate text#currentHourBottom').text(
-                d3.timeFormat('%H:%M:%S UTC')(currentTime.date)
-            )
+            update_date('default')
         }
         this.update_data = update_data
+
+        function debug() {
+
+        }
+        this.debug = debug
     }
     let SvgFMSupervision = function() {
         let scrollbox
-
+        let header_height = 60
+        let inner_boxes
         // function expand (g) {
         //   // svgHeathMapSensors.changeState('measured', 'expanded')
         //
@@ -1364,15 +1459,15 @@ let main_weather_monitoring = function(opt_in) {
         // }
         function serpervisionCore() {
             function drawHardware(g, d, i) {
-                g.append('rect')
-                    .attr('x', box.urgent_supervision.x - 2)
-                    .attr('y', size.y - 2)
-                    .attr('width', box.urgent_supervision.w + 4)
-                    .attr('height', size.h + 4)
-                    .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.medium.background)
-                    .attr('stroke', '#000000')
-                    .attr('stroke-width', 0.2)
-                    .attr('stroke-dasharray', [ box.urgent_supervision.w + 4, box.urgent_supervision.w + 4 + (size.h + 4) * 2 ])
+                // g.append('rect')
+                //     .attr('x', box.urgent_supervision.x - 2)
+                //     .attr('y', size.y - 2)
+                //     .attr('width', box.urgent_supervision.w + 4)
+                //     .attr('height', size.h + 4)
+                //     .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.medium.background)
+                //     .attr('stroke', '#000000')
+                //     .attr('stroke-width', 0.2)
+                //     .attr('stroke-dasharray', [ box.urgent_supervision.w + 4, box.urgent_supervision.w + 4 + (size.h + 4) * 2 ])
                 g.append('rect')
                     .attr('x', size.x)
                     .attr('y', size.y)
@@ -1390,98 +1485,106 @@ let main_weather_monitoring = function(opt_in) {
                     .style('opacity', 0.5)
                     .style('pointer-events', 'none')
 
-                g.append('text')
-                    .attr('id', 'label')
-                    .text(d.data.name)
-                    .attr('x', size.x + size.w + 6)
-                    .attr('y', size.y + size.h * 0.4)
-                    .style('font-size', '12px')
-                g.append('text')
-                    .attr('id', 'label')
-                    .text(d.data.id)
-                    .attr('x', size.x + size.w + 6)
-                    .attr('y', size.y + size.h * 0.85)
-                    .style('font-size', '12px')
+                // g.append('text')
+                //     .attr('id', 'label')
+                //     .text(d.data.name)
+                //     .attr('x', size.x + size.w + 6)
+                //     .attr('y', size.y + size.h * 0.4)
+                //     .style('font-size', '12px')
+                // g.append('text')
+                //     .attr('id', 'label')
+                //     .text(d.data.id)
+                //     .attr('x', size.x + size.w + 6)
+                //     .attr('y', size.y + size.h * 0.85)
+                //     .style('font-size', '12px')
             }
-            function drawMeasure(g, d, i) {
-                g.append('rect')
-                    .attr('x', box.urgent_supervision.x - 2)
-                    .attr('y', size.y - 2)
-                    .attr('width', box.urgent_supervision.w + 4)
-                    .attr('height', size.h + 4)
-                    .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.medium.background)
-                    .attr('stroke', '#000000')
-                    .attr('stroke-width', 0.2)
-                    .attr('stroke-dasharray', [ box.urgent_supervision.w + 4, box.urgent_supervision.w + 4 + (size.h + 4) * 2 ])
-                g.append('rect')
-                    .attr('x', size.x)
-                    .attr('y', size.y)
-                    .attr('width', size.w)
-                    .attr('height', size.h)
+            function draw_time_token(g, d) {
+                let name = 'time'
+                let inner_g = g.append('g')
+                    .attr('id', 'time_token')
+                    .attr('transform', 'translate('
+                    + (inner_boxes.scroll[name].x)
+                    + ','
+                    + (inner_boxes.scroll[name].y)
+                    + ')')
+                inner_g.append('rect')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('width', inner_boxes.scroll[name].w)
+                    .attr('height', inner_boxes.scroll[name].h)
                     .attr('fill', 'none')
-                    .attr('stroke-width', 0)
+                    .attr('stroke-width', 0.1)
                     .attr('stroke', '#000000')
-                g.append('svg:image')
-                    .attr('xlink:href', '/static/icons/speedometer.svg')
-                    .attr('x', size.x)
-                    .attr('y', size.y)
-                    .attr('width', size.w * 0.8)
-                    .attr('height', size.h * 0.8)
-                    .style('opacity', 0.5)
-                    .style('pointer-events', 'none')
+            }
+            function draw_origin_token(g, d) {
+                let name = 'origin'
+                let inner_g = g.append('g')
+                    .attr('id', 'time_token')
+                    .attr('transform', 'translate('
+                    + (inner_boxes.scroll[name].x)
+                    + ','
+                    + (inner_boxes.scroll[name].y)
+                    + ')')
+                inner_g.append('rect')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('width', inner_boxes.scroll[name].w)
+                    .attr('height', inner_boxes.scroll[name].h)
+                    .attr('fill', 'none')
+                    .attr('stroke-width', 0.1)
+                    .attr('stroke', '#000000')
+            }
+            function draw_type_token(g, d, i) {
+                let name = 'type'
+                let inner_g = g.append('g')
+                    .attr('id', 'time_token')
+                    .attr('transform', 'translate('
+                    + (inner_boxes.scroll[name].x)
+                    + ','
+                    + (inner_boxes.scroll[name].y)
+                    + ')')
+                inner_g.append('rect')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('width', inner_boxes.scroll[name].w)
+                    .attr('height', inner_boxes.scroll[name].h)
+                    .attr('fill', 'none')
+                    .attr('stroke-width', 0.1)
+                    .attr('stroke', '#000000')
+            }
+            function draw_text_token(g, d) {
+                return
+                let inner_g = g.append('g')
+                    .attr('id', 'time_token')
+                    .attr('transform', 'translate('
+                    + (inner_boxes.header[name].x + inner_boxes.header[name].w / 2)
+                    + ','
+                    + (inner_boxes.header[name].y + inner_boxes.header[name].h / 2)
+                    + ')')
+            }
 
-                g.append('text')
-                    .attr('id', 'label')
-                    .text(d.data.name)
-                    .attr('x', size.x + size.w + 6)
-                    .attr('y', size.y + size.h * 0.4)
-                    .style('font-size', '12px')
-                g.append('text')
-                    .attr('id', 'label')
-                    .text(d.data.id)
-                    .attr('x', size.x + size.w + 6)
-                    .attr('y', size.y + size.h * 0.85)
-                    .style('font-size', '12px')
-                g.append('text')
-                    .attr('id', 'label')
-                    .text(d.data.status.current.y + ' >> ' + 84)
-                    .attr('x', box.urgent_supervision.w * 0.95)
-                    .attr('y', size.y + size.h * 0.66)
-                    .style('font-weight', '')
-                    .style('text-anchor', 'end')
-                    .style('font-size', '11px')
-            }
-            let g = scrollbox.get('inner_g')
-            let size = {
-                x: 6,
-                y: 26,
-                w: 30,
-                h: 30,
-                marg: 4,
-            }
+            let g = scrollbox.get_content()
 
             let current = g
-                .selectAll('g.urgent')
+                .selectAll('g.urgent_token')
                 .data(shared.server.urgent)
             let enter = current
                 .enter()
                 .append('g')
-                .attr('class', 'urgent')
+                .attr('class', 'urgent_token')
 
             enter.each(function(d, i) {
                 let g = d3.select(this)
-                if (d.type === 'measure') {
-                    drawMeasure(g, d, i)
-                }
-                else if (d.type === 'sensor') {
-                    drawHardware(g, d, i)
-                }
+                draw_time_token(g, d)
+                draw_origin_token(g, d)
+                draw_type_token(g, d)
+                draw_text_token(g, d)
             })
             let merge = current.merge(enter)
 
             merge.each(function(d, i) {
                 let g = d3.select(this)
-                g.attr('transform', 'translate(' + ((i % 1) * (size.w + size.marg)) + ',' + (parseInt(i / 1) * (size.h + size.marg)) + ')')
+                g.attr('transform', 'translate(' + 0 + ',' + (i * (inner_boxes.scroll.time.h + 4)) + ')')
             })
             current
                 .exit()
@@ -1489,37 +1592,226 @@ let main_weather_monitoring = function(opt_in) {
                 .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
+
+            scrollbox.updated_content()
+            // scrollbox.update_scroll_dim({
+            //     height: (inner_boxes.scroll.time.h + 4) * shared.server.urgent.length,
+            // })
         }
-        function init_data() {
 
-            let main = svg.svg.select('#urgent').append('g').attr('id', 'urgentSupervision')
-                .attr('transform', 'translate(' + box.urgent_supervision.x + ',' + (box.urgent_supervision.y) + ')')
-            scrollbox = initScrollBox('supervisionScrollbox', main.append('g').attr('id', 'supervision').attr('transform', 'translate(' + 0 + ',' + 6 + ')'), box.urgent_supervision, {
-            }, true)
+        function init_inner_boxes() {
+            inner_boxes = {
+                header: {
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: box.urgent.w,
+                        h: header_height,
+                    },
+                    title: {
+                        x: 0,
+                        y: 0,
+                        w: box.urgent.w,
+                        h: header_height * 0.5,
+                    },
+                    time: {
+                        x: 0,
+                        y: header_height * 0.5,
+                        w: box.urgent.w / 3,
+                        h: header_height * 0.5,
+                    },
+                    origin: {
+                        x: box.urgent.w / 3,
+                        y: header_height * 0.5,
+                        w: box.urgent.w / 3,
+                        h: header_height * 0.5,
+                    },
+                    type: {
+                        x: box.urgent.w / 3 * 2,
+                        y: header_height * 0.5,
+                        w: box.urgent.w / 3,
+                        h: header_height * 0.5,
+                    },
+                },
+                scroll: {
+                    box: {
+                        x: 0,
+                        y: header_height,
+                        w: box.urgent.w,
+                        h: box.urgent.h - header_height,
+                    },
+                    time: {
+                        x: 0,
+                        y: 0,
+                        w: box.urgent.w / 3,
+                        h: header_height,
+                    },
+                    origin: {
+                        x: box.urgent.w / 3,
+                        y: 0,
+                        w: box.urgent.w / 3,
+                        h: header_height,
+                    },
+                    type: {
+                        x: box.urgent.w / 3 * 2,
+                        y: 0,
+                        w: box.urgent.w / 3,
+                        h: header_height,
+                    },
+                },
+            }
+        }
+        function init_header() {
+            function create_header_category(g, name, fun) {
+                let inner_g = g
+                    .append('g')
+                    .attr('id', name)
+                    .attr('transform', 'translate('
+                    + (inner_boxes.header[name].x + inner_boxes.header[name].w / 2)
+                    + ','
+                    + (inner_boxes.header[name].y + inner_boxes.header[name].h / 2)
+                    + ')')
+                let background_title = inner_g.append('rect')
+                    .attr('fill', colorPalette.darkest.background)
+                    .on('click', fun)
+                let title = inner_g.append('text')
+                    .text(first_letter_upper(name))
+                    .attr('id', name)
+                    .attr('class', 'body_subsubtitle')
+                    .attr('dy', '.33em')
+                let title_box = get_d3_node_box(title)
+                background_title
+                    .attr('x', title_box.x)
+                    .attr('y', title_box.y)
+                    .attr('width', title_box.width)
+                    .attr('height', title_box.height)
+            }
 
-            // main.append('rect')
-            //   .attr('x', box.x)
-            //   .attr('y', box.y)
-            //   .attr('width', box.w)
-            //   .attr('height', box.h)
-            //   .attr('fill', 'none') // 'url(#patternLock)')
-            //   .attr('stroke', colorPalette.dark.stroke)
-            //   .attr('stroke-width', 0.2)
-            //   .style('opacity', 0.2)
-            main.append('rect')
+            let g = svg.svg.select('#urgent')
+                .append('g')
+                .attr('id', 'urgent_supervision_header')
+                .attr('transform', 'translate('
+              + inner_boxes.header.box.x
+              + ','
+              + inner_boxes.header.box.y
+              + ')')
+
+            let g_title = g
+                .append('g')
+                .attr('id', 'title')
+                .attr('transform', 'translate('
+                + (inner_boxes.header.title.x + inner_boxes.header.title.w / 2)
+                + ','
+                + (inner_boxes.header.title.y + inner_boxes.header.title.h / 2)
+                + ')')
+            let background_title = g_title.append('rect')
+                .attr('fill', colorPalette.darkest.background)
+            let title = g_title.append('text')
+                .attr('id', 'title')
+                .attr('class', 'body_title')
+                .attr('dy', '.33em')
+                .text('Urgent')
+            let title_box = get_d3_node_box(title)
+            background_title
+                .attr('x', title_box.x)
+                .attr('y', title_box.y)
+                .attr('width', title_box.width)
+                .attr('height', title_box.height)
+
+            create_header_category(g, 'time', () => {
+                console.log('test')
+            })
+            create_header_category(g, 'origin', () => {
+                console.log('test')
+            })
+            create_header_category(g, 'type', () => {
+                console.log('test')
+            })
+        }
+        function init_scrollbox() {
+            let scrollbox_g = svg.svg.select('#urgent')
+                .append('g')
+                .attr('id', 'urgent_supervision_scrollbox')
+                // .attr('transform', 'translate('
+                // + inner_boxes.scroll.box.x
+                // + ','
+                // + inner_boxes.scroll.box.y
+                // + ')')
+            scrollbox = new ScrollBox()
+            scrollbox.init({
+                main: {
+                    tag: 'urgent_supervision_scrollbox',
+                    g: scrollbox_g,
+                    box: inner_boxes.scroll.box,
+                },
+            })
+            scrollbox.get_background().append('rect')
                 .attr('x', 0)
                 .attr('y', 0)
-                .attr('width', box.w)
-                .attr('height', '22px')
-                .attr('fill', colorPalette.darkest.background)
-            main.append('text')
-                .text('Urgent supervision')
-                .style('fill', '#000000')
-                .style('font-weight', 'bold')
-                .style('font-size', '15px')
-                .attr('text-anchor', 'start')
-                .attr('transform', 'translate(' + (4) + ',' + (16) + ')')
+                .attr('width', inner_boxes.scroll.box.w)
+                .attr('height', inner_boxes.scroll.box.h)
+                .attr('fill', 'transparent')
+                .attr('stroke', '#000000')
+                .attr('stroke-width', 1)
+                .attr('stroke-dasharray', [
+                    inner_boxes.scroll.box.w,
+                    inner_boxes.scroll.box.h,
+                    inner_boxes.scroll.box.w,
+                    inner_boxes.scroll.box.h,
+                ])
+            serpervisionCore()
 
+            // let pan_zoom_g = svg.svg.select('#urgent')
+            //     .append('g')
+            //     .attr('id', 'urgent_supervision_pan_zoom')
+            //     // .attr('transform', 'translate('
+            //     // + inner_boxes.scroll.box.x
+            //     // + ','
+            //     // + inner_boxes.scroll.box.y
+            //     // + ')')
+            // let pan_zoom = new PanZoomBox()
+            // pan_zoom.init({
+            //     main: {
+            //         tag: 'pan_zoom_test',
+            //         g: pan_zoom_g,
+            //         box: inner_boxes.scroll.box,
+            //     },
+            // })
+            // pan_zoom.get_background().append('rect')
+            //     .attr('x', 0)
+            //     .attr('y', 0)
+            //     .attr('width', inner_boxes.scroll.box.w)
+            //     .attr('height', inner_boxes.scroll.box.h)
+            //     .attr('fill', 'transparent')
+            //     .attr('stroke', '#000000')
+            //     .attr('stroke-width', 1)
+            //     .attr('stroke-dasharray', [
+            //         inner_boxes.scroll.box.w,
+            //         inner_boxes.scroll.box.h,
+            //         inner_boxes.scroll.box.w,
+            //         inner_boxes.scroll.box.h,
+            //     ])
+            //
+            // pan_zoom.get_content().append('rect')
+            //     .attr('x', 0)
+            //     .attr('y', 0)
+            //     .attr('width', 10)
+            //     .attr('height', 10)
+            // pan_zoom.get_content().append('rect')
+            //     .attr('x', 1000)
+            //     .attr('y', 1000)
+            //     .attr('width', 10)
+            //     .attr('height', 10)
+            // pan_zoom.update_content_dim()
+            // pan_zoom.use_content_shortcut('end')
+            // console.log(pan_zoom.get_content())
+            // console.log(pan_zoom.get_focus())
+        }
+        function init_data() {
+            box.urgent.h /= 2
+            init_inner_boxes()
+            init_header()
+            init_scrollbox()
             // main.append('rect')
             //   .attr('x', box.x + box.w * 0.9)
             //   .attr('y', (box.y - 14) + 'px')
@@ -1552,7 +1844,6 @@ let main_weather_monitoring = function(opt_in) {
             //   .attr('width', '16px')
             //   .attr('height', '16px')
             //   .style('pointer-events', 'none')
-            serpervisionCore()
         }
         this.init_data = init_data
 
@@ -1560,9 +1851,6 @@ let main_weather_monitoring = function(opt_in) {
             serpervisionCore()
         }
         this.update_data = update_data
-
-        function update() {}
-        this.update = update
     }
 
     let SvgFMTimeline = function() {
@@ -1570,8 +1858,6 @@ let main_weather_monitoring = function(opt_in) {
         }
 
         function changeBlockTime(a, b) {
-            shared.time.range = 1000 * (3600 * (parseInt(a)) + 60 * parseInt(b))
-            shared.time.from.setTime(shared.time.current.getTime() - shared.time.range)
             loadMesures()
             svg_main_measures_tracking.update_data()
             svg_measures_plots.update_data()
@@ -1868,11 +2154,7 @@ let main_weather_monitoring = function(opt_in) {
         this.init_data = init_data
 
         function update_data() {
-            let currentTime = {
-                date: new Date(shared.server.time_of_night.date_now),
-            }
-            svg.svg.select('text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
-            svg.svg.select('text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
+
         }
         this.update_data = update_data
 
@@ -2906,12 +3188,12 @@ let main_weather_monitoring = function(opt_in) {
                 plotList.push(plot)
 
                 let start_time_sec = {
-                    date: new Date(shared.time.from),
-                    time: Number(shared.time.from.getTime()),
+                    date: new Date(shared.time_information.history_start_sec),
+                    time: Number(shared.server.time_information.history_start_sec),
                 }
                 let end_time_sec = {
-                    date: new Date(shared.server.time_of_night.date_now),
-                    time: Number(shared.server.time_of_night.now),
+                    date: new Date(shared.server.time_information.time_now_sec),
+                    time: shared.server.time_information.time_now_sec,
                 }
                 // plot.updateAxis({
                 //     id: 'bottom',
@@ -3189,7 +3471,7 @@ let main_weather_monitoring = function(opt_in) {
                 location: 'bottom',
                 type: 'time',
                 profile: 'context',
-                domain: [ shared.time.from.getTime(), shared.time.current.getTime() ],
+                domain: [ shared.server.time_information.history_start_sec, shared.server.time_information.time_now_sec ],
                 range: [ 0, box.focus_measures.w ],
             })
 
@@ -3220,7 +3502,7 @@ let main_weather_monitoring = function(opt_in) {
                 location: 'bottom',
                 type: 'time',
                 profile: 'context',
-                domain: [ shared.time.from.getTime(), shared.time.current.getTime() ],
+                domain: [ shared.server.time_information.history_start_sec, shared.server.time_information.time_now_sec ],
                 range: [ 0, box.focus_measures.w ],
             })
         }
@@ -3234,7 +3516,7 @@ let main_weather_monitoring = function(opt_in) {
     let svgObservationSite = new SvgObservationSite()
     let svgPL = new SvgPL()
     let svgFMTimeline = new SvgFMTimeline()
-    let svgFMDate = new SvgFMDate()
+    let svg_time_information = new Svg_time_information()
     let svgFMSupervision = new SvgFMSupervision()
     let svg_main_measures_tracking = new Svg_main_measures_tracking()
     let svgHeathMapSensors = new SvgHeathMapSensors()

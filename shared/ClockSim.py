@@ -17,7 +17,7 @@ from shared.RedisManager import RedisManager
 class ClockSim(ServiceManager):
     """clock simulation class, simulating the procession of a night
 
-       Only a single active instance is allowed to exist. Multiple passive instances 
+       Only a single active instance is allowed to exist. Multiple passive instances
        are allowed. A passive instance only serves as an interface for the clock via redis
     """
 
@@ -129,11 +129,11 @@ class ClockSim(ServiceManager):
     # ------------------------------------------------------------------
     def check_passive(self):
         """check if this is an active or passive instance
-        
+
             if this is a passive instance, make sure that an active instance
             has been initialised by some other proccess. after n_sec_try of
             waiting, raise an exception
-        
+
             Returns
             -------
             bool
@@ -539,15 +539,15 @@ class ClockSim(ServiceManager):
 
 
 # ------------------------------------------------------------------
-def get_clock_sim_data(parent):
+def get_clock_sim_data(self):
     """convenience function, setting up a request from redis to
        get the current night parameters
-   
+
         Parameters
         ----------
         parent : object
             the instance of the object calling this function
-    
+
         Returns
         -------
         dict
@@ -562,10 +562,11 @@ def get_clock_sim_data(parent):
         ['night_end_sec', float],
         ['time_series_start_time_sec', float],
     ]
+    pipe = self.redis.get_pipe()
     for key in red_keys:
-        parent.redis.pipe.get('clock_sim_' + key[0])
+        pipe.get('clock_sim_' + key[0])
 
-    clock_sim = parent.redis.pipe.execute()
+    clock_sim = pipe.execute()
 
     if len(clock_sim) != len(red_keys):
         parent.log.warning([

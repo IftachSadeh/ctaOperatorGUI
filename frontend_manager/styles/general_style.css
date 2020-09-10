@@ -55,7 +55,7 @@ svg {
   font-size: 20px;
   font-weight: 500;
   line-height: 28px;
-  font-family: 'Lora', serif; 
+  font-family: 'Lora', serif;
   font-style: italic;
 }
 
@@ -64,6 +64,41 @@ svg {
   padding-top: 30px;
   padding-bottom: 15px;
   text-align: center;
+}
+
+.body_title {
+  text-anchor: middle;
+  font-size: 26px;
+  font-weight: bold;
+  line-height: 26px;
+}
+.body_subtitle {
+  text-anchor: middle;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  line-height: normal;
+}
+.body_subsubtitle {
+  text-anchor: middle;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: normal;
+}
+.body_text {
+  text-anchor: middle;
+  text-align: center;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: normal;
+}
+.body_subtext {
+  text-anchor: middle;
+  text-align: center;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: normal;
 }
 
 .table_card {
@@ -80,14 +115,14 @@ svg {
 
 .table_title {
   width: 100%;
-  display: flex; 
+  display: flex;
   align-items: center;
 }
 
 .table_title_text {
-  width: 100%; 
-  text-align: left; 
-  margin-left: 1%; 
+  width: 100%;
+  text-align: left;
+  margin-left: 1%;
   margin-right: 1%;;
   font-size: 20px;
   font-weight: 500;
@@ -100,10 +135,10 @@ svg {
 }
 
 .table_item {
-  display: inline-block; 
+  display: inline-block;
   position: relative;
-  margin: 0px; 
-  border: 0px; 
+  margin: 0px;
+  border: 0px;
 }
 
 .switch_titled {
@@ -175,7 +210,7 @@ svg {
 .form-input {
   background-color: #F2F2F2;
   border: 0px;
-  font-size: 20px; 
+  font-size: 20px;
   padding-left: 15px;
   padding-bottom:  15px;
   padding-top:  15px;
@@ -186,9 +221,9 @@ svg {
 .form-label {
   width: 20%;
   line-height: 28px;
-  font-size: 20px; 
-  padding-top: 15px; 
-  padding-bottom: 17px; 
+  font-size: 20px;
+  padding-top: 15px;
+  padding-bottom: 17px;
   padding-right: 17px;
   text-align: right;
   font-weight: 300;
@@ -342,7 +377,7 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
   margin-bottom: 8px;
 }
 
-.checkbox_slider input { 
+.checkbox_slider input {
   opacity: 0;
   width: 0;
   height: 0;
@@ -421,7 +456,7 @@ input:checked + .checkbox_slider_bck:before {
 }
 
 .floating-div-content-line {
-  display: flex; 
+  display: flex;
   align-items: center;
 }
 
@@ -448,7 +483,7 @@ input:checked + .checkbox_slider_bck:before {
   padding-top: 5px;
   padding-bottom: 5px;
   background-color: #e8e8e8;
-*/  
+*/
   outline: none;
   -webkit-transition: all 0.4s ease-in;
   -moz-transition: all 0.4s ease-in;

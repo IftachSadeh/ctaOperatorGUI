@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
-from shared.utils import get_time_of_night
+from shared.ClockSim import get_clock_sim_data
 from frontend_manager.py.utils.ArrZoomer import ArrZoomer
 from frontend_manager.py.utils.BaseWidget import BaseWidget
 
 
 # ------------------------------------------------------------------
 class WeatherMonitoring(BaseWidget):
-    time_of_night = {}
 
     # ------------------------------------------------------------------
     def __init__(self, widget_id='', sm=None, *args, **kwargs):
@@ -17,7 +16,19 @@ class WeatherMonitoring(BaseWidget):
             sm=sm,
         )
 
+        self.history_duration_sec = 6 * 60 * 60
+        self.history_step_sec = 10 * 60
+
         self.tel_ids = self.sm.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
+        self.time_information = {
+            'history_step_sec' : -1,
+            'history_duration_sec' : -1,
+            'history_start_sec' : -1,
+            'is_night_now': -1,
+            'night_end_sec': -1,
+            'night_start_sec': -1,
+            'time_now_sec': -1,
+        }
 
         # ArrZoomer interface
         self.ArrZoomer = ArrZoomer(parent=self)
@@ -62,29 +73,40 @@ class WeatherMonitoring(BaseWidget):
         #     print('-- back_from_offline',self.widget_type,self.widget_id)
         return
 
+    def update_time_information(self):
+        clock_sim = get_clock_sim_data(self)
+        self.time_information = {
+            'history_step_sec' : self.history_step_sec,
+            'history_duration_sec' : clock_sim['time_now_sec'] - self.history_duration_sec,
+            'history_start_sec' : clock_sim['time_now_sec'] - self.history_duration_sec,
+            'is_night_now': clock_sim['is_night_now'],
+            'night_end_sec': clock_sim['night_end_sec'],
+            'night_start_sec': clock_sim['night_start_sec'],
+            'time_now_sec': clock_sim['time_now_sec'],
+        }
+
     # ------------------------------------------------------------------
     async def get_data(self):
-        WeatherMonitoring.time_of_night = get_time_of_night(self)
-
+        self.update_time_information()
         # DL_FIXME - hardcoded dates !?!
-        time_of_night_date = {
-            'date_start':
-            datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
-            'date_end': (
-                datetime(2018, 9, 16, 21, 30)
-                + timedelta(seconds=int(WeatherMonitoring.time_of_night['end']))
-            ).strftime('%Y-%m-%d %H:%M:%S'),
-            'date_now': (
-                datetime(2018, 9, 16, 21, 30)
-                + timedelta(seconds=int(WeatherMonitoring.time_of_night['now']))
-            ).strftime('%Y-%m-%d %H:%M:%S'),
-            'now':
-            int(WeatherMonitoring.time_of_night['now']),
-            'start':
-            int(WeatherMonitoring.time_of_night['start']),
-            'end':
-            int(WeatherMonitoring.time_of_night['end'])
-        }
+        # time_of_night_date = {
+        #     'date_start':
+        #     datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
+        #     'date_end': (
+        #         datetime(2018, 9, 16, 21, 30)
+        #         + timedelta(seconds=int(WeatherMonitoring.time_of_night['end']))
+        #     ).strftime('%Y-%m-%d %H:%M:%S'),
+        #     'date_now': (
+        #         datetime(2018, 9, 16, 21, 30)
+        #         + timedelta(seconds=int(WeatherMonitoring.time_of_night['now']))
+        #     ).strftime('%Y-%m-%d %H:%M:%S'),
+        #     'now':
+        #     int(WeatherMonitoring.time_of_night['now']),
+        #     'start':
+        #     int(WeatherMonitoring.time_of_night['start']),
+        #     'end':
+        #     int(WeatherMonitoring.time_of_night['end'])
+        # }
 
         tel_indices = 6
         # DL_FIXME - why is keys_now a dict?
@@ -127,7 +149,7 @@ class WeatherMonitoring(BaseWidget):
                     })
 
         data = {
-            'time_of_night': time_of_night_date,
+            'time_information': self.time_information,
             'data_out': data_out,
         }
 
