@@ -107,7 +107,7 @@ let main_empty_example = function(opt_in) {
         }
         update_data(data_in)
     }
-    sock.socket.add_event({
+    sock.socket.add_listener({
         name: 'update_data_by_widget_id',
         func: update_data_by_widget_id_evt,
         is_singleton: false,
@@ -117,7 +117,7 @@ let main_empty_example = function(opt_in) {
         data_in.metadata.widget_id = widget_id
         update_data(data_in)
     }
-    sock.socket.add_event({
+    sock.socket.add_listener({
         name: 'update_data_all_widgets',
         func: update_data_widget_type_evt,
         is_singleton: false,
@@ -338,7 +338,7 @@ let main_empty_example = function(opt_in) {
                 widget_type: widget_type,
                 widget_id: my_message_data.widget_id,
                 method_name: 'send_rnd_message',
-                method_arg: my_message_data,
+                method_args: my_message_data,
             }
 
             sock.socket.emit('widget', emit_data)

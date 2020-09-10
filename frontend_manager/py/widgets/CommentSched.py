@@ -64,9 +64,9 @@ class CommentSched(BaseWidget):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    async def back_from_offline(self, data=None):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        await BaseWidget.back_from_offline(self, data=None)
 
         # with CommentSched.lock:
         #     print('-- back_from_offline',self.widget_type,self.widget_id)

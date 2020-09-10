@@ -41,6 +41,7 @@ class RedisBase():
 
     # ------------------------------------------------------------------
     def set(self, name=None, data=None, expire_sec=None):
+        out, ex_out = None, None
         try:
             if name is None:
                 raise Exception('redis.set(): name is None')
@@ -51,13 +52,42 @@ class RedisBase():
             out = self.base.set(name, data)
 
             if expire_sec is not None:
-                out = self.base.expire(name, expire_sec)
+                ex_out = self.base.expire(name, expire_sec)
 
         except Exception as e:
             self.log.error([['r', 'redis.set(): '], ['o', name, data, expire_sec]])
             raise e
 
-        return out
+        output = {
+            'set': out,
+            'expire': ex_out,
+        }
+        return output
+
+    # ------------------------------------------------------------------
+    def set_nx(self, name=None, data=None, expire_sec=None):
+        out, ex_out = None, None
+        try:
+            if name is None:
+                raise Exception('redis.set_nx(): name is None')
+
+            if data is None:
+                data = ''
+            data = self.pack(data)
+            out = self.base.setnx(name, data)
+
+            if expire_sec is not None:
+                ex_out = self.base.expire(name, expire_sec)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.set_nx(): '], ['o', name, data, expire_sec]])
+            raise e
+
+        output = {
+            'set_nx': out,
+            'expire': ex_out,
+        }
+        return output
 
     # ------------------------------------------------------------------
     def h_set(self, name=None, key=None, data=None):
@@ -380,8 +410,6 @@ class RedisManager(RedisBase):
         # self.pipe = RedisPipeManager(name=name, log=log, redis=self.redis)
         self.base = self.redis
 
-        self.pubsub = dict()
-
         return
 
     # ------------------------------------------------------------------
@@ -522,39 +550,41 @@ class RedisManager(RedisBase):
         return out
 
     # ------------------------------------------------------------------
-    def set_pubsub(self, key=None, ignore_subscribe_messages=True):
+    def pubsub_subscribe(self, key=None, ignore_subscribe_messages=True):
         try:
             if key is None:
-                raise Exception('redis.set_pubsub(): key is None', key)
+                raise Exception('redis.pubsub_subscribe(): key is None', key)
 
-            if key not in self.pubsub:
-                pubsub = self.redis.pubsub(
-                    ignore_subscribe_messages=ignore_subscribe_messages
-                )
-                pubsub.subscribe(key)
-
-                self.pubsub[key] = pubsub
-                out = self.pubsub[key] if key in self.pubsub else None
+            pubsub = self.redis.pubsub(
+                ignore_subscribe_messages=ignore_subscribe_messages
+            )
+            pubsub.subscribe(key)
 
         except Exception as e:
-            self.log.error([['r', 'redis.set_pubsub(): '], ['o', key]])
+            self.log.error([['r', 'redis.pubsub_subscribe(): '], ['o', key]])
             raise e
 
-        return out
+        return pubsub
 
     # ------------------------------------------------------------------
-    def get_pubsub(self, key=None, timeout=0, ignore_subscribe_messages=True):
+    def pubsub_get_message(self, pubsub, timeout=None, ignore_subscribe_messages=True):
         msg = None
 
+        # for loops monitoring pubsub events, the delay between messages
+        # is integrated in the loop, therefore redis itself should
+        # NOT be blocking --> timeout is extreemly tiny
+        if timeout is None:
+            timeout = 0.001
+
         try:
-            if (key is None) or (key not in self.pubsub):
+            if not isinstance(pubsub, redis.client.PubSub):
                 raise Exception(
-                    'redis.get_pubsub(): key is None/not registered',
-                    key,
+                    'redis.pubsub_get_message(): pubsub should be a PubSub object',
+                    pubsub,
                     self.pubsub.keys(),
                 )
 
-            msg = self.pubsub[key].get_message(
+            msg = pubsub.get_message(
                 timeout=timeout,
                 ignore_subscribe_messages=ignore_subscribe_messages,
             )
@@ -564,7 +594,10 @@ class RedisManager(RedisBase):
                     msg['data'] = self.unpack(msg['data'])
 
         except Exception as e:
-            self.log.error([['r', 'redis.get_pubsub(): '], ['o', key, timeout]])
+            self.log.error([
+                ['r', 'redis.pubsub_get_message(): '],
+                ['o', timeout, ignore_subscribe_messages],
+            ])
             raise e
 
         return msg

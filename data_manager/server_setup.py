@@ -15,6 +15,7 @@ from time import sleep
 from shared.LogParser import LogParser
 from shared.server_args import parse_args
 from shared.utils import has_acs
+# from shared.BaseConfig import BaseConfig
 
 
 class SetupServer():
@@ -65,6 +66,10 @@ class SetupServer():
         """collect all modules from the project and reload them (used for development purposes)
         """
 
+        # sleep to encourage unique random seeds for BaseConfig (which are
+        # based on the current time in msec)
+        sleep(1e-3)
+
         # add all relevant modules to populate the sys.modules list
         importlib.import_module('manager')
 
@@ -77,8 +82,20 @@ class SetupServer():
         # just in case, make sure we have no duplicate entries
         mods = list(dict.fromkeys(mods))
 
-        # sort, beginning with the most deeply nested
-        mods = sorted(mods, key=lambda item: item.count('.'), reverse=True)
+        # sort, beginning with ordered_items, then the most deeply nested
+        # make sure to start with those modules which others depend on
+        # such as BaseConfig (for which class attributes used eg by utils)
+        ordered_items = ['shared.BaseConfig', 'shared.LogParser', 'InstPos']
+
+        def sort_key(item):
+            if item in ordered_items:
+                order = ordered_items.index(item)
+            else:
+                order = len(ordered_items) + 1 / (1 + item.count('.'))
+            return order
+
+        mods = sorted(mods, key=sort_key, reverse=False)
+        # mods = sorted(mods, key=lambda item: item.count('.'), reverse=True)
 
         if is_verb:
             self.log.info([['wg', ' - reloading modules:'], ['c', ' ', ', '.join(mods)]])

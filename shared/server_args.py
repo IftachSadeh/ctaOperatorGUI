@@ -98,7 +98,7 @@ def parse_args(app_name):
         # e.g., expect a module file named 'AAA.py', containing a class AAA
         allowed_widget_types = {
             'synced': [
-                'ArrZoomerView',
+                'ArrayZoomer',
                 'PlotsDash',
                 'SubArrGrp',
                 'telPntSky',

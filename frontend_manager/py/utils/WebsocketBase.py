@@ -1,5 +1,6 @@
 import asyncio
 from random import Random
+from math import ceil
 
 from shared.utils import get_time
 from shared.utils import get_rnd
@@ -36,6 +37,8 @@ class WebsocketBase():
         self.is_sess_open = False
         self.log_send_packet = False
         self.sess_ping_time = None
+        self.can_restore_existing_sess = True
+        self.can_restore_existing_sess = False
 
         self.basic_widget_sleep_sec = 1
         self.sess_expire = 15
@@ -66,6 +69,7 @@ class WebsocketBase():
         # }
 
         self.widget_module_dir = 'frontend_manager.py.widgets'
+        self.util_module_dir = 'frontend_manager.py.utils'
 
         self.loop_prefix = 'ws;loop;'
         self.heartbeat_prefix = 'ws;heartbeat;'
@@ -117,16 +121,12 @@ class WebsocketBase():
 
         # dynamic lock names, based on the current properties
         lock_namespace = {
-            'loop_state':
-            lambda: 'loop_state;serv' + str(self.serv_id),
-            'serv':
-            lambda: 'serv;' + str(self.serv_id),
-            'user':
-            lambda: 'serv;' + str(self.serv_id) + ';user;' + str(self.user_id),
-            'sess':
-            lambda: 'serv;' + str(self.serv_id) + ';sess;' + str(self.sess_id),
-            'sess_redis':
-            lambda: 'redis;serv' + str(self.serv_id) + ';sess' + str(self.sess_id),
+            'loop_state': lambda: 'loop_state;serv' + str(self.serv_id),
+            'serv': lambda: 'serv;' + str(self.serv_id),
+            'user': lambda: 'serv;' + str(self.serv_id) + ';user;' + str(self.user_id),
+            'sess': lambda: 'serv;' + str(self.serv_id) + ';sess;' + str(self.sess_id),
+            # 'sess_redis':
+            # lambda: 'redis;serv' + str(self.serv_id) + ';sess' + str(self.sess_id),
         }
 
         self.get_widget_lock_name = (
@@ -147,13 +147,25 @@ class WebsocketBase():
         self.sess_config_lock = 'sess_config_lock'
         # name of lock for cleanup loop
         self.cleanup_loop_lock = 'cleanup_loop_lock'
+
         # maximal time to keep the lock for a session to configure
         # (init or cleanup), in case nominal cleanup fails
-        self.sess_config_expire_sec = 100
-        # same for the cleanup loop
-        self.cleanup_loop_expire_sec = 100
+        self.expires_sec = {
+            'sess_config_expire': 25,
+            # same for the cleanup loop
+            'cleanup_loop_expire': 30,
+            # same for widget initialisations
+            'widget_init_expire': 25,
+        }
 
         return locker
+
+    # ------------------------------------------------------------------
+    def get_expite_sec(self, name, is_lock_check=False):
+        expire_sec = self.expires_sec[name]
+        if is_lock_check:
+            expire_sec = max(1, ceil(expire_sec * 0.9)),
+        return expire_sec
 
     # ------------------------------------------------------------------
     def update_lock_namespace(self):
@@ -323,7 +335,7 @@ class __old_SocketManager__():
     # # ------------------------------------------------------------------
     # # upon reconnection to an existing session
     # # ------------------------------------------------------------------
-    # def on_back_from_offline(self, data):
+    # def on_back_from_offline(self, data=None):
     #     if self.sess_id is None:
     #         return
 
@@ -634,9 +646,9 @@ class __old_SocketManager__():
     #     # ------------------------------------------------------------------
     #     if 'method_name' in data and widget_id in __old_SocketManager__.widget_inits:
     #         widget_ids = self.redis.s_get('ws;sess_widget_ids;' + self.sess_id)
-    #         if 'method_arg' in data:
+    #         if 'method_args' in data:
     #             getattr(__old_SocketManager__.widget_inits[widget_id], data['method_name'])(
-    #                 data['method_arg']
+    #                 data['method_args']
     #             )
     #         else:
     #             getattr(__old_SocketManager__.widget_inits[widget_id], data['method_name'])()

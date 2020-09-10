@@ -62,8 +62,8 @@ class WidgetManager():
                     widget_inits = await self.get_server_attr(name='widget_inits')
                     method_func = getattr(widget_inits[widget_id], data['method_name'])
 
-                if 'method_arg' in data:
-                    await method_func(data['method_arg'])
+                if 'method_args' in data:
+                    await method_func(data['method_args'])
                 else:
                     await method_func()
             except Exception as e:
@@ -84,8 +84,8 @@ class WidgetManager():
         async with self.locker.locks.acquire('sess'):
             data = data_in['data']
             widget_id = data['widget_id']
-            widget_source = self.widget_module_dir + '.' + data['widget_type']
             widget_type = data['widget_type']
+            widget_source = self.widget_module_dir + '.' + widget_type
             n_icon = data['n_icon']
             icon_id = data['icon_id']
             n_sync_group = data['n_sync_group'] if 'n_sync_group' in data else 0
@@ -157,6 +157,7 @@ class WidgetManager():
             widget_now['sess_id'] = self.sess_id
             widget_now['widget_type'] = widget_type
             widget_now['widget_state'] = dict()
+            widget_now['util_ids'] = []
 
             # register the new widget
             self.redis.h_set(name='ws;widget_info', key=widget_id, data=widget_now)
@@ -236,8 +237,63 @@ class WidgetManager():
         return
 
     # ------------------------------------------------------------------
-    #  used to be: async def send_widget_init_data(self, opt_in=None):
-    #  used to be: async def send_widget_init_data(self, opt_in=None):
+    async def validate_sess_widgets(self, sess_id, sess_widgets):
+        """check that widgets listed as session resources
+           are valid
+        """
+
+        for widget_id, info in sess_widgets.items():
+            widget_info = self.redis.h_get(
+                name='ws;widget_info',
+                key=widget_id,
+                default_val=None,
+            )
+
+            # possibly, the widget will not be registered, (eg redis has been
+            # flushed). recovery is then not possible - we make sure the session
+            # heartbeat is stopped and the session does not try to restore itself
+            if widget_info is None:
+                # forcibly stop the heartbeat
+                loop_info = {
+                    'id': 'client_sess_heartbeat_loop',
+                    'group': self.get_loop_group_name(scope='sess', postfix=sess_id),
+                }
+                await self.set_loop_state(state=False, loop_info=loop_info)
+
+                # send the client a kill event, to prevent further attempts at connection
+                await self.emit(event_name='kill_socket_connection')
+
+            elif 'utils' in info:
+                await self.validate_widget_utils(
+                    widget_id=widget_id,
+                    widget_info=widget_info,
+                    utils=info['utils'],
+                )
+
+        return
+
+    # ------------------------------------------------------------------
+    async def validate_widget_utils(self, widget_id, widget_info, utils):
+        """check that widget utilities listed as session resources
+           are registered in redis. in case of a mismatch, send the
+           corresponding back_from_offline event, which will allow
+           them to ask the client to go through initialisation
+        """
+
+        util_ids = widget_info['util_ids']
+        miss_util_ids = [u['util_id'] for u in utils if u['util_id'] not in util_ids]
+
+        if len(miss_util_ids) > 0:
+            widget_info['util_ids'] += miss_util_ids
+            self.redis.h_set(name='ws;widget_info', key=widget_id, data=widget_info)
+
+            for util in miss_util_ids:
+                async with self.locker.locks.acquire('serv'):
+                    widget_inits = await self.get_server_attr(name='widget_inits')
+                if widget_id in widget_inits.keys():
+                    await getattr(widget_inits[widget_id], 'back_from_offline')()
+        return
+
     # ------------------------------------------------------------------
     async def emit_widget_event(self, opt_in=None):
         """send a one-time event to client
@@ -245,6 +301,7 @@ class WidgetManager():
 
         widget = opt_in['widget']
         event_name = opt_in['event_name']
+        data_func_args = opt_in['data_func_args'] if 'data_func_args' in opt_in else None
 
         metadata = {
             'widget_type': widget.widget_type,
@@ -258,7 +315,10 @@ class WidgetManager():
         if 'data' in opt_in:
             data = opt_in['data']
         elif 'data_func' in opt_in:
-            data = await opt_in['data_func']()
+            if data_func_args is None:
+                data = await opt_in['data_func']()
+            else:
+                data = await opt_in['data_func'](data_func_args)
 
         await self.emit_to_queue(event_name=event_name, data=data, metadata=metadata)
 
@@ -291,14 +351,14 @@ class WidgetManager():
         loop_func = (opt_in['loop_func'] if 'loop_func' in opt_in else None)
         loop_id = opt_in['loop_id']
 
-        if opt_in['loop_group'] == 'widget_id':
+        if opt_in['loop_scope'] == 'unique_by_id':
             heartbeat = self.get_heartbeat_name(scope='sess')
             loop_group = self.get_loop_group_name(scope='sess')
             if loop_func is None:
                 loop_func = self.loop_widget_id
             loop_id = 'widget;' + widget.widget_id + ';' + loop_id
 
-        elif opt_in['loop_group'] == 'widget_type':
+        elif opt_in['loop_scope'] == 'shared_by_type':
             # heartbeat = self.get_heartbeat_name(scope='widget', postfix=widget.widget_type)
 
             heartbeat = self.get_heartbeat_name(scope='user')
@@ -310,7 +370,7 @@ class WidgetManager():
                 loop_func = self.loop_widget_type
 
         else:
-            raise Exception('unknown loop_group for: ', opt_in)
+            raise Exception('unknown loop_scope for: ', opt_in)
 
         # =============================================================
         # =============================================================
@@ -326,7 +386,7 @@ class WidgetManager():
         # =============================================================
         # =============================================================
 
-        if opt_in['loop_group'] == 'widget_id':
+        if opt_in['loop_scope'] == 'unique_by_id':
             data = {
                 'id': loop_id,
                 'group': loop_group,
@@ -334,7 +394,7 @@ class WidgetManager():
             name = 'ws;sess_widget_loops;' + widget.widget_id
             self.redis.r_push(name=name, data=data)
 
-        elif opt_in['loop_group'] == 'widget_type':
+        elif opt_in['loop_scope'] == 'shared_by_type':
             data = {
                 'sess_id': self.sess_id,
                 'widget_id': widget.widget_id,

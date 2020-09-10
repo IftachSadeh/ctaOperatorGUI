@@ -129,7 +129,7 @@ let sock_sched_block_inspector = function(opt_in) {
     //   let emit_data = {
     //     'widget_type':widget_type, 'widget_id':widget_id,
     //     'method_name':'sched_block_inspectorAskTelData',
-    //     'method_arg':data
+    //     'method_args':data
     //   };
     //   sock.socket.emit('widget', emit_data);
     //   return;
@@ -150,7 +150,7 @@ let sock_sched_block_inspector = function(opt_in) {
             widget_type: widget_type,
             widget_id: data.widget_id,
             method_name: 'sched_block_inspector_push_schedule',
-            method_arg: data,
+            method_args: data,
         }
         sock.socket.emit('widget', emit_data)
     }

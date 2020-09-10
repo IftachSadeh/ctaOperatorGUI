@@ -38,7 +38,7 @@ class PanelSync(BaseWidget):
         # start an update loop for this particular instance
         opt_in = {
             'widget': self,
-            'loop_group': 'widget_id',
+            'loop_scope': 'unique_by_id',
             'data_func': self.panel_sync_get_groups,
             'sleep_sec': 3,
             'loop_id': 'update_data_widget_id',
@@ -51,9 +51,9 @@ class PanelSync(BaseWidget):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    async def back_from_offline(self, data=None):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        await BaseWidget.back_from_offline(self, data=None)
 
         # with panel_sync.lock:
         #     print('-- back_from_offline',self.widget_type,self.widget_id)

@@ -62,6 +62,7 @@ function SocketManager() {
     this_top.sess_widgets = {
     }
 
+    this_top.can_reconnect = true
     this_top.has_joined_session = false
     this_top.session_props = null
 
@@ -164,9 +165,18 @@ function SocketManager() {
                 this_top.con_stat.set_check_heartbeat(false)
 
                 // try to reconnect the session
-                setTimeout(function() {
-                    setup_websocket()
-                }, 250)
+                if (this_top.can_reconnect) {
+                    setTimeout(function() {
+                        setup_websocket()
+                    }, 250)
+                }
+                else {
+                    // local message - cant be sent to the server, since
+                    // at this point we can no longer connect to it...
+                    console.error(
+                        'received socket sess kill signal - will not try to reconnect ...'
+                    )
+                }
                 // window.location.reload()
 
                 return
@@ -192,20 +202,20 @@ function SocketManager() {
         this_sock_int.setup_websocket = setup_websocket
 
         // register a function for an incoming event
-        function add_event(opt_in) {
+        function add_listener(opt_in) {
             let name = opt_in.name
             let func = opt_in.func
             let is_singleton = opt_in.is_singleton
 
             try {
                 if (typeof name !== 'string' || name === '') {
-                    throw 'name must be set as a non-empty string in add_event'
+                    throw 'name must be set as a non-empty string in add_listener'
                 }
                 if (typeof func !== 'function') {
-                    throw 'func must be set as a function in add_event'
+                    throw 'func must be set as a function in add_listener'
                 }
                 if (typeof is_singleton !== 'boolean') {
-                    throw 'is_singleton must be set as true/false in add_event'
+                    throw 'is_singleton must be set as true/false in add_listener'
                 }
             }
             catch (err) {
@@ -225,7 +235,7 @@ function SocketManager() {
             }
             return
         }
-        this_sock_int.add_event = add_event
+        this_sock_int.add_listener = add_listener
 
         // register a function for an incoming event
         function get_on_events() {
@@ -343,7 +353,7 @@ function SocketManager() {
                 initial_connect(is_first, data)
             }
         }
-        this_top.socket.add_event({
+        this_top.socket.add_listener({
             name: 'initial_connect',
             func: initial_connect_evt,
             is_singleton: true,
@@ -384,11 +394,11 @@ function SocketManager() {
                 display_user_group: window.DISPLAY_USER_GROUP,
             }
             
-            let test_log = 0
+            let test_log = false
             if (test_log) {
                 this_top.socket.server_log({
                     data: {
-                        ssssssssss: 1,
+                        message: 'im alive!',
                     },
                     is_verb: true,
                     log_level: LOG_LEVELS.INFO,
@@ -456,29 +466,46 @@ function SocketManager() {
 
         //
         let reload_session_evt = function(data_in) {
+            let data = data_in.data
+            let delay = is_def(data['delay_msec']) ? data['delay_msec'] : 250
+            
             setTimeout(function() {
                 window.location.reload()
-            }, 100)
+            }, delay)
+
+            return
         }
-        this_top.socket.add_event({
+        this_top.socket.add_listener({
             name: 'reload_session',
             func: reload_session_evt,
             is_singleton: true,
         })
 
+        let kill_connection_evt = function(data_in) {
+            this_top.can_reconnect = false
+            return
+        }
+        this_top.socket.add_listener({
+            name: 'kill_socket_connection',
+            func: kill_connection_evt,
+            is_singleton: true,
+        })
 
         // -------------------------------------------------------------------
         // get/send heartbeat ping/pong messages to the server
         // -------------------------------------------------------------------
-        let ping_time_msec, ping_latest_delay_msec
+        let ping_event_time_msec = get_time_msec()
+        let ping_visible_time_msec, ping_latest_delay_msec
         function reset_ping() {
-            ping_time_msec = null
+            ping_visible_time_msec = null
             ping_latest_delay_msec = 0
             return
         }
         reset_ping()
         
         let heartbeat_ping_evt = function(data_in) {
+            ping_event_time_msec = get_time_msec()
+
             // console.log(' - got heartbeat_ping', data_in)
             // if this is not the first ping, check that the delay is within the allowed range
             if (document.hidden) {
@@ -486,8 +513,8 @@ function SocketManager() {
                 return
             }
 
-            if (is_def(ping_time_msec)) {
-                let ping_interval_msec = get_time_msec() - ping_time_msec
+            if (is_def(ping_visible_time_msec)) {
+                let ping_interval_msec = get_time_msec() - ping_visible_time_msec
                 ping_latest_delay_msec = Math.abs(
                     ping_interval_msec - data_in.data.ping_interval_msec
                 )
@@ -497,11 +524,20 @@ function SocketManager() {
             }
 
             // update the local variable
-            ping_time_msec = get_time_msec()
+            ping_visible_time_msec = get_time_msec()
+
+            // send info about the resources used by the session. in case of
+            // session restoration, this will be used to indicate the need
+            // to restart loops etc.
+            let emit_data = {
+                'sess_resources': {
+                    'sess_widgets': this_top.sess_widgets,
+                },
+            }
             // let the server know that the ping was received
-            this_top.socket.emit('heartbeat_pong')
+            this_top.socket.emit('heartbeat_pong', emit_data)
         }
-        this_top.socket.add_event({
+        this_top.socket.add_listener({
             name: 'heartbeat_ping',
             func: heartbeat_ping_evt,
             is_singleton: true,
@@ -513,98 +549,104 @@ function SocketManager() {
         // -------------------------------------------------------------------
         function check_ping_delay() {
             setTimeout(function() {
+                _check_ping_delay()
+            }, 500)
+            return
+        }
+        function _check_ping_delay() {
+            // this_top.socket.emit('test_socket_evt', {test: 1})
 
-                // // let is_offline = this_top.con_stat.is_offline()
-                // if (document.hidden) {
-                //     reset_ping()
-                //     return
-                // }
+            let ping_event_total_delay_msec = 0
+            if (!document.hidden) {
+                let ping_interval_msec = get_time_msec() - ping_event_time_msec
 
-                // this_top.socket.emit('test_socket_evt', {test: 1})
-
-                // if this is not the first ping, check that the delay is within the allowed range
-                let ping_total_delay_msec = 0
-                if (is_def(ping_time_msec)) {
-                    let ping_interval_msec = get_time_msec() - ping_time_msec
-                    ping_total_delay_msec = (
-                        ping_interval_msec - this_top.sess_ping.send_interval_msec
-                    )
-                    // console.log('check_ping_delay:', ping_latest_delay_msec, ping_total_delay_msec)
-                }
-
-                // mostly ping_total_delay_msec will be negative if the connecition is ok
-                // and so the latest (event) delay will be taken
-                let ping_compare_delay_msec = Math.max(
-                    ping_latest_delay_msec, ping_total_delay_msec
+                ping_event_total_delay_msec = (
+                    ping_interval_msec - this_top.sess_ping.send_interval_msec
                 )
+            }
 
-                if (!this_top.con_stat.do_check_heartbeat()) {
-                    // after setting the state in the previous iteration (to make
-                    // sure we do not attempt to send further messages), close the socket
-                    if (this_top.socket.is_ws_open()) {
-                        let do_ws_close = (
-                            ping_compare_delay_msec > this_top.sess_ping.max_interval_bad_msec
-                        )
-                        if (do_ws_close) {
-                            this_top.socket.close_ws()
-                        }
+            // if this is not the first ping, check that the delay is within the allowed range
+            let ping_visible_delay_msec = 0
+            if (is_def(ping_visible_time_msec)) {
+                let ping_interval_msec = get_time_msec() - ping_visible_time_msec
+                ping_visible_delay_msec = (
+                    ping_interval_msec - this_top.sess_ping.send_interval_msec
+                )
+            }
+
+            // mostly ping_visible_delay_msec will be negative if the connecition is ok
+            // and so the latest (event) delay will be taken
+            let ping_compare_delay_msec = Math.max(
+                ping_latest_delay_msec, ping_visible_delay_msec, ping_event_total_delay_msec,
+            )
+
+            if (!this_top.con_stat.do_check_heartbeat()) {
+                // after setting the state in the previous iteration (to make
+                // sure we do not attempt to send further messages), close the socket
+                if (this_top.socket.is_ws_open()) {
+                    let do_ws_close = (
+                        ping_compare_delay_msec > this_top.sess_ping.max_interval_bad_msec
+                    )
+                    if (do_ws_close) {
+                        this_top.socket.close_ws()
                     }
-
-                    check_ping_delay()
-                    return
-                }
-
-                let state = null
-                if (ping_compare_delay_msec < this_top.sess_ping.max_interval_good_msec) {
-                    state = this_top.con_states.CONNECTED
-                    // console.log('            GOOD connection')
-                }
-                else if (ping_compare_delay_msec < this_top.sess_ping.max_interval_slow_msec) {
-                    state = this_top.con_states.SLOW_CONNECTION
-                    // console.log(' SLOW_CONNECTION connection')
-                }
-                else {
-                    state = this_top.con_states.NOT_CONNECTED
-                    // console.log('              NO  connection')
-                }
-
-                let prev_state = this_top.con_stat.get_server_con_state()
-                
-                if (prev_state !== state) {
-                    // send a log entry to the server
-                    if (!document.hidden) {
-                        if (state !== this_top.con_states.CONNECTED) {
-                            let level = (
-                                state === this_top.con_states.NOT_CONNECTED
-                                    ? LOG_LEVELS.ERROR
-                                    : LOG_LEVELS.WARNING
-                            )
-                            if (this_top.send_connection_logs) {
-                                this_top.socket.server_log({
-                                    data: {
-                                        event_name: state,
-                                        ping_latest_delay_msec: ping_latest_delay_msec,
-                                        ping_total_delay_msec: ping_total_delay_msec,
-                                    },
-                                    is_verb: true,
-                                    log_level: level,
-                                })
-                            }
-                        }
-                    }
-
-                    // modify the connection state of the client
-                    let is_con = (state !== this_top.con_states.NOT_CONNECTED)
-
-                    this_top.con_stat.set_server_con_state(state)
-                    this_top.con_stat.set_user_con_state_opts(is_con)
-                    this_top.con_stat.set_check_heartbeat(is_con)
                 }
 
                 check_ping_delay()
                 return
+            }
 
-            }, 500)
+            let state = null
+            if (ping_compare_delay_msec < this_top.sess_ping.max_interval_good_msec) {
+                state = this_top.con_states.CONNECTED
+                // console.log('            GOOD connection')
+            }
+            else if (ping_compare_delay_msec < this_top.sess_ping.max_interval_slow_msec) {
+                state = this_top.con_states.SLOW_CONNECTION
+                // console.log(' SLOW_CONNECTION connection')
+            }
+            else {
+                state = this_top.con_states.NOT_CONNECTED
+                // console.log('              NO  connection')
+            }
+
+            let prev_state = this_top.con_stat.get_server_con_state()
+            
+            if (prev_state !== state) {
+                // send a log entry to the server
+                if (!document.hidden) {
+                    if (state !== this_top.con_states.CONNECTED) {
+                        let level = (
+                            state === this_top.con_states.NOT_CONNECTED
+                                ? LOG_LEVELS.ERROR
+                                : LOG_LEVELS.WARNING
+                        )
+                        if (this_top.send_connection_logs) {
+                            this_top.socket.server_log({
+                                data: {
+                                    event_name: state,
+                                    ping_latest_delay_msec: ping_latest_delay_msec,
+                                    ping_visible_delay_msec: ping_visible_delay_msec,
+                                    ping_event_total_delay_msec: ping_event_total_delay_msec,
+                                },
+                                is_verb: true,
+                                log_level: level,
+                            })
+                        }
+                    }
+                }
+
+                // modify the connection state of the client
+                let is_con = (state !== this_top.con_states.NOT_CONNECTED)
+
+                this_top.con_stat.set_server_con_state(state)
+                this_top.con_stat.set_user_con_state_opts(is_con)
+                this_top.con_stat.set_check_heartbeat(is_con)
+            }
+
+            check_ping_delay()
+            return
+
         }
 
         // -------------------------------------------------------------------
@@ -694,7 +736,7 @@ function SocketManager() {
 
             return
         }
-        this_top.socket.add_event({
+        this_top.socket.add_listener({
             name: 'update_sync_state_from_server',
             func: update_sync_state_from_server_evt,
             is_singleton: true,
@@ -704,7 +746,7 @@ function SocketManager() {
         // // -------------------------------------------------------------------
         // //
         // // -------------------------------------------------------------------
-        // this_top.socket.add_event('join_session_data', function(data_in) {
+        // this_top.socket.add_listener('join_session_data', function(data_in) {
         //     if (!this_top.has_joined_session) {
         //         if (is_def(setup_view[widget_type])) {
         //             setup_view[widget_type]()
@@ -1013,7 +1055,7 @@ function SocketManager() {
                     init_views[metadata.widget_id] = true
                 }
             }
-            this_top.socket.add_event({
+            this_top.socket.add_listener({
                 name: 'init_data',
                 func: init_data_evt,
                 is_singleton: true,
@@ -1048,7 +1090,7 @@ function SocketManager() {
             //         }
             //     })
             // }
-            // this_top.socket.add_event({
+            // this_top.socket.add_listener({
             //     name: 'update_data',
             //     func: update_data_evt,
             //     is_singleton: true,
@@ -1421,14 +1463,14 @@ window.sock = new SocketManager()
 //     }
 // })
 // // in case we disconnect (internet is off or server is down)
-// this_top.socket.add_event('disconnect', function() {
+// this_top.socket.add_listener('disconnect', function() {
 //     console.log('disconnect',this_top.is_reload)
 //     if (!this_top.is_reload) {
 //         this_top.con_stat.set_server_con_state(this_top.con_states.NOT_CONNECTED)
 //         this_top.con_stat.set_user_con_state_opts(false)
 //     }
 // })
-// this_top.socket.add_event('error', function(obj) {
+// this_top.socket.add_listener('error', function(obj) {
 //   console.log("error", obj);
 // });
 

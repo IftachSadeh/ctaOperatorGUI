@@ -30,12 +30,6 @@ class WeatherMonitoring(BaseWidget):
             'time_now_sec': -1,
         }
 
-        # ArrZoomer interface
-        self.ArrZoomer = ArrZoomer(parent=self)
-        self.my_utils += [
-            self.ArrZoomer,
-        ]
-
         return
 
     # ------------------------------------------------------------------
@@ -54,7 +48,7 @@ class WeatherMonitoring(BaseWidget):
         # start an update loop for this particular instance
         opt_in = {
             'widget': self,
-            'loop_group': 'widget_id',
+            'loop_scope': 'unique_by_id',
             'data_func': self.get_data,
             'sleep_sec': 3,
             'loop_id': 'update_data',
@@ -65,9 +59,9 @@ class WeatherMonitoring(BaseWidget):
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    async def back_from_offline(self, data=None):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        await BaseWidget.back_from_offline(self, data=None)
 
         # with WeatherMonitoring.lock:
         #     print('-- back_from_offline',self.widget_type,self.widget_id)

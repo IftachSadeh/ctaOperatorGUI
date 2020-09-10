@@ -329,13 +329,12 @@ class AsyncLoops():
         sleep_sec = 0.1
 
         # setup the channel once
-        while self.redis.set_pubsub(pubsub_tag) is None:
-            await asyncio.sleep(sleep_sec)
+        pubsub = self.redis.pubsub_subscribe(pubsub_tag)
 
         while self.get_loop_state(loop_info):
             await asyncio.sleep(sleep_sec)
 
-            msg = self.redis.get_pubsub(key=pubsub_tag)
+            msg = self.redis.pubsub_get_message(pubsub=pubsub)
             if msg is None:
                 continue
 
@@ -598,6 +597,16 @@ class AsyncLoops():
             data : dict
                 client data and metadata related to the event
         """
+
+        # go over the resources use by the session, and make sure that everything
+        # is registered as expected (not not be registered e.g., in case of session
+        # restoration, when previous cleanup removed registries from redis)
+        sess_resources = data['data']['sess_resources']
+        sess_widgets = sess_resources['sess_widgets']
+        await self.validate_sess_widgets(
+            sess_id=data['metadata']['sess_id'],
+            sess_widgets=sess_widgets,
+        )
 
         # if eg we are offline or just back from offline
         if self.sess_ping_time is None or self.is_sess_offline:

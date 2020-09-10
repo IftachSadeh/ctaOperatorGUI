@@ -110,6 +110,39 @@ class Manager():
         """run services in individual processes
         """
 
+        # ------------------------------------------------------------------
+        # simaple locker test (should be moved to unit tests...)
+        check_lock = False
+        # check_lock = True
+        if check_lock:
+            lock_prefix = 'utils;lock;' + 'test' + ';'
+            # dynamic lock names, based on the current properties
+            lock_namespace = {
+                'loop': lambda: 'service_loop',
+            }
+            # initialise the lock manager
+            locker = LockManager(
+                log=self.log,
+                redis=self.redis,
+                base_config=self.base_config,
+                lock_namespace=lock_namespace,
+                lock_prefix=lock_prefix,
+                is_passive=True,
+            )
+
+            self.log.info([['o', ' -- trying to acquire locks for '], ['c',
+                                                                       service_name]])
+            with locker.locks.acquire(names='loop', debug=True, can_exist=False):
+                self.log.info([['y', ' --   now i am locked 0 ... '], ['c',
+                                                                       service_name]])
+                sleep(0.3)
+                with locker.locks.acquire(names='loop', debug=True, can_exist=True):
+                    self.log.info([['y', '   -- now i am locked 1 ... '],
+                                   ['c', service_name]])
+                    sleep(0.2)
+            self.log.info([['o', ' -- released locks for '], ['c', service_name]])
+        # ------------------------------------------------------------------
+
         # in case of backlog from a previous reload, call the cleanup for good measure
         self.cleanup_services(service_name)
 
@@ -131,40 +164,21 @@ class Manager():
             is_passive=True,
         )
 
-        # setup the lock manager
-        # prefix for all lock names in redis
-        lock_prefix = 'utils;lock;' + service_name + ';'
-        # dynamic lock names, based on the current properties
-        lock_namespace = {
-            'loop': lambda: 'loop',
-        }
-        # initialise the lock manager
-        self.locker = LockManager(
-            log=self.log,
-            redis=self.redis,
-            base_config=self.base_config,
-            lock_namespace=lock_namespace,
-            lock_prefix=lock_prefix,
-            is_passive=True,
-        )
-
-        # # simaple locker test
-        # with self.locker.locks.acquire('loop', debug=1):
-        #     print(' - now im locked 0 :)')
-        #     pass
-        #     with self.locker.locks.acquire('loop', debug=1, can_exist=1):
-        #         print(' - now im locked 1 :)')
-        #         pass
-        # print(' - lock released !!!!!!')
-
         # for debugging, override the global flag
-        self.do_flush_redis = True
+        # self.do_flush_redis = True
         if service_name == 'redis_flush':
             if self.do_flush_redis:
                 self.log.warn([['bb', ' --- flusing redis --- ']])
                 self.redis.flush()
 
         elif service_name == 'redis_services':
+            # prefix for all lock names in redis
+            lock_prefix = 'utils;lock;' + service_name + ';'
+            # dynamic lock names, based on the current properties
+            lock_namespace = {
+                'loop': lambda: 'service_loop',
+            }
+
             LockManager(
                 log=self.log,
                 redis=self.redis,

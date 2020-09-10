@@ -1,4 +1,5 @@
 import asyncio
+from math import ceil
 
 from shared.utils import get_time
 
@@ -35,9 +36,13 @@ class Housekeeping():
                 locked = any(s in sess_ids for s in sess_locks)
                 return locked
 
+            max_lock_sec = self.get_expite_sec(
+                name='sess_config_expire',
+                is_lock_check=True,
+            )
             await self.locker.semaphores.async_block(
                 is_locked=is_locked,
-                max_lock_sec=self.sess_config_expire_sec,
+                max_lock_sec=max_lock_sec,
             )
 
             # add a lock impacting session configurations. the name
@@ -46,7 +51,7 @@ class Housekeeping():
             self.locker.semaphores.add(
                 name=self.cleanup_loop_lock,
                 key=self.serv_id,
-                expire_sec=self.cleanup_loop_expire_sec,
+                expire_sec=self.get_expite_sec(name='cleanup_loop_expire'),
             )
 
             # run the cleanup for this server
@@ -181,7 +186,7 @@ class Housekeeping():
             self.locker.semaphores.add(
                 name=self.sess_config_lock,
                 key=sess_id,
-                expire_sec=self.sess_config_expire_sec,
+                expire_sec=self.get_expite_sec(name='sess_config_expire'),
             )
 
             self.log.info([['c', ' - cleanup-session '], ['p', sess_id], ['c', ' ...']])

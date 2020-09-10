@@ -1,6 +1,7 @@
 import asyncio
-from frontend_manager.py.utils.security import USERS
+from math import ceil
 
+from frontend_manager.py.utils.security import USERS
 from shared.utils import get_time
 
 
@@ -73,18 +74,23 @@ class SessionManager():
         # ------------------------------------------------------------------
         # for development, its conveniet to reload if the server was restarted, but
         # for deployment, the same session can simply be restored
-        if self.base_config.debug_opts['dev'] and 1:
+        if self.base_config.debug_opts['dev'] and self.can_restore_existing_sess:
             if is_existing_sess:
                 self.sess_id = data['metadata']['sess_id']
-                await self.emit(event_name='reload_session')
+
+                # add a delay before reloading, to let the server time to
+                # restart in case of a complete reload
+                reload_data = {'delay_msec': 750}
+                await self.emit(event_name='reload_session', data=reload_data)
+
                 return
         # ------------------------------------------------------------------
 
         if is_existing_sess:
             self.sess_id = data['metadata']['sess_id']
             self.log.info([
-                ['r', ' - restoring existing session:'],
-                ['o', '', self.sess_id],
+                ['g', ' - restoring existing session:'],
+                ['p', '', self.sess_id],
             ])
 
         async with self.locker.locks.acquire('sess'):
@@ -92,7 +98,7 @@ class SessionManager():
             self.locker.semaphores.add(
                 name=self.sess_config_lock,
                 key=self.sess_id,
-                expire_sec=self.sess_config_expire_sec,
+                expire_sec=self.get_expite_sec(name='sess_config_expire'),
             )
 
             # wait for the cleanup loop from this server to complete
@@ -103,8 +109,13 @@ class SessionManager():
                 )
                 return locked
 
+            max_lock_sec = self.get_expite_sec(
+                name='cleanup_loop_expire',
+                is_lock_check=True,
+            )
             await self.locker.semaphores.async_block(
-                is_locked=is_locked, max_lock_sec=self.cleanup_loop_expire_sec
+                is_locked=is_locked,
+                max_lock_sec=max_lock_sec,
             )
 
             # get and validate the user id
@@ -252,7 +263,7 @@ class SessionManager():
         return
 
     # ------------------------------------------------------------------
-    async def sess_to_online(self, data):
+    async def sess_to_online(self, data=None):
         """upon reconnection to an existing session
         """
 
@@ -271,7 +282,7 @@ class SessionManager():
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    async def back_from_offline(self, data=None):
 
         self.log.warn([[
             'o', ' - back_from_offline needs you     ', self.sess_id, '!' * 50
@@ -285,12 +296,12 @@ class SessionManager():
         for widget_id in sess_widget_ids:
             if widget_id in widget_inits:
                 method_func = getattr(widget_inits[widget_id], 'back_from_offline')
-                await method_func(data)
+                await method_func()
 
         return
 
     # ------------------------------------------------------------------
-    async def sess_to_offline(self, data):
+    async def sess_to_offline(self, data=None):
         """upon reconnection to an existing session
         """
 

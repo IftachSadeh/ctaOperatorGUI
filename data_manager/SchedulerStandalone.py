@@ -138,7 +138,6 @@ class SchedulerStandalone(ServiceManager):
     def setup_threads(self):
 
         self.add_thread(target=self.loop_main)
-        self.add_thread(target=self.loop_active_heartbeat)
 
         return
 

@@ -541,6 +541,7 @@ window.col_mix = function(index) {
 // ------------------------------------------------------------------
 let LOG_LEVELS = {
     ERROR: 'ERROR',
+    WARN: 'WARN',
     WARNING: 'WARNING',
     INFO: 'INFO',
     DEBUG: 'DEBUG',

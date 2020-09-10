@@ -36,7 +36,7 @@ class EmptyExample(BaseWidget):
         # all sessions in the group
         opt_in = {
             'widget': self,
-            'loop_group': 'widget_id',
+            'loop_scope': 'unique_by_id',
             'data_func': self.get_data_widget_id,
             'sleep_sec': 3,
             'loop_id': 'update_data_widget_id',
@@ -46,7 +46,7 @@ class EmptyExample(BaseWidget):
 
         opt_in = {
             'widget': self,
-            'loop_group': 'widget_type',
+            'loop_scope': 'shared_by_type',
             'data_func': self.get_data_widget_type,
             'sleep_sec': 5,
             'loop_id': 'update_data_all_widgets',
@@ -57,9 +57,9 @@ class EmptyExample(BaseWidget):
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data):
+    async def back_from_offline(self, data=None):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data)
+        await BaseWidget.back_from_offline(self, data=None)
 
         # additional custom stuff
         pass

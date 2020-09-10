@@ -102,7 +102,7 @@ let sock_panel_sync = function(opt_in) {
             widget_type: widget_type,
             widget_id: data.widget_id,
             method_name: 'set_sync_groups',
-            method_arg: data,
+            method_args: data,
         }
         sock.socket.emit('widget', emit_data)
     }
@@ -143,7 +143,7 @@ let main_panel_sync = function(opt_in) {
         }
         update_data(data_in)
     }
-    sock.socket.add_event({
+    sock.socket.add_listener({
         name: 'update_data',
         func: update_data_evt,
         is_singleton: false,

@@ -131,7 +131,7 @@ let sock_comment_sched = function(opt_in) {
     //   let emit_data = {
     //     "widget_type":widget_type, "widget_id":widget_id,
     //     "method_name":"comment_schedAskTelData",
-    //     "method_arg":data
+    //     "method_args":data
     //   };
     //   sock.socket.emit("widget", emit_data);
     //   return;
