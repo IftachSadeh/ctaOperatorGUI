@@ -96,7 +96,8 @@ class WidgetManager():
         """importing the class for the widget and registring the id
         """
 
-        debug_sync_groups = True
+        debug_sync_groups = False
+        # debug_sync_groups = True
 
         data = data_in['data']
         widget_id = data['widget_id']

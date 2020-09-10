@@ -537,7 +537,7 @@ class ClockSim(ServiceManager):
 
 
 # ------------------------------------------------------------------
-def get_clock_sim_data(self):
+def get_clock_sim_data(parent):
     """convenience function, setting up a request from redis to
        get the current night parameters
 
@@ -560,7 +560,7 @@ def get_clock_sim_data(self):
         ['night_end_sec', float],
         ['time_series_start_time_sec', float],
     ]
-    pipe = self.redis.get_pipe()
+    pipe = parent.redis.get_pipe()
     for key in red_keys:
         pipe.get('clock_sim_' + key[0])
 

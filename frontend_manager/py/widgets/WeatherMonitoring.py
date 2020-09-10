@@ -1,6 +1,4 @@
-from datetime import datetime, timedelta
 from shared.ClockSim import get_clock_sim_data
-from frontend_manager.py.utils.ArrZoomerUtil import ArrZoomerUtil
 from frontend_manager.py.utils.BaseWidget import BaseWidget
 
 
@@ -21,9 +19,9 @@ class WeatherMonitoring(BaseWidget):
 
         self.tel_ids = self.sm.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
         self.time_information = {
-            'history_step_sec' : -1,
-            'history_duration_sec' : -1,
-            'history_start_sec' : -1,
+            'history_step_sec': -1,
+            'history_duration_sec': -1,
+            'history_start_sec': -1,
             'is_night_now': -1,
             'night_end_sec': -1,
             'night_start_sec': -1,
@@ -70,9 +68,9 @@ class WeatherMonitoring(BaseWidget):
     def update_time_information(self):
         clock_sim = get_clock_sim_data(self)
         self.time_information = {
-            'history_step_sec' : self.history_step_sec,
-            'history_duration_sec' : clock_sim['time_now_sec'] - self.history_duration_sec,
-            'history_start_sec' : clock_sim['time_now_sec'] - self.history_duration_sec,
+            'history_step_sec': self.history_step_sec,
+            'history_duration_sec': clock_sim['time_now_sec'] - self.history_duration_sec,
+            'history_start_sec': clock_sim['time_now_sec'] - self.history_duration_sec,
             'is_night_now': clock_sim['is_night_now'],
             'night_end_sec': clock_sim['night_end_sec'],
             'night_start_sec': clock_sim['night_start_sec'],
