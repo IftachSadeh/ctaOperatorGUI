@@ -9,20 +9,6 @@ window.PlotBrushZoom = function() {
     let color_theme = get_color_theme('bright_grey')
     let reserved = {
     }
-    this.set = function(opt_in) {
-        if (is_def(opt_in.data)) {
-            reserved[opt_in.tag] = opt_in.data
-        }
-        else if (is_def(opt_in.def)) {
-            reserved[opt_in.tag] = opt_in.def
-        }
-        else {
-            reserved[opt_in.tag] = null
-        }
-    }
-    this.get = function(type) {
-        return reserved[type]
-    }
 
     function set_style(opt_in) {
         if (!is_def(opt_in)) {
@@ -51,7 +37,7 @@ window.PlotBrushZoom = function() {
         init_clipping()
         init_axis_brush_boxes()
         initAzerty()
-        init_zoom()
+        init_interaction()
         initAxis()
 
     }
@@ -59,8 +45,9 @@ window.PlotBrushZoom = function() {
     function get_structure() {
         return {
             id: reserved.id,
-            location: reserved.location,
             type: reserved.type,
+            location: reserved.location,
+            drawing: reserved.drawing,
             profile: reserved.profile,
             domain: reserved.domain,
         }
@@ -72,7 +59,8 @@ window.PlotBrushZoom = function() {
             g: undefined,
             id: undefined,
             location: undefined,
-            type: 'linear',
+            type: 'vertical',
+            drawing: 'linear',
             profile: 'default',
             box: {
                 x: 0,
@@ -125,24 +113,28 @@ window.PlotBrushZoom = function() {
                     stroke: 'none',
                 },
             },
-            brush: {
-                enabled: true,
-                coef: {
+            focus: {
+                // dimension: {
+                //     w: 0,
+                //     h: 0,
+                // },
+                zoom: {
+                    kx: 1,
+                    ky: 1,
+                },
+                translate: {
                     x: 0,
                     y: 0,
                 },
+            },
+            brush: {
+                enabled: true,
                 callback: function() {
                     console.log('callback function brush')
                 },
             },
             zoom: {
                 enabled: true,
-                coef: {
-                    kx: 1,
-                    ky: 1,
-                    x: 0,
-                    y: 0,
-                },
                 callback: function() {
                     console.log('callback function zoom')
                 },
@@ -156,6 +148,22 @@ window.PlotBrushZoom = function() {
         }
 
         switch (reserved.profile) {
+        case 'scrollbox':
+            reserved.azerty = window.merge_obj(
+                reserved.azerty,
+                {
+                    visibility: true,
+                    zoom: true,
+                })
+            reserved.axis = window.merge_obj(
+                reserved.axis,
+                {
+                    visibility: false,
+                    track: 'a1',
+                    orientation: 'out',
+                    zoom: true,
+                })
+            break
         case 'focus':
             reserved.azerty = window.merge_obj(
                 reserved.azerty,
@@ -395,12 +403,12 @@ window.PlotBrushZoom = function() {
             .attr('id', 'brush')
             .attr('transform', function() {
                 let scale = {
-                    x: reserved.zoom.coef.kx,
-                    y: reserved.zoom.coef.ky,
+                    x: reserved.focus.zoom.kx,
+                    y: reserved.focus.zoom.ky,
                 }
                 let trans = {
-                    x: reserved.zoom.coef.x,
-                    y: reserved.zoom.coef.y,
+                    x: reserved.focus.translate.x,
+                    y: reserved.focus.translate.y,
                 }
                 return (
                     'translate('
@@ -440,12 +448,12 @@ window.PlotBrushZoom = function() {
         }
         reserved.azerty.g.select('rect#brush').attr('transform', function() {
             let scale = {
-                x: reserved.zoom.coef.kx,
-                y: reserved.zoom.coef.ky,
+                x: reserved.focus.zoom.kx,
+                y: reserved.focus.zoom.ky,
             }
             let trans = {
-                x: reserved.zoom.coef.x,
-                y: reserved.zoom.coef.y,
+                x: reserved.focus.translate.x,
+                y: reserved.focus.translate.y,
             }
             return (
                 'translate('
@@ -462,39 +470,9 @@ window.PlotBrushZoom = function() {
         })
     }
 
-    function init_zoom() {
-        reserved.zoom.meta = {
-            kx: {
-                min: 1,
-                max: 20,
-                previous: 1,
-                now: 1,
-                point: [ 0, 0 ],
-            },
-            ky: {
-                min: 1,
-                max: 20,
-                previous: 1,
-                now: 1,
-                point: [ 0, 0 ],
-            },
-            x: {
-                min: 0,
-                max: reserved.box.w,
-                now: 0,
-            },
-            y: {
-                min: 0,
-                max: reserved.box.h,
-                now: 0,
-            },
-        }
-        reserved.brush.meta = {
-            x: 0,
-            y: 0,
-        }
+    function init_interaction() {
         function computeZoomFactorkx() {
-            reserved.zoom.coef.kx = 1 / reserved.zoom.meta.kx.now
+            reserved.focus.zoom.kx = 1 / reserved.zoom.meta.kx.now
 
             let ratio = [ reserved.zoom.meta.kx.point[0] / reserved.zoom.meta.x.max, 0 ]
             let offset = {
@@ -506,20 +484,20 @@ window.PlotBrushZoom = function() {
           * ratio[0],
             }
 
-            reserved.zoom.coef.x = reserved.zoom.coef.x + offset.x + reserved.brush.meta.x
-            if (reserved.zoom.coef.x < 0) {
-                reserved.zoom.coef.x = 0
+            reserved.focus.translate.x = reserved.focus.translate.x + offset.x + reserved.focus.translate.x
+            if (reserved.focus.translate.x < 0) {
+                reserved.focus.translate.x = 0
             }
             let right
-            = reserved.zoom.coef.x
+            = reserved.focus.translate.x
             + reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.now)
             if (right > reserved.zoom.meta.x.max) {
-                reserved.zoom.coef.x
-                = reserved.zoom.coef.x - (right - reserved.zoom.meta.x.max)
+                reserved.focus.translate.x
+                = reserved.focus.translate.x - (right - reserved.zoom.meta.x.max)
             }
         }
         function computeZoomFactorky() {
-            reserved.zoom.coef.ky = 1 / reserved.zoom.meta.ky.now
+            reserved.focus.zoom.ky = 1 / reserved.zoom.meta.ky.now
 
             let ratio = [ 0, reserved.zoom.meta.ky.point[1] / reserved.zoom.meta.y.max ]
             let offset = {
@@ -532,44 +510,44 @@ window.PlotBrushZoom = function() {
                 * ratio[1],
             }
 
-            reserved.zoom.coef.y = reserved.zoom.coef.y + offset.y + reserved.brush.meta.y
-            if (reserved.zoom.coef.y < 0) {
-                reserved.zoom.coef.y = 0
+            reserved.focus.translate.y = reserved.focus.translate.y + offset.y + reserved.focus.translate.y
+            if (reserved.focus.translate.y < 0) {
+                reserved.focus.translate.y = 0
             }
             let bottom
-            = reserved.zoom.coef.y
+            = reserved.focus.translate.y
             + reserved.zoom.meta.y.max
             * (1 / reserved.zoom.meta.ky.now)
             if (bottom > reserved.zoom.meta.y.max) {
-                reserved.zoom.coef.y
-                = reserved.zoom.coef.y - (bottom - reserved.zoom.meta.y.max)
+                reserved.focus.translate.y
+                = reserved.focus.translate.y - (bottom - reserved.zoom.meta.y.max)
             }
         }
         function computeDragFactor() {
-            reserved.zoom.coef.x = reserved.zoom.coef.x + reserved.brush.meta.x
-            if (reserved.zoom.coef.x < 0) {
-                reserved.zoom.coef.x = 0
+            reserved.focus.translate.x = reserved.focus.translate.x + reserved.focus.translate.x
+            if (reserved.focus.translate.x < 0) {
+                reserved.focus.translate.x = 0
             }
             let right
-            = reserved.zoom.coef.x
+            = reserved.focus.translate.x
             + reserved.zoom.meta.x.max
             * (1 / reserved.zoom.meta.kx.now)
             if (right > reserved.zoom.meta.x.max) {
-                reserved.zoom.coef.x
-                = reserved.zoom.coef.x - (right - reserved.zoom.meta.x.max)
+                reserved.focus.translate.x
+                = reserved.focus.translate.x - (right - reserved.zoom.meta.x.max)
             }
 
-            reserved.zoom.coef.y = reserved.zoom.coef.y + reserved.brush.meta.y
-            if (reserved.zoom.coef.y < 0) {
-                reserved.zoom.coef.y = 0
+            reserved.focus.translate.y = reserved.focus.translate.y + reserved.focus.translate.y
+            if (reserved.focus.translate.y < 0) {
+                reserved.focus.translate.y = 0
             }
             let bottom
-            = reserved.zoom.coef.y
+            = reserved.focus.translate.y
             + reserved.zoom.meta.y.max
             * (1 / reserved.zoom.meta.ky.now)
             if (bottom > reserved.zoom.meta.y.max) {
-                reserved.zoom.coef.y
-                = reserved.zoom.coef.y - (bottom - reserved.zoom.meta.y.max)
+                reserved.focus.translate.y
+                = reserved.focus.translate.y - (bottom - reserved.zoom.meta.y.max)
             }
         }
 
@@ -620,60 +598,56 @@ window.PlotBrushZoom = function() {
                     .drag()
                     .on('start', function() {})
                     .on('drag', function() {
-                        reserved.brush.meta.x = d3.event.dx
-                        reserved.brush.meta.y = d3.event.dy
+                        reserved.focus.translate.x = d3.event.dx
+                        reserved.focus.translate.y = d3.event.dy
 
                         computeDragFactor()
                         update()
                         reserved.zoom.callback()
                     })
                     .on('end', function() {
-                        reserved.brush.meta.x = 0
-                        reserved.brush.meta.y = 0
+                        reserved.focus.translate.x = 0
+                        reserved.focus.translate.y = 0
                     })
             )
     }
-    function get_brush_zoom_factor() {
-        return {
-            brush: reserved.brush,
-            zoom: reserved.zoom,
-        }
+    function get_focus() {
+        return reserved.focus
     }
-    this.get_brush_zoom_factor = get_brush_zoom_factor
-    function set_brush_zoom_factor(new_brush_zoom_factor) {
-        reserved.zoom.coef = new_brush_zoom_factor.zoom.coef
-        reserved.zoom.meta = new_brush_zoom_factor.zoom.meta
-
-        reserved.brush.coef = new_brush_zoom_factor.brush.coef
-        reserved.brush.meta = new_brush_zoom_factor.brush.meta
-
+    this.get_focus = get_focus
+    function set_focus(new_focus) {
+        reserved.focus = new_focus
         update()
     }
-    this.set_brush_zoom_factor = set_brush_zoom_factor
-    function set_brush_zoom_factor_horizontal(new_brush_zoom_factor) {
-        reserved.zoom.coef.x = new_brush_zoom_factor.zoom.coef.x
-        reserved.zoom.coef.kx = new_brush_zoom_factor.zoom.coef.kx
-        reserved.zoom.meta.x = new_brush_zoom_factor.zoom.meta.x
-        reserved.zoom.meta.kx = new_brush_zoom_factor.zoom.meta.kx
-
-        reserved.brush.coef.x = new_brush_zoom_factor.brush.coef.x
-        reserved.brush.meta.x = new_brush_zoom_factor.brush.meta.x
-
-        update()
+    this.set_focus = set_focus
+    function update_focus(new_focus) {
+        console.log(new_focus)
     }
-    this.set_brush_zoom_factor_horizontal = set_brush_zoom_factor_horizontal
-    function set_brush_zoom_factor_vertical(new_brush_zoom_factor) {
-        reserved.zoom.coef.y = new_brush_zoom_factor.zoom.coef.y
-        reserved.zoom.coef.ky = new_brush_zoom_factor.zoom.coef.ky
-        reserved.zoom.meta.y = new_brush_zoom_factor.zoom.meta.y
-        reserved.zoom.meta.ky = new_brush_zoom_factor.zoom.meta.ky
-
-        reserved.brush.coef.y = new_brush_zoom_factor.brush.coef.y
-        reserved.brush.meta.y = new_brush_zoom_factor.brush.meta.y
-
-        update()
-    }
-    this.set_brush_zoom_factor_vertical = set_brush_zoom_factor_vertical
+    this.update_focus = update_focus
+    // function set_brush_zoom_factor_horizontal(new_brush_zoom_factor) {
+    //     reserved.focus.translate.x = new_brush_zoom_factor.zoom.coef.x
+    //     reserved.focus.zoom.kx = new_brush_zoom_factor.zoom.coef.kx
+    //     reserved.zoom.meta.x = new_brush_zoom_factor.zoom.meta.x
+    //     reserved.zoom.meta.kx = new_brush_zoom_factor.zoom.meta.kx
+    //
+    //     reserved.brush.coef.x = new_brush_zoom_factor.brush.coef.x
+    //     reserved.focus.translate.x = new_brush_zoom_factor.brush.meta.x
+    //
+    //     update()
+    // }
+    // this.set_brush_zoom_factor_horizontal = set_brush_zoom_factor_horizontal
+    // function set_brush_zoom_factor_vertical(new_brush_zoom_factor) {
+    //     reserved.focus.translate.y = new_brush_zoom_factor.zoom.coef.y
+    //     reserved.focus.zoom.ky = new_brush_zoom_factor.zoom.coef.ky
+    //     reserved.zoom.meta.y = new_brush_zoom_factor.zoom.meta.y
+    //     reserved.zoom.meta.ky = new_brush_zoom_factor.zoom.meta.ky
+    //
+    //     reserved.brush.coef.y = new_brush_zoom_factor.brush.coef.y
+    //     reserved.focus.translate.y = new_brush_zoom_factor.brush.meta.y
+    //
+    //     update()
+    // }
+    // this.set_brush_zoom_factor_vertical = set_brush_zoom_factor_vertical
 
     function compute_overlap(axis, all_ticks, key) {
         let begin = [ 1 ]
@@ -762,7 +736,7 @@ window.PlotBrushZoom = function() {
         let overlap_array = []
         if (reserved.location === 'left' || reserved.location === 'right') {
             overlap_array = compute_overlap(axis, all_ticks, 'height')
-            if (reserved.type === 'band') {
+            if (reserved.drawing === 'band') {
                 console.log(axis.g.selectAll('g.tick>text').nodes().map(function(t){
                     return t.innerHTML
                 }).reduce((a, b) => a + (b.length < reserved.clipping.max_characters), 0))
@@ -835,7 +809,7 @@ window.PlotBrushZoom = function() {
     function core_axis(axis) {
 
         axis.axis.scale(axis.scale)
-        if (axis.ticks_min_max && reserved.type !== 'band') {
+        if (axis.ticks_min_max && reserved.drawing !== 'band') {
             if (reserved.location === 'left' || reserved.location === 'right') {
                 axis.axis.tickValues(
                     [ axis.scale.invert(reserved.box.h) ]
@@ -859,13 +833,13 @@ window.PlotBrushZoom = function() {
             .attr('stroke', reserved.axis.style.path.stroke)
             .attr('opacity', reserved.axis.style.path.visible ? 1 : 0)
 
-        if (reserved.type === 'linear') {
+        if (reserved.drawing === 'linear') {
             format_ticks_linear(axis)
         }
-        else if (reserved.type === 'time') {
+        else if (reserved.drawing === 'time') {
             format_ticks_linear(axis)
         }
-        else if (reserved.type === 'band') {
+        else if (reserved.drawing === 'band') {
             format_ticks_band(axis)
         }
 
@@ -883,13 +857,13 @@ window.PlotBrushZoom = function() {
         //     return
         // }
 
-        if (reserved.type === 'time') {
+        if (reserved.drawing === 'time') {
             axis.scale = d3.scaleLinear()
         }
-        else if (reserved.type === 'line') {
+        else if (reserved.drawing === 'line') {
             axis.scale = d3.scaleLinear()
         }
-        else if (reserved.type === 'band') {
+        else if (reserved.drawing === 'band') {
             axis.scale = d3.scaleBand()
         }
         else {
@@ -933,7 +907,7 @@ window.PlotBrushZoom = function() {
             }
         }
 
-        if (reserved.type === 'time') {
+        if (reserved.drawing === 'time') {
             axis.axis.tickFormat(d3.timeFormat('%H:%M'))
         }
 
@@ -961,14 +935,14 @@ window.PlotBrushZoom = function() {
     this.get_axis = get_axis
     function update_axis(opt_in) {
         reserved = window.merge_obj(reserved, opt_in)
-        applyZoomBrush()
+        apply_zoom_translate()
         core_axis(reserved.axis)
         updateAzerty()
     }
     this.update_axis = update_axis
 
     function update() {
-        applyZoomBrush()
+        apply_zoom_translate()
 
         if (reserved.axis.zoom) {
             core_axis(reserved.axis)
@@ -979,22 +953,20 @@ window.PlotBrushZoom = function() {
     }
     this.update = update
 
-    function applyZoomBrush() {
+    function apply_zoom_translate() {
         reserved.axis.scale.domain(reserved.domain).range(reserved.range)
 
         let newDomain = deep_copy(reserved.domain)
-        if (reserved.location === 'top'
-        || reserved.location === 'bottom') {
-            newDomain[0] = reserved.axis.scale.invert(reserved.zoom.coef.x)
+        if (reserved.type === 'horizontal') {
+            newDomain[0] = reserved.axis.scale.invert(reserved.focus.translate.x)
             newDomain[1] = reserved.axis.scale.invert(
-                reserved.zoom.coef.x + reserved.box.w * reserved.zoom.coef.kx
+                reserved.focus.translate.x + reserved.box.w * reserved.focus.zoom.kx
             )
         }
-        else if (reserved.location === 'left'
-        || reserved.location === 'right') {
-            newDomain[1] = reserved.axis.scale.invert(reserved.zoom.coef.y)
+        else if (reserved.location === 'vertical') {
+            newDomain[1] = reserved.axis.scale.invert(reserved.focus.translate.y)
             newDomain[0] = reserved.axis.scale.invert(
-                reserved.zoom.coef.y + reserved.box.h * reserved.zoom.coef.ky
+                reserved.focus.translate.y + reserved.box.h * reserved.focus.zoom.ky
             )
         }
         reserved.axis.scale.domain(newDomain)

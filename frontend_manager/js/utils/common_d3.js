@@ -28,14 +28,14 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
         .attr('height', box.h + 'px')
         .attr('x', box.x + 'px')
         .attr('y', box.y + 'px')
-    
+
     let root_div = fo
         .append('xhtml:div')
         .attr('class', 'quantity')
         .attr('id', id)
         .style('width', '100%')
         .style('height', '100%')
-    
+
     let input = root_div
         .append('input')
         .attr('type', 'number')
@@ -49,7 +49,7 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
         .style('border-left-style', 'hidden')
         .style('border-bottom-style', 'groove')
         .style('background', 'transparent')
-    
+
     input.property('value', function() {
         return opt_in.value
     })
@@ -58,7 +58,7 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
         input.attr('disabled')
         return
     }
-    
+
     input.on('change', function() {
         let new_val = parseInt(input.property('value'))
         if (new_val > opt_in.max) {
@@ -642,4 +642,8 @@ window.dropdown_d3 = function() {
             .style('opacity', 0)
             .remove()
     }
+}
+
+window.get_d3_node_box = function(node) {
+    return node.node().getBBox()
 }
