@@ -1,7 +1,5 @@
-import asyncio
-
-from datetime import datetime
-from shared.utils import date_to_string
+# from datetime import datetime
+# from shared.utils import date_to_string
 from frontend_manager.py.utils.BaseWidget import BaseWidget
 
 
@@ -9,7 +7,7 @@ from frontend_manager.py.utils.BaseWidget import BaseWidget
 class PanelSync(BaseWidget):
 
     # ------------------------------------------------------------------
-    def __init__(self, widget_id='', sm=None, *args, **kwargs):
+    def __init__(self, widget_id=None, sm=None, *args, **kwargs):
         # standard common initialisations
         BaseWidget.__init__(
             self,
@@ -25,7 +23,7 @@ class PanelSync(BaseWidget):
     # ------------------------------------------------------------------
     async def setup(self, *args):
         # standard common initialisations
-        await BaseWidget.setup(self, *args)
+        await BaseWidget.setup(self, args)
 
         # initialise dataset and send to client
         opt_in = {
@@ -55,8 +53,6 @@ class PanelSync(BaseWidget):
         # standard common initialisations
         await BaseWidget.back_from_offline(self, args)
 
-        # with panel_sync.lock:
-        #     print('-- back_from_offline',self.widget_type,self.widget_id)
         return
 
     # ------------------------------------------------------------------

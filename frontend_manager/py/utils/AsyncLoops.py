@@ -560,7 +560,7 @@ class AsyncLoops():
                     ['y', ' - high server load / slow connection for '],
                     ['r', self.sess_id],
                     ['y', ' ? --> '],
-                    ['o', interval_now_msec, ' msec delay'],
+                    ['o', interval_now_msec, 'msec delay for', send_interval_msec, 'sleep'],
                 ])
 
         self.log.info([
@@ -616,12 +616,15 @@ class AsyncLoops():
             is_slow = (ping_delay < self.sess_ping['max_interval_slow_msec'])
 
             log_func = self.log.warn if is_slow else self.log.error
-            log_txt = 'unstable connection for ' if is_slow else 'not connected to '
+            if is_slow:
+                log_txt = 'unstable connection (' + str(ping_delay) + ' msec delay): '
+            else:
+                log_txt = 'not connected to '
             log_func([
                 ['y', ' - ', log_txt],
-                ['r', self.sess_id, '\n'],
-                ['g', self.sess_ping_time, ' --> '],
-                ['o', data],
+                ['r', self.sess_id],
+                ['g', '\n', ' ' * 24, ' --> '],
+                ['o', data['metadata']],
             ])
 
         return

@@ -218,6 +218,18 @@ let main_comment_sched = function(opt_in) {
         tag: widget_id,
     })
 
+    let update_data_evt = function(data_in) {
+        if (data_in.metadata.widget_id !== widget_id) {
+            return
+        }
+        update_data(data_in)
+    }
+    sock.socket.add_listener({
+        name: 'update_data',
+        func: update_data_evt,
+        is_singleton: false,
+    })
+
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------

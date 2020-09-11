@@ -1188,7 +1188,6 @@ function SocketManager() {
     function add_widget(opt_in) {
         let name_tag = opt_in.name_tag
         let table_title = opt_in.table_title
-        // let has_drawer = opt_in.has_drawer
         let has_icon = opt_in.has_icon
 
         let main_script_name = '/js/widgets/' + name_tag + '.js'

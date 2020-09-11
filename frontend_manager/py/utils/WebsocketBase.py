@@ -41,7 +41,7 @@ class WebsocketBase():
         # is it allowed to restore sessions as part of development
         # or do we always reload web pages on server reloads
         self.can_restore_existing_sess = True
-        self.can_restore_existing_sess = False
+        # self.can_restore_existing_sess = False
 
         # debug the setup / restoration of sync groups
         self.debug_sync_group = False
@@ -67,7 +67,7 @@ class WebsocketBase():
             # interval for sending ping/pong events
             'send_interval_msec': 2500,
             # how much delay is considered ok for a slow session
-            'max_interval_good_msec': 100,
+            'max_interval_good_msec': 500,
             # how much delay is considered ok for a disconnected session
             'max_interval_slow_msec': 1000,
             # how much delay before the client socket is forcibly closed
@@ -144,8 +144,6 @@ class WebsocketBase():
             'user': lambda: 'serv;' + str(self.serv_id) + ';user;' + str(self.user_id),
             'sess': lambda: 'serv;' + str(self.serv_id) + ';sess;' + str(self.sess_id),
             'sync': lambda: 'sync;' + ';user;' + str(self.user_id),
-            # 'sess_redis':
-            # lambda: 'redis;serv' + str(self.serv_id) + ';sess' + str(self.sess_id),
         }
 
         self.get_widget_lock_name = (

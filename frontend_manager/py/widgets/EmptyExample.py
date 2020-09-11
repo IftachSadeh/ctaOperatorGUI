@@ -22,7 +22,7 @@ class EmptyExample(BaseWidget):
     # ------------------------------------------------------------------
     async def setup(self, *args):
         # standard common initialisations
-        await BaseWidget.setup(self, *args)
+        await BaseWidget.setup(self, args)
 
         # initialise dataset and send to client
         opt_in = {

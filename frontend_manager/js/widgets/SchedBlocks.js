@@ -155,11 +155,23 @@ function main_sched_blocks(opt_in) {
     // delay counters
     let locker = new Locker()
     locker.add('in_init')
-    console.log(' -- FIXME -- use tel_info.get_ids and tel_info.tel_id_to_types as in arr_zoomer.js .... -- see optional filter option in the python file -- self.socket_manager.inst_data.get_inst_ids(inst_types=[....])')
+    // console.log(' -- FIXME -- use tel_info.get_ids and tel_info.tel_id_to_types as in arr_zoomer.js .... -- see optional filter option in the python file -- self.socket_manager.inst_data.get_inst_ids(inst_types=[....])')
 
     // function loop
     let run_loop = new RunLoop({
         tag: widget_id,
+    })
+
+    let update_data_evt = function(data_in) {
+        if (data_in.metadata.widget_id !== widget_id) {
+            return
+        }
+        update_data(data_in)
+    }
+    sock.socket.add_listener({
+        name: 'update_data',
+        func: update_data_evt,
+        is_singleton: false,
     })
 
     // -------------------------------------------------------------------
@@ -370,9 +382,9 @@ function main_sched_blocks(opt_in) {
         function initForeground() {
             svg.foreground.append('rect')
                 .attr('x', box.current_blocks.x + box.current_blocks.w * 0.05)
-                .attr('y', box.brushFutur.y + box.brushFutur.h * 0.22)
+                .attr('y', box.current_time.y + box.current_time.h * 0.22)
                 .attr('width', box.current_blocks.w * 0.95)
-                .attr('height', box.brushFutur.h * 0.56)
+                .attr('height', box.current_time.h * 0.56)
                 .attr('fill', color_theme.dark.stroke)
                 .attr('stroke', color_theme.dark.stroke)
                 .attr('stroke-width', 0.0)
@@ -382,7 +394,7 @@ function main_sched_blocks(opt_in) {
                 .attr('stroke-width', 0.5)
                 .attr('fill', color_theme.bright.background)
                 .attr('x', box.current_blocks.x + box.current_blocks.w * 0.5)
-                .attr('y', box.brushFutur.y + box.brushFutur.h * 0.7)
+                .attr('y', box.current_time.y + box.current_time.h * 0.7)
                 .style('font-weight', 'bold')
                 .attr('text-anchor', 'middle')
                 .style('font-size', '24px')
@@ -406,6 +418,13 @@ function main_sched_blocks(opt_in) {
             }
             box.brushPast = {
                 x: svg_dims.w[0] * 0.0,
+                y: svg_dims.h[0] * 0.15,
+                w: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
+                h: svg_dims.h[0] * 0.03,
+                marg: svg_dims.w[0] * 0.01,
+            }
+            box.current_time = {
+                x: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.6),
                 y: svg_dims.h[0] * 0.14,
                 w: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
                 h: svg_dims.h[0] * 0.05,
@@ -413,9 +432,9 @@ function main_sched_blocks(opt_in) {
             }
             box.brushFutur = {
                 x: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.6),
-                y: svg_dims.h[0] * 0.14,
+                y: svg_dims.h[0] * 0.15,
                 w: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
-                h: svg_dims.h[0] * 0.05,
+                h: svg_dims.h[0] * 0.03,
                 marg: svg_dims.w[0] * 0.01,
             }
             box.block_queue_serverPast = {
@@ -476,7 +495,7 @@ function main_sched_blocks(opt_in) {
                 let state = is_def(opt_in.exe_state.state)
                     ? opt_in.exe_state.state
                     : undefined
-                console.log(state)
+                // console.log(state)
                 let can_run = is_def(opt_in.exe_state.can_run)
                     ? opt_in.exe_state.can_run
                     : undefined
@@ -785,13 +804,13 @@ function main_sched_blocks(opt_in) {
                 events: {
                     event: {
                         click: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseover: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseout: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         drag: {
                             start: () => {},
@@ -1005,13 +1024,13 @@ function main_sched_blocks(opt_in) {
                 events: {
                     event: {
                         click: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseover: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseout: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         drag: {
                             start: () => {},
@@ -1100,181 +1119,6 @@ function main_sched_blocks(opt_in) {
                 .attr('transform', 'translate(' + brushBox.x + ',' + brushBox.y + ')')
 
             brushZoomPast = new PlotBrushZoom()
-            // {
-            //     main: {
-            //         g: svg.g.append('g').append('g'),
-            //         box: brushBox,
-            //     },
-            //     clipping: {
-            //         enabled: true,
-            //     },
-            //     axis: [
-            //         {
-            //             id: 'top',
-            //             enabled: true,
-            //             showAxis: true,
-            //             main: {
-            //                 g: undefined,
-            //                 box: {
-            //                     x: 0,
-            //                     y: brushBox.h * 0.0,
-            //                     w: brushBox.w,
-            //                     h: brushBox.h * 0.2,
-            //                     marg: 0,
-            //                 },
-            //                 type: 'top',
-            //                 attr: {
-            //                     text: {
-            //                         enabled: false,
-            //                         size: 14,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                     path: {
-            //                         enabled: true,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                 },
-            //             },
-            //             axis: undefined,
-            //             scale: undefined,
-            //             domain: [ 0, 1000 ],
-            //             range: [ 0, brushBox.w ],
-            //             brush: {
-            //                 zoom: true,
-            //                 brush: true,
-            //             },
-            //         },
-            //         {
-            //             id: 'middle',
-            //             enabled: true,
-            //             showAxis: true,
-            //             main: {
-            //                 g: undefined,
-            //                 box: {
-            //                     x: 0,
-            //                     y: brushBox.h * 0.8,
-            //                     w: brushBox.w,
-            //                     h: brushBox.h * 0.0,
-            //                     marg: 0,
-            //                 },
-            //                 type: 'top',
-            //                 attr: {
-            //                     text: {
-            //                         enabled: true,
-            //                         size: 16,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                     path: {
-            //                         enabled: true,
-            //                         stroke: color_theme.dark.stroke,
-            //                         fill: color_theme.dark.stroke,
-            //                     },
-            //                 },
-            //             },
-            //             axis: undefined,
-            //             scale: undefined,
-            //             domain: [ 0, 1000 ],
-            //             range: [ 0, brushBox.w ],
-            //             brush: {
-            //                 zoom: false,
-            //                 brush: false,
-            //             },
-            //         },
-            //         {
-            //             id: 'bottom',
-            //             enabled: true,
-            //             showAxis: true,
-            //             main: {
-            //                 g: undefined,
-            //                 box: {
-            //                     x: 0,
-            //                     y: brushBox.h * 0.2,
-            //                     w: brushBox.w,
-            //                     h: brushBox.h * 0.2,
-            //                     marg: 0,
-            //                 },
-            //                 type: 'bottom',
-            //                 attr: {
-            //                     text: {
-            //                         enabled: false,
-            //                         size: 16,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                     path: {
-            //                         enabled: true,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                 },
-            //             },
-            //             axis: undefined,
-            //             scale: undefined,
-            //             domain: [ 0, 1000 ],
-            //             range: [ 0, brushBox.w ],
-            //             brush: {
-            //                 zoom: true,
-            //                 brush: true,
-            //             },
-            //         },
-            //     ],
-            //     content: {
-            //         enabled: true,
-            //         main: {
-            //             g: undefined,
-            //             box: {
-            //                 x: 0,
-            //                 y: brushBox.h * 0.2,
-            //                 w: brushBox.w,
-            //                 h: brushBox.h * 0.6,
-            //                 marg: 0,
-            //             },
-            //             attr: {
-            //                 fill: color_theme.medium.background,
-            //             },
-            //         },
-            //     },
-            //     focus: {
-            //         enabled: true,
-            //         main: {
-            //             g: undefined,
-            //             box: {
-            //                 x: 0,
-            //                 y: brushBox.h * 0.2,
-            //                 w: brushBox.w,
-            //                 h: brushBox.h * 0.6,
-            //                 marg: 0,
-            //             },
-            //             attr: {
-            //                 fill: color_theme.darker.background,
-            //                 opacity: 1,
-            //                 stroke: color_theme.darker.background,
-            //             },
-            //         },
-            //     },
-            //     brush: {
-            //         coef: {
-            //             x: 0,
-            //             y: 0,
-            //         },
-            //         callback: () => {},
-            //     },
-            //     zoom: {
-            //         coef: {
-            //             kx: 1,
-            //             ky: 1,
-            //             x: 0,
-            //             y: 0,
-            //         },
-            //         callback: function() {
-            //             svg_blocks_queue_serverPast.update_data()
-            //             svg_events_queue_serverPast.update_data()
-            //         },
-            //     },
-            // }
             brushZoomPast.init({
                 g: reserved.g, //svg.g.append('g').append('g'),
                 box: brushBox,
@@ -1282,7 +1126,7 @@ function main_sched_blocks(opt_in) {
                 domain: [ 0, 100 ],
                 id: 'past',
                 location: 'bottom',
-                profile: 'context',
+                profile: 'focus',
                 range: [ 0, brushBox.w ],
                 type: 'time',
 
@@ -1492,7 +1336,6 @@ function main_sched_blocks(opt_in) {
                 h: box.brushFutur.h,
                 marg: svg_dims.w[0] * 0.01,
             }
-
             reserved.g = svg.g.append('g')
                 .attr('transform', 'translate(' + brushBox.x + ',' + brushBox.y + ')')
 
@@ -1505,159 +1348,9 @@ function main_sched_blocks(opt_in) {
                 domain: [ 0, 100 ],
                 id: 'futur',
                 location: 'bottom',
-                profile: 'context',
+                profile: 'focus',
                 range: [ 0, brushBox.w ],
                 type: 'time',
-
-                // clipping: {
-                //     enabled: true,
-                // },
-                // axis: [
-                //     {
-                //         id: 'top',
-                //         enabled: true,
-                //         main: {
-                //             g: undefined,
-                //             box: {
-                //                 x: 0,
-                //                 y: brushBox.h * 0.0,
-                //                 w: brushBox.w,
-                //                 h: brushBox.h * 0.2,
-                //                 marg: 0,
-                //             },
-                //             type: 'top',
-                //             attr: {
-                //                 text: {
-                //                     enabled: false,
-                //                     size: 14,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //                 path: {
-                //                     enabled: true,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //             },
-                //         },
-                //         axis: undefined,
-                //         scale: undefined,
-                //         domain: [ 0, 1000 ],
-                //         range: [ 0, brushBox.w ],
-                //         brush: {
-                //             zoom: true,
-                //             brush: true,
-                //         },
-                //     },
-                //     {
-                //         id: 'middle',
-                //         enabled: true,
-                //         showAxis: true,
-                //         main: {
-                //             g: undefined,
-                //             box: {
-                //                 x: 0,
-                //                 y: brushBox.h * 0.8,
-                //                 w: brushBox.w,
-                //                 h: brushBox.h * 0.0,
-                //                 marg: 0,
-                //             },
-                //             type: 'top',
-                //             attr: {
-                //                 text: {
-                //                     enabled: true,
-                //                     size: 16,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //                 path: {
-                //                     enabled: true,
-                //                     stroke: color_theme.dark.stroke,
-                //                     fill: color_theme.dark.stroke,
-                //                 },
-                //             },
-                //         },
-                //         axis: undefined,
-                //         scale: undefined,
-                //         domain: [ 0, 1000 ],
-                //         range: [ 0, brushBox.w ],
-                //         brush: {
-                //             zoom: false,
-                //             brush: false,
-                //         },
-                //     },
-                //     {
-                //         id: 'bottom',
-                //         enabled: true,
-                //         showAxis: true,
-                //         main: {
-                //             g: undefined,
-                //             box: {
-                //                 x: 0,
-                //                 y: brushBox.h * 0.2,
-                //                 w: brushBox.w,
-                //                 h: brushBox.h * 0.2,
-                //                 marg: 0,
-                //             },
-                //             type: 'bottom',
-                //             attr: {
-                //                 text: {
-                //                     enabled: false,
-                //                     size: 16,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //                 path: {
-                //                     enabled: true,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //             },
-                //         },
-                //         axis: undefined,
-                //         scale: undefined,
-                //         domain: [ 0, 1000 ],
-                //         range: [ 0, brushBox.w ],
-                //         brush: {
-                //             zoom: true,
-                //             brush: true,
-                //         },
-                //     },
-                // ],
-                // content: {
-                //     enabled: true,
-                //     main: {
-                //         g: undefined,
-                //         box: {
-                //             x: 0,
-                //             y: brushBox.h * 0.2,
-                //             w: brushBox.w,
-                //             h: brushBox.h * 0.6,
-                //             marg: 0,
-                //         },
-                //         attr: {
-                //             fill: color_theme.medium.background,
-                //         },
-                //     },
-                // },
-                // focus: {
-                //     enabled: true,
-                //     main: {
-                //         g: undefined,
-                //         box: {
-                //             x: 0,
-                //             y: brushBox.h * 0.2,
-                //             w: brushBox.w,
-                //             h: brushBox.h * 0.6,
-                //             marg: 0,
-                //         },
-                //         attr: {
-                //             fill: color_theme.darker.background,
-                //             opacity: 1,
-                //             stroke: color_theme.darker.stroke,
-                //         },
-                //     },
-                // },
 
                 brush: {
                     coef: {
@@ -1675,8 +1368,8 @@ function main_sched_blocks(opt_in) {
                         y: 0,
                     },
                     callback: function() {
-                        svg_blocks_queue_serverFutur.update_data()
-                        svg_events_queue_serverFutur.update_data()
+                        // svg_blocks_queue_serverFutur.update_data()
+                        // svg_events_queue_serverFutur.update_data()
                     },
                     enabled: true,
                 },
@@ -2010,13 +1703,13 @@ function main_sched_blocks(opt_in) {
                 events: {
                     block: {
                         click: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseover: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseout: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         drag: {
                             start: () => {},
@@ -2026,13 +1719,13 @@ function main_sched_blocks(opt_in) {
                     },
                     sched: {
                         click: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseover: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseout: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                     },
                 },
@@ -2397,13 +2090,13 @@ function main_sched_blocks(opt_in) {
                 events: {
                     block: {
                         click: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseover: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseout: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         drag: {
                             start: () => {},
@@ -2413,13 +2106,13 @@ function main_sched_blocks(opt_in) {
                     },
                     sched: {
                         click: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseover: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseout: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                     },
                 },
@@ -3117,13 +2810,13 @@ function main_sched_blocks(opt_in) {
                 events: {
                     block: {
                         click: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseover: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseout: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         drag: {
                             start: () => {},
@@ -3133,13 +2826,13 @@ function main_sched_blocks(opt_in) {
                     },
                     telescope: {
                         click: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseover: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         mouseout: (d) => {
-                            console.log(d)
+                            // console.log(d)
                         },
                         drag: {
                             start: () => {},
