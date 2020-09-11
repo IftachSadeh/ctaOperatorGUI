@@ -15,13 +15,13 @@ class BaseConfig():
     no_sub_arr_name = 'empty_sub_array'
     inst_pos_0 = [0, 90]
 
-    # rnd_seed = get_rnd_seed()
-    rnd_seed = 9897324
-    rnd_gen = Random(rnd_seed)
+    # rnd_seed_const = get_rnd_seed()
+    rnd_seed_const = 9897324
+    rnd_gen = Random(rnd_seed_const)
 
-    rnd_seed = (datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds()
-    rnd_seed = int(float(str(rnd_seed * 1e6)[-10:]))
-    rnd_gen_unique = Random(rnd_seed)
+    rnd_seed_unique = (datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds()
+    rnd_seed_unique = int(float(str(rnd_seed_unique * 1e6)[-10:]))
+    rnd_gen_unique = Random(rnd_seed_unique)
 
     datetime_epoch = datetime.utcfromtimestamp(0)
 
@@ -64,6 +64,11 @@ class BaseConfig():
         self.is_simulation = is_simulation
         self.debug_opts = debug_opts
 
+        # make sure each server has a unique rnadom seed (since multiple servers
+        # may be started at the same time)
+        rnd_seed = int(self.app_port) + BaseConfig.rnd_gen_unique.randint(1, int(1e7))
+        self.set_rnd_seed(rnd_seed)
+
         # for safety, make sure registered widgets can be requested by the client
         # e.g., expect a module file named 'AAA.py', containing a class AAA
         if allowed_widget_types is not None:
@@ -82,6 +87,6 @@ class BaseConfig():
 
     # ------------------------------------------------------------------
     def set_rnd_seed(self, rnd_seed):
-        BaseConfig.rnd_seed = rnd_seed
+        BaseConfig.rnd_seed_unique = rnd_seed
         BaseConfig.rnd_gen_unique = Random(rnd_seed)
         return

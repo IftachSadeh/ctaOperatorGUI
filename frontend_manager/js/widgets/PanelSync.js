@@ -307,7 +307,7 @@ let main_panel_sync = function(opt_in) {
         let shift_main_g = [ side_col_w, 0 ]
         // let n_empty_icon = -1
         let n_empty_icon = null
-        // n_empty_icon = 81; // set high for debugging...
+        // n_empty_icon = 999 // set high for debugging...
 
         function groups_to_server() {
             let data = {

@@ -41,7 +41,11 @@ class WebsocketBase():
         # is it allowed to restore sessions as part of development
         # or do we always reload web pages on server reloads
         self.can_restore_existing_sess = True
-        # self.can_restore_existing_sess = False
+        self.can_restore_existing_sess = False
+
+        # debug the setup / restoration of sync groups
+        self.debug_sync_group = False
+        # self.debug_sync_group = True
 
         # validate all session widgets on every few seconds
         self.validate_widget_time_sec = 0

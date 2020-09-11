@@ -262,7 +262,7 @@ class Housekeeping():
         """
 
         reco_info = self.redis.h_get_all(
-            'ws;widget_recovery_info',
+            'ws;recovery_info',
             default_val={},
         )
 
@@ -274,7 +274,7 @@ class Housekeeping():
 
         if len(widget_ids) > 0:
             self.redis.h_del(
-                'ws;widget_recovery_info',
+                'ws;recovery_info',
                 keys=widget_ids,
             )
             await self.cleanup_sess_widget(widget_ids=widget_ids)

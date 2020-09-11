@@ -108,7 +108,8 @@ class PanelSync(BaseWidget):
                 data=sync_groups,
             )
 
-        await self.sm.update_widget_recovery_info()
+        async with self.sm.locker.locks.acquire('sync'):
+            await self.sm.update_widget_recovery_info()
 
         await self.update_sync_groups(ignore_id=self.widget_id)
 
@@ -259,5 +260,13 @@ class PanelSync(BaseWidget):
             'children': children_0,
             'all_sync_widgets': all_sync_widgets
         }
+
+        # print('-'*80)
+        # for child0 in children_0:
+        #     for child1 in child0['children']:
+        #         print(' ------- ', child1['id'])
+        #         for child2 in child1['children']:
+        #             print('      -- ', child2['trg_widg_id'], child2['n_icon'], '  \t ', child2['id'])
+        # print('-'*100) ; print()
 
         return all_groups
