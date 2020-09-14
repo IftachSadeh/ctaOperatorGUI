@@ -81,8 +81,10 @@ let sock_panel_sync = function(opt_in) {
             widget_id: opt_in.widget_id,
             method_name: 'ask_data',
         }
-
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
     }
 
     // -------------------------------------------------------------------
@@ -104,7 +106,10 @@ let sock_panel_sync = function(opt_in) {
             method_name: 'set_client_sync_groups',
             method_args: data,
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
     }
 }
 

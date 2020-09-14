@@ -103,7 +103,10 @@ let sock_plots_dash = function(opt_in) {
             method_name: 'plotDash_push_new_hirch_keys',
             method_args: data,
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
     }
 }
 

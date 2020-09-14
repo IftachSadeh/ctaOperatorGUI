@@ -206,7 +206,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 new_schedule: opt_in.new_schedule,
             },
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
     }
 
     let new_queue_evt = function(data_in) {

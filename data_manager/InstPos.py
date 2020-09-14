@@ -92,14 +92,14 @@ class InstPos(ServiceManager):
         obs_block_ids = self.redis.get(name=('obs_block_ids_' + 'run'), default_val=[])
 
         pipe = self.redis.get_pipe()
-
         for obs_block_id in obs_block_ids:
             pipe.get(obs_block_id)
-
         blocks = pipe.execute()
 
         tel_point_pos = dict()
         for n_block in range(len(blocks)):
+            if not isinstance(blocks[n_block], dict):
+                continue
             if len(blocks[n_block]['pointings']) == 0:
                 continue
             tel_ids = (

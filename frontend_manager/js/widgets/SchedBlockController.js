@@ -129,7 +129,10 @@ let sock_sched_block_controller = function(opt_in) {
     //     'method_name':'sched_block_controllerAskTelData',
     //     'method_args':data
     //   };
-    //   sock.socket.emit('widget', emit_data);
+    // sock.socket.emit({
+    //     name: 'widget', 
+    //     data: emit_data,
+    // })
     //   return;
     // }
 
@@ -155,7 +158,10 @@ let sock_sched_block_controller = function(opt_in) {
     //             method_name: 'sched_block_controller_push_queue',
     //             method_args: data,
     //         }
-    //         sock.socket.emit('widget', emit_data)
+    //         sock.socket.emit({
+    //             name: 'widget', 
+    //             data: emit_data,
+    //         })
     //     }
 
     //     sock.socket.on('sched_block_controller_new_queue', function(data) {

@@ -1307,7 +1307,10 @@ window.ArrZoomerBase = function(opt_in_top) {
                 },
             },
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
         
         if (this_top.has_init) {
             sock.socket.server_log({
@@ -1385,7 +1388,10 @@ window.ArrZoomerBase = function(opt_in_top) {
                 method_args: data,
             },
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
 
         return
     }
@@ -1434,7 +1440,10 @@ window.ArrZoomerBase = function(opt_in_top) {
                 method_args: data_widget,
             },
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
 
         return
     }

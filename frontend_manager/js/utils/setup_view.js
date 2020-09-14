@@ -255,11 +255,3 @@ setup_view.view000 = function() {
 //     })
 // }
 
-
-// -------------------------------------------------------------------
-// refresh all other views on a refresh of this particular view
-// -------------------------------------------------------------------
-setup_view.view_refresh_all = function() {
-    sock.socket.emit('refreshAll')
-}
-

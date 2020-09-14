@@ -341,7 +341,10 @@ let main_empty_example = function(opt_in) {
                 method_args: my_message_data,
             }
 
-            sock.socket.emit('widget', emit_data)
+            sock.socket.emit({
+                name: 'widget', 
+                data: emit_data,
+            })
 
             // -------------------------------------------------------------------
             // do random stuff on updates ...

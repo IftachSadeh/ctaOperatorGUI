@@ -419,8 +419,11 @@ let main_arr_zoomer = function(opt_in) {
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
         function auto_trans_test() {
-            sock.socket.emit('set_active_widget', {
-                'widget_id': widget_id,
+            sock.socket.emit({
+                name: 'set_active_widget', 
+                data: {
+                    'widget_id': widget_id,
+                },
             })
 
             if (!is_def(arr_zoomer_base.get_ele('main'))) {
