@@ -663,10 +663,15 @@ window.ScrollBox = function() {
 
     function updated_content() {
         reserved.pan_zoom_box.set_content_dim()
-        reserved.pan_zoom_box.set_content_zoom_rel({
-            kx: 0.5,
-            ky: 0.2,
-        })
+        // reserved.pan_zoom_box.use_content_shortcut('fit')
+        // reserved.pan_zoom_box.set_content_trans_rel({
+        //     x: 0,
+        //     y: 0,
+        // })
+        // reserved.pan_zoom_box.set_content_zoom_rel({
+        //     kx: 1,
+        //     ky: 1,
+        // })
         // console.log(reserved.pan_zoom_box.get_focus())
         // update_scroller()
     }
