@@ -62,7 +62,7 @@ window.ArrZoomerMini = function(opt_in_top) {
 
     let site_scale = ele_base.site_scale
 
-    // let show_vor = false
+    let show_vor_lines = false
     this_top.has_init = false
 
     ele_base.set_ele(this_top, mini_lens_tag.toLowerCase())
@@ -668,32 +668,29 @@ window.ArrZoomerMini = function(opt_in_top) {
     //  Zoom to target when click on miniMap
     // ------------------------------------------------------------------
     function miniZoomClick() {
-    // let tag_now = 'miniZoomClick'
+        let voronoi = d3.Delaunay
+            .from(tel_data.vor.data, d => d.x, d => d.y)
+            .voronoi([0, 0, svg_dims.w, svg_dims.h])
 
-        let vor_func = d3
-            .voronoi()
-            .x(function(d) {
-                return d.x
+        let tag_vor = 'vor'
+        let vor = com.g_base_mini.vor
+            .selectAll('path.' + tag_vor)
+            .data(tel_data.vor.data, function(d, i) {
+                return d.id
             })
-            .y(function(d) {
-                return d.y
-            })
-            .extent([ [ 0, 0 ], [ svg_dims.w, svg_dims.h ] ])
 
-        com.g_base_mini.vor
-            .selectAll('path')
-            .data(vor_func.polygons(tel_data.vor.data))
+        vor
             .enter()
             .append('path')
+            .attr('class', tag_vor)
             .style('fill', 'transparent')
+            .style('opacity', '0')
             .attr('vector-effect', 'non-scaling-stroke')
             .style('stroke-width', 0)
             .style('opacity', 0)
-            .style('stroke', '#383B42')
-        // .style("opacity", "0.25").style("stroke-width", "0.75").style("stroke", "#E91E63")//.style("stroke", "white")
-            .call(function(d) {
-                d.attr('d', vor_ploy_func)
-            })
+            .style('stroke-width', '0')
+            .style('stroke', '#4F94CD')
+            // // .on('mouseover', (d, i) => console.log(i,d))
             .on('click', function(d) {
                 tel_data.vor_dblclick({
                     source: 'minizoomclick',
@@ -702,20 +699,6 @@ window.ArrZoomerMini = function(opt_in_top) {
                 })
                 return
             })
-        // .on("click", function(d) {
-        //   let scale_to_zoom = tel_data.vor_dblclick({d:d, is_in_out:false });
-        //   this_top.zoomToTrgQuick({ target:d.data.id, scale:scale_to_zoom, duration_scale:-1 });
-        // })
-        // .on("dblclick", function(d) {  // dousnt work well...
-        //   let scale_to_zoom = tel_data.vor_dblclick({d:d, is_in_out:true });
-        //   this_top.zoomToTrgQuick({ target:d.data.id, scale:scale_to_zoom, duration_scale:-1 });
-        // })
-      
-
-        // .on('mouseover', function (d) {
-        //   this_top.target = d.data.id
-        // })
-
             .on('mouseover', insts.data.hover)
             .on('click', insts.data.click)
             .on('dblclick', function(d) {
@@ -724,6 +707,25 @@ window.ArrZoomerMini = function(opt_in_top) {
                     is_in_out: dblclick_zoom_in_out,
                 })
             })
+            .merge(vor)
+            .attr('d', (d, i) => voronoi.renderCell(i))
+
+        vor
+            .exit()
+            .transition('out')
+            .duration(1)
+            .attr('opacity', 0)
+            .remove()
+
+        if (show_vor_lines) {
+            com.g_base_mini.vor
+                .selectAll('path.' + tag_vor)
+                .style('opacity', '0.5')
+                .style('stroke-width', '1.5')
+                .style('stroke', '#E91E63')
+        }
+
+        return
     }
 
     // ------------------------------------------------------------------

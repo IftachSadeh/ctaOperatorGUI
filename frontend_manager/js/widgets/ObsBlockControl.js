@@ -129,7 +129,7 @@ let main_obs_block_control = function(opt_in) {
         tag: widget_id,
     })
 
-    
+
     let update_data_evt = function(data_in) {
         if (data_in.metadata.widget_id !== widget_id) {
             return
@@ -471,7 +471,7 @@ let main_obs_block_control = function(opt_in) {
                 show_counts: true,
                 vor_click: function(d) {
                     block_focus({
-                        id: d.data.id,
+                        id: d.id,
                     })
                 },
                 lockers: [ tagObsBlkCnt + 'update_data' ],
@@ -503,12 +503,12 @@ let main_obs_block_control = function(opt_in) {
                 tag: tagTelScroll,
                 g_box: gTelBox,
                 box_data: telScrolBoxData,
-                vor_click: function(opt_in) {
+                vor_click: function(d) {
                     send_sync_state_to_server({
                         type: 'sync_tel_focus',
                         sync_time: Date.now(),
                         zoom_state: 1,
-                        target: opt_in.data.id,
+                        target: d.id,
                     })
                 },
                 lockers: [ tagObsBlkCnt + 'update_data' ],
@@ -1906,7 +1906,7 @@ let TelScroll = function() {
             x0: box_data.x,
             y0: box_data.y,
             w0: box_data.w,
-            h0: box_data.h,
+            h0: box_data.h, 
             rec_h: box_data.h * 0.3,
             rec_w: box_data.h * 0.3,
             show_counts: false,

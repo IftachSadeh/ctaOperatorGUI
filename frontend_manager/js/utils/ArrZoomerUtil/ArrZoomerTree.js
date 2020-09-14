@@ -43,6 +43,7 @@ window.ArrZoomerTree = function(opt_in_top) {
     let set_zoom_state = ele_base.set_zoom_state
     let props_s1 = ele_base.props_s1
 
+    let show_vor_lines = false
     let has_title = is_def(opt_in_top.has_title) ? opt_in_top.has_title : true
 
     this_top.has_init = false
@@ -1322,22 +1323,18 @@ window.ArrZoomerTree = function(opt_in_top) {
             )
         }
 
-        // ------------------------------------------------------------------
         // highlight on hover, using voronoi mapping
-        // ------------------------------------------------------------------
-        let vor_func = d3
-            .voronoi()
-            .x(function(d) {
-                return d.y
-            })
-            .y(function(d) {
-                return d.x
-            })
-            .extent([ [ 0, 0 ], [ tree_w, tree_h ] ])
+        // invert x,y in order to turn by 90deg
+        let voronoi = d3.Delaunay
+            .from(desc, d => d.y, d => d.x)
+            // .from(desc, d => d.x, d => d.y)
+            .voronoi([0, 0, tree_w, tree_h])
 
         let vor = com.s10.g_hierarchy
             .selectAll('path.' + tag_vor)
-            .data(vor_func.polygons(desc))
+            .data(desc, function(d, i) {
+                return d.id
+            })
 
         vor
             .enter()
@@ -1348,8 +1345,9 @@ window.ArrZoomerTree = function(opt_in_top) {
             .attr('vector-effect', 'non-scaling-stroke')
             .style('stroke-width', 0)
             .style('opacity', 0)
-            // .style("stroke-width", "1").style("opacity", "1")
-            .style('stroke', '#383B42')
+            .style('stroke-width', '0')
+            .style('stroke', '#4F94CD')
+            // .on('mouseover', (d, i) => console.log(i,d))
             .on('mouseover', function(d) {
                 focus_ele(d, true)
             })
@@ -1357,29 +1355,35 @@ window.ArrZoomerTree = function(opt_in_top) {
                 focus_ele(d, false)
             })
             .on('click', vor_click)
-            .merge(vor)
-            .call(function(d) {
-                d.attr('d', vor_ploy_func)
-            })
+            .merge(vor) 
+            .attr('d', (d, i) => voronoi.renderCell(i))
 
         vor
             .exit()
             .transition('out')
-            .duration(times.anim / 2)
+            .duration(1)
             .attr('opacity', 0)
             .remove()
+
+        if (show_vor_lines) {
+            com.s10.g_hierarchy
+                .selectAll('path.' + tag_vor)
+                .style('opacity', '0.5')
+                .style('stroke-width', '1.5')
+                .style('stroke', '#E91E63')
+        }
 
         // the click function
         // ------------------------------------------------------------------
         function vor_click(d) {
             set_sub_prop({
                 tel_id: tel_id,
-                prop_in: d.data.data.id,
+                prop_in: d.data.id,
             })
 
             let click_in = true
-            let data_id = d.data.data.id
-            let id_now = (is_def(d.data.parent) ? d.data.parent.data.id : data_id)
+            let data_id = d.data.id
+            let id_now = (is_def(d.parent) ? d.parent.data.id : data_id)
 
             let parent_name = insts.data.prop_parent_s1[tel_id][data_id]
             if (parent_name === data_id) {
@@ -1413,7 +1417,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         // the highlight function
         // ------------------------------------------------------------------
         function focus_ele(data_now, is_on) {
-            let id_now = data_now.data.data.id
+            let id_now = data_now.data.id
 
             if (is_on) {
                 if (!may_update()) {

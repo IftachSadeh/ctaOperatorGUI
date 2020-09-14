@@ -14,9 +14,6 @@
         window.WIDGET_TYPE = '${widget_type}'
         window.DISPLAY_USER_ID = '${display_user_id}'
         window.DISPLAY_USER_GROUP = '${display_user_group}'
-
-        window.D3_VERS_5 = true
-
     </script>
 
     <meta charset="UTF-8" />
@@ -32,6 +29,10 @@
     <script type="text/javascript" src="/static/d3/v5/d3.v5.min.js"></script>
     <!-- <script type="text/javascript" src="/static/d3/v6/d3.v6.min.js"></script> -->
     <!-- <script src="https://d3js.org/d3.v6.min.js"></script> -->
+
+    <!-- temporary load until we go to d3 v6 -->
+    <script type="text/javascript" src="/static/d3/d3-delaunay/d3-delaunay.js"></script>
+
 
     <script type="text/javascript" src="/static/d3_hexbin/d3-hexbin.v0.2.min.js"></script>
     <script type="text/javascript" src="/static/textures/dist/textures.js"></script>

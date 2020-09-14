@@ -30,11 +30,8 @@ window.ArrZoomerMain = function(opt_in_top) {
     // let widget_type = opt_in_top.widget_type
     
     let debug_pov_center = false
-    let vor_show_lines = false
-
-    if (!window.D3_VERS_5) {
-        vor_show_lines = true
-    }
+    let show_vor_lines = false
+    // show_vor_lines = true
 
     let no_render = opt_in_top.no_render
     let dblclick_zoom_in_out = (
@@ -996,30 +993,11 @@ window.ArrZoomerMain = function(opt_in_top) {
     // ------------------------------------------------------------------
     function init_vor() {
         // ------------------------------------------------------------------
-        //
-        // ------------------------------------------------------------------
-        let vor_func
-        if (window.D3_VERS_5) {
-            vor_func = d3
-                .voronoi()
-                .x(function(d) {
-                    return d.x
-                })
-                .y(function(d) {
-                    return d.y
-                })
-                .extent([ [ 0, 0 ], [ svg_dims.w, svg_dims.h ] ])
-        }
-        else {
-            // console.log('aaaaaaaaaaaaaaaaa', d3.Delaunay)
-        }
-
-        // ------------------------------------------------------------------
         // create voronoi cells for the dataset.
         // see: https://bl.ocks.org/mbostock/4060366
         // ------------------------------------------------------------------
         insts.data.hover = function(d) {
-            if (zooms.target === d.data.id) {
+            if (zooms.target === d.id) {
                 return
             }
             if (!locker.are_free([ 'zoom', 'auto_zoom_target' ])) {
@@ -1031,7 +1009,8 @@ window.ArrZoomerMain = function(opt_in_top) {
                 return
             }
 
-            zooms.target = d.data.id
+
+            zooms.target = d.id
             set_state()
 
             return
@@ -1069,7 +1048,7 @@ window.ArrZoomerMain = function(opt_in_top) {
             })
 
             let scale = this_top.get_scale()
-            // console.log((scale >= zooms.len["1.0"]),(zooms.target == d.data.id))
+            // console.log((scale >= zooms.len["1.0"]),(zooms.target == d.id))
 
             if (scale < zooms.len['1.0']) {
                 insts.data.dblclick({
@@ -1077,14 +1056,14 @@ window.ArrZoomerMain = function(opt_in_top) {
                     is_in_out: dblclick_zoom_in_out,
                 })
             }
-            else if (scale >= zooms.len['1.0'] && zooms.target !== d.data.id) {
+            else if (scale >= zooms.len['1.0'] && zooms.target !== d.id) {
                 insts.data.dblclick({
                     d: d,
                     is_in_out: false,
                 })
             }
             else {
-                zooms.target = d.data.id
+                zooms.target = d.id
                 set_state()
             }
 
@@ -1131,9 +1110,9 @@ window.ArrZoomerMain = function(opt_in_top) {
             let d = opt_in.d
             let zoom_in_out = opt_in.is_in_out
             let scale = this_top.get_scale()
-            let is_on_target = zooms.target === d.data.id
+            let is_on_target = zooms.target === d.id
 
-            zooms.target = d.data.id
+            zooms.target = d.id
 
             let scale_to_zoom = 1
             if (is_def(opt_in.scale_to_zoom)) {
@@ -1188,12 +1167,15 @@ window.ArrZoomerMain = function(opt_in_top) {
         //
         // ------------------------------------------------------------------
         function set_vor() {
+            let voronoi = d3.Delaunay
+                .from(insts.data.vor.data, d => d.x, d => d.y)
+                .voronoi([0, 0, svg_dims.w, svg_dims.h])
+
             let tag_vor = 'vor'
-            let polygons = vor_func.polygons(insts.data.vor.data)
             let vor = com.vor.g
                 .selectAll('path.' + tag_vor)
-                .data(polygons, function(d) {
-                    return d.data.id
+                .data(insts.data.vor.data, function(d, i) {
+                    return d.id
                 })
 
             vor
@@ -1205,11 +1187,8 @@ window.ArrZoomerMain = function(opt_in_top) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('stroke-width', 0)
                 .style('opacity', 0)
-                .style('stroke', '#383B42')
-                .style('stroke-width', '1')
-                .style('opacity', vor_show_lines ? 1 : 0)
-                .style('stroke', '#4F94CD')
                 .on('mouseover', insts.data.hover)
+                // .on('mouseover', (d, i) => console.log(i,d))
                 .on('click', insts.data.click)
                 .on('dblclick', function(d) {
                     insts.data.dblclick({
@@ -1217,15 +1196,23 @@ window.ArrZoomerMain = function(opt_in_top) {
                         is_in_out: dblclick_zoom_in_out,
                     })
                 })
-            // .on("mouseover", function(d) {
-            //   console.log(d.data.id)
-            // }) // debugging
                 .merge(vor)
-                .call(function(d) {
-                    d.attr('d', vor_ploy_func)
-                })
+                .attr('d', (d, i) => voronoi.renderCell(i))
 
-            vor.exit().remove()
+            vor
+                .exit()
+                .transition('out')
+                .duration(1)
+                .attr('opacity', 0)
+                .remove()
+
+            if (show_vor_lines) {
+                com.vor.g
+                    .selectAll('path.' + tag_vor)
+                    .style('opacity', '0.5')
+                    .style('stroke-width', '1.5')
+                    .style('stroke', '#4F94CD')
+            }
 
             // ------------------------------------------------------------------
             // calculation of coordinates for labels, added next
@@ -1394,50 +1381,42 @@ window.ArrZoomerMain = function(opt_in_top) {
             })
 
 
-            // ------------------------------------------------------------------
-            // use voronoi links to get the closest neighbours of each data-point
-            // see: http://christophermanning.org/projects/voronoi-diagram-with-force-directed-nodes-and-voronoi-links/
-            // ------------------------------------------------------------------
-            if (window.D3_VERS_5) {
-                let vor_links = vor_func.links(
-                    insts.data.vor.data_physical
-                )
-                let links_1 = {
-                }
-                $.each(vor_links, function(index, link_now) {
-                    let id_s = link_now.source.id
-                    let id_t = link_now.target.id
-
-                    if (!links_1[id_s]) {
-                        links_1[id_s] = [ id_t ]
-                    }
-                    else {
-                        links_1[id_s].push(id_t)
-                    }
+            // wether or not to add neighbors of neighbors to the links
+            let add_second_order_links = false
             
-                    if (!links_1[id_t]) {
-                        links_1[id_t] = [ id_s ]
-                    }
-                    else {
-                        links_1[id_t].push(id_s)
-                    }
-                })
+            // the voronoi info for the current layout
+            let voronoi = d3.Delaunay
+                .from(insts.data.vor.data_physical, d => d.x, d => d.y)
+                .voronoi([0, 0, svg_dims.w, svg_dims.h])
 
-                links_2.physical = deep_copy(links_1) // deep copy
-                $.each(links_1, function(id_s, link_now) {
-                    $.each(link_now, function(index_0, id_t0) {
-                        $.each(links_1[id_t0], function(index_1, id_t1) {
-                            if (links_2.physical[id_s].indexOf(id_t1) === -1) {
-                                links_2.physical[id_s].push(id_t1)
-                            }
-                            // console.log(index_1,links_2.physical[id_s],id_t0,id_t1)
-                        })
-                    })
-                })
-
-                insts.data.mini = insts.data.xyr_physical
-                insts.data.lens = insts.data.xyr_physical
+            // a list of neighbor ids for each element
+            links_2.physical = {
             }
+            $.each(insts.data.vor.data_physical, function(n_ele, ele_now) {
+                let ele_id = ele_now.id
+                let neighbors = new Set([...voronoi.neighbors(n_ele)])
+
+                if (add_second_order_links) {
+                    // add neighbors of neighbors
+                    let neighbors_0 = new Set(neighbors)
+                    $.each(Array.from(neighbors_0), function(n_neighbor, neighbor_index) {
+                        neighbors = new Set([
+                            ...neighbors,
+                            ...voronoi.neighbors(neighbor_index),
+                        ])
+                    })
+                }
+
+                links_2.physical[ele_id] = []
+                $.each(Array.from(neighbors), function(n_neighbor, neighbor_index) {
+                    links_2.physical[ele_id].push(
+                        insts.data.vor.data_physical[neighbor_index].id
+                    )
+                })
+            })
+
+            insts.data.mini = insts.data.xyr_physical
+            insts.data.lens = insts.data.xyr_physical
 
             return
         }

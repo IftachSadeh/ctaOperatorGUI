@@ -127,8 +127,8 @@ window.ScrollGrid = function(opt_in) {
     lockers.zoom_during = lockers.lockers.slice().concat([ lock_zoom.during ])
     lockers.zoom_end = lockers.lockers.slice().concat([ lock_zoom.end ])
 
-    let vor_show_lines = (
-        is_def(vor_opt.vor_show_lines) ? vor_opt.vor_show_lines : false
+    let show_vor_lines = (
+        is_def(vor_opt.show_vor_lines) ? vor_opt.show_vor_lines : false
     )
     let vor_mouseover = (
         is_def(vor_opt.mouseover) ? vor_opt.mouseover : null
@@ -229,34 +229,19 @@ window.ScrollGrid = function(opt_in) {
                 is_horz ? 0 : scroll_rec.w,
                 is_horz ? scroll_rec.w : 0,
             ]
-        }
-
-        let extent = [
-            [ x0, y0 ],
-            [
-                x0 + w0 - scroll_rec_marg[0],
-                y0 + h0 - scroll_rec_marg[1],
-            ],
-        ]
-
-        let vor_func = d3
-            .voronoi()
-            .x(function(d) {
-                return d.x + d.w / 2
-            })
-            .y(function(d) {
-                return d.y + d.h / 2
-            })
-            .extent(extent)
+        } 
 
         let vor_data = recs[main_tag]
 
+        let voronoi = d3.Delaunay
+            .from(vor_data, d => d.x + d.w / 2, d => d.y + d.h / 2)
+            .voronoi([x0, y0, x0 + w0 - scroll_rec_marg[0], y0 + h0 - scroll_rec_marg[1]])
+
+        let tag_vor = 'vor'
         let vor = com.g_vor
             .selectAll('path.' + tag_vor)
-            .data(vor_func.polygons(vor_data), function(d) {
-                if (d) {
-                    return d.data.id
-                }
+            .data(vor_data, function(d, i) {
+                return d.id
             })
 
         vor
@@ -268,24 +253,31 @@ window.ScrollGrid = function(opt_in) {
             .attr('vector-effect', 'non-scaling-stroke')
             .style('stroke-width', 0)
             .style('opacity', 0)
-            .style('stroke', '#383B42')
-            .style('stroke-width', '.5')
-            .style('opacity', vor_show_lines ? 1 : 0)
+            .style('stroke-width', '0')
             .style('stroke', '#4F94CD')
+            // .on('mouseover', (d, i) => console.log(i,d))
             .on('mouseover', vor_mouseover)
             .on('mouseout', vor_mouseout)
             .on('dblclick', vor_dblclick)
             .on('click', vor_click)
-            // .style("pointer-events", "none")
-            // .call(com[tag_drag])
-            // .on("mouseover", function(d) { console.log(d.data.id);  }) // debugging
             .merge(vor)
-            // .transition("clipPath").duration(1000)
-            .call(function(d) {
-                d.attr('d', vor_ploy_func)
-            })
+            .attr('d', (d, i) => voronoi.renderCell(i))
 
-        vor.exit().remove()
+        vor
+            .exit()
+            .transition('out')
+            .duration(1)
+            .attr('opacity', 0)
+            .remove()
+
+        if (show_vor_lines) {
+            com.g_vor
+                .selectAll('path.' + tag_vor)
+                .style('opacity', '0.5')
+                .style('stroke-width', '2.5')
+                .style('stroke', '#E91E63')
+        }
+
 
         if (vor_call) {
             com.g_vor.selectAll('path.' + tag_vor).call(vor_call)
@@ -293,6 +285,8 @@ window.ScrollGrid = function(opt_in) {
         else if (has_bot_top) {
             com.g_vor.selectAll('path.' + tag_vor).call(com[tag_drag])
         }
+
+        return
     }
 
     function xy_frac_zoom(xy_frac_in) {
