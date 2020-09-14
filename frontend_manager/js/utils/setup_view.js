@@ -202,7 +202,7 @@ setup_view.view207 = function() {
 // test load
 // -------------------------------------------------------------------
 setup_view.view001 = function() {
-    let n_widgets = 10 
+    let n_widgets = 10
     let name_tags = [
         'ArrayZoomer',
         // 'SubArrGrp',
@@ -220,7 +220,7 @@ setup_view.view001 = function() {
         for (var i = 0; i < n_widgets; i++) {
             sock.add_widget({
                 name_tag: name_tag,
-                table_title: (name_tag + ' ' + (i+1) + ' / ' + n_widgets),
+                table_title: (name_tag + ' ' + (i + 1) + ' / ' + n_widgets),
                 has_icon: true,
             })
         }

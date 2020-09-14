@@ -359,7 +359,7 @@ window.TelescopeDisplayer = function(opt_in) {
         }
 
         let click, cloned, hoveredStart, hoveredEnd, action
-        function dragstarted(d) {
+        function dragstarted(e, d) {
             click = true
             cloned = clone(d3.select(this.parentNode))
             cloned.style('pointer-events', 'none')
@@ -415,12 +415,12 @@ window.TelescopeDisplayer = function(opt_in) {
                 .style('opacity', 0.5)
                 .style('pointer-events', 'none')
         }
-        function dragged(d) {
+        function dragged(e, d) {
             click = false
             let trans = cloned.attr('transform')
             trans = {
-                x: Number(trans.split('(')[1].split(',')[0]) + d3.event.dx,
-                y: Number(trans.split(',')[1].split(')')[0]) + d3.event.dy,
+                x: Number(trans.split('(')[1].split(',')[0]) + e.dx,
+                y: Number(trans.split(',')[1].split(')')[0]) + e.dy,
             }
             // let r = {
             //   rx: Number(cloned.attr('rx')),
@@ -432,7 +432,7 @@ window.TelescopeDisplayer = function(opt_in) {
             // if (trans.y + (r.ry * 2) > com.main.box.h) trans.y = com.main.box.h - (r.ry * 2)
             cloned.attr('transform', 'translate(' + trans.x + ',' + trans.y + ')')
         }
-        function dragended(d) {
+        function dragended(e, d) {
             if (click) {
                 console.log(d)
                 com.events.telescope.click(d)
@@ -902,8 +902,7 @@ window.TelescopeDisplayer = function(opt_in) {
                             .attr('fill-opacity', 1)
                             .attr('stroke-width', 0.4)
                             .attr('stroke', color_theme.dark.stroke)
-                            .on('click', function(d) {
-                                let event = d3.event
+                            .on('click', function(e, d) {
                                 let node = d3.select(this)
                                 node.attr('clicked', 1)
 
@@ -911,7 +910,7 @@ window.TelescopeDisplayer = function(opt_in) {
                                     if (node.attr('clicked') === '2') {
                                         return
                                     }
-                                    if (event.ctrlKey) {
+                                    if (e.ctrlKey) {
                                         // com.input.selection.push(that)
                                     }
                                     else {
@@ -922,18 +921,18 @@ window.TelescopeDisplayer = function(opt_in) {
                                     }
                                 }, 250)
                             })
-                            .on('dblclick', function(d) {
+                            .on('dblclick', function(e, d) {
                                 let node = d3.select(this)
                                 node.attr('clicked', 2)
                             })
-                            .on('mouseover', function(d) {
+                            .on('mouseover', function(e, d) {
                                 if (!com.events.block.click) {
                                     return
                                 }
                                 d3.select(this).style('cursor', 'pointer')
                                 com.events.block.mouseover('telescope', d.obs_block_id)
                             })
-                            .on('mouseout', function(d) {
+                            .on('mouseout', function(e, d) {
                                 if (!com.events.block.click) {
                                     return
                                 }
@@ -1486,8 +1485,7 @@ window.TelescopeDisplayer = function(opt_in) {
                 .style('stroke-opacity', 0)
                 .style('stroke-dasharray', [])
                 .attr('vector-effect', 'non-scaling-stroke')
-                .on('click', function(d) {
-                    let event = d3.event
+                .on('click', function(e, d) {
                     let node = d3.select(this)
                     node.attr('clicked', 1)
 
@@ -1495,7 +1493,7 @@ window.TelescopeDisplayer = function(opt_in) {
                         if (node.attr('clicked') === '2') {
                             return
                         }
-                        if (event.ctrlKey) {
+                        if (e.ctrlKey) {
                             // com.input.selection.push(that)
                         }
                         else {
@@ -1504,25 +1502,25 @@ window.TelescopeDisplayer = function(opt_in) {
                         com.events.telescope.click(d)
                     }, 250)
                 })
-                .on('dblclick', function(d) {
+                .on('dblclick', function(e, d) {
                     let node = d3.select(this)
                     node.attr('clicked', 2)
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     defaultmouseover(d3.select(this), d)
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     defaultmouseout(d3.select(this), d)
                 })
                 .call(d3.drag()
-                    .on('start', function(d) {
-                        com.events.telescope.drag.start(d)
+                    .on('start', function(e, d) {
+                        com.events.telescope.drag.start(e, d)
                     })
-                    .on('drag', function(d) {
-                        com.events.telescope.drag.tick(d)
+                    .on('drag', function(e, d) {
+                        com.events.telescope.drag.tick(e, d)
                     })
-                    .on('end', function(d) {
-                        com.events.telescope.drag.end(d)
+                    .on('end', function(e, d) {
+                        com.events.telescope.drag.end(e, d)
                     }))
             d3.select(this).append('rect')
                 .attr('class', 'pattern')

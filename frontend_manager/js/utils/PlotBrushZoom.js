@@ -438,8 +438,8 @@ window.PlotBrushZoom = function() {
                 d3.select(this).style('cursor', 'default')
             })
 
-        reserved.azerty.g.on('wheel', function() {
-            d3.event.preventDefault()
+        reserved.azerty.g.on('wheel', function(event) {
+            event.preventDefault()
         })
     }
     function updateAzerty() {
@@ -552,18 +552,19 @@ window.PlotBrushZoom = function() {
         }
 
         reserved.g
-            .on('wheel', function() {
-                d3.event.preventDefault()
+            .on('wheel', function(event) {
+                console.error('BUG - upgrade to d3.pointer(event) - https://observablehq.com/@d3/d3v6-migration-guide#pointer')
+                event.preventDefault()
                 if (reserved.location === 'left'
-                || reserved.location === 'right') { // d3.event.ctrlKey
+                || reserved.location === 'right') { // event.ctrlKey
                     reserved.zoom.meta.ky.point = d3.mouse(d3.select(this).node())
 
-                    let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
+                    let sign = -Math.abs(event.deltaY) / event.deltaY
 
                     reserved.zoom.meta.ky.previous = reserved.zoom.meta.ky.now
 
                     reserved.zoom.meta.ky.now
-                    += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+                    += sign * Math.log(Math.abs(event.deltaY)) * 0.02
                     if (reserved.zoom.meta.ky.now < reserved.zoom.meta.ky.min) {
                         reserved.zoom.meta.ky.now = reserved.zoom.meta.ky.min
                     }
@@ -575,12 +576,12 @@ window.PlotBrushZoom = function() {
                 else {
                     reserved.zoom.meta.kx.point = d3.mouse(d3.select(this).node())
 
-                    let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
+                    let sign = -Math.abs(event.deltaY) / event.deltaY
 
                     reserved.zoom.meta.kx.previous = reserved.zoom.meta.kx.now
 
                     reserved.zoom.meta.kx.now
-                    += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+                    += sign * Math.log(Math.abs(event.deltaY)) * 0.02
                     if (reserved.zoom.meta.kx.now < reserved.zoom.meta.kx.min) {
                         reserved.zoom.meta.kx.now = reserved.zoom.meta.kx.min
                     }
@@ -598,8 +599,8 @@ window.PlotBrushZoom = function() {
                     .drag()
                     .on('start', function() {})
                     .on('drag', function() {
-                        reserved.focus.translate.x = d3.event.dx
-                        reserved.focus.translate.y = d3.event.dy
+                        reserved.focus.translate.x = event.dx
+                        reserved.focus.translate.y = event.dy
 
                         computeDragFactor()
                         update()

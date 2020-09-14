@@ -1479,13 +1479,13 @@ window.BlockDisplayer = function(opt_in) {
                     .attr('stroke', color_theme.dark.stroke)
                     .attr('stroke-width', 0.5)
                     .attr('stroke-dasharray', [])
-                    .on('click', function(d) {
+                    .on('click', function(e, d) {
                         com.events.sched.click(d)
                     })
-                    .on('mouseover', function(d) {
+                    .on('mouseover', function(e, d) {
                         com.events.sched.mouseover(d)
                     })
-                    .on('mouseout', function(d) {
+                    .on('mouseout', function(e, d) {
                         com.events.sched.mouseout(d)
                     })
                 d3.select(this).append('text')
@@ -3487,18 +3487,17 @@ window.BlockDisplayer = function(opt_in) {
                 .style('stroke-opacity', 0)
                 .style('stroke-dasharray', [])
                 .attr('vector-effect', 'non-scaling-stroke')
-                .on('click', function(d) {
+                .on('click', function(e, d) {
                     clearTimeout(timeout)
                     timeout = setTimeout(function() {
                         com.events.block.click(d)
                     }, 200)
-                    // let event = d3.event
                     // let node = d3.select(this)
                     // node.attr('clicked', 1)
                     //
                     // setTimeout(function () {
                     //   if (node.attr('clicked') === '2') return
-                    //   if (event.ctrlKey) {
+                    //   if (e.ctrlKey) {
                     //     // com.input.selection.push(that)
                     //   } else {
                     //     // com.input.selection = [that]
@@ -3506,38 +3505,38 @@ window.BlockDisplayer = function(opt_in) {
                     //   com.events.block.click('block', d.obs_block_id)
                     // }, 250)
                 })
-                .on('dblclick', function(d) {
+                .on('dblclick', function(e, d) {
                     clearTimeout(timeout)
                     console.log('dbclick')
                     com.events.block.dbclick(d)
                     // let node = d3.select(this)
                     // node.attr('clicked', 2)
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     com.events.block.mouseover('block', d.obs_block_id)
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     com.events.block.mouseout('block', d.obs_block_id)
                 })
                 .call(d3.drag()
-                    .on('start', function(d) {
+                    .on('start', function(e, d) {
                         com.interaction = {
                         }
                         com.interaction.oldG = parent
                         if (com.events.block.drag) {
-                            com.events.block.drag.start(d)
+                            com.events.block.drag.start(e, d)
                         }
                     })
-                    .on('drag', function(d) {
+                    .on('drag', function(e, d) {
                         if (com.events.block.drag) {
-                            com.events.block.drag.tick(d)
+                            com.events.block.drag.tick(e, d)
                         }
                     })
-                    .on('end', function(d) {
+                    .on('end', function(e, d) {
                         if (com.events.block.drag) {
-                            com.events.block.drag.end(d)
+                            com.events.block.drag.end(e, d)
                         }
                     }))
             d3.select(this).append('rect')

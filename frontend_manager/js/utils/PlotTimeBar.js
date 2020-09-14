@@ -536,18 +536,18 @@ window.PlotTimeBar = function() {
                 .extent([ [ 0, 0 ], [ com.top.box.w, com.top.box.h ] ])
 
             com.zoom.zoom
-                .on('start', function(d) {
-                    com.zoom_start(this)
+                .on('start', function(e, d) {
+                    com.zoom_start(e, this)
                 })
-                .on('zoom', function(d) {
-                    com.zoom_during(this)
+                .on('zoom', function(e, d) {
+                    com.zoom_during(e, this)
                 })
-                .on('end', function(d) {
-                    com.zoom_end(this)
+                .on('end', function(e, d) {
+                    com.zoom_end(e, this)
                 })
 
-            com.g_box.on('wheel', function() {
-                d3.event.preventDefault()
+            com.g_box.on('wheel', function(event) {
+                event.preventDefault()
             })
 
             com.bot.brush = d3
@@ -570,15 +570,15 @@ window.PlotTimeBar = function() {
             }
         }
 
-        com.zoom_start = function(ele) {
+        com.zoom_start = function(e, ele) {
             com.isInZoom = true
         }
-        com.zoom_during = function(ele) {
-            if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
+        com.zoom_during = function(e, ele) {
+            if (e.sourceEvent && e.sourceEvent.type === 'brush') {
                 return
             } // ignore zoom-by-brush
 
-            com.in_user_zoom = is_def(d3.event.sourceEvent)
+            com.in_user_zoom = is_def(e.sourceEvent)
 
             if (locker.are_free(lockers.zoom_during)) {
                 locker.add({
@@ -591,7 +591,7 @@ window.PlotTimeBar = function() {
                 })
 
                 // Update top Axis
-                let trans = d3.event.transform
+                let trans = e.transform
                 com.top.domain = trans.rescaleX(com.bot.scale.x).domain()
                 com.top.scale.x.domain(com.top.domain)
                 updateTopAxis()
@@ -607,12 +607,12 @@ window.PlotTimeBar = function() {
                 })
             }
         }
-        com.zoom_end = function(ele) {
-            if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
+        com.zoom_end = function(e, ele) {
+            if (e.sourceEvent && e.sourceEvent.type === 'brush') {
                 return
             } // ignore zoom-by-brush
 
-            // let trans = d3.event.transform
+            // let trans = e.transform
             // let srcClass = d3.select(ele).attr('class')
             //
             // com.zoom.trans[srcClass] = trans
@@ -640,11 +640,11 @@ window.PlotTimeBar = function() {
             // doDomainTrans({ trans: trans, sel: sel })
         }
 
-        com.brushStart = function() {
+        com.brushStart = function(e) {
             com.isInBrush = true
         }
-        com.brushDuring = function() {
-            if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') {
+        com.brushDuring = function(e) {
+            if (e.sourceEvent && e.sourceEvent.type === 'zoom') {
                 return
             } // ignore brush-by-zoom
             // console.log('brushDuring');
@@ -659,8 +659,8 @@ window.PlotTimeBar = function() {
                     override: true,
                 })
 
-                if (d3.event.sourceEvent) {
-                    let s = d3.event.selection || com.bot.scale.x.range()
+                if (e.sourceEvent) {
+                    let s = e.selection || com.bot.scale.x.range()
 
                     // Update Top Axis
                     com.top.scale.x.domain(s.map(com.bot.scale.x.invert, com.bot.scale.x))
@@ -681,8 +681,8 @@ window.PlotTimeBar = function() {
                 })
             }
         }
-        com.brushEnd = function() {
-            if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') {
+        com.brushEnd = function(e) {
+            if (e.sourceEvent && e.sourceEvent.type === 'zoom') {
                 return
             } // ignore brush-by-zoom
 

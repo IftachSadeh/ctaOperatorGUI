@@ -182,7 +182,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             // .style("stroke",'#F2F2F2' )
             // .style("stroke",'#2196F3' )
             .style('stroke-width', 1)
-            .on('click', function() {
+            .on('click', function(e, d) {
                 let scale = get_ele('main').get_scale()
                 if (scale >= zooms.len['0.1'] && scale < zooms.len['1.0']) {
 
@@ -934,7 +934,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             //   return 'translate(' + -rec_w * 2 + ',' + rec_y + ')'
             // })
             .merge(rect)
-            .on('click', rec_click)
+            .on('click', (e, d) => rec_click(d))
             .transition('enter')
             .duration(times.anim)
             .attr('transform', function(d) {
@@ -1328,7 +1328,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         let voronoi = d3.Delaunay
             .from(desc, d => d.y, d => d.x)
             // .from(desc, d => d.x, d => d.y)
-            .voronoi([0, 0, tree_w, tree_h])
+            .voronoi([ 0, 0, tree_w, tree_h ])
 
         let vor = com.s10.g_hierarchy
             .selectAll('path.' + tag_vor)
@@ -1348,14 +1348,14 @@ window.ArrZoomerTree = function(opt_in_top) {
             .style('stroke-width', '0')
             .style('stroke', '#4F94CD')
             // .on('mouseover', (d, i) => console.log(i,d))
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 focus_ele(d, true)
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 focus_ele(d, false)
             })
-            .on('click', vor_click)
-            .merge(vor) 
+            .on('click', (e, d) => vor_click(d))
+            .merge(vor)
             .attr('d', (d, i) => voronoi.renderCell(i))
 
         vor

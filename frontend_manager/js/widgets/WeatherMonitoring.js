@@ -232,8 +232,8 @@ let main_weather_monitoring = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
 

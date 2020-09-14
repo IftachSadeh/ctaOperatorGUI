@@ -216,11 +216,11 @@ window.ObsblockForm = function(opt_in) {
             .on('click', function() {
                 com.tree.events.click('block', data.obs_block_id)
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 d3.select(this).style('cursor', 'pointer')
                 d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 d3.select(this).style('cursor', 'default')
                 d3.select(this).attr('fill', 'transparent')
             })
@@ -294,11 +294,11 @@ window.ObsblockForm = function(opt_in) {
             .on('click', function() {
                 com.tree.events.click('sched_block', data.sched_block_id)
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 d3.select(this).style('cursor', 'pointer')
                 d3.select(this).attr('fill', colorPalette.darker.background)
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 d3.select(this).style('cursor', 'default')
                 d3.select(this).attr('fill', colorPalette.dark.background)
             })
@@ -333,11 +333,11 @@ window.ObsblockForm = function(opt_in) {
                 .on('click', function() {
                     com.tree.events.click('block', schedB.blocks[i].obs_block_id)
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     d3.select(this).attr('fill', palette.color.background)
                 })
@@ -363,11 +363,11 @@ window.ObsblockForm = function(opt_in) {
                 .on('click', function() {
                     com.tree.events.change(com.data.schedB)
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     d3.select(this).attr('fill', d3.color(colorPalette.dark.background).darker(0.9))
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     d3.select(this).attr('fill', colorPalette.dark.background)
                 })
@@ -1240,10 +1240,10 @@ window.ObsblockForm = function(opt_in) {
                     .on('click', function() {
                         g.remove()
                     })
-                    .on('mouseover', function(d) {
+                    .on('mouseover', function(e, d) {
                         d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
                     })
-                    .on('mouseout', function(d) {
+                    .on('mouseout', function(e, d) {
                         d3.select(this).attr('fill', colorPalette.darker.background)
                     })
                 g.append('text')
@@ -1297,10 +1297,10 @@ window.ObsblockForm = function(opt_in) {
                         com.events.modification(com.data.block, false, 'pointings')
                         g.remove()
                     })
-                    .on('mouseover', function(d) {
+                    .on('mouseover', function(e, d) {
                         d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
                     })
-                    .on('mouseout', function(d) {
+                    .on('mouseout', function(e, d) {
                         d3.select(this).attr('fill', colorPalette.darker.background)
                     })
                 g.append('text')
@@ -2567,10 +2567,10 @@ window.ObsblockForm = function(opt_in) {
                 // reassignTelescope()
                 updateTelescope_information()
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 d3.select(this).attr('fill', colorPalette.dark.background)
             })
             .attr('rx', 4)
@@ -2620,10 +2620,10 @@ window.ObsblockForm = function(opt_in) {
                 updateTelescope_information()
                 com.events.modification(com.data.block, false, 'switchTelescope')
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 d3.select(this).attr('fill', colorPalette.dark.background)
             })
             .attr('rx', 4)
@@ -2658,10 +2658,10 @@ window.ObsblockForm = function(opt_in) {
             .on('click', function() {
                 g.remove()
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 d3.select(this).attr('fill', colorPalette.darker.background)
             })
         g.append('text')
@@ -3187,7 +3187,7 @@ window.ObsblockForm = function(opt_in) {
             .on('mouseover', function() {
                 d3.select(this).attr('fill', colorPalette.darkest.background)
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 d3.select(this).attr('fill', colorPalette.darker.background)
             })
         otherg.append('image')
@@ -3851,10 +3851,10 @@ window.ObsblockForm = function(opt_in) {
                     updateTelescope_information()
                     com.events.modification(com.data.block, false, 'changeTelescopes_layout')
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).attr('fill', 'transparent')
                 })
             g.append('svg:image')
@@ -3892,11 +3892,11 @@ window.ObsblockForm = function(opt_in) {
                         closeOtherBlocks()
                     }
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     // if (d3.select(this).attr('enabled') === 'true')
                     d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     // if (d3.select(this).attr('enabled') === 'true')
                     d3.select(this).attr('fill', 'transparent')
                 })

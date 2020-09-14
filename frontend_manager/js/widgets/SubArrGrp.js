@@ -784,8 +784,8 @@ let main_sub_arr_grp = function(opt_in) {
             // zoom start/on/end functions, attachd to com.svg_zoom
             // -------------------------------------------------------------------
             let scale_start = 0
-            com.svg_zoom_start = function() {
-                scale_start = d3.event.transform.k
+            com.svg_zoom_start = function(event) {
+                scale_start = event.transform.k
                 locker.add({
                     id: 'zoom',
                     override: true,
@@ -796,14 +796,14 @@ let main_sub_arr_grp = function(opt_in) {
                 })
             }
 
-            com.svg_zoom_during = function() {
-                com.zoom_callable.attr('transform', d3.event.transform)
+            com.svg_zoom_during = function(event) {
+                com.zoom_callable.attr('transform', event.transform)
                 com.svg_zoom_update_state()
             }
 
             com.svg_zoom_update_state = function() {}
 
-            com.svg_zoom_end = function() {
+            com.svg_zoom_end = function(event) {
                 locker.remove('zoom')
                 locker.remove({
                     id: 'zoom_end',
@@ -817,12 +817,12 @@ let main_sub_arr_grp = function(opt_in) {
                 do_zoom_end_func()
 
                 // if on minimal zoom, center
-                if (Math.abs(d3.event.transform.k - scale_start) > 0.00001) {
-                    if (Math.abs(d3.event.transform.k - len_sky_pos.z['0.0']) < 0.00001) {
+                if (Math.abs(event.transform.k - scale_start) > 0.00001) {
+                    if (Math.abs(event.transform.k - len_sky_pos.z['0.0']) < 0.00001) {
                         if (locker.are_free([ 'auto_zoom_target' ])) {
                             zoom_to_target({
                                 target: 'init',
-                                scale: d3.event.transform.k,
+                                scale: event.transform.k,
                                 duration_scale: 0.5,
                             })
                         }
@@ -979,8 +979,8 @@ let main_sub_arr_grp = function(opt_in) {
                 // .classed("svgInGridStack_inner", true)
                 .style('background', '#383B42') // .style("background", "blue")// .style("border","1px solid red")
                 .call(com.svg_zoom)
-                .on('wheel', function() {
-                    d3.event.preventDefault()
+                .on('wheel', function(event) {
+                    event.preventDefault()
                 })
                 // .on("dblclick.zoom", null)
 
@@ -1027,8 +1027,8 @@ let main_sub_arr_grp = function(opt_in) {
                     return svg_dims.w[1] * (i === 0 ? 1 / 2 : 1 / 2.2)
                 })
 
-            com.zoom_callable.on('mousemove', function() {
-                update_over_text(d3.mouse(this))
+            com.zoom_callable.on('mousemove', function(event) {
+                update_over_text(d3.pointer(event))
             })
 
             // -------------------------------------------------------------------
@@ -1518,7 +1518,7 @@ let main_sub_arr_grp = function(opt_in) {
                         return 'translate(' + d[tag_now][0] + ',' + d[tag_now][1] + ')'
                     })
                     .attr('fill-opacity', trg_tel === 'trg' ? 0.25 : 0.55)
-                    .on('click', function(d) {
+                    .on('click', function(e, d) {
                         if (trg_tel === 'tel') {
                             svg_sub_arr.zoom_to_target({
                                 target: d.id,
@@ -2439,16 +2439,16 @@ let main_sub_arr_grp = function(opt_in) {
                 // zoom start/on/end functions, attachd to com.svg_zoom
                 // -------------------------------------------------------------------
                 let scale_start = 0
-                com.svg_zoom_start = function() {
-                    scale_start = d3.event.transform.k
+                com.svg_zoom_start = function(event) {
+                    scale_start = event.transform.k
                     locker.add({
                         id: 'zoom',
                         override: true,
                     })
                 }
 
-                com.svg_zoom_during = function() {
-                    com.zoom_callable.attr('transform', d3.event.transform)
+                com.svg_zoom_during = function(event) {
+                    com.zoom_callable.attr('transform', event.transform)
                     com.svg_zoom_update_state()
                 }
 
@@ -2486,17 +2486,17 @@ let main_sub_arr_grp = function(opt_in) {
                     }
                 }
 
-                com.svg_zoom_end = function() {
+                com.svg_zoom_end = function(event) {
                     locker.remove('zoom')
                     com.svg_zoom_update_state()
 
                     // if on minimal zoom, center
-                    if (Math.abs(d3.event.transform.k - scale_start) > 0.00001) {
-                        if (Math.abs(d3.event.transform.k - com.z['0.0']) < 0.00001) {
+                    if (Math.abs(event.transform.k - scale_start) > 0.00001) {
+                        if (Math.abs(event.transform.k - com.z['0.0']) < 0.00001) {
                             if (locker.are_free([ 'auto_zoom_target' ])) {
                                 zoom_to_target({
                                     target: 'init',
-                                    scale: d3.event.transform.k,
+                                    scale: event.transform.k,
                                     duration_scale: 0.5,
                                 })
                             }
@@ -2661,8 +2661,8 @@ let main_sub_arr_grp = function(opt_in) {
                     .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
                     .call(com.svg_zoom)
                     .on('dblclick.zoom', null)
-                    .on('wheel', function() {
-                        d3.event.preventDefault()
+                    .on('wheel', function(event) {
+                        event.preventDefault()
                     })
 
                 com.zoom_callable = com.svg.append('g')
@@ -3025,9 +3025,9 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('fill-opacity', function(d) {
                     return hirch_style_opac(d, 0)
                 })
-                .on('mouseover', hirch_style_hover)
-                .on('click', hierarchy_style_click)
-                .on('dblclick', hirch_style_dblclick)
+                .on('mouseover', (e, d) => hirch_style_hover(d))
+                .on('click', (e, d) => hierarchy_style_click(d))
+                .on('dblclick', (e, d) => hirch_style_dblclick(d))
                 .merge(circ)
                 .each(function(d) {
                     com.tel_xy[d.data.id] = {

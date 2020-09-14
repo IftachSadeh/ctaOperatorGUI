@@ -705,8 +705,7 @@ window.TargetDisplayer = function(opt_in) {
         enter.each(function(d, i) {
             let parent = d3.select(this)
             // d3.select(this).append('ellipse')
-            //   .on('click', function (d) {
-            //     let event = d3.event
+            //   .on('click', function (event, d) {
             //     let node = d3.select(this)
             //     node.attr('clicked', 1)
             //

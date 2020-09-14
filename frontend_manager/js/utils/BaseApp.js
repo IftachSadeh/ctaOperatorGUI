@@ -830,7 +830,7 @@ function BaseApp() {
                 is_short_night: is_short_night,
             }
             socket.emit({
-                name: 'set_sim_clock_sim_params', 
+                name: 'set_sim_clock_sim_params',
                 data: data_emit,
             })
 

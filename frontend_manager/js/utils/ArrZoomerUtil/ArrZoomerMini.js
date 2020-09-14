@@ -223,7 +223,7 @@ window.ArrZoomerMini = function(opt_in_top) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-        function svg_zoom_start() {
+        function svg_zoom_start(e) {
             if (!locker.are_free([
                 'zoom_sync_main', ('zoom_sync' + mini_lens_tag), 'in_zoom_main',
             ])) {
@@ -240,7 +240,7 @@ window.ArrZoomerMini = function(opt_in_top) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function svg_zoom_during() {
+        function svg_zoom_during(e) {
             if (!locker.are_free([
                 'zoom_sync_main', ('zoom_sync' + mini_lens_tag), 'in_zoom_main',
             ])) {
@@ -248,7 +248,7 @@ window.ArrZoomerMini = function(opt_in_top) {
             }
 
             if (!this_top.static_zoom) {
-                mini_gs.g_base.attr('transform', d3.event.transform)
+                mini_gs.g_base.attr('transform', e.transform)
             }
             // mini_zoom_view_recOnce({ animT: 0 })
 
@@ -264,8 +264,8 @@ window.ArrZoomerMini = function(opt_in_top) {
                     return
                 }
         
-                ele_base.svgs[d].g_base.attr('transform', d3.event.transform)
-                // ele_base.svgs.main.g_base.attr('transform', d3.event.transform)
+                ele_base.svgs[d].g_base.attr('transform', e.transform)
+                // ele_base.svgs.main.g_base.attr('transform', e.transform)
             })
 
             return
@@ -274,7 +274,7 @@ window.ArrZoomerMini = function(opt_in_top) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function svg_zoom_end() {
+        function svg_zoom_end(e) {
             if (!locker.are_free([
                 'zoom_sync_main', ('zoom_sync' + mini_lens_tag), 'in_zoom_main',
             ])) {
@@ -283,7 +283,7 @@ window.ArrZoomerMini = function(opt_in_top) {
 
             mini_zoom_view_rec({
             })
-            // console.log('-svg_zoom_end-svg_zoom_end-', d3.event)
+            // console.log('-svg_zoom_end-svg_zoom_end-', e)
 
             $.each([ 'main', 'mini', 'lens' ], function(i, d) {
                 if (d == mini_lens_tag) {
@@ -293,8 +293,8 @@ window.ArrZoomerMini = function(opt_in_top) {
                 if (!get_ele(d)) {
                     return
                 }
-                get_ele(d).zoom_sync(d3.event.transform)
-                // get_ele('main').zoom_sync(d3.event.transform)
+                get_ele(d).zoom_sync(e.transform)
+                // get_ele('main').zoom_sync(e.transform)
             })
 
 
@@ -399,8 +399,8 @@ window.ArrZoomerMini = function(opt_in_top) {
             mini_gs.g_mini
                 .call(com.svg_zoom)
                 .on('dblclick.zoom', null)
-                .on('wheel', function() {
-                    d3.event.preventDefault()
+                .on('wheel', function(event) {
+                    event.preventDefault()
                 })
                 .on('mousedown.zoom', null)
         }
@@ -670,7 +670,7 @@ window.ArrZoomerMini = function(opt_in_top) {
     function miniZoomClick() {
         let voronoi = d3.Delaunay
             .from(tel_data.vor.data, d => d.x, d => d.y)
-            .voronoi([0, 0, svg_dims.w, svg_dims.h])
+            .voronoi([ 0, 0, svg_dims.w, svg_dims.h ])
 
         let tag_vor = 'vor'
         let vor = com.g_base_mini.vor
@@ -690,8 +690,7 @@ window.ArrZoomerMini = function(opt_in_top) {
             .style('opacity', 0)
             .style('stroke-width', '0')
             .style('stroke', '#4F94CD')
-            // // .on('mouseover', (d, i) => console.log(i,d))
-            .on('click', function(d) {
+            .on('click', function(e, d) {
                 tel_data.vor_dblclick({
                     source: 'minizoomclick',
                     d: d,
@@ -699,9 +698,9 @@ window.ArrZoomerMini = function(opt_in_top) {
                 })
                 return
             })
-            .on('mouseover', insts.data.hover)
-            .on('click', insts.data.click)
-            .on('dblclick', function(d) {
+            .on('mouseover', (e, d) => insts.data.hover(d))
+            .on('click', (e, d) => insts.data.click(d))
+            .on('dblclick', function(e, d) {
                 insts.data.dblclick({
                     d: d,
                     is_in_out: dblclick_zoom_in_out,

@@ -120,10 +120,12 @@ window.ClockEvents = function() {
             .attr('fill', '#ffffff')
             .attr('opacity', 0)
             .attr('mouseover', 0)
-            .on('mousemove', function(d, i) {
-                getMouseCursorTime(d3.mouse(this)[0] - 115)
+            .on('mousemove', function(e, d) {
+                getMouseCursorTime(d3.pointer(e)[0] - 115)
+                // getMouseCursorTime(d3.mouse(this)[0] - 115)
+                console.error('what is the meaning of 115 here ???')
             })
-            .on('mouseout', function(d, i) {
+            .on('mouseout', function(e, d) {
                 getMouseCursorTime(null)
             })
         com.g.append('clipPath')
@@ -260,8 +262,8 @@ window.ClockEvents = function() {
                     .attr('stroke', com.color_theme.stroke)
                     .attr('fill', com.color_theme.stroke)
             })
-            .on('wheel', function(d) {
-                let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+            .on('wheel', function(event) {
+                let direction = event.wheelDelta < 0 ? 'down' : 'up'
                 if (direction === 'down') {
                     com.timeRange.day -= 86400
                     if (com.timeRange.day < 0) {
@@ -295,8 +297,8 @@ window.ClockEvents = function() {
                     .attr('stroke', com.color_theme.stroke)
                     .attr('fill', com.color_theme.stroke)
             })
-            .on('wheel', function(d) {
-                let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+            .on('wheel', function(event) {
+                let direction = event.wheelDelta < 0 ? 'down' : 'up'
                 if (direction === 'down') {
                     com.timeRange.hour -= 3600
                     if (com.timeRange.hour < 0) {
@@ -330,8 +332,8 @@ window.ClockEvents = function() {
                     .attr('stroke', com.color_theme.stroke)
                     .attr('fill', com.color_theme.stroke)
             })
-            .on('wheel', function(d) {
-                let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+            .on('wheel', function(event, d) {
+                let direction = event.wheelDelta < 0 ? 'down' : 'up'
                 if (direction === 'down') {
                     com.timeRange.minute -= 60
                     if (com.timeRange.minute < 0) {

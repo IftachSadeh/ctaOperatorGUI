@@ -224,8 +224,8 @@ let main_empty_example = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
 
@@ -342,7 +342,7 @@ let main_empty_example = function(opt_in) {
             }
 
             sock.socket.emit({
-                name: 'widget', 
+                name: 'widget',
                 data: emit_data,
             })
 

@@ -229,13 +229,13 @@ window.ScrollGrid = function(opt_in) {
                 is_horz ? 0 : scroll_rec.w,
                 is_horz ? scroll_rec.w : 0,
             ]
-        } 
+        }
 
         let vor_data = recs[main_tag]
 
         let voronoi = d3.Delaunay
             .from(vor_data, d => d.x + d.w / 2, d => d.y + d.h / 2)
-            .voronoi([x0, y0, x0 + w0 - scroll_rec_marg[0], y0 + h0 - scroll_rec_marg[1]])
+            .voronoi([ x0, y0, x0 + w0 - scroll_rec_marg[0], y0 + h0 - scroll_rec_marg[1] ])
 
         let tag_vor = 'vor'
         let vor = com.g_vor
@@ -482,7 +482,7 @@ window.ScrollGrid = function(opt_in) {
     // ------------------------------------------------------------------
     com.tot_trans = 0
     function setup_zoom() {
-        com.zoom_start = function() {
+        com.zoom_start = function(e) {
             if (!has_bot_top) {
                 return
             }
@@ -496,13 +496,13 @@ window.ScrollGrid = function(opt_in) {
         }
 
         let delay = 0
-        com.zoom_during = function() {
+        com.zoom_during = function(e) {
             if (!has_bot_top) {
                 return
             }
-            // if(!is_def(d3.event.sourceEvent)) return;
+            // if(!is_def(e.sourceEvent)) return;
             // isInZoom = true
-            in_user_zoom = is_def(d3.event.sourceEvent)
+            in_user_zoom = is_def(e.sourceEvent)
 
             if (locker.are_free(lockers.zoom_during)) {
                 locker.add({
@@ -517,8 +517,8 @@ window.ScrollGrid = function(opt_in) {
                 let trans = null
                 delay = 0
                 if (in_user_zoom) {
-                    let wd_x = d3.event.sourceEvent.deltaX
-                    let wd_y = d3.event.sourceEvent.deltaY
+                    let wd_x = e.sourceEvent.deltaX
+                    let wd_y = e.sourceEvent.deltaY
                     let wd_xy = Math.abs(wd_x) > Math.abs(wd_y) ? -1 * wd_x : wd_y
 
                     trans = is_def(wd_xy) ? -1 * wd_xy : 0
@@ -597,7 +597,7 @@ window.ScrollGrid = function(opt_in) {
             return
         }
 
-        com.zoom_end = function() {
+        com.zoom_end = function(e) {
             if (!has_bot_top) {
                 return
             }
@@ -689,7 +689,7 @@ window.ScrollGrid = function(opt_in) {
             return
         }
 
-        com.drag_start = function(coords) {
+        com.drag_start = function(e, coords) {
             locker.add({
                 id: lock_zoom.all,
                 override: true,
@@ -719,7 +719,7 @@ window.ScrollGrid = function(opt_in) {
             }
         }
 
-        com.drag_during = function(coords_in) {
+        com.drag_during = function(e, coords_in) {
             is_in_drag = true
 
             if (is_in_scroll_drag) {
@@ -737,12 +737,12 @@ window.ScrollGrid = function(opt_in) {
                 })
             }
             else {
-                let trans = is_horz ? -d3.event.dx : d3.event.dy
+                let trans = is_horz ? -e.dx : e.dy
                 com.do_trans(trans)
             }
         }
 
-        com.drag_end = function() {
+        com.drag_end = function(e) {
             locker.remove({
                 id: lock_zoom.all,
                 override: true,
@@ -771,14 +771,14 @@ window.ScrollGrid = function(opt_in) {
 
         com[tag_drag] = d3.drag()
         com[tag_drag]
-            .on('start', function(_) {
-                com.drag_start(d3.mouse(this))
+            .on('start', function(e) {
+                com.drag_start(e, d3.pointer(e))
             })
-            .on('drag', function(_) {
-                com.drag_during(d3.mouse(this))
+            .on('drag', function(e) {
+                com.drag_during(e, d3.pointer(e))
             })
-            .on('end', function(_) {
-                com.drag_end()
+            .on('end', function(e) {
+                com.drag_end(e)
             })
 
         set_zoom_status()
@@ -856,9 +856,9 @@ window.ScrollGrid = function(opt_in) {
             .attr('y', is_horz ? y0 + h0 : y0)
             .attr('width', is_horz ? w0 : 0)
             .attr('height', is_horz ? 0 : h0)
-            .on('click', function(_) {
+            .on('click', function(e) {
                 rec_bck_click_once({
-                    coords: d3.mouse(this),
+                    coords: d3.pointer(e),
                 })
             })
             .call(com[tag_drag])

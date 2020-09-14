@@ -508,16 +508,16 @@ window.ScrollBox = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        com[tag_zoom + 'zoom_start'] = function() {
+        com[tag_zoom + 'zoom_start'] = function(e) {
             com.is_in_zoom = true
         }
 
-        com[tag_zoom + 'zoom_during'] = function() {
+        com[tag_zoom + 'zoom_during'] = function(e) {
             if (!com.scroll_transes.active) {
                 return
             }
 
-            com.in_user_zoom = is_def(d3.event.sourceEvent)
+            com.in_user_zoom = is_def(e.sourceEvent)
 
             if (locker.are_free(lockers.zoom_during)) {
                 locker.add({
@@ -531,8 +531,8 @@ window.ScrollBox = function() {
 
                 let trans = null
                 if (com.in_user_zoom) {
-                    let wd_x = d3.event.sourceEvent.deltaX * 0.4
-                    let wd_y = d3.event.sourceEvent.deltaY * 0.4
+                    let wd_x = e.sourceEvent.deltaX * 0.4
+                    let wd_y = e.sourceEvent.deltaY * 0.4
                     let wd_xy = Math.abs(wd_x) > Math.abs(wd_y) ? -1 * wd_x : wd_y
 
                     // trans = is_def(wd_xy) ? (((wd_xy < 0)?1:-1) * deltaWH) : 0;
@@ -562,22 +562,22 @@ window.ScrollBox = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        com[tag_drag + 'drag_start'] = function() {
+        com[tag_drag + 'drag_start'] = function(e) {
             if (!com.scroll_transes.active) {
                 return
             }
 
             com.is_in_drag = true
 
-            // if(d3.event.x >= com.scroll_rec.x) {
-            //   let frac = (d3.event.y - com.inner_box.y) / (com.inner_box.h);
+            // if(e.x >= com.scroll_rec.x) {
+            //   let frac = (e.y - com.inner_box.y) / (com.inner_box.h);
             //   frac = Math.min(1, Math.max(0, frac));
             //   let trans = (-1 * frac * (com.scroll_transes.max - com.scroll_transes.min)) - com.scroll_transes.now;
 
             //   com.do_trans({trans:trans}); //, duration:times.anim/.2
             // }
 
-            com.scroll_transes.drag.y = is_def(d3.event) ? d3.event.y : com.inner_box.y
+            com.scroll_transes.drag.y = is_def(e) ? e.y : com.inner_box.y
             com.scroll_transes.drag.frac = com.scroll_transes.frac
 
             locker.add({
@@ -586,14 +586,14 @@ window.ScrollBox = function() {
             })
         }
 
-        com[tag_drag + 'drag_during'] = function() {
+        com[tag_drag + 'drag_during'] = function(e) {
             if (!com.scroll_transes.active) {
                 return
             }
-            if (!is_def(d3.event)) {
+            if (!is_def(e)) {
                 return
             }
-            if (!is_def(d3.event.dy)) {
+            if (!is_def(e.dy)) {
                 return
             }
 
@@ -607,12 +607,12 @@ window.ScrollBox = function() {
                     override: true,
                 })
 
-                let trans = -1 * d3.event.dy
-                // let frac  = (d3.event.y - com.inner_box.y)/com.inner_box.h;
+                let trans = -1 * e.dy
+                // let frac  = (e.y - com.inner_box.y)/com.inner_box.h;
                 let frac = (
                     com.scroll_transes.drag.frac
                         + (
-                            (d3.event.y - com.scroll_transes.drag.y)
+                            (e.y - com.scroll_transes.drag.y)
                             / com.inner_box.h
                         )
                 )
@@ -777,10 +777,6 @@ window.ScrollBox = function() {
             .on('start', com[tag_drag + 'drag_start'])
             .on('drag', com[tag_drag + 'drag_during'])
             .on('end', com[tag_drag + 'drag_end'])
-       
-        // .on("start", function(d) { com[tag_drag+"drag_start"](); })
-        // .on("drag",  function(d) { let coords = d3.mouse(this); com[tag_drag+"_drag_during"](coords); })
-        // .on("end",   function(d) { com[tag_drag+"drag_end"](); })
 
         com.scroll_outer_g.call(com[tag_drag])
         com.scroll_bars_g.call(com[tag_drag])
@@ -1271,15 +1267,15 @@ window.ScrollBox = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        com[tag_zoom + 'zoom_start'] = function() {
+        com[tag_zoom + 'zoom_start'] = function(e) {
             com.is_in_zoom = true
         }
-        com[tag_zoom + 'zoom_during'] = function() {
+        com[tag_zoom + 'zoom_during'] = function(e) {
             if (!com.scroll_trans_h.active) {
                 return
             }
 
-            com.in_user_zoom = is_def(d3.event.sourceEvent)
+            com.in_user_zoom = is_def(e.sourceEvent)
 
             if (locker.are_free(lockers.zoom_during)) {
                 locker.add({
@@ -1293,8 +1289,8 @@ window.ScrollBox = function() {
 
                 let trans = null
                 if (com.in_user_zoom) {
-                    let wd_x = d3.event.sourceEvent.deltaX
-                    let wd_y = d3.event.sourceEvent.deltaY
+                    let wd_x = e.sourceEvent.deltaX
+                    let wd_y = e.sourceEvent.deltaY
                     let wd_xy = Math.abs(wd_x) > Math.abs(wd_y) ? -1 * wd_x : wd_y
 
                     // trans = is_def(wd_xy) ? (((wd_xy < 0)?1:-1) * deltaWH) : 0;
@@ -1324,22 +1320,22 @@ window.ScrollBox = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        com[tag_drag + 'drag_start'] = function() {
+        com[tag_drag + 'drag_start'] = function(e) {
             if (!com.scroll_trans_h.active) {
                 return
             }
 
             com.is_in_drag = true
 
-            // if(d3.event.x >= com.scroll_rec.x) {
-            //   let frac = (d3.event.y - com.inner_box.y) / (com.inner_box.h);
+            // if(e.x >= com.scroll_rec.x) {
+            //   let frac = (e.y - com.inner_box.y) / (com.inner_box.h);
             //   frac = Math.min(1, Math.max(0, frac));
             //   let trans = (-1 * frac * (com.scroll_transes.max - com.scroll_transes.min)) - com.scroll_transes.now;
 
             //   com.do_trans({trans:trans}); //, duration:times.anim/.2
             // }
 
-            com.scroll_trans_h.drag.x = is_def(d3.event) ? d3.event.x : com.inner_box.x
+            com.scroll_trans_h.drag.x = is_def(e) ? e.x : com.inner_box.x
             com.scroll_trans_h.drag.frac = com.scroll_trans_h.frac
 
             locker.add({
@@ -1349,14 +1345,14 @@ window.ScrollBox = function() {
 
             return
         }
-        com[tag_drag + 'drag_during'] = function() {
+        com[tag_drag + 'drag_during'] = function(e) {
             if (!com.scroll_trans_h.active) {
                 return
             }
-            if (!is_def(d3.event)) {
+            if (!is_def(e)) {
                 return
             }
-            if (!is_def(d3.event.dy)) {
+            if (!is_def(e.dy)) {
                 return
             }
 
@@ -1370,11 +1366,11 @@ window.ScrollBox = function() {
                     override: true,
                 })
 
-                let trans = -1 * d3.event.dx
-                // let frac  = (d3.event.y - com.inner_box.y)/com.inner_box.h;
+                let trans = -1 * e.dx
+                // let frac  = (e.y - com.inner_box.y)/com.inner_box.h;
                 let frac = (
                     com.scroll_trans_h.drag.frac
-                    + (d3.event.x - com.scroll_trans_h.drag.x) / com.inner_box.w
+                    + (e.x - com.scroll_trans_h.drag.x) / com.inner_box.w
                 )
                 
                 let delay = (

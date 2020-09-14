@@ -142,6 +142,17 @@ let main_arr_zoomer = function(opt_in) {
         base_ele_width: 100,
     }
 
+    // if (!window.D3_VERS_5) {
+    //     arr_zoomer_ele_opts.do_ele = {
+    //         main: true,
+    //         ches: !true,
+    //         mini: !true,
+    //         tree: !true,
+    //         lens: !true,
+    //         more: !true,
+    //     }
+    // }
+
     // symmetric arrangement for elements
     let base_ele_width = arr_zoomer_ele_opts.base_ele_width
     
@@ -291,8 +302,8 @@ let main_arr_zoomer = function(opt_in) {
             // .style("background", "red").style("border","2px solid red")
             // .style('background', 'white') // XRRX XRRX XRRX XRRX
             .on('dblclick.zoom', null)
-            .on('wheel', function() {
-                d3.event.preventDefault()
+            .on('wheel', function(event) {
+                event.preventDefault()
             })
 
         // ------------------------------------------------------------------
@@ -409,7 +420,7 @@ let main_arr_zoomer = function(opt_in) {
         // ------------------------------------------------------------------
         function auto_trans_test() {
             sock.socket.emit({
-                name: 'set_active_widget', 
+                name: 'set_active_widget',
                 data: {
                     'widget_id': widget_id,
                 },

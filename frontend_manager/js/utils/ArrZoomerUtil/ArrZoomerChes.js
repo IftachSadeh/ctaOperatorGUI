@@ -472,7 +472,7 @@ window.ArrZoomerChes = function(opt_in_top) {
         // vor cels for selection
         let voronoi = d3.Delaunay
             .from(com.ches_g.vor_data, d => d.x, d => d.y)
-            .voronoi([0, 0, svg_dims.w, svg_dims.h])
+            .voronoi([ 0, 0, svg_dims.w, svg_dims.h ])
 
         let tag_vor = 'vor'
         let vor = com.ches_g.g
@@ -493,7 +493,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             .style('stroke-width', '0')
             .style('stroke', '#4F94CD')
             // // .on('mouseover', (d, i) => console.log(i,d))
-            .on('click', function(d) {
+            .on('click', function(e, d) {
                 tel_data.vor_dblclick({
                     source: 'com.ches_g.g',
                     d: d,
@@ -501,21 +501,20 @@ window.ArrZoomerChes = function(opt_in_top) {
                     scale_to_zoom: zooms.len['1.2'],
                 })
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 focus_tel(d, true)
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 focus_tel(d, false)
             })
             .merge(vor)
             .attr('d', (d, i) => voronoi.renderCell(i))
 
-            vor
-                .exit()
-                .transition('out')
-                .duration(1)
-                .attr('opacity', 0)
-                .remove()
+        vor.exit()
+            .transition('out')
+            .duration(1)
+            .attr('opacity', 0)
+            .remove()
 
         if (show_vor_lines) {
             com.ches_g.g

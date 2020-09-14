@@ -679,12 +679,12 @@ window.ArrZoomerMain = function(opt_in_top) {
             'zoom_sync_lens', 'in_zoom_mini',
         ]
     
-        function svg_zoom_start() {
+        function svg_zoom_start(event) {
             if (!locker.are_free(zoom_sync_mini_lockers)) {
                 return
             }
 
-            scale_start = d3.event.transform.k
+            scale_start = event.transform.k
             locker.add({
                 id: 'zoom',
                 override: true,
@@ -700,12 +700,12 @@ window.ArrZoomerMain = function(opt_in_top) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function svg_zoom_during() {
+        function svg_zoom_during(event) {
             if (!locker.are_free(zoom_sync_mini_lockers)) {
                 return
             }
       
-            main_gs.g_base.attr('transform', d3.event.transform)
+            main_gs.g_base.attr('transform', event.transform)
 
             $.each([ 'mini', 'lens' ], function(i, d) {
                 let svg_mini = get_ele(d)
@@ -716,7 +716,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                     return
                 }
         
-                ele_base.svgs[d].g_base.attr('transform', d3.event.transform)
+                ele_base.svgs[d].g_base.attr('transform', event.transform)
             })
 
             svg_zoom_update_state()
@@ -727,7 +727,7 @@ window.ArrZoomerMain = function(opt_in_top) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function svg_zoom_end() {
+        function svg_zoom_end(event) {
             if (!locker.are_free(zoom_sync_mini_lockers)) {
                 return
             }
@@ -736,7 +736,7 @@ window.ArrZoomerMain = function(opt_in_top) {
             set_zoom_state()
 
             focus.target = zooms.target
-            focus.scale = d3.event.transform.k
+            focus.scale = event.transform.k
 
             $.each([ 'mini', 'lens' ], function(i, d) {
                 let svg_mini = get_ele(d)
@@ -746,7 +746,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                 // if(svg_mini.static_zoom) return
 
                 svg_mini.mini_zoom_view_rec()
-                svg_mini.zoom_sync(d3.event.transform)
+                svg_mini.zoom_sync(event.transform)
             })
 
             locker.remove('zoom')
@@ -755,12 +755,12 @@ window.ArrZoomerMain = function(opt_in_top) {
             // ------------------------------------------------------------------
             // if on minimal zoom, center
             // ------------------------------------------------------------------
-            if (Math.abs(d3.event.transform.k - scale_start) > 0.00001) {
-                if (Math.abs(d3.event.transform.k - zooms.len['0.0']) < 0.00001) {
+            if (Math.abs(event.transform.k - scale_start) > 0.00001) {
+                if (Math.abs(event.transform.k - zooms.len['0.0']) < 0.00001) {
                     if (locker.are_free([ 'auto_zoom_target' ])) {
                         this_top.zoom_to_target_main({
                             target: 'init',
-                            scale: d3.event.transform.k,
+                            scale: event.transform.k,
                             duration_scale: 0.5,
                         })
                     }
@@ -828,8 +828,8 @@ window.ArrZoomerMain = function(opt_in_top) {
 
         main_gs.g_outer.call(com.svg_zoom)
             .on('dblclick.zoom', null)
-            .on('wheel', function() {
-                d3.event.preventDefault()
+            .on('wheel', function(event) {
+                event.preventDefault()
             })
 
         // save the svg node to use for d3.zoomTransform() later
@@ -1169,7 +1169,7 @@ window.ArrZoomerMain = function(opt_in_top) {
         function set_vor() {
             let voronoi = d3.Delaunay
                 .from(insts.data.vor.data, d => d.x, d => d.y)
-                .voronoi([0, 0, svg_dims.w, svg_dims.h])
+                .voronoi([ 0, 0, svg_dims.w, svg_dims.h ])
 
             let tag_vor = 'vor'
             let vor = com.vor.g
@@ -1187,10 +1187,10 @@ window.ArrZoomerMain = function(opt_in_top) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('stroke-width', 0)
                 .style('opacity', 0)
-                .on('mouseover', insts.data.hover)
+                .on('mouseover', (e, d) => insts.data.hover(d))
                 // .on('mouseover', (d, i) => console.log(i,d))
-                .on('click', insts.data.click)
-                .on('dblclick', function(d) {
+                .on('click', (e, d) => insts.data.click(d))
+                .on('dblclick', function(e, d) {
                     insts.data.dblclick({
                         d: d,
                         is_in_out: dblclick_zoom_in_out,
@@ -1387,14 +1387,14 @@ window.ArrZoomerMain = function(opt_in_top) {
             // the voronoi info for the current layout
             let voronoi = d3.Delaunay
                 .from(insts.data.vor.data_physical, d => d.x, d => d.y)
-                .voronoi([0, 0, svg_dims.w, svg_dims.h])
+                .voronoi([ 0, 0, svg_dims.w, svg_dims.h ])
 
             // a list of neighbor ids for each element
             links_2.physical = {
             }
             $.each(insts.data.vor.data_physical, function(n_ele, ele_now) {
                 let ele_id = ele_now.id
-                let neighbors = new Set([...voronoi.neighbors(n_ele)])
+                let neighbors = new Set([ ...voronoi.neighbors(n_ele) ])
 
                 if (add_second_order_links) {
                     // add neighbors of neighbors
@@ -2907,8 +2907,8 @@ window.ArrZoomerMain = function(opt_in_top) {
                             .attr('transform', (
                                 'translate(' + wh / 2 + ',' + wh / 2 + ')')
                             )
-                            .on('click', click)
-                            // .on("mouseover", mouseover)
+                            .on('click', (e, d) => click(d))
+                            // .on("mouseover", (e, d) => mouseover(d))
                             .style('fill', get_col)
                             .style('opacity', 0)
                             .style('fill-opacity', 0)
@@ -3556,12 +3556,12 @@ window.ArrZoomerMain = function(opt_in_top) {
                                 .attr('pointer-events', function(d) {
                                     return d.data.child_depth === 1 ? 'auto' : 'none'
                                 })
-                                .on('click', click)
-                                .on('mouseover', hierarchy_hov_title_in)
-                                .on('mouseout', hierarchy_hov_title_out)
-                            // .on('mouseover', function(d){ console.log(d.data.id,d); })
-                            // .transition("in_out").duration(times.anim)
-                            // .attr("r",             function(d,i){ return d.r; });
+                                .on('click', (e, d) => click(d))
+                                .on('mouseover', (e, d) => hierarchy_hov_title_in(d))
+                                .on('mouseout', (e, d) => hierarchy_hov_title_out(d))
+                                // .on('mouseover', function(e, d){ console.log(d.data.id,d); })
+                                // .transition("in_out").duration(times.anim)
+                                // .attr("r",             function(d,i){ return d.r; });
 
                             function click(d) {
                                 if (

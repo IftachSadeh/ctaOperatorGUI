@@ -276,9 +276,9 @@ window.PlotTimeSeries = function() {
             })
 
         let rect_zoom = d3.drag()
-            .on('start', function() {
-                reserved.brush.meta.x = d3.event.x
-                reserved.brush.meta.y = d3.event.y
+            .on('start', function(e) {
+                reserved.brush.meta.x = e.x
+                reserved.brush.meta.y = e.y
                 console.log(reserved.brush.meta)
                 reserved.clipping.maing.append('rect')
                     .attr('id', 'zoom_rect')
@@ -291,29 +291,29 @@ window.PlotTimeSeries = function() {
                     .attr('stroke-width', 2)
                     .attr('stroke-dasharray', [ 8, 2 ])
             })
-            .on('drag', function() {
+            .on('drag', function(e) {
                 reserved.clipping.maing.select('rect#zoom_rect')
-                    .attr('x', d3.event.x > reserved.brush.meta.x
+                    .attr('x', e.x > reserved.brush.meta.x
                         ? reserved.brush.meta.x
-                        : d3.event.x)
-                    .attr('y', d3.event.y > reserved.brush.meta.y
+                        : e.x)
+                    .attr('y', e.y > reserved.brush.meta.y
                         ? reserved.brush.meta.y
-                        : d3.event.y)
-                    .attr('width', Math.abs(d3.event.x - reserved.brush.meta.x))
-                    .attr('height', Math.abs(d3.event.y - reserved.brush.meta.y))
+                        : e.y)
+                    .attr('width', Math.abs(e.x - reserved.brush.meta.x))
+                    .attr('height', Math.abs(e.y - reserved.brush.meta.y))
             })
-            .on('end', function() {
+            .on('end', function(e) {
                 reserved.clipping.maing.select('rect#zoom_rect')
                     .remove()
 
                 let trans_percent = {
-                    x: (d3.event.x > reserved.brush.meta.x
+                    x: (e.x > reserved.brush.meta.x
                         ? reserved.brush.meta.x
-                        : d3.event.x)
+                        : e.x)
                         / reserved.main.box.w,
-                    y: (d3.event.y > reserved.brush.meta.y
+                    y: (e.y > reserved.brush.meta.y
                         ? reserved.brush.meta.y
-                        : d3.event.y)
+                        : e.y)
                         / reserved.main.box.h,
                 }
                 reserved.zoom.coef.x = reserved.zoom.coef.x
@@ -326,9 +326,9 @@ window.PlotTimeSeries = function() {
                   * reserved.zoom.coef.ky)
 
                 let zoom_percent = {
-                    x: Math.abs(d3.event.x - reserved.brush.meta.x)
+                    x: Math.abs(e.x - reserved.brush.meta.x)
                     / reserved.main.box.w,
-                    y: Math.abs(d3.event.y - reserved.brush.meta.y)
+                    y: Math.abs(e.y - reserved.brush.meta.y)
                     / reserved.main.box.h,
                 }
                 reserved.zoom.coef.kx = zoom_percent.x * reserved.zoom.coef.kx
@@ -352,9 +352,9 @@ window.PlotTimeSeries = function() {
             })
         let drag_trans = d3.drag()
             .on('start', function() {})
-            .on('drag', function() {
-                reserved.brush.meta.x = d3.event.dx
-                reserved.brush.meta.y = d3.event.dy
+            .on('drag', function(e) {
+                reserved.brush.meta.x = e.dx
+                reserved.brush.meta.y = e.dy
 
                 computeDragFactor()
 
@@ -454,15 +454,16 @@ window.PlotTimeSeries = function() {
             })
 
         reserved.clipping.maing
-            .on('wheel', function() {
-                d3.event.preventDefault()
+            .on('wheel', function(e) {
+                e.preventDefault()
+                console.error('BUG - upgrade to d3.pointer(event) - https://observablehq.com/@d3/d3v6-migration-guide#pointer')
 
                 // VERTICAL ZOOM
                 reserved.zoom.meta.ky.point = d3.mouse(d3.select(this).node())
-                let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
+                let sign = -Math.abs(e.deltaY) / e.deltaY
                 reserved.zoom.meta.ky.previous = reserved.zoom.meta.ky.now
                 reserved.zoom.meta.ky.now
-                  += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+                  += sign * Math.log(Math.abs(e.deltaY)) * 0.02
                 if (reserved.zoom.meta.ky.now < reserved.zoom.meta.ky.min) {
                     reserved.zoom.meta.ky.now = reserved.zoom.meta.ky.min
                 }
@@ -473,11 +474,11 @@ window.PlotTimeSeries = function() {
 
                 // HORIZONTAL ZOOM
                 reserved.zoom.meta.kx.point = d3.mouse(d3.select(this).node())
-                sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
+                sign = -Math.abs(e.deltaY) / e.deltaY
                 reserved.zoom.meta.kx.previous = reserved.zoom.meta.kx.now
 
                 reserved.zoom.meta.kx.now
-                  += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+                  += sign * Math.log(Math.abs(e.deltaY)) * 0.02
                 if (reserved.zoom.meta.kx.now < reserved.zoom.meta.kx.min) {
                     reserved.zoom.meta.kx.now = reserved.zoom.meta.kx.min
                 }

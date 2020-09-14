@@ -1873,8 +1873,7 @@ window.BlockQueue = function(opt_in) {
                 })
             // .style("pointer-events", "none")
                 .attr('vector-effect', 'non-scaling-stroke')
-                .on('click', function(d) {
-                    let event = d3.event
+                .on('click', function(e, d) {
                     let node = d3.select(this)
                     node.attr('clicked', 1)
                     let that = this
@@ -1884,7 +1883,7 @@ window.BlockQueue = function(opt_in) {
                             return
                         }
                         console.log('click')
-                        if (event.ctrlKey) {
+                        if (e.ctrlKey) {
                             com.input.selection.push(that)
                         }
                         else {

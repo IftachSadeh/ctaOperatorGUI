@@ -26,13 +26,12 @@
     <link rel="icon" type="image/x-icon" href="/static/icon-batman.png"/>
 
     <!-- <script type="text/javascript" src="/static/d3/v4/d3.js"></script> -->
-    <script type="text/javascript" src="/static/d3/v5/d3.v5.min.js"></script>
-    <!-- <script type="text/javascript" src="/static/d3/v6/d3.v6.min.js"></script> -->
+    <!-- <script type="text/javascript" src="/static/d3/v5/d3.v5.min.js"></script> -->
+    <script type="text/javascript" src="/static/d3/v6/d3.v6.min.js"></script>
     <!-- <script src="https://d3js.org/d3.v6.min.js"></script> -->
 
     <!-- temporary load until we go to d3 v6 -->
-    <script type="text/javascript" src="/static/d3/d3-delaunay/d3-delaunay.js"></script>
-
+    <!-- <script type="text/javascript" src="/static/d3/d3-delaunay/d3-delaunay.js"></script> -->
 
     <script type="text/javascript" src="/static/d3_hexbin/d3-hexbin.v0.2.min.js"></script>
     <script type="text/javascript" src="/static/textures/dist/textures.js"></script>

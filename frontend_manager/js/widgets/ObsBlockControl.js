@@ -311,8 +311,8 @@ let main_obs_block_control = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
 
@@ -1906,7 +1906,7 @@ let TelScroll = function() {
             x0: box_data.x,
             y0: box_data.y,
             w0: box_data.w,
-            h0: box_data.h, 
+            h0: box_data.h,
             rec_h: box_data.h * 0.3,
             rec_w: box_data.h * 0.3,
             show_counts: false,
