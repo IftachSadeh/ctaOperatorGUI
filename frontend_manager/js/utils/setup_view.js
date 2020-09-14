@@ -72,11 +72,14 @@ setup_view.view102 = function() {
         has_icon: true,
     })
 
-    sock.add_widget({
-        name_tag: 'WeatherMonitoring',
-        table_title: 'Weather Monitoring',
-        has_icon: true,
-    })
+    console.log('bring back WeatherMonitoring...')
+    if (false) {
+        sock.add_widget({
+            name_tag: 'WeatherMonitoring',
+            table_title: 'Weather Monitoring',
+            has_icon: true,
+        })
+    }
 
     sock.add_widget({
         name_tag: 'EmptyExample',
@@ -199,25 +202,29 @@ setup_view.view207 = function() {
 // test load
 // -------------------------------------------------------------------
 setup_view.view001 = function() {
-    for (var i = 0; i < 20; i++) {
-        sock.add_widget({
-            name_tag: 'ArrayZoomer',
-            table_title: 'Telescope health ' + i,
-            has_icon: true,
-        })
-    }
+    let n_widgets = 10 
+    let name_tags = [
+        'ArrayZoomer',
+        // 'SubArrGrp',
+        // 'SchedBlockController',
+        // 'SchedBlockInspector',
+        // 'SchedBlocks',
+        // 'EmptyExample',
+        // 'PanelSync',
 
-    // sock.add_widget({
-    //     name_tag: 'ArrayZoomer',
-    //     table_title: 'Telescope health',
-    //     has_icon: true,
-    // })
-    
-    // sock.add_widget({
-    //     name_tag: 'EmptyExample',
-    //     table_title: 'empty_example',
-    //     has_icon: true,
-    // })
+        // 'PlotsDash',
+        // 'WeatherMonitoring',
+    ]
+
+    $.each(name_tags, function(_, name_tag) {
+        for (var i = 0; i < n_widgets; i++) {
+            sock.add_widget({
+                name_tag: name_tag,
+                table_title: (name_tag + ' ' + (i+1) + ' / ' + n_widgets),
+                has_icon: true,
+            })
+        }
+    })
 }
 // -------------------------------------------------------------------
 // empty_example

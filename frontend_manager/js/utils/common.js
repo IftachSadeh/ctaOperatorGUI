@@ -2116,15 +2116,12 @@ function load_svg_file(opt_in) {
     let icon_path = opt_in.icon_path
     let func_end = is_def(opt_in.func_end) ? opt_in.func_end : null
 
-    d3.xml(icon_path, function(error, documentFragment) {
-        if (error) {
-            console.error('problem with d3.xml() for', svg_id, error)
-            throw error
-        }
+    d3.xml(icon_path).then(function(documentFragment) {
         let svg_node = documentFragment.getElementsByTagName('svg')
         if (svg_node[0]) {
+            // assign an id, and then later do e.g., g.select("#"+id_now);
             let node = g_now.node().appendChild(svg_node[0])
-            node.id = svg_id // assign an id, and then later do e.g., g.select("#"+id_now);
+            node.id = svg_id 
         }
 
         // exec function after we're done here

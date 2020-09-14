@@ -29,8 +29,12 @@ window.ArrZoomerMain = function(opt_in_top) {
     let my_unique_id = unique()
     // let widget_type = opt_in_top.widget_type
     
-    let vor_show_lines = false
     let debug_pov_center = false
+    let vor_show_lines = false
+
+    if (!window.D3_VERS_5) {
+        vor_show_lines = true
+    }
 
     let no_render = opt_in_top.no_render
     let dblclick_zoom_in_out = (
@@ -991,19 +995,24 @@ window.ArrZoomerMain = function(opt_in_top) {
     //
     // ------------------------------------------------------------------
     function init_vor() {
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-        let vor_func = d3
-            .voronoi()
-            .x(function(d) {
-                return d.x
-            })
-            .y(function(d) {
-                return d.y
-            })
-            .extent([ [ 0, 0 ], [ svg_dims.w, svg_dims.h ] ])
-
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        let vor_func
+        if (window.D3_VERS_5) {
+            vor_func = d3
+                .voronoi()
+                .x(function(d) {
+                    return d.x
+                })
+                .y(function(d) {
+                    return d.y
+                })
+                .extent([ [ 0, 0 ], [ svg_dims.w, svg_dims.h ] ])
+        }
+        else {
+            // console.log('aaaaaaaaaaaaaaaaa', d3.Delaunay)
+        }
 
         // ------------------------------------------------------------------
         // create voronoi cells for the dataset.
@@ -1386,47 +1395,49 @@ window.ArrZoomerMain = function(opt_in_top) {
 
 
             // ------------------------------------------------------------------
-            // use delaunay links to get the closest neighbours of each data-point
-            // see: http://christophermanning.org/projects/voronoi-diagram-with-force-directed-nodes-and-delaunay-links/
+            // use voronoi links to get the closest neighbours of each data-point
+            // see: http://christophermanning.org/projects/voronoi-diagram-with-force-directed-nodes-and-voronoi-links/
             // ------------------------------------------------------------------
-            let vor_links = vor_func.links(
-                insts.data.vor.data_physical
-            )
-            let links_1 = {
-            }
-            $.each(vor_links, function(index, link_now) {
-                let id_s = link_now.source.id
-                let id_t = link_now.target.id
+            if (window.D3_VERS_5) {
+                let vor_links = vor_func.links(
+                    insts.data.vor.data_physical
+                )
+                let links_1 = {
+                }
+                $.each(vor_links, function(index, link_now) {
+                    let id_s = link_now.source.id
+                    let id_t = link_now.target.id
 
-                if (!links_1[id_s]) {
-                    links_1[id_s] = [ id_t ]
-                }
-                else {
-                    links_1[id_s].push(id_t)
-                }
-        
-                if (!links_1[id_t]) {
-                    links_1[id_t] = [ id_s ]
-                }
-                else {
-                    links_1[id_t].push(id_s)
-                }
-            })
+                    if (!links_1[id_s]) {
+                        links_1[id_s] = [ id_t ]
+                    }
+                    else {
+                        links_1[id_s].push(id_t)
+                    }
+            
+                    if (!links_1[id_t]) {
+                        links_1[id_t] = [ id_s ]
+                    }
+                    else {
+                        links_1[id_t].push(id_s)
+                    }
+                })
 
-            links_2.physical = deep_copy(links_1) // deep copy
-            $.each(links_1, function(id_s, link_now) {
-                $.each(link_now, function(index_0, id_t0) {
-                    $.each(links_1[id_t0], function(index_1, id_t1) {
-                        if (links_2.physical[id_s].indexOf(id_t1) === -1) {
-                            links_2.physical[id_s].push(id_t1)
-                        }
-                        // console.log(index_1,links_2.physical[id_s],id_t0,id_t1)
+                links_2.physical = deep_copy(links_1) // deep copy
+                $.each(links_1, function(id_s, link_now) {
+                    $.each(link_now, function(index_0, id_t0) {
+                        $.each(links_1[id_t0], function(index_1, id_t1) {
+                            if (links_2.physical[id_s].indexOf(id_t1) === -1) {
+                                links_2.physical[id_s].push(id_t1)
+                            }
+                            // console.log(index_1,links_2.physical[id_s],id_t0,id_t1)
+                        })
                     })
                 })
-            })
 
-            insts.data.mini = insts.data.xyr_physical
-            insts.data.lens = insts.data.xyr_physical
+                insts.data.mini = insts.data.xyr_physical
+                insts.data.lens = insts.data.xyr_physical
+            }
 
             return
         }

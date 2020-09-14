@@ -623,7 +623,7 @@ class AsyncLoops():
             log_func([
                 ['y', ' - ', log_txt],
                 ['r', self.sess_id],
-                ['g', '\n', ' ' * 24, ' --> '],
+                ['g', '\n', ' ' * 22, ' --> '],
                 ['o', data['metadata']],
             ])
 

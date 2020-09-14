@@ -142,6 +142,17 @@ let main_arr_zoomer = function(opt_in) {
         base_ele_width: 100,
     }
 
+    if (!window.D3_VERS_5) {
+        arr_zoomer_ele_opts.do_ele = {
+            main: true,
+            ches: !true,
+            mini: !true,
+            tree: !true,
+            lens: !true,
+            more: !true,
+        }
+    }
+
     // symmetric arrangement for elements
     let base_ele_width = arr_zoomer_ele_opts.base_ele_width
     

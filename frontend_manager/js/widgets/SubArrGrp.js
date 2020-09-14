@@ -588,7 +588,7 @@ let main_sub_arr_grp = function(opt_in) {
     let prev_sync = {
     }
     function update_sync_state(data_in) {
-        console.log('see arrzommer update_sync_state JJJJJJJJJJJJJJJJ')
+        console.log('FIXME see arrzommer update_sync_state FIXME')
         if (document.hidden) {
             return
         }
