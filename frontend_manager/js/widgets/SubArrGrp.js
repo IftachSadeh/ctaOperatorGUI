@@ -84,9 +84,7 @@ sock.widget_table[main_script_tag] = function(opt_in) {
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-let sock_sub_arr_grp = function(opt_in) {
-    return
-}
+let sock_sub_arr_grp = function(opt_in) {}
 
 let main_sub_arr_grp = function(opt_in) {
     // let my_unique_id = unique()
@@ -118,6 +116,18 @@ let main_sub_arr_grp = function(opt_in) {
     // function loop
     let run_loop = new RunLoop({
         tag: widget_id,
+    })
+
+    let update_data_evt = function(data_in) {
+        if (data_in.metadata.widget_id !== widget_id) {
+            return
+        }
+        update_data(data_in)
+    }
+    sock.socket.add_listener({
+        name: 'update_data',
+        func: update_data_evt,
+        is_singleton: false,
     })
 
     let interpolate01 = d3.interpolate(0, 1)
@@ -233,7 +243,7 @@ let main_sub_arr_grp = function(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function init_data(data_init) {
+    function init_data(data_in) {
         let mult_inits = sock.multiple_inits({
             id: widget_id,
             data: data_in,
@@ -244,14 +254,14 @@ let main_sub_arr_grp = function(opt_in) {
 
         locker.add('data_change')
 
-        let data_in = data_init.data
-        let has_join_data = join_tel_props(data_in, true)
 
         sock.set_icon_badge({
             data: data_in,
             icon_divs: icon_divs,
         })
 
+        let data_init = data_in.data
+        let has_join_data = join_tel_props(data_init, true)
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
@@ -578,7 +588,7 @@ let main_sub_arr_grp = function(opt_in) {
     let prev_sync = {
     }
     function update_sync_state(data_in) {
-        console.log('see arrzommer update_sync_state JJJJJJJJJJJJJJJJ')
+        console.log('FIXME see arrzommer update_sync_state FIXME')
         if (document.hidden) {
             return
         }

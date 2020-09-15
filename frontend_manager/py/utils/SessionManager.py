@@ -145,25 +145,25 @@ class SessionManager():
             # (expires on its own, inless renewed by server_sess_heartbeat_loop())
             self.redis.set(
                 name=self.get_heartbeat_name(scope='user'),
-                expire_sec=(int(self.sess_expire) * 10),
+                expire_sec=(int(self.sess_expire_sec) * 10),
             )
             # register the serv_id for the heartbeat monitor
             # (expires on its own, inless renewed by server_sess_heartbeat_loop())
             self.redis.set(
                 name=self.get_heartbeat_name(scope='serv'),
-                expire_sec=(int(self.sess_expire) * 10),
+                expire_sec=(int(self.sess_expire_sec) * 10),
             )
             # register the sess_id for the heartbeat monitor
             # (expires on its own, inless renewed by server_sess_heartbeat_loop())
             self.redis.set(
                 name=self.get_heartbeat_name(scope='sess'),
-                expire_sec=(int(self.sess_expire) * 10),
+                expire_sec=(int(self.sess_expire_sec) * 10),
             )
 
             # for widget_type in self.all_widget_types:
             #     self.redis.set(
             #         name=self.get_heartbeat_name(scope='widget', postfix=widget_type),
-            #         expire_sec=(int(self.sess_expire) * 10),
+            #         expire_sec=(int(self.sess_expire_sec) * 10),
             #     )
 
             # start up (if not already running) loops for this server / user / session
@@ -209,8 +209,9 @@ class SessionManager():
 
             # synchronisation groups for users (cleaned up as part of
             # cleanup_server(), when no more sessions remain alive for this user)
-            if not self.redis.h_exists(name='ws;sync_groups', key=self.user_id):
-                self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=[])
+            async with self.locker.locks.acquire('sync'):
+                if not self.redis.h_exists(name='ws;sync_groups', key=self.user_id):
+                    self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=[])
 
             async with self.locker.locks.acquire('serv'):
                 server_sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.serv_id)
@@ -224,13 +225,6 @@ class SessionManager():
                 name=self.sess_config_lock,
                 key=self.sess_id,
             )
-
-        # function which may be overloaded, setting up individual
-        # properties for a given session-type
-        if not is_existing_sess:
-            self.on_join_session_()
-
-        self.init_user_sync_loops()
 
         # # simple locker test
         # async with self.locker.locks.acquire('serv', debug=1):
@@ -248,18 +242,6 @@ class SessionManager():
         """as the final step within the lock, flag the session as initialised
         """
         self.has_init_sess = True
-        return
-
-    # ------------------------------------------------------------------
-    def on_join_session_(self):
-        """placeholder for overloaded method, to be run as part of on_join_session
-        """
-        return
-
-    # ------------------------------------------------------------------
-    def on_leave_session_(self):
-        """placeholder for overloaded method, to be run as part of on_leave_session
-        """
         return
 
     # ------------------------------------------------------------------
@@ -282,11 +264,13 @@ class SessionManager():
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
 
         self.log.warn([[
             'o', ' - back_from_offline needs you     ', self.sess_id, '!' * 50
         ]])
+
+        self.need_widget_validation = True
 
         sess_widget_ids = self.redis.l_get('ws;sess_widget_ids;' + self.sess_id)
 
@@ -296,7 +280,7 @@ class SessionManager():
         for widget_id in sess_widget_ids:
             if widget_id in widget_inits:
                 method_func = getattr(widget_inits[widget_id], 'back_from_offline')
-                await method_func()
+                await method_func(args)
 
         return
 
@@ -314,16 +298,7 @@ class SessionManager():
         return
 
     # ------------------------------------------------------------------
-    # is this still needed ?!?!?!?!?!?!?!?!
-    # is this still needed ?!?!?!?!?!?!?!?!
-    # ------------------------------------------------------------------
-    def init_user_sync_loops(self):
-        print('need init_user_sync_loops ... ?')
-        # self.log.warn([['g', ' - need init_user_sync_loops ... ?']])
-        return
-
-    # ------------------------------------------------------------------
-    def update_sync_state_from_client(self, data_in):
+    async def update_sync_state_from_client(self, data_in):
         data = data_in['data']
 
         force_sync = data['force_sync'] if 'force_sync' in data else False
@@ -346,9 +321,10 @@ class SessionManager():
 
         # go through all widgets in sync groups for this user and collect ids for
         # targets of the sync event
-        sync_groups = self.redis.h_get(
-            name='ws;sync_groups', key=self.user_id, default_val=[]
-        )
+        async with self.locker.locks.acquire('sync'):
+            sync_groups = self.redis.h_get(
+                name='ws;sync_groups', key=self.user_id, default_val=[]
+            )
 
         sync_ids = []
         for sync_group in sync_groups:
@@ -359,8 +335,6 @@ class SessionManager():
             get_states = states_0 + states_2
             do_send = (data['widget_id'] in states_0 or data['widget_id'] in states_1)
             if do_send:
-                # sync_group['sync_types'][data['type']] = data['data']
-
                 for id_now in get_states:
                     add_id = (id_now != data['widget_id'] and id_now not in sync_ids)
                     if add_id:

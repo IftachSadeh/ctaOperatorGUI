@@ -5,6 +5,7 @@ requires = [
     'pyramid',
     'asgiref',
     'uvicorn[watchgodreload]',
+    'watchdog',
     'pyramid_mako',
     'zope.interface',
     'zope.sqlalchemy',

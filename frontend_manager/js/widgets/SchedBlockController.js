@@ -125,7 +125,7 @@ let sock_sched_block_controller = function(opt_in) {
     //   data.tel_id    = opt_in.tel_id;
     //   data.propId   = opt_in.propId;
     //   let emit_data = {
-    //     'widget_type':widget_type, 'widget_id':widget_id,
+    //     'widget_name':widget_type, 'widget_id':widget_id,
     //     'method_name':'sched_block_controllerAskTelData',
     //     'method_args':data
     //   };
@@ -133,44 +133,49 @@ let sock_sched_block_controller = function(opt_in) {
     //   return;
     // }
 
-    // FUNCTION TO SEND DATA TO THE REDIS DATABASE (need eqivalent function in .py)
-    this.pushNewBlockQueue = function(opt_in) {
-        if (sock.con_stat.is_offline()) {
-            return
-        }
+ 
+    // ???????????????????????????????????????????????????????????????????????
+    // DL_FIXME - who is supposed to be using this.pushNewBlockQueue or
+    // this sched_block_controller_new_queue event ?
+    // ???????????????????????????????????????????????????????????????????????
+    // if (false) {
+    //     this.pushNewBlockQueue = function(opt_in) {
+    //         if (sock.con_stat.is_offline()) {
+    //             return
+    //         }
 
-        let data = {
-        }
-        data.widget_id = opt_in.widget_id
-        data.new_block_queue = opt_in.new_block_queue
+    //         let data = {
+    //         }
+    //         data.widget_id = opt_in.widget_id
+    //         data.new_block_queue = opt_in.new_block_queue
 
-        let emit_data = {
-            widget_type: widget_type,
-            widget_id: data.widget_id,
-            method_name: 'sched_block_controller_push_queue',
-            method_args: data,
-        }
-        sock.socket.emit('widget', emit_data)
-    }
+    //         let emit_data = {
+    //             widget_name: widget_type,
+    //             widget_id: data.widget_id,
+    //             method_name: 'sched_block_controller_push_queue',
+    //             method_args: data,
+    //         }
+    //         sock.socket.emit('widget', emit_data)
+    //     }
 
-    // EXEMPLE OF FUNCTION TO RECEIVE DATA FROM THE REDIS DATABASE
-    // -------------------------------------------------------------------
-    // get update for state1 data which was explicitly asked for by a given module
-    // -------------------------------------------------------------------
-    sock.socket.on('sched_block_controller_new_queue', function(data) {
-        if (sock.con_stat.is_offline()) {
-            return
-        }
-        console.log('sched_block_controller_new_queue received')
+    //     sock.socket.on('sched_block_controller_new_queue', function(data) {
+    //         if (sock.con_stat.is_offline()) {
+    //             return
+    //         }
+    //         console.log('sched_block_controller_new_queue received')
 
-        $.each(sock.widget_funcs[widget_type].widgets, function(widget_id_now, module_now) {
-            console.log(widget_id_now, module_now)
-            if (data.metadata.sess_widget_ids.indexOf(widget_id_now) >= 0) {
-                console.log(sock.widget_funcs[widget_type])
-                sock.widget_funcs[widget_type].widgets[widget_id_now].scheduleSuccessfullyUpdate()
-            }
-        })
-    })
+    //         $.each(sock.widget_funcs[widget_type].widgets, function(widget_id_now, module_now) {
+    //             console.log(widget_id_now, module_now)
+    //             if (data.sess_widget_ids.indexOf(widget_id_now) >= 0) {
+    //                 console.log(sock.widget_funcs[widget_type])
+    //                 sock.widget_funcs[widget_type].widgets[widget_id_now].scheduleSuccessfullyUpdate()
+    //             }
+    //         })
+    //     })
+    // }
+
+
+    return
 }
 
 // -------------------------------------------------------------------
@@ -229,6 +234,18 @@ let main_sched_blockController = function(opt_in) {
     // locker.add('in_init')
     let run_loop = new RunLoop({
         tag: widget_id,
+    })
+
+    let update_data_evt = function(data_in) {
+        if (data_in.metadata.widget_id !== widget_id) {
+            return
+        }
+        update_data(data_in)
+    }
+    sock.socket.add_listener({
+        name: 'update_data',
+        func: update_data_evt,
+        is_singleton: false,
     })
 
     function init_data(data_in) {
@@ -344,7 +361,7 @@ let main_sched_blockController = function(opt_in) {
             }
             box.brushZoom = {
                 x: svg_dims.w[0] * 0.004,
-                y: svg_dims.h[0] * 0.65,
+                y: svg_dims.h[0] * 0.66,
                 w: svg_dims.w[0] * 0.62,
                 h: svg_dims.h[0] * 0.05,
                 marg: svg_dims.w[0] * 0.01,
@@ -491,6 +508,9 @@ let main_sched_blockController = function(opt_in) {
         initBox()
 
         shared.data.server = data_in.data
+        shared.data.server.time_of_night.date_start = new Date(shared.data.server.time_of_night.start * 1000)
+        shared.data.server.time_of_night.date_now = new Date(shared.data.server.time_of_night.now * 1000)
+        shared.data.server.time_of_night.date_end = new Date(shared.data.server.time_of_night.end * 1000)
         shared.data.server.sched_blocks = create_sched_blocks(shared.data.server.blocks)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
@@ -543,16 +563,19 @@ let main_sched_blockController = function(opt_in) {
     // switchMainMode()
     }
     this.init_data = init_data
-    function update_dataOnce(data_in) {
+    function update_data_once(data_in) {
         if (!locker.are_free([ 'pushNewSchedule' ])) {
             // console.log('pushing...');
             setTimeout(function() {
-                update_dataOnce(data_in)
+                update_data_once(data_in)
             }, 10)
             return
         }
         locker.add('update_data')
         shared.data.server = data_in.data
+        shared.data.server.time_of_night.date_start = new Date(shared.data.server.time_of_night.start * 1000)
+        shared.data.server.time_of_night.date_now = new Date(shared.data.server.time_of_night.now * 1000)
+        shared.data.server.time_of_night.date_end = new Date(shared.data.server.time_of_night.end * 1000)
         shared.data.server.sched_blocks = create_sched_blocks(shared.data.server.blocks)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
@@ -576,7 +599,7 @@ let main_sched_blockController = function(opt_in) {
     this.update_data = update_data
     run_loop.init({
         tag: 'update_data',
-        func: update_dataOnce,
+        func: update_data_once,
         n_keep: 1,
     })
 
@@ -977,205 +1000,6 @@ let main_sched_blockController = function(opt_in) {
         return block
     }
 
-    // -------------------------------------------------------------------
-    //
-    // -------------------------------------------------------------------
-    // let SvgBlocksQueue = function () {
-    //   // -------------------------------------------------------------------
-    //   //
-    //   // -------------------------------------------------------------------
-    //   function init_data () {
-    //     let x0, y0, w0, h0, marg
-    //     w0 = svg_dims.w[0] * 0.45 // 0.6
-    //     h0 = svg_dims.h[0] * 0.14 // 0.18
-    //     x0 = (svg_dims.w[0] * 0.02)
-    //     y0 = (svg_dims.h[0] * 0.04)
-    //     marg = w0 * 0.01
-    //     let blockBoxData = {
-    //       x: x0,
-    //       y: y0,
-    //       w: w0,
-    //       h: h0,
-    //       marg: marg
-    //     }
-    //     let gBlockBox = svg.g.append('g')
-    //       .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
-    //     gBlockBox.append('text')
-    //       .text('CURRENT SCHEDULE')
-    //       .style('fill', color_theme.medium.text)
-    //       .style('font-weight', 'bold')
-    //       .style('font-size', '8px')
-    //       .attr('text-anchor', 'left')
-    //       .attr('transform', 'translate(-5,' + (y0 + h0 * 0.8) + ') rotate(270)')
-    //     // gBlockBox.append('rect')
-    //     //   .attr('x', 0)
-    //     //   .attr('y', -10)
-    //     //   // .attr('rx', 2)
-    //     //   // .attr('ry', 2)
-    //     //   .attr('width', blockBoxData.w + 0)
-    //     //   .attr('height', blockBoxData.h + 12) // + 35)
-    //     //   .attr('stroke', color_theme.brighter.stroke)
-    //     //   .attr('stroke-width', 0.4)
-    //     //   // .attr('stroke-width', 12)
-    //     //   // .attr('stroke-dasharray', [blockBoxData.w + 10 + blockBoxData.h + 10 + 35 + 6, blockBoxData.w + 10 - 12, blockBoxData.h + 10 + 35 + 16])
-    //     //   .style('fill', color_theme.brighter.background)
-    //     blockQueue = new BlockQueue({
-    //       main: {
-    //         tag: 'blockQueueTopTag',
-    //         g: gBlockBox,
-    //         box: blockBoxData,
-    //         background: {
-    //           fill: color_theme.dark.background,
-    //           stroke: color_theme.dark.stroke,
-    //           strokeWidth: 0.1
-    //         },
-    //         color_theme: color_theme
-    //       },
-    //       axis: {
-    //         enabled: true,
-    //         g: undefined,
-    //         box: {x: 0, y: blockBoxData.h, w: blockBoxData.w, h: 0, marg: blockBoxData.marg},
-    //         axis: undefined,
-    //         scale: undefined,
-    //         domain: [0, 1000],
-    //         range: [0, 0],
-    //         showText: true,
-    //         orientation: 'axisTop',
-    //         attr: {
-    //           text: {
-    //             stroke: color_theme.medium.stroke,
-    //             fill: color_theme.medium.stroke
-    //           },
-    //           path: {
-    //             stroke: color_theme.medium.stroke,
-    //             fill: color_theme.medium.stroke
-    //           }
-    //         }
-    //       },
-    //       blocks: {
-    //         enabled: true,
-    //         run: {
-    //           enabled: true,
-    //           g: undefined,
-    //           box: {x: 0, y: blockBoxData.h * 0.45, w: blockBoxData.w, h: blockBoxData.h * 0.55, marg: blockBoxData.marg},
-    //           events: {
-    //             click: () => {},
-    //             mouseover: () => {},
-    //             mouseout: () => {},
-    //             drag: {
-    //               start: () => {},
-    //               tick: () => {},
-    //               end: () => {}
-    //             }
-    //           },
-    //           background: {
-    //             fill: color_theme.brighter.background,
-    //             stroke: 'none',
-    //             strokeWidth: 0
-    //           }
-    //         },
-    //         cancel: {
-    //           enabled: true,
-    //           g: undefined,
-    //           box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.3, marg: blockBoxData.marg},
-    //           events: {
-    //             click: () => {},
-    //             mouseover: () => {},
-    //             mouseout: () => {},
-    //             drag: {
-    //               start: () => {},
-    //               tick: () => {},
-    //               end: () => {}
-    //             }
-    //           },
-    //           background: {
-    //             fill: color_theme.brighter.background,
-    //             stroke: color_theme.brighter.stroke,
-    //             strokeWidth: 0
-    //           }
-    //         },
-    //         modification: {
-    //           enabled: false,
-    //           g: undefined,
-    //           box: undefined,
-    //           events: {
-    //             click: undefined,
-    //             mouseover: undefined,
-    //             mouseout: undefined,
-    //             drag: {
-    //               start: () => {},
-    //               tick: () => {},
-    //               end: () => {}
-    //             }
-    //           },
-    //           background: {
-    //             fill: undefined,
-    //             stroke: undefined,
-    //             strokeWidth: undefined
-    //           }
-    //         },
-    //         colorPalette: color_theme.blocks
-    //       },
-    //       filters: {
-    //         enabled: false,
-    //         g: undefined,
-    //         box: {x: 0, y: blockBoxData.h * 0.15, w: svg_dims.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0},
-    //         filters: []
-    //       },
-    //       timeBars: {
-    //         enabled: true,
-    //         g: undefined,
-    //         box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
-    //       },
-    //       time: {
-    //         current_time: {time: 0, date: undefined},
-    //         start_time_sec: {time: 0, date: undefined},
-    //         end_time_sec: {time: 0, date: undefined},
-    //       },
-    //       data: {
-    //         raw: undefined,
-    //         formated: undefined,
-    //         modified: undefined
-    //       },
-    //       debug: {
-    //         enabled: false
-    //       },
-    //       pattern: {},
-    //       event: {
-    //       },
-    //       input: {
-    //         focus: {sched_blocks: undefined, block: undefined},
-    //         over: {sched_blocks: undefined, block: undefined},
-    //         selection: []
-    //       }
-    //     })
-    //
-    //     blockQueue.init()
-    //     update_data()
-    //   }
-    //   this.init_data = init_data
-    //
-    //   function update_data () {
-    //     let tel_ids = []
-    //     $.each(shared.data.server.inst_health, function (index, data_now) {
-    //       tel_ids.push(data_now.id)
-    //     })
-    //     blockQueue.update_data({
-    //       time: {
-    //         current_time: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
-    //         start_time_sec: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
-    //         end_time_sec: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
-    //       },
-    //       data: {
-    //         raw: {
-    //           blocks: shared.data.server.blocks,
-    //           tel_ids: tel_ids
-    //         }
-    //       }
-    //     })
-    //   }
-    //   this.update_data = update_data
-    // }
     let Svg_events_queue_server = function() {
         let reserved = {
         }
@@ -1552,7 +1376,7 @@ let main_sched_blockController = function(opt_in) {
                         },
                     },
                     timeBars: {
-                        enabled: true,
+                        enabled: false,
                         g: undefined,
                         box: {
                             x: 0,
@@ -1796,7 +1620,6 @@ let main_sched_blockController = function(opt_in) {
                 },
             })
 
-            let axisTop = brushZoom.get_axis()
             reserved.g.append('rect')
                 .attr('id', 'cloak')
                 .attr('x', 0)
@@ -1831,14 +1654,13 @@ let main_sched_blockController = function(opt_in) {
                 time: shared.data.server.time_of_night.now,
             }
             let start_time_sec = {
-                date: axisTop[0],
-                time: shared.data.server.time_of_night.start,
+                date: new Date(shared.data.server.time_of_night.date_start),
+                time: Number(axisTop[0] / 1000),
             }
             let end_time_sec = {
-                date: axisTop[1],
-                time: shared.data.server.time_of_night.end,
+                date: new Date(shared.data.server.time_of_night.date_end),
+                time: Number(axisTop[1] / 1000),
             }
-            console.log(get_blocksData())
             blockQueue.update_data({
                 time: {
                     current_time: current_time,
@@ -1857,28 +1679,28 @@ let main_sched_blockController = function(opt_in) {
         this.update_data = update_data
 
         function update() {
-            let current_time = {
-                date: new Date(shared.data.server.time_of_night.date_now),
-                time: shared.data.server.time_of_night.now,
-            }
-            let axisTop = brushZoom.get_axis().axis.scale().domain()
-            console.log(axisTop)
-            let start_time_sec = {
-                date: axisTop[0],
-                time: shared.data.server.time_of_night.start,
-            }
-            let end_time_sec = {
-                date: axisTop[1],
-                time: shared.data.server.time_of_night.end,
-            }
-
-            blockQueue.update({
-                time: {
-                    current_time: current_time,
-                    start_time_sec: start_time_sec,
-                    end_time_sec: end_time_sec,
-                },
-            })
+            // let current_time = {
+            //     date: new Date(shared.data.server.time_of_night.date_now),
+            //     time: shared.data.server.time_of_night.now,
+            // }
+            // let axisTop = brushZoom.get_axis().axis.scale().domain()
+            // console.log(axisTop)
+            // let start_time_sec = {
+            //     date: axisTop[0],
+            //     time: shared.data.server.time_of_night.start,
+            // }
+            // let end_time_sec = {
+            //     date: axisTop[1],
+            //     time: shared.data.server.time_of_night.end,
+            // }
+            //
+            // blockQueue.update({
+            //     time: {
+            //         current_time: current_time,
+            //         start_time_sec: start_time_sec,
+            //         end_time_sec: end_time_sec,
+            //     },
+            // })
         }
         this.update = update
 
@@ -2015,180 +1837,7 @@ let main_sched_blockController = function(opt_in) {
                 .attr('stroke-dasharray', [ 0, brushBox.w, brushBox.h * 0.7, brushBox.w, brushBox.h * 0.7 ])
 
             brushZoom = new PlotBrushZoom()
-            // {
-            //     main: {
-            //         g: reserved.g,
-            //         box: brushBox,
-            //     },
-            //     clipping: {
-            //         enabled: false,
-            //     },
-            //     axis: [
-            //         {
-            //             id: 'top',
-            //             enabled: true,
-            //             showAxis: true,
-            //             main: {
-            //                 g: undefined,
-            //                 box: {
-            //                     x: 0,
-            //                     y: brushBox.h * 0.2,
-            //                     w: brushBox.w,
-            //                     h: brushBox.h * 0.2,
-            //                     marg: 0,
-            //                 },
-            //                 type: 'bottom',
-            //                 attr: {
-            //                     text: {
-            //                         enabled: false,
-            //                         size: 14,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                     path: {
-            //                         enabled: false,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                 },
-            //             },
-            //             axis: undefined,
-            //             scale: undefined,
-            //             domain: [ 0, 1000 ],
-            //             range: [ 0, brushBox.w ],
-            //             brush: {
-            //                 zoom: true,
-            //                 brush: true,
-            //             },
-            //         },
-            //         {
-            //             id: 'middle',
-            //             enabled: true,
-            //             showAxis: true,
-            //             main: {
-            //                 g: undefined,
-            //                 box: {
-            //                     x: 0,
-            //                     y: brushBox.h * 0.95,
-            //                     w: brushBox.w,
-            //                     h: brushBox.h * 0.0,
-            //                     marg: 0,
-            //                 },
-            //                 type: 'top',
-            //                 attr: {
-            //                     text: {
-            //                         enabled: true,
-            //                         size: 10,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                     path: {
-            //                         enabled: false,
-            //                         stroke: color_theme.medium.background,
-            //                         fill: color_theme.medium.background,
-            //                     },
-            //                 },
-            //             },
-            //             axis: undefined,
-            //             scale: undefined,
-            //             domain: [ 0, 1000 ],
-            //             range: [ 0, brushBox.w ],
-            //             brush: {
-            //                 zoom: false,
-            //                 brush: false,
-            //             },
-            //         },
-            //         {
-            //             id: 'bottom',
-            //             enabled: true,
-            //             showAxis: true,
-            //             main: {
-            //                 g: undefined,
-            //                 box: {
-            //                     x: 0,
-            //                     y: brushBox.h * 0.6,
-            //                     w: brushBox.w,
-            //                     h: brushBox.h * 0.2,
-            //                     marg: 0,
-            //                 },
-            //                 type: 'top',
-            //                 attr: {
-            //                     text: {
-            //                         enabled: false,
-            //                         size: 14,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                     path: {
-            //                         enabled: true,
-            //                         stroke: color_theme.medium.stroke,
-            //                         fill: color_theme.medium.stroke,
-            //                     },
-            //                 },
-            //             },
-            //             axis: undefined,
-            //             scale: undefined,
-            //             domain: [ 0, 1000 ],
-            //             range: [ 0, brushBox.w ],
-            //             brush: {
-            //                 zoom: false,
-            //                 brush: false,
-            //             },
-            //         },
-            //     ],
-            //     content: {
-            //         enabled: true,
-            //         main: {
-            //             g: undefined,
-            //             box: {
-            //                 x: 0,
-            //                 y: brushBox.h * 0.15,
-            //                 w: brushBox.w,
-            //                 h: brushBox.h * 0.65,
-            //                 marg: 0,
-            //             },
-            //             attr: {
-            //                 fill: colorPalette.medium.background,
-            //             },
-            //         },
-            //     },
-            //     focus: {
-            //         enabled: true,
-            //         main: {
-            //             g: undefined,
-            //             box: {
-            //                 x: 0,
-            //                 y: brushBox.h * 0.15,
-            //                 w: brushBox.w,
-            //                 h: brushBox.h * 0.65,
-            //                 marg: 0,
-            //             },
-            //             attr: {
-            //                 fill: colorPalette.darker.background,
-            //                 opacity: 1,
-            //                 stroke: colorPalette.darker.background,
-            //             },
-            //         },
-            //     },
-            //     brush: {
-            //         coef: {
-            //             x: 0,
-            //             y: 0,
-            //         },
-            //         callback: () => {},
-            //     },
-            //     zoom: {
-            //         coef: {
-            //             kx: 1,
-            //             ky: 1,
-            //             x: 0,
-            //             y: 0,
-            //         },
-            //         callback: function() {
-            //             svg_blocks_queue_server.update_data()
-            //         },
-            //     },
-            // }
+
             brushZoom.init({
                 g: reserved.g,
                 box: brushBox,
@@ -2216,6 +1865,7 @@ let main_sched_blockController = function(opt_in) {
                     },
                     callback: function() {
                         svg_blocks_queue_server.update_data()
+                        svgTelsConflict.update_data()
                     },
                     enabled: true,
                 },
@@ -2246,7 +1896,6 @@ let main_sched_blockController = function(opt_in) {
                 date: new Date(shared.data.server.time_of_night.date_end),
                 time: Number(shared.data.server.time_of_night.end),
             }
-
             brushZoom.update_axis({
                 domain: [ start_time_sec.date, end_time_sec.date ],
             })
@@ -2868,12 +2517,12 @@ let main_sched_blockController = function(opt_in) {
 
             let axisTop = brushZoom.get_axis().axis.scale().domain()
             let start_time_sec = {
-                date: axisTop[0],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0]) / -1000,
+                date: axisTop[0] / 1000,
+                time: axisTop[0] / 1000,
             }
             let end_time_sec = {
-                date: axisTop[1],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1]) / -1000,
+                date: axisTop[1] / 1000,
+                time: axisTop[1] / 1000,
             }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])

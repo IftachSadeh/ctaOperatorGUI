@@ -101,7 +101,7 @@ let sock_panel_sync = function(opt_in) {
         let emit_data = {
             widget_type: widget_type,
             widget_id: data.widget_id,
-            method_name: 'set_sync_groups',
+            method_name: 'set_client_sync_groups',
             method_args: data,
         }
         sock.socket.emit('widget', emit_data)
@@ -218,14 +218,15 @@ let main_panel_sync = function(opt_in) {
 
         this_top.scale_r = scale_r
 
-        // sync_group_prefix, icon_prefix come from the server as part of init_data
-        this_top.sync_group_prefix = ''
+        // sync_group_id_prefix, icon_prefix come from the server as part of init_data
+        this_top.sync_group_id_prefix = ''
+        this_top.sync_group_title_prefix = ''
         this_top.icon_prefix = ''
 
         this_top.empty_icn_tag = 'empty_icn'
 
         function get_grp_id(index_0, index_1) {
-            let grp_id = this_top.sync_group_prefix + index_0
+            let grp_id = this_top.sync_group_id_prefix + index_0
             if (is_def(index_1)) {
                 grp_id += '_' + index_1
             }
@@ -245,7 +246,7 @@ let main_panel_sync = function(opt_in) {
 
 
         function get_grp_title(n_grp) {
-            return 'Group ' + n_grp
+            return this_top.sync_group_title_prefix + n_grp
         }
         // let arc_prev = {}
         // arc_prev.ang = {}
@@ -304,8 +305,9 @@ let main_panel_sync = function(opt_in) {
         let side_col_w = wh[0] * 0.2
         let wh_pack = [ wh[0] - side_col_w, wh[1] ]
         let shift_main_g = [ side_col_w, 0 ]
-        let n_empty_icon = -1
-        // n_empty_icon = 81; // set high for debugging...
+        // let n_empty_icon = -1
+        let n_empty_icon = null
+        // n_empty_icon = 999 // set high for debugging...
 
         function groups_to_server() {
             let data = {
@@ -328,6 +330,7 @@ let main_panel_sync = function(opt_in) {
                                 child_now_2.trg_widg_id, child_now_2.id,
                             ])
                         }
+                        // console.log('XXX 0 -',[n_child_0, n_child_1, n_child_2], child_now_2.trg_widg_id, child_now_2.id, )
                     })
                 })
 
@@ -351,7 +354,8 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         function init_data(data_in) {
             grps.data = data_in.groups
-            this_top.sync_group_prefix = data_in.sync_group_prefix
+            this_top.sync_group_id_prefix = data_in.sync_group_id_prefix
+            this_top.sync_group_title_prefix = data_in.sync_group_title_prefix
             this_top.icon_prefix = data_in.icon_prefix
 
             if (is_def(svg.svg)) {
@@ -391,7 +395,7 @@ let main_panel_sync = function(opt_in) {
 
             svg.svg = d3
                 .select(svg_div)
-            // .classed("svgInGridStack_outer", true)
+                // .classed("svgInGridStack_outer", true)
                 .style('background', '#383B42')
                 .append('svg')
                 .attr('preserveAspectRatio', 'xMidYMid meet')
@@ -482,8 +486,8 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            function do_drag_main_start(d_in, thisIn) {
-                move_node_up(thisIn, 2)
+            function do_drag_main_start(d_in, this_ele) {
+                move_node_up(this_ele, 2)
 
                 com.icons.g.selectAll('g.' + tag_icon).style('pointer-events', 'none')
 
@@ -495,17 +499,17 @@ let main_panel_sync = function(opt_in) {
                 grps.hov_id_grp_start = d_in.parent.data.id
             }
 
-            com.drag_main_start = function(d_in, thisIn) {
+            com.drag_main_start = function(d_in, this_ele) {
                 locker.add({
                     id: tag_main + 'in_drag',
                     override: true,
                 })
 
-                do_drag_main_start(d_in, thisIn)
+                do_drag_main_start(d_in, this_ele)
             }
 
-            com.drag_main_during = function(d_in, thisIn) {
-                d3.select(thisIn).attr('transform', function(d) {
+            com.drag_main_during = function(d_in, this_ele) {
+                d3.select(this_ele).attr('transform', function(d) {
                     d.x = d3.event.x
                     d.y = d3.event.y
                     return 'translate(' + d.x + ',' + d.y + ')'
@@ -528,8 +532,8 @@ let main_panel_sync = function(opt_in) {
                 grps.hov_id_grp_start = null
             }
 
-            com.drag_main_end = function(d_in, thisIn) {
-                do_drag_main_end(d_in, thisIn)
+            com.drag_main_end = function(d_in, this_ele) {
+                do_drag_main_end(d_in, this_ele)
 
                 locker.remove({
                     id: tag_main + 'in_drag',
@@ -696,7 +700,7 @@ let main_panel_sync = function(opt_in) {
 
             run_when_ready({
                 pass: function() {
-                    return locker.are_free(com.lockerUpdateV)
+                    return locker.are_free(com.locker_updates)
                 },
                 execute: function() {
                     locker.remove('in_init')
@@ -723,7 +727,7 @@ let main_panel_sync = function(opt_in) {
                 .attr('width', svg_dims.w[0])
                 .attr('height', svg_dims.h[0])
                 .attr('fill', '#F2F2F2')
-            // .attr("stroke-width", 0)
+                // .attr("stroke-width", 0)
                 .merge(rect)
                 .attr('opacity', isAcive ? 0 : 0.7)
                 .attr('pointer-events', isAcive ? 'none' : 'auto')
@@ -753,7 +757,7 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        com.lockerUpdateV = [
+        com.locker_updates = [
             tag_main + 'data_change',
             tag_main + 'update_data',
             tag_main + 'update_groups',
@@ -763,7 +767,7 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         run_loop.init({
             tag: 'update_data',
-            func: update_dataOnce,
+            func: update_data_once,
             n_keep: 1,
         })
 
@@ -778,20 +782,20 @@ let main_panel_sync = function(opt_in) {
             run_loop.push({
                 tag: 'update_data',
                 data: data_in,
-            }) //, time:data_in.emit_time
+            })
         }
         this.update_data = update_data
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function update_dataOnce(data_in) {
+        function update_data_once(data_in) {
             if (!locker.is_free(tag_main + 'in_drag')) {
                 return
             }
 
-            if (!locker.are_free(com.lockerUpdateV)) {
-                // console.log('will delay _update_data_',locker.get_actives(com.lockerUpdateV));
+            if (!locker.are_free(com.locker_updates)) {
+                // console.log('will delay _update_data_',locker.get_actives(com.locker_updates));
                 setTimeout(function() {
                     update_data(data_in)
                 }, times.anim / 2)
@@ -819,6 +823,7 @@ let main_panel_sync = function(opt_in) {
                         if (child_now_2.n_icon !== n_empty_icon) {
                             origs[child_now_2.id] = child_now_2
                         }
+                        // console.log('XXX 1 -',[n_child_0, n_child_1, n_child_2], child_now_2.trg_widg_id, child_now_2.id, )
                     })
                 })
             })
@@ -830,6 +835,7 @@ let main_panel_sync = function(opt_in) {
                             data_in.children[n_child_0].children[n_child_1]
                                 .children[n_child_2] = origs[child_now_2.id]
                         }
+                        // console.log('XXX 2 -',[n_child_0, n_child_1, n_child_2], child_now_2.trg_widg_id, child_now_2.id, )
                     })
                 })
             })
@@ -1028,7 +1034,7 @@ let main_panel_sync = function(opt_in) {
                         delay: delay_after_add_empty,
                     })
                 })
-            // .attr("stroke-width", 2).attr("stroke", "red")
+                // .attr("stroke-width", 2).attr("stroke", "red")
         }
 
         // -------------------------------------------------------------------
@@ -1708,9 +1714,8 @@ let main_panel_sync = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function update_groups() {
-            if (
-                !locker.are_free([ tag_main + 'update_data', tag_main + 'update_groups' ])
-            ) {
+            let lock_tags = [ tag_main + 'update_data', tag_main + 'update_groups' ]
+            if (!locker.are_free(lock_tags)) {
                 setTimeout(function() {
                     update_groups()
                 }, times.anim / 2)
@@ -1846,8 +1851,8 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             if (locker.is_free(tag_main + 'in_drag')) {
                 grps.data.children = grps.data.children.sort(function(x, y) {
-                    let id_x = parseInt(x.id.replace(this_top.sync_group_prefix, ''))
-                    let id_y = parseInt(y.id.replace(this_top.sync_group_prefix, ''))
+                    let id_x = parseInt(x.id.replace(this_top.sync_group_id_prefix, ''))
+                    let id_y = parseInt(y.id.replace(this_top.sync_group_id_prefix, ''))
 
                     return id_x - id_y
                 })

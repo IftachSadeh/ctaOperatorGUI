@@ -22,7 +22,7 @@ class EmptyExample(BaseWidget):
     # ------------------------------------------------------------------
     async def setup(self, *args):
         # standard common initialisations
-        await BaseWidget.setup(self, *args)
+        await BaseWidget.setup(self, args)
 
         # initialise dataset and send to client
         opt_in = {
@@ -57,9 +57,9 @@ class EmptyExample(BaseWidget):
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data=None)
+        await BaseWidget.back_from_offline(self, args)
 
         # additional custom stuff
         pass

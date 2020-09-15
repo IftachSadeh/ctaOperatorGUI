@@ -902,15 +902,15 @@ function add_site_nav_menu(parent_ele) {
 
     let btns = [
         {
-            text: 'Development',
-            on_click: function() {
-                window.location.href = 'view102'
-            },
-        },
-        {
             text: 'Home',
             on_click: function() {
                 window.location.href = 'index'
+            },
+        },
+        {
+            text: 'Development',
+            on_click: function() {
+                window.location.href = 'view102'
             },
         },
         {
@@ -962,7 +962,13 @@ function add_site_nav_menu(parent_ele) {
             },
         },
         {
-            text: 'Empty Example',
+            text: 'Dev - load checker',
+            on_click: function() {
+                window.location.href = 'view001'
+            },
+        },
+        {
+            text: 'Dev - Empty Example',
             on_click: function() {
                 window.location.href = 'view000'
             },

@@ -10,7 +10,7 @@
 /* global icon_badge */
 /* global run_when_ready */
 /* global loaded_scripts */
-/* global get_time_msec */
+/* global get_time_now_msec */
 /* global LOG_LEVELS */
 
 // -------------------------------------------------------------------
@@ -51,7 +51,7 @@ function SocketManager() {
     this_top.send_connection_logs = false
     // this_top.send_connection_logs = true
 
-    this_top.debug_sess_id = true
+    this_top.debug_instance_ids = true
 
     this_top.socket = null
     this_top.con_stat = null
@@ -252,8 +252,9 @@ function SocketManager() {
             let metadata = {
                 event_name: event_name,
                 sess_id: this_top.sess_id,
+                user_id: this_top.user_id,
                 n_client_msg: this_top.n_client_msg,
-                send_time_msec: get_time_msec(),
+                send_time_msec: get_time_now_msec(),
             }
             if (is_def(metadata_in)) {
                 $.each(metadata_in, function(key, data_now) {
@@ -370,14 +371,17 @@ function SocketManager() {
             window.SOCKET_INFO = tel_info
             
             this_top.sess_id = String(data_in.sess_id)
-            // this_top.sess_id = String('_xx_00_xx_') // for debugging
-            // this_top.sess_id = String(unique({prefix: ''}))
+            this_top.user_id = String(window.DISPLAY_USER_ID)
+            this_top.user_group = String(window.DISPLAY_USER_GROUP)
 
             let user_name_div = document.querySelector('#debug_text_div')
-            if (this_top.debug_sess_id && (user_name_div.style.opacity < 0.01)) {
-                user_name_div.style.opacity = 1
-                user_name_div.innerHTML += (
-                    ' ; ' + this_top.sess_id
+            if (this_top.debug_instance_ids && (user_name_div.style.opacity < 0.01)) {
+                user_name_div.style = (
+                    'opacity: 1; padding-left: 24px; padding-bottom: 5px; '
+                    + 'margin-top: -40px; font-size: 15px; color: #6a8ea1;'
+                )
+                user_name_div.innerHTML = (
+                    this_top.user_id  + ' ; ' + this_top.sess_id
                 )
             }
 
@@ -385,13 +389,13 @@ function SocketManager() {
 
             this_top.session_props = {
                 sess_id: this_top.sess_id,
-                user_id: window.DISPLAY_USER_ID,
+                user_id: this_top.user_id,
                 is_simulation: data_in.is_simulation,
             }
 
             let data_out = {
-                display_user_id: window.DISPLAY_USER_ID,
-                display_user_group: window.DISPLAY_USER_GROUP,
+                display_user_id: this_top.user_id,
+                display_user_group: this_top.user_group,
             }
             
             let test_log = false
@@ -494,7 +498,7 @@ function SocketManager() {
         // -------------------------------------------------------------------
         // get/send heartbeat ping/pong messages to the server
         // -------------------------------------------------------------------
-        let ping_event_time_msec = get_time_msec()
+        let ping_event_time_msec = get_time_now_msec()
         let ping_visible_time_msec, ping_latest_delay_msec
         function reset_ping() {
             ping_visible_time_msec = null
@@ -504,7 +508,7 @@ function SocketManager() {
         reset_ping()
         
         let heartbeat_ping_evt = function(data_in) {
-            ping_event_time_msec = get_time_msec()
+            ping_event_time_msec = get_time_now_msec()
 
             // console.log(' - got heartbeat_ping', data_in)
             // if this is not the first ping, check that the delay is within the allowed range
@@ -514,7 +518,7 @@ function SocketManager() {
             }
 
             if (is_def(ping_visible_time_msec)) {
-                let ping_interval_msec = get_time_msec() - ping_visible_time_msec
+                let ping_interval_msec = get_time_now_msec() - ping_visible_time_msec
                 ping_latest_delay_msec = Math.abs(
                     ping_interval_msec - data_in.data.ping_interval_msec
                 )
@@ -524,7 +528,7 @@ function SocketManager() {
             }
 
             // update the local variable
-            ping_visible_time_msec = get_time_msec()
+            ping_visible_time_msec = get_time_now_msec()
 
             // send info about the resources used by the session. in case of
             // session restoration, this will be used to indicate the need
@@ -558,7 +562,7 @@ function SocketManager() {
 
             let ping_event_total_delay_msec = 0
             if (!document.hidden) {
-                let ping_interval_msec = get_time_msec() - ping_event_time_msec
+                let ping_interval_msec = get_time_now_msec() - ping_event_time_msec
 
                 ping_event_total_delay_msec = (
                     ping_interval_msec - this_top.sess_ping.send_interval_msec
@@ -568,7 +572,7 @@ function SocketManager() {
             // if this is not the first ping, check that the delay is within the allowed range
             let ping_visible_delay_msec = 0
             if (is_def(ping_visible_time_msec)) {
-                let ping_interval_msec = get_time_msec() - ping_visible_time_msec
+                let ping_interval_msec = get_time_now_msec() - ping_visible_time_msec
                 ping_visible_delay_msec = (
                     ping_interval_msec - this_top.sess_ping.send_interval_msec
                 )
@@ -703,7 +707,7 @@ function SocketManager() {
 
         // function connection_debug() {
         //     setTimeout(function() {
-        //         console.log(' -     ', get_time_msec())
+        //         console.log(' -     ', get_time_now_msec())
         //         console.log('sock   ', this_top.socket.connected, this_top.socket.is_ws_open())
         //         console.log('server ', this_top.socket.is_server_state_on)
         //         console.log('user   ', this_top.socket.is_user_state_on)
@@ -1112,11 +1116,13 @@ function SocketManager() {
         let widget_type = opt_in.widget_type
         
         let n_icon = this_top.sess_widgets[widget_id].n_icon
-        let icon_id = this_top.sess_widgets[widget_id].icon_id
+        // let icon_id = this_top.sess_widgets[widget_id].icon_id
 
-        if (!is_def(n_icon) || !is_def(icon_id)) {
-            n_icon = -1
-            icon_id = ''
+        // if (!is_def(n_icon) || !is_def(icon_id)) {
+        if (!is_def(n_icon)) {
+            n_icon = null
+            // n_icon = -1
+            // icon_id = ''
         }
         
         let data_out = {
@@ -1124,7 +1130,7 @@ function SocketManager() {
             widget_id: widget_id,
             method_name: 'setup',
             n_icon: n_icon,
-            icon_id: icon_id,
+            // icon_id: icon_id,
         }
         this_top.socket.emit('widget', data_out)
         
@@ -1159,7 +1165,7 @@ function SocketManager() {
         let widget_id = metadata.widget_id
         
         this_top.sess_widgets[widget_id].n_icon = metadata.n_icon
-        this_top.sess_widgets[widget_id].icon_id = metadata.icon_id
+        // this_top.sess_widgets[widget_id].icon_id = metadata.icon_id
 
         if (!is_def(opt_in.icon_divs)) {
             return
@@ -1182,7 +1188,6 @@ function SocketManager() {
     function add_widget(opt_in) {
         let name_tag = opt_in.name_tag
         let table_title = opt_in.table_title
-        // let has_drawer = opt_in.has_drawer
         let has_icon = opt_in.has_icon
 
         let main_script_name = '/js/widgets/' + name_tag + '.js'
@@ -1208,14 +1213,29 @@ function SocketManager() {
             }
         }
 
-        let tab_table_NEW = main_div.appendChild(document.createElement('div'))
-        tab_table_NEW.id = tab_table_id
-        tab_table_NEW.classList.add('table_card')
+        let tab_table = main_div.appendChild(document.createElement('div'))
+        tab_table.id = tab_table_id
+        tab_table.classList.add('table_card')
 
-        let tab_table_title = tab_table_NEW.appendChild(document.createElement('div'))
+        if (this_top.debug_instance_ids) {
+            let tab_table_title = tab_table.appendChild(document.createElement('div'))
+            tab_table_title.classList.add('floating-div-content-line')
+            let tab_table_title_text = tab_table_title.appendChild(
+                document.createElement('div')
+            )
+            tab_table_title_text.classList.add('menu_header')
+            tab_table_title_text.style = (
+                'opacity: 1; font-size: 15px; margin-bottom: -25px; color: #b37fb3;'
+            )
+            tab_table_title_text.innerHTML = widget_id  
+        }
+
+
+        let tab_table_title = tab_table.appendChild(document.createElement('div'))
         tab_table_title.id = tab_table_title_id
         // tab_table_title.setAttribute("style", 'width: 100%; display: flex; align-items: center')
         tab_table_title.classList.add('table_title')
+        tab_table_title.classList.add('floating-div-content-line')
 
         let tab_table_title_text = tab_table_title.appendChild(
             document.createElement('div')
@@ -1236,12 +1256,12 @@ function SocketManager() {
         // tab_table_title_text.setAttribute("style", 'width: 100%; text-align: left; margin-left: 1%; margin-right: 1%;')
         tab_table_title_text.classList.add('table_title_text')
 
-        let tab_table_main = tab_table_NEW.appendChild(document.createElement('div'))
+        let tab_table_main = tab_table.appendChild(document.createElement('div'))
         tab_table_main.id = tab_table_main_id
         // tab_table_main.setAttribute("style", 'width: 100%;')
         // tab_table_main.classList.add('grid_ele_dark')
 
-        // console.log(tab_table_NEW)
+        // console.log(tab_table)
 
         // -------------------------------------------------------------------
         // proceed once the table has been added (with possible recursive calls to load_script())
@@ -1270,7 +1290,7 @@ function SocketManager() {
                 widget_id: widget_id,
                 base_name: name_tag + widget_id,
                 gs_name: gs_name,
-                tab_table: tab_table_NEW,
+                tab_table: tab_table,
                 icon_divs: icon_divs,
                 is_south: is_south,
                 widget: null,
@@ -1285,7 +1305,7 @@ function SocketManager() {
         // // -------------------------------------------------------------------
         // // after setting up the event listners, can finally add the element
         // // -------------------------------------------------------------------
-        // gs_idV.push({ tab_table: tab_table_NEW, gs_name: gs_name })
+        // gs_idV.push({ tab_table: tab_table, gs_name: gs_name })
         // winResize()
     }
     this_top.add_widget = add_widget

@@ -16,69 +16,40 @@ window.PlotBrushZoom = function() {
             }
         }
 
-        reserved.axis.style = {
+        reserved.axis_parameters.style = {
         }
 
-        reserved.axis.style.hasOutline = is_def(opt_in.hasOutline)
+        reserved.axis_parameters.style.hasOutline = is_def(opt_in.hasOutline)
             ? opt_in.hasOutline
             : false
     }
     this.set_style = set_style
-    function init(opt_in) {
-        reserved = opt_in
-        reserved.g.attr(
-            'transform',
-            'translate(' + reserved.box.x + ',' + reserved.box.y + ')'
-        )
 
-        init_default()
-        setup_profile()
-
-        init_clipping()
-        init_axis_brush_boxes()
-        initAzerty()
-        init_interaction()
-        initAxis()
-
-    }
-    this.init = init
-    function get_structure() {
-        return {
-            id: reserved.id,
-            type: reserved.type,
-            location: reserved.location,
-            drawing: reserved.drawing,
-            profile: reserved.profile,
-            domain: reserved.domain,
-        }
-    }
-    this.get_structure = get_structure
-
-    function init_default() {
+    function setup_default() {
         let reserved_default = {
-            g: undefined,
-            id: undefined,
-            location: undefined,
-            type: 'vertical',
-            drawing: 'linear',
-            profile: 'default',
-            box: {
-                x: 0,
-                y: 0,
-                w: 0,
-                h: 0,
-                marg: 0,
+            main: {
+                id: undefined,
+                g: undefined,
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: 0,
+                    marg: 0,
+                },
+                location: undefined,
+                drawing: 'linear',
+                profile: 'default',
             },
             domain: {
-                context: [ 0, 100 ],
+                raw: [ 0, 100 ],
                 focus: [ 0, 100 ],
             },
-            range: [ 0, 0 ],
             clipping: {
                 max_characters: 5,
                 enabled: false,
             },
-            axis: {
+            axis_parameters: {
                 profile: 'focus',
                 visibility: false,
                 track: 'a1',
@@ -103,7 +74,7 @@ window.PlotBrushZoom = function() {
                     },
                 },
             },
-            azerty: {
+            brush_parameters: {
                 profile: 'focus',
                 visibility: false,
                 track: 'b1',
@@ -114,10 +85,6 @@ window.PlotBrushZoom = function() {
                 },
             },
             focus: {
-                // dimension: {
-                //     w: 0,
-                //     h: 0,
-                // },
                 zoom: {
                     kx: 1,
                     ky: 1,
@@ -127,36 +94,46 @@ window.PlotBrushZoom = function() {
                     y: 0,
                 },
             },
-            brush: {
-                enabled: true,
-                callback: function() {
-                    console.log('callback function brush')
+            interaction: {
+                wheel: {
+                    default: {
+                        type: 'zoom',
+                        end: () => {},
+                    },
+                    shiftKey: {
+                        type: 'scroll',
+                        end: () => {},
+                    },
                 },
-            },
-            zoom: {
-                enabled: true,
-                callback: function() {
-                    console.log('callback function zoom')
+                drag: {
+                    default: {
+                        type: 'drag_trans',
+                        start: () => {
+                        },
+                        drag: () => {
+                        },
+                        end: () => {
+                        },
+                    },
                 },
             },
         }
         reserved = window.merge_obj(reserved_default, reserved)
     }
     function setup_profile() {
-        if (reserved.profile === 'default') {
+        if (reserved.main.profile === 'default') {
             return
         }
-
-        switch (reserved.profile) {
+        switch (reserved.main.profile) {
         case 'scrollbox':
-            reserved.azerty = window.merge_obj(
-                reserved.azerty,
+            reserved.brush_parameters = window.merge_obj(
+                reserved.brush_parameters,
                 {
                     visibility: true,
                     zoom: true,
                 })
-            reserved.axis = window.merge_obj(
-                reserved.axis,
+            reserved.axis_parameters = window.merge_obj(
+                reserved.axis_parameters,
                 {
                     visibility: false,
                     track: 'a1',
@@ -165,13 +142,13 @@ window.PlotBrushZoom = function() {
                 })
             break
         case 'focus':
-            reserved.azerty = window.merge_obj(
-                reserved.azerty,
+            reserved.brush_parameters = window.merge_obj(
+                reserved.brush_parameters,
                 {
                     visibility: false,
                 })
-            reserved.axis = window.merge_obj(
-                reserved.axis,
+            reserved.axis_parameters = window.merge_obj(
+                reserved.axis_parameters,
                 {
                     visibility: true,
                     track: 'a1',
@@ -180,14 +157,14 @@ window.PlotBrushZoom = function() {
                 })
             break
         case 'context':
-            reserved.azerty = window.merge_obj(
-                reserved.azerty,
+            reserved.brush_parameters = window.merge_obj(
+                reserved.brush_parameters,
                 {
                     visibility: true,
                     zoom: true,
                 })
-            reserved.axis = window.merge_obj(
-                reserved.axis,
+            reserved.axis_parameters = window.merge_obj(
+                reserved.axis_parameters,
                 {
                     visibility: true,
                     track: 'a1',
@@ -196,14 +173,14 @@ window.PlotBrushZoom = function() {
                 })
             break
         case 'hybrid':
-            reserved.azerty = window.merge_obj(
-                reserved.azerty,
+            reserved.brush_parameters = window.merge_obj(
+                reserved.brush_parameters,
                 {
                     visibility: true,
                     zoom: true,
                 })
-            reserved.axis = window.merge_obj(
-                reserved.axis,
+            reserved.axis_parameters = window.merge_obj(
+                reserved.axis_parameters,
                 {
                     visibility: true,
                     track: 'a1',
@@ -215,58 +192,37 @@ window.PlotBrushZoom = function() {
 
         }
     }
-
-    function init_clipping() {
-        if (!reserved.clipping.enabled) {
-            return
-        }
-        reserved.clipping.g = reserved.g.append('g')
-        reserved.clipping.g
-            .append('defs')
-            .append('svg:clipPath')
-            .attr('id', 'clip')
-            .append('svg:rect')
-            .attr('id', 'clip-rect')
-            .attr('x', '0')
-            .attr('y', '0')
-            .attr('width', reserved.box.w)
-            .attr('height', reserved.box.h)
-        reserved.clipping.clipBody = reserved.clipping.g
-            .append('g')
-            .attr('clip-path', 'url(#clip)')
-        reserved.g = reserved.clipping.clipBody.append('g')
-    }
-    function init_axis_brush_boxes() {
+    function setup_axis_brush_boxes() {
         function left_boxes() {
             reserved.boxes.a1 = {
-                x: reserved.box.w,
+                x: reserved.main.box.w,
                 y: 0,
                 w: 0,
-                h: reserved.box.h,
+                h: reserved.main.box.h,
             }
             reserved.boxes.a2 = {
-                x: reserved.box.w,
+                x: reserved.main.box.w,
                 y: 0,
                 w: 0,
-                h: reserved.box.h,
+                h: reserved.main.box.h,
             }
             // reserved.boxes.a3 = {
             //     x: 0,
             //     y: 0,
             //     w: 0,
-            //     h: reserved.box.h,
+            //     h: reserved.main.box.h,
             // }
             reserved.boxes.b1 = {
-                x: reserved.box.w,
+                x: reserved.main.box.w,
                 y: 0,
-                w: reserved.box.w,
-                h: reserved.box.h,
+                w: reserved.main.box.w,
+                h: reserved.main.box.h,
             }
             // reserved.boxes.b2 = {
             //     x: 0,
             //     y: 0,
-            //     w: reserved.box.w ,
-            //     h: reserved.box.h,
+            //     w: reserved.main.box.w ,
+            //     h: reserved.main.box.h,
             // }
         }
         function right_boxes() {
@@ -274,162 +230,305 @@ window.PlotBrushZoom = function() {
                 x: 0,
                 y: 0,
                 w: 0,
-                h: reserved.box.h,
+                h: reserved.main.box.h,
             }
             reserved.boxes.a2 = {
-                x: reserved.box.w,
+                x: reserved.main.box.w,
                 y: 0,
                 w: 0,
-                h: reserved.box.h,
+                h: reserved.main.box.h,
             }
             // reserved.boxes.a3 = {
-            //     x: reserved.box.w,
+            //     x: reserved.main.box.w,
             //     y: 0,
             //     w: 0,
-            //     h: reserved.box.h,
+            //     h: reserved.main.box.h,
             // }
             reserved.boxes.b1 = {
                 x: 0,
                 y: 0,
-                w: reserved.box.w,
-                h: reserved.box.h,
+                w: reserved.main.box.w,
+                h: reserved.main.box.h,
             }
             // reserved.boxes.b2 = {
-            //     x: reserved.box.w ,
+            //     x: reserved.main.box.w ,
             //     y: 0,
-            //     w: reserved.box.w ,
-            //     h: reserved.box.h,
+            //     w: reserved.main.box.w ,
+            //     h: reserved.main.box.h,
             // }
         }
         function top_boxes() {
             reserved.boxes.a1 = {
                 x: 0,
-                y: reserved.box.h,
-                w: reserved.box.w,
+                y: reserved.main.box.h,
+                w: reserved.main.box.w,
                 h: 0,
             }
             reserved.boxes.a2 = {
                 x: 0,
                 y: 0,
-                w: reserved.box.w,
+                w: reserved.main.box.w,
                 h: 0,
             }
             // reserved.boxes.a3 = {
             //     x: 0,
             //     y: 0,
-            //     w: reserved.box.w,
+            //     w: reserved.main.box.w,
             //     h: 0,
             // }
             reserved.boxes.b1 = {
                 x: 0,
                 y: 0,
-                w: reserved.box.w,
-                h: reserved.box.h,
+                w: reserved.main.box.w,
+                h: reserved.main.box.h,
             }
             // reserved.boxes.b2 = {
             //     x: 0,
             //     y: 0,
-            //     w: reserved.box.w,
-            //     h: reserved.box.h ,
+            //     w: reserved.main.box.w,
+            //     h: reserved.main.box.h ,
             // }
         }
         function bottom_boxes() {
             reserved.boxes.a1 = {
                 x: 0,
                 y: 0,
-                w: reserved.box.w,
+                w: reserved.main.box.w,
                 h: 0,
             }
             reserved.boxes.a2 = {
                 x: 0,
-                y: reserved.box.h,
-                w: reserved.box.w,
+                y: reserved.main.box.h,
+                w: reserved.main.box.w,
                 h: 0,
             }
             // reserved.boxes.a3 = {
             //     x: 0,
-            //     y: reserved.box.h,
-            //     w: reserved.box.w,
+            //     y: reserved.main.box.h,
+            //     w: reserved.main.box.w,
             //     h: 0,
             // }
             reserved.boxes.b1 = {
                 x: 0,
                 y: 0,
-                w: reserved.box.w,
-                h: reserved.box.h,
+                w: reserved.main.box.w,
+                h: reserved.main.box.h,
             }
             // reserved.boxes.b2 = {
             //     x: 0,
-            //     y: reserved.box.h ,
-            //     w: reserved.box.w,
-            //     h: reserved.box.h ,
+            //     y: reserved.main.box.h ,
+            //     w: reserved.main.box.w,
+            //     h: reserved.main.box.h ,
             // }
         }
 
         reserved.boxes = {
         }
 
-        if (reserved.location === 'left') {
+        if (reserved.main.location === 'left') {
             left_boxes()
         }
-        else if (reserved.location === 'right') {
+        else if (reserved.main.location === 'right') {
             right_boxes()
         }
-        else if (reserved.location === 'top') {
+        else if (reserved.main.location === 'top') {
             top_boxes()
         }
-        else if (reserved.location === 'bottom') {
+        else if (reserved.main.location === 'bottom') {
             bottom_boxes()
         }
     }
+    function get_structure() {
+        return reserved.main
+    }
+    this.get_structure = get_structure
 
-    function initAzerty() {
-        if (!reserved.azerty.visibility) {
+    function init(opt_in) {
+        reserved = opt_in
+        reserved.main.g.attr(
+            'transform',
+            'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')'
+        )
+
+        setup_default()
+        setup_profile()
+        setup_axis_brush_boxes()
+
+        init_focus()
+        init_background()
+        // init_clipping()
+        init_brush()
+        init_axis()
+        // init_interaction()
+        interaction_wheel()
+        interaction_drag()
+
+        apply_focus()
+        core_axis()
+        updateBrush()
+    }
+    this.init = init
+    // function init_clipping() {
+    //     if (!reserved.clipping.enabled) {
+    //         return
+    //     }
+    //     reserved.clipping.g = reserved.main.g.append('g')
+    //     reserved.clipping.g
+    //         .append('defs')
+    //         .append('svg:clipPath')
+    //         .attr('id', 'clip')
+    //         .append('svg:rect')
+    //         .attr('id', 'clip-rect')
+    //         .attr('x', '0')
+    //         .attr('y', '0')
+    //         .attr('width', reserved.main.box.w)
+    //         .attr('height', reserved.main.box.h)
+    //     reserved.clipping.clipBody = reserved.clipping.g
+    //         .append('g')
+    //         .attr('clip-path', 'url(#clip)')
+    //     reserved.main.g = reserved.clipping.clipBody.append('g')
+    // }
+    function init_background() {
+        reserved.background = reserved.main.g
+            .append('g')
+            .attr('id', reserved.main.id + '_background')
+            .attr('transform', 'translate('
+            + reserved.main.box.x
+            + ','
+            + reserved.main.box.y
+            + ')')
+    }
+    function init_axis() {
+        reserved.axis = {
+        }
+        if (reserved.main.drawing === 'time') {
+            reserved.axis.scale = d3.scaleLinear()
+        }
+        else if (reserved.main.drawing === 'line') {
+            reserved.axis.scale = d3.scaleLinear()
+        }
+        else if (reserved.main.drawing === 'band') {
+            reserved.axis.scale = d3.scaleBand()
+        }
+        else {
+            reserved.axis.scale = d3.scaleLinear()
+        }
+
+        if (reserved.main.location === 'top' || reserved.main.location === 'bottom') {
+            reserved.axis.scale
+                .range([ 0, reserved.main.box.w ])
+                .domain(reserved.domain.raw)
+        }
+        else if (reserved.main.location === 'left' || reserved.main.location === 'right') {
+            reserved.axis.scale
+                .range([ 0, reserved.main.box.h ])
+                .domain(reserved.domain.raw)
+        }
+
+        if (reserved.main.location === 'top') {
+            if (reserved.axis_parameters.orientation === 'in') {
+                reserved.axis.axis = d3.axisBottom(reserved.axis.scale)
+            }
+            if (reserved.axis_parameters.orientation === 'out') {
+                reserved.axis.axis = d3.axisTop(reserved.axis.scale)
+            }
+        }
+        else if (reserved.main.location === 'bottom') {
+            if (reserved.axis_parameters.orientation === 'in') {
+                reserved.axis.axis = d3.axisTop(reserved.axis.scale)
+            }
+            if (reserved.axis_parameters.orientation === 'out') {
+                reserved.axis.axis = d3.axisBottom(reserved.axis.scale)
+            }
+        }
+        else if (reserved.main.location === 'left') {
+            if (reserved.axis_parameters.orientation === 'in') {
+                reserved.axis.axis = d3.axisRight(reserved.axis.scale)
+            }
+            if (reserved.axis_parameters.orientation === 'out') {
+                reserved.axis.axis = d3.axisLeft(reserved.axis.scale)
+            }
+        }
+        else if (reserved.main.location === 'right') {
+            if (reserved.axis_parameters.orientation === 'in') {
+                reserved.axis.axis = d3.axisLeft(reserved.axis.scale)
+            }
+            if (reserved.axis_parameters.orientation === 'out') {
+                reserved.axis.axis = d3.axisRight(reserved.axis.scale)
+            }
+        }
+
+        if (reserved.main.drawing === 'time') {
+            reserved.axis.axis.tickFormat(d3.timeFormat('%H:%M'))
+        }
+
+        reserved.axis.g = reserved.main.g.append('g')
+        reserved.axis.g.attr(
+            'transform',
+            'translate('
+      + reserved.boxes[reserved.axis_parameters.track].x
+      + ','
+      + reserved.boxes[reserved.axis_parameters.track].y
+      + ')'
+        )
+        reserved.axis.g
+            .attr('class', 'axis')
+            .call(reserved.axis.axis)
+            .style('pointer-events', 'none')
+            .style('user-select', 'none')
+        reserved.axis.g.style('opacity', 1)
+
+        core_axis()
+    }
+    function init_brush() {
+        reserved.brush = {
+        }
+        if (!reserved.brush_parameters.visibility) {
             return
         }
-        reserved.azerty.g = reserved.g
+        reserved.brush.g = reserved.main.g
             .append('g')
             .attr(
                 'transform',
                 'translate('
-          + reserved.boxes[reserved.azerty.track].x
-          + ','
-          + reserved.boxes[reserved.azerty.track].y
-          + ')'
+        + reserved.boxes[reserved.brush_parameters.track].x
+        + ','
+        + reserved.boxes[reserved.brush_parameters.track].y
+        + ')'
             )
 
-        reserved.azerty.g
+        reserved.brush.g
             .append('rect')
             .attr('id', 'brush')
             .attr('transform', function() {
                 let scale = {
-                    x: reserved.focus.zoom.kx,
-                    y: reserved.focus.zoom.ky,
+                    x: reserved.focus.relative.zoom.kx,
+                    y: reserved.focus.relative.zoom.ky,
                 }
                 let trans = {
-                    x: reserved.focus.translate.x,
-                    y: reserved.focus.translate.y,
+                    x: reserved.focus.relative.translate.x * reserved.main.box.w,
+                    y: reserved.focus.relative.translate.y * reserved.main.box.h,
                 }
                 return (
                     'translate('
-          + trans.x
-          + ','
-          + trans.y
-          + ') '
-          + 'scale('
-          + scale.x
-          + ','
-          + scale.y
-          + ')'
+                      + trans.x
+                      + ','
+                      + trans.y
+                      + ') '
+                      + 'scale('
+                      + scale.x
+                      + ','
+                      + scale.y
+                      + ')'
                 )
             })
             .attr('x', 0)
             .attr('y', 0)
-            .attr('width', reserved.boxes[reserved.azerty.track].w)
-            .attr('height', reserved.boxes[reserved.azerty.track].h)
-            .attr('fill', reserved.azerty.style.fill)
-            .attr('opacity', reserved.azerty.style.opacity)
-            .attr('stroke', reserved.azerty.style.stroke)
+            .attr('width', reserved.boxes[reserved.brush_parameters.track].w)
+            .attr('height', reserved.boxes[reserved.brush_parameters.track].h)
+            .attr('fill', reserved.brush_parameters.style.fill)
+            .attr('opacity', reserved.brush_parameters.style.opacity)
+            .attr('stroke', reserved.brush_parameters.style.stroke)
             .attr('stroke-width', 0.4)
             .on('mouseover', function() {
                 d3.select(this).style('cursor', 'crosshair')
@@ -438,179 +537,415 @@ window.PlotBrushZoom = function() {
                 d3.select(this).style('cursor', 'default')
             })
 
-        reserved.azerty.g.on('wheel', function() {
+        reserved.brush.g.on('wheel', function() {
             d3.event.preventDefault()
         })
     }
-    function updateAzerty() {
-        if (!reserved.azerty.visibility || !reserved.azerty.zoom) {
+    function init_focus() {
+        reserved.focus = {
+            // PX
+            absolute: {
+                zoom: {
+                    kx: 1,
+                    ky: 1,
+                },
+                translate: {
+                    x: 0,
+                    y: 0,
+                },
+            },
+            //PERCENT
+            relative: {
+                zoom: {
+                    kx: 1,
+                    ky: 1,
+                },
+                translate: {
+                    x: 0,
+                    y: 0,
+                },
+            },
+            olds: [],
+        }
+    }
+
+    // function init_interaction() {
+    //     function computeZoomFactorkx() {
+    //         reserved.focus.zoom.kx = 1 / reserved.zoom.meta.kx.now
+    //
+    //         let ratio = [ reserved.zoom.meta.kx.point[0] / reserved.zoom.meta.x.max, 0 ]
+    //         let offset = {
+    //             x:
+    //       (reserved.zoom.meta.x.max
+    //         - reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.now)
+    //         - (reserved.zoom.meta.x.max
+    //         - reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.previous)))
+    //       * ratio[0],
+    //         }
+    //
+    //         reserved.focus.translate.x = reserved.focus.translate.x + offset.x + reserved.focus.translate.x
+    //         if (reserved.focus.translate.x < 0) {
+    //             reserved.focus.translate.x = 0
+    //         }
+    //         let right
+    //         = reserved.focus.translate.x
+    //         + reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.now)
+    //         if (right > reserved.zoom.meta.x.max) {
+    //             reserved.focus.translate.x
+    //             = reserved.focus.translate.x - (right - reserved.zoom.meta.x.max)
+    //         }
+    //     }
+    //     function computeZoomFactorky() {
+    //         reserved.focus.zoom.ky = 1 / reserved.zoom.meta.ky.now
+    //
+    //         let ratio = [ 0, reserved.zoom.meta.ky.point[1] / reserved.zoom.meta.y.max ]
+    //         let offset = {
+    //             y:
+    //             (reserved.zoom.meta.y.max
+    //             - reserved.zoom.meta.y.max * (1 / reserved.zoom.meta.ky.now)
+    //             - (reserved.zoom.meta.y.max
+    //             - reserved.zoom.meta.y.max
+    //             * (1 / reserved.zoom.meta.ky.previous)))
+    //             * ratio[1],
+    //         }
+    //
+    //         reserved.focus.translate.y = reserved.focus.translate.y + offset.y + reserved.focus.translate.y
+    //         if (reserved.focus.translate.y < 0) {
+    //             reserved.focus.translate.y = 0
+    //         }
+    //         let bottom
+    //         = reserved.focus.translate.y
+    //         + reserved.zoom.meta.y.max
+    //         * (1 / reserved.zoom.meta.ky.now)
+    //         if (bottom > reserved.zoom.meta.y.max) {
+    //             reserved.focus.translate.y
+    //             = reserved.focus.translate.y - (bottom - reserved.zoom.meta.y.max)
+    //         }
+    //     }
+    //     function computeDragFactor() {
+    //         reserved.focus.translate.x = reserved.focus.translate.x + reserved.focus.translate.x
+    //         if (reserved.focus.translate.x < 0) {
+    //             reserved.focus.translate.x = 0
+    //         }
+    //         let right
+    //         = reserved.focus.translate.x
+    //         + reserved.zoom.meta.x.max
+    //         * (1 / reserved.zoom.meta.kx.now)
+    //         if (right > reserved.zoom.meta.x.max) {
+    //             reserved.focus.translate.x
+    //             = reserved.focus.translate.x - (right - reserved.zoom.meta.x.max)
+    //         }
+    //
+    //         reserved.focus.translate.y = reserved.focus.translate.y + reserved.focus.translate.y
+    //         if (reserved.focus.translate.y < 0) {
+    //             reserved.focus.translate.y = 0
+    //         }
+    //         let bottom
+    //         = reserved.focus.translate.y
+    //         + reserved.zoom.meta.y.max
+    //         * (1 / reserved.zoom.meta.ky.now)
+    //         if (bottom > reserved.zoom.meta.y.max) {
+    //             reserved.focus.translate.y
+    //             = reserved.focus.translate.y - (bottom - reserved.zoom.meta.y.max)
+    //         }
+    //     }
+    //
+    //     reserved.main.g
+    //         .on('wheel', function() {
+    //             d3.event.preventDefault()
+    //             if (reserved.main.location === 'left'
+    //             || reserved.main.location === 'right') { // d3.event.ctrlKey
+    //                 reserved.zoom.meta.ky.point = d3.mouse(d3.select(this).node())
+    //
+    //                 let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
+    //
+    //                 reserved.zoom.meta.ky.previous = reserved.zoom.meta.ky.now
+    //
+    //                 reserved.zoom.meta.ky.now
+    //                 += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+    //                 if (reserved.zoom.meta.ky.now < reserved.zoom.meta.ky.min) {
+    //                     reserved.zoom.meta.ky.now = reserved.zoom.meta.ky.min
+    //                 }
+    //                 if (reserved.zoom.meta.ky.now > reserved.zoom.meta.ky.max) {
+    //                     reserved.zoom.meta.ky.now = reserved.zoom.meta.ky.max
+    //                 }
+    //                 computeZoomFactorky()
+    //             }
+    //             else {
+    //                 reserved.zoom.meta.kx.point = d3.mouse(d3.select(this).node())
+    //
+    //                 let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
+    //
+    //                 reserved.zoom.meta.kx.previous = reserved.zoom.meta.kx.now
+    //
+    //                 reserved.zoom.meta.kx.now
+    //                 += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+    //                 if (reserved.zoom.meta.kx.now < reserved.zoom.meta.kx.min) {
+    //                     reserved.zoom.meta.kx.now = reserved.zoom.meta.kx.min
+    //                 }
+    //                 if (reserved.zoom.meta.kx.now > reserved.zoom.meta.kx.max) {
+    //                     reserved.zoom.meta.kx.now = reserved.zoom.meta.kx.max
+    //                 }
+    //                 computeZoomFactorkx()
+    //             }
+    //
+    //             update()
+    //             reserved.zoom.callback()
+    //         })
+    //         .call(
+    //             d3
+    //                 .drag()
+    //                 .on('start', function() {})
+    //                 .on('drag', function() {
+    //                     reserved.focus.translate.x = d3.event.dx
+    //                     reserved.focus.translate.y = d3.event.dy
+    //
+    //                     computeDragFactor()
+    //                     update()
+    //                     reserved.zoom.callback()
+    //                 })
+    //                 .on('end', function() {
+    //                     reserved.focus.translate.x = 0
+    //                     reserved.focus.translate.y = 0
+    //                 })
+    //         )
+    // }
+    function interaction_wheel() {
+        let wheel_var = {
+            x: 0,
+            y: 0,
+            key: undefined,
+            coef_zoom: 1.1,
+            coef_trans: 0.05,
+        }
+        let wheel_function_bib = {
+            zoom: {
+                end: function() {
+                    var direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+                    let new_zoom = {
+                        kx: reserved.focus.relative.zoom.kx
+                        * (direction === 'down'
+                            ? wheel_var.coef_zoom
+                            : (1 / wheel_var.coef_zoom)),
+                        ky: reserved.focus.relative.zoom.ky
+                        * (direction === 'down'
+                            ? wheel_var.coef_zoom
+                            : (1 / wheel_var.coef_zoom)),
+                    }
+
+                    if (reserved.main.location === 'left' || reserved.main.location === 'right') {
+                        if (new_zoom.ky < 0) {
+                            new_zoom.yx = 0
+                        }
+                        else if (new_zoom.ky > 1) {
+                            new_zoom.ky = 1
+                        }
+                        reserved.focus.relative.translate.y = reserved.focus.relative.translate.y
+                          - (new_zoom.ky - reserved.focus.relative.zoom.ky) * 0.5
+                        reserved.focus.relative.zoom.ky = new_zoom.ky
+                        if (reserved.focus.relative.translate.y < 0) {
+                            reserved.focus.relative.translate.y = 0
+                        }
+                        if (reserved.focus.relative.translate.y > (1 - reserved.focus.relative.zoom.ky)) {
+                            reserved.focus.relative.translate.y = (1 - reserved.focus.relative.zoom.ky)
+                        }
+                    }
+                    else {
+                        if (new_zoom.kx < 0) {
+                            new_zoom.kx = 0
+                        }
+                        else if (new_zoom.kx > 1) {
+                            new_zoom.kx = 1
+                        }
+                        reserved.focus.relative.translate.x = reserved.focus.relative.translate.x
+                          - (new_zoom.kx - reserved.focus.relative.zoom.kx) * 0.5
+                        reserved.focus.relative.zoom.kx = new_zoom.kx
+                        if (reserved.focus.relative.translate.x < 0) {
+                            reserved.focus.relative.translate.x = 0
+                        }
+                        if (reserved.focus.relative.translate.x > (1 - reserved.focus.relative.zoom.kx)) {
+                            reserved.focus.relative.translate.x = (1 - reserved.focus.relative.zoom.kx)
+                        }
+                    }
+                    apply_focus()
+                    core_axis()
+                    updateBrush()
+                },
+            },
+            scroll: {
+                end: function() {
+                    var direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+                    if (reserved.main.location === 'left' || reserved.main.location === 'right') {
+                        let new_y = reserved.focus.relative.translate.y
+                      + (direction === 'down'
+                          ? wheel_var.coef_trans
+                          : (-wheel_var.coef_trans))
+                        if (new_y < 0) {
+                            new_y = 0
+                        }
+                        if (new_y > (1 - reserved.focus.relative.zoom.ky)) {
+                            new_y = (1 - reserved.focus.relative.zoom.ky)
+                        }
+                        reserved.focus.relative.translate.y = new_y
+                    }
+                    else {
+                        let new_x = reserved.focus.relative.translate.x
+                    + (direction === 'down'
+                        ? wheel_var.coef_trans
+                        : (-wheel_var.coef_trans))
+                        if (new_x < 0) {
+                            new_x = 0
+                        }
+                        if (new_x > (1 - reserved.focus.relative.zoom.kx)) {
+                            new_x = (1 - reserved.focus.relative.zoom.kx)
+                        }
+                        reserved.focus.relative.translate.x = new_x
+                    }
+                },
+            },
+        }
+
+        reserved.main.g.on('wheel', function() {
+            for (var key in reserved.interaction.wheel) {
+                if (d3.event[key]) {
+                    wheel_var.key = key
+                    wheel_function_bib[reserved.interaction.wheel[key].type].end()
+                    reserved.interaction.wheel[key].end()
+                    return
+                }
+            }
+            key = 'default'
+            wheel_var.key = key
+            wheel_function_bib[reserved.interaction.wheel[key].type].end()
+            reserved.interaction.wheel[key].end()
+        })
+    }
+    function interaction_drag() {
+        let drag_var = {
+            x: 0,
+            y: 0,
+            key: undefined,
+        }
+        let drag_function_bib = {
+            drag_trans: {
+                start: function(){
+                    drag_var.x = d3.event.x
+                    drag_var.y = d3.event.y
+                },
+                drag: function() {
+                    if (reserved.main.location === 'left' || reserved.main.location === 'right') {
+                        reserved.focus.relative.translate.y += (d3.event.y - drag_var.y) / reserved.main.box.h
+                        if (reserved.focus.relative.translate.y < 0) {
+                            reserved.focus.relative.translate.y = 0
+                        }
+                        if (reserved.focus.relative.translate.y > (1 - reserved.focus.relative.zoom.ky)) {
+                            reserved.focus.relative.translate.y = (1 - reserved.focus.relative.zoom.ky)
+                        }
+                    }
+                    else {
+                        reserved.focus.relative.translate.x += (d3.event.x - drag_var.x) / reserved.main.box.w
+                        if (reserved.focus.relative.translate.x < 0) {
+                            reserved.focus.relative.translate.x = 0
+                        }
+                        if (reserved.focus.relative.translate.x > (1 - reserved.focus.relative.zoom.kx)) {
+                            reserved.focus.relative.translate.x = (1 - reserved.focus.relative.zoom.kx)
+                        }
+                    }
+                    drag_var.x = d3.event.x
+                    drag_var.y = d3.event.y
+
+                    apply_focus()
+                    core_axis()
+                    updateBrush()
+                },
+                end: function() {
+                    drag_var.x = 0
+                    drag_var.y = 0
+                },
+            },
+        }
+
+        reserved.main.g
+            .on('mouseover', function() {
+                d3.select(this).style('cursor', 'crosshair')
+            })
+            .on('mouseout', function() {
+                d3.select(this).style('cursor', 'default')
+            })
+
+        let interactions = d3.drag()
+            .on('start', function() {
+                for (var key in reserved.interaction.drag) {
+                    if (d3.event.sourceEvent[key]) {
+                        drag_var.key = key
+                        drag_function_bib[reserved.interaction.drag[key].type].start()
+                        reserved.interaction.drag[key].start()
+                        return
+                    }
+                }
+                key = 'default'
+                drag_var.key = key
+                drag_function_bib[reserved.interaction.drag[key].type].start()
+                reserved.interaction.drag[key].start()
+            })
+            .on('drag', function() {
+                drag_function_bib[reserved.interaction.drag[drag_var.key].type].drag()
+                reserved.interaction.drag[drag_var.key].drag()
+
+            })
+            .on('end', function() {
+                drag_function_bib[reserved.interaction.drag[drag_var.key].type].end()
+                reserved.interaction.drag[drag_var.key].end()
+
+            })
+
+        reserved.main.g
+            .call(interactions)
+    }
+    function update_focus() {
+        // console.log('absolute', reserved.focus.absolute)
+        reserved.content
+            .transition()
+            .duration(100)
+            .attr('transform', 'scale('
+              + reserved.focus.absolute.zoom.kx
+              + ','
+              + reserved.focus.absolute.zoom.ky
+              + '),translate('
+              + reserved.focus.absolute.translate.x
+              + ','
+              + reserved.focus.absolute.translate.y
+              + ')')
+    }
+
+    function updateBrush() {
+        if (!reserved.brush_parameters.visibility || !reserved.brush_parameters.zoom) {
             return
         }
-        reserved.azerty.g.select('rect#brush').attr('transform', function() {
+        reserved.brush.g.select('rect#brush') .attr('transform', function() {
             let scale = {
-                x: reserved.focus.zoom.kx,
-                y: reserved.focus.zoom.ky,
+                x: reserved.focus.relative.zoom.kx,
+                y: reserved.focus.relative.zoom.ky,
             }
             let trans = {
-                x: reserved.focus.translate.x,
-                y: reserved.focus.translate.y,
+                x: reserved.focus.relative.translate.x * reserved.main.box.w,
+                y: reserved.focus.relative.translate.y * reserved.main.box.h,
             }
             return (
                 'translate('
-        + trans.x
-        + ','
-        + trans.y
-        + ') '
-        + 'scale('
-        + scale.x
-        + ','
-        + scale.y
-        + ')'
+                              + trans.x
+                              + ','
+                              + trans.y
+                              + ') '
+                              + 'scale('
+                              + scale.x
+                              + ','
+                              + scale.y
+                              + ')'
             )
         })
     }
 
-    function init_interaction() {
-        function computeZoomFactorkx() {
-            reserved.focus.zoom.kx = 1 / reserved.zoom.meta.kx.now
-
-            let ratio = [ reserved.zoom.meta.kx.point[0] / reserved.zoom.meta.x.max, 0 ]
-            let offset = {
-                x:
-          (reserved.zoom.meta.x.max
-            - reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.now)
-            - (reserved.zoom.meta.x.max
-            - reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.previous)))
-          * ratio[0],
-            }
-
-            reserved.focus.translate.x = reserved.focus.translate.x + offset.x + reserved.focus.translate.x
-            if (reserved.focus.translate.x < 0) {
-                reserved.focus.translate.x = 0
-            }
-            let right
-            = reserved.focus.translate.x
-            + reserved.zoom.meta.x.max * (1 / reserved.zoom.meta.kx.now)
-            if (right > reserved.zoom.meta.x.max) {
-                reserved.focus.translate.x
-                = reserved.focus.translate.x - (right - reserved.zoom.meta.x.max)
-            }
-        }
-        function computeZoomFactorky() {
-            reserved.focus.zoom.ky = 1 / reserved.zoom.meta.ky.now
-
-            let ratio = [ 0, reserved.zoom.meta.ky.point[1] / reserved.zoom.meta.y.max ]
-            let offset = {
-                y:
-                (reserved.zoom.meta.y.max
-                - reserved.zoom.meta.y.max * (1 / reserved.zoom.meta.ky.now)
-                - (reserved.zoom.meta.y.max
-                - reserved.zoom.meta.y.max
-                * (1 / reserved.zoom.meta.ky.previous)))
-                * ratio[1],
-            }
-
-            reserved.focus.translate.y = reserved.focus.translate.y + offset.y + reserved.focus.translate.y
-            if (reserved.focus.translate.y < 0) {
-                reserved.focus.translate.y = 0
-            }
-            let bottom
-            = reserved.focus.translate.y
-            + reserved.zoom.meta.y.max
-            * (1 / reserved.zoom.meta.ky.now)
-            if (bottom > reserved.zoom.meta.y.max) {
-                reserved.focus.translate.y
-                = reserved.focus.translate.y - (bottom - reserved.zoom.meta.y.max)
-            }
-        }
-        function computeDragFactor() {
-            reserved.focus.translate.x = reserved.focus.translate.x + reserved.focus.translate.x
-            if (reserved.focus.translate.x < 0) {
-                reserved.focus.translate.x = 0
-            }
-            let right
-            = reserved.focus.translate.x
-            + reserved.zoom.meta.x.max
-            * (1 / reserved.zoom.meta.kx.now)
-            if (right > reserved.zoom.meta.x.max) {
-                reserved.focus.translate.x
-                = reserved.focus.translate.x - (right - reserved.zoom.meta.x.max)
-            }
-
-            reserved.focus.translate.y = reserved.focus.translate.y + reserved.focus.translate.y
-            if (reserved.focus.translate.y < 0) {
-                reserved.focus.translate.y = 0
-            }
-            let bottom
-            = reserved.focus.translate.y
-            + reserved.zoom.meta.y.max
-            * (1 / reserved.zoom.meta.ky.now)
-            if (bottom > reserved.zoom.meta.y.max) {
-                reserved.focus.translate.y
-                = reserved.focus.translate.y - (bottom - reserved.zoom.meta.y.max)
-            }
-        }
-
-        reserved.g
-            .on('wheel', function() {
-                d3.event.preventDefault()
-                if (reserved.location === 'left'
-                || reserved.location === 'right') { // d3.event.ctrlKey
-                    reserved.zoom.meta.ky.point = d3.mouse(d3.select(this).node())
-
-                    let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
-
-                    reserved.zoom.meta.ky.previous = reserved.zoom.meta.ky.now
-
-                    reserved.zoom.meta.ky.now
-                    += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
-                    if (reserved.zoom.meta.ky.now < reserved.zoom.meta.ky.min) {
-                        reserved.zoom.meta.ky.now = reserved.zoom.meta.ky.min
-                    }
-                    if (reserved.zoom.meta.ky.now > reserved.zoom.meta.ky.max) {
-                        reserved.zoom.meta.ky.now = reserved.zoom.meta.ky.max
-                    }
-                    computeZoomFactorky()
-                }
-                else {
-                    reserved.zoom.meta.kx.point = d3.mouse(d3.select(this).node())
-
-                    let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
-
-                    reserved.zoom.meta.kx.previous = reserved.zoom.meta.kx.now
-
-                    reserved.zoom.meta.kx.now
-                    += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
-                    if (reserved.zoom.meta.kx.now < reserved.zoom.meta.kx.min) {
-                        reserved.zoom.meta.kx.now = reserved.zoom.meta.kx.min
-                    }
-                    if (reserved.zoom.meta.kx.now > reserved.zoom.meta.kx.max) {
-                        reserved.zoom.meta.kx.now = reserved.zoom.meta.kx.max
-                    }
-                    computeZoomFactorkx()
-                }
-
-                update()
-                reserved.zoom.callback()
-            })
-            .call(
-                d3
-                    .drag()
-                    .on('start', function() {})
-                    .on('drag', function() {
-                        reserved.focus.translate.x = d3.event.dx
-                        reserved.focus.translate.y = d3.event.dy
-
-                        computeDragFactor()
-                        update()
-                        reserved.zoom.callback()
-                    })
-                    .on('end', function() {
-                        reserved.focus.translate.x = 0
-                        reserved.focus.translate.y = 0
-                    })
-            )
-    }
     function get_focus() {
         return reserved.focus
     }
@@ -620,34 +955,6 @@ window.PlotBrushZoom = function() {
         update()
     }
     this.set_focus = set_focus
-    function update_focus(new_focus) {
-        console.log(new_focus)
-    }
-    this.update_focus = update_focus
-    // function set_brush_zoom_factor_horizontal(new_brush_zoom_factor) {
-    //     reserved.focus.translate.x = new_brush_zoom_factor.zoom.coef.x
-    //     reserved.focus.zoom.kx = new_brush_zoom_factor.zoom.coef.kx
-    //     reserved.zoom.meta.x = new_brush_zoom_factor.zoom.meta.x
-    //     reserved.zoom.meta.kx = new_brush_zoom_factor.zoom.meta.kx
-    //
-    //     reserved.brush.coef.x = new_brush_zoom_factor.brush.coef.x
-    //     reserved.focus.translate.x = new_brush_zoom_factor.brush.meta.x
-    //
-    //     update()
-    // }
-    // this.set_brush_zoom_factor_horizontal = set_brush_zoom_factor_horizontal
-    // function set_brush_zoom_factor_vertical(new_brush_zoom_factor) {
-    //     reserved.focus.translate.y = new_brush_zoom_factor.zoom.coef.y
-    //     reserved.focus.zoom.ky = new_brush_zoom_factor.zoom.coef.ky
-    //     reserved.zoom.meta.y = new_brush_zoom_factor.zoom.meta.y
-    //     reserved.zoom.meta.ky = new_brush_zoom_factor.zoom.meta.ky
-    //
-    //     reserved.brush.coef.y = new_brush_zoom_factor.brush.coef.y
-    //     reserved.focus.translate.y = new_brush_zoom_factor.brush.meta.y
-    //
-    //     update()
-    // }
-    // this.set_brush_zoom_factor_vertical = set_brush_zoom_factor_vertical
 
     function compute_overlap(axis, all_ticks, key) {
         let begin = [ 1 ]
@@ -698,12 +1005,12 @@ window.PlotBrushZoom = function() {
         return begin.concat(end)
     }
     function format_ticks_linear(axis) {
-        let minTxtSize = reserved.axis.style.text.size
-            ? reserved.axis.style.text.size
-            : reserved.box.w * 0.04
+        let minTxtSize = reserved.axis_parameters.style.text.size
+            ? reserved.axis_parameters.style.text.size
+            : reserved.main.box.w * 0.04
         let all_ticks = axis.g.selectAll('g.tick')._groups[0]
         let overlap_array = []
-        if (reserved.location === 'left' || reserved.location === 'right') {
+        if (reserved.main.location === 'left' || reserved.main.location === 'right') {
             overlap_array = compute_overlap(axis, all_ticks, 'height')
         }
         else {
@@ -715,11 +1022,11 @@ window.PlotBrushZoom = function() {
                 let line = d3.select(this).select('line')
                 let text = d3.select(this).select('text')
                 line.attr('stroke-width', 0.6)
-                    .attr('stroke', reserved.axis.style.path.stroke)
-                    .attr('opacity', reserved.axis.style.path.visible ? 1 : 0)
-                text.attr('stroke', reserved.axis.style.text.stroke)
+                    .attr('stroke', reserved.axis_parameters.style.path.stroke)
+                    .attr('opacity', reserved.axis_parameters.style.path.visible ? 1 : 0)
+                text.attr('stroke', reserved.axis_parameters.style.text.stroke)
                     .attr('stroke-width', 0.6)
-                    .attr('fill', reserved.axis.style.text.fill)
+                    .attr('fill', reserved.axis_parameters.style.text.fill)
                     .style('font-size', minTxtSize + 'px')
                     .style('opacity', overlap_array[i])
             })
@@ -728,15 +1035,15 @@ window.PlotBrushZoom = function() {
         let percent_before_rotate = 0.66
 
         let rotate = false
-        let minTxtSize = reserved.axis.style.text.size
-            ? reserved.axis.style.text.size
-            : reserved.box.w * 0.04
+        let minTxtSize = reserved.axis_parameters.style.text.size
+            ? reserved.axis_parameters.style.text.size
+            : reserved.main.box.w * 0.04
         let max = axis.g.selectAll('g.tick').size()
         let all_ticks = axis.g.selectAll('g.tick')._groups[0]
         let overlap_array = []
-        if (reserved.location === 'left' || reserved.location === 'right') {
+        if (reserved.main.location === 'left' || reserved.main.location === 'right') {
             overlap_array = compute_overlap(axis, all_ticks, 'height')
-            if (reserved.drawing === 'band') {
+            if (reserved.main.drawing === 'band') {
                 console.log(axis.g.selectAll('g.tick>text').nodes().map(function(t){
                     return t.innerHTML
                 }).reduce((a, b) => a + (b.length < reserved.clipping.max_characters), 0))
@@ -765,11 +1072,11 @@ window.PlotBrushZoom = function() {
                 let line = d3.select(this).select('line')
                 let text = d3.select(this).select('text')
                 line.attr('stroke-width', 0.6)
-                    .attr('stroke', reserved.axis.style.path.stroke)
-                    .attr('opacity', reserved.axis.style.path.visible ? 1 : 0)
-                text.attr('stroke', reserved.axis.style.text.stroke)
+                    .attr('stroke', reserved.axis_parameters.style.path.stroke)
+                    .attr('opacity', reserved.axis_parameters.style.path.visible ? 1 : 0)
+                text.attr('stroke', reserved.axis_parameters.style.text.stroke)
                     .attr('stroke-width', 0.6)
-                    .attr('fill', reserved.axis.style.text.fill)
+                    .attr('fill', reserved.axis_parameters.style.text.fill)
                     .style('font-size', minTxtSize + 'px')
                     .style('opacity', 1)
                     .text(function() {
@@ -782,22 +1089,22 @@ window.PlotBrushZoom = function() {
                         return d.substring(0, 8) + ' [+]'
                     })
                 if (rotate) {
-                    if (reserved.location === 'left') {
+                    if (reserved.main.location === 'left') {
                         text.attr('x', minTxtSize)
                             .attr('transform', 'rotate(70)')
                             .style('text-anchor', 'end')
                     }
-                    if (reserved.location === 'right') {
+                    if (reserved.main.location === 'right') {
                         text.attr('x', minTxtSize)
                             .attr('transform', 'rotate(70)')
                             .style('text-anchor', 'start')
                     }
-                    if (reserved.location === 'bottom') {
+                    if (reserved.main.location === 'bottom') {
                         text.attr('y', minTxtSize)
                             .attr('transform', 'rotate(20)')
                             .style('text-anchor', 'start')
                     }
-                    else if (reserved.location === 'top') {
+                    else if (reserved.main.location === 'top') {
                         text.attr('y', -minTxtSize)
                             .attr('transform', 'rotate(20)')
                             .style('text-anchor', 'end')
@@ -806,169 +1113,106 @@ window.PlotBrushZoom = function() {
 
             })
     }
-    function core_axis(axis) {
-
-        axis.axis.scale(axis.scale)
-        if (axis.ticks_min_max && reserved.drawing !== 'band') {
-            if (reserved.location === 'left' || reserved.location === 'right') {
-                axis.axis.tickValues(
-                    [ axis.scale.invert(reserved.box.h) ]
-                        .concat(axis.scale.ticks(8))
-                        .concat([ axis.scale.invert(0) ]))
+    function core_axis() {
+        reserved.axis.axis.scale(reserved.axis.scale)
+        if (reserved.axis_parameters.ticks_min_max && reserved.main.drawing !== 'band') {
+            if (reserved.main.location === 'left' || reserved.main.location === 'right') {
+                reserved.axis.axis.tickValues(
+                    [ reserved.axis.scale.invert(reserved.main.box.h) ]
+                        .concat(reserved.axis.scale.ticks(8))
+                        .concat([ reserved.axis.scale.invert(0) ]))
             }
             else {
-                axis.axis.tickValues(
-                    [ axis.scale.invert(0) ]
-                        .concat(axis.scale.ticks(8))
-                        .concat([ axis.scale.invert(reserved.box.w) ]))
+                reserved.axis.axis.tickValues(
+                    [ reserved.axis.scale.invert(0) ]
+                        .concat(reserved.axis.scale.ticks(8))
+                        .concat([ reserved.axis.scale.invert(reserved.main.box.w) ]))
             }
 
         }
 
-        axis.g.call(axis.axis)
+        reserved.axis.g.call(reserved.axis.axis)
 
-        axis.g
+        reserved.axis.g
             .select('path')
             .attr('stroke-width', 0.6)
-            .attr('stroke', reserved.axis.style.path.stroke)
-            .attr('opacity', reserved.axis.style.path.visible ? 1 : 0)
+            .attr('stroke', reserved.axis_parameters.style.path.stroke)
+            .attr('opacity', reserved.axis_parameters.style.path.visible ? 1 : 0)
 
-        if (reserved.drawing === 'linear') {
-            format_ticks_linear(axis)
+        if (reserved.main.drawing === 'linear') {
+            format_ticks_linear(reserved.axis)
         }
-        else if (reserved.drawing === 'time') {
-            format_ticks_linear(axis)
+        else if (reserved.main.drawing === 'time') {
+            format_ticks_linear(reserved.axis)
         }
-        else if (reserved.drawing === 'band') {
-            format_ticks_band(axis)
+        else if (reserved.main.drawing === 'band') {
+            format_ticks_band(reserved.axis)
         }
-
-        if (!axis.visibility) {
-            axis.g.style('visibility', 'hidden')
+        if (!reserved.axis_parameters.visibility) {
+            reserved.axis.g.style('visibility', 'hidden')
             return
         }
-        axis.g.style('visibility', 'visible')
+        reserved.axis.g.style('visibility', 'visible')
     }
-    function initAxis() {
-        add_axis(reserved.axis)
+
+    function update_domain(new_domain) {
+        reserved.domain.raw = new_domain
+        apply_focus()
+        core_axis()
+        updateBrush()
     }
-    function add_axis(axis) {
-        // if (!axis.enabled) {
-        //     return
-        // }
-
-        if (reserved.drawing === 'time') {
-            axis.scale = d3.scaleLinear()
-        }
-        else if (reserved.drawing === 'line') {
-            axis.scale = d3.scaleLinear()
-        }
-        else if (reserved.drawing === 'band') {
-            axis.scale = d3.scaleBand()
-        }
-        else {
-            axis.scale = d3.scaleLinear()
-        }
-
-        axis.scale
-            .range(reserved.range)
-            .domain(reserved.domain)
-
-        if (reserved.location === 'top') {
-            if (axis.orientation === 'in') {
-                axis.axis = d3.axisBottom(axis.scale)
-            }
-            if (axis.orientation === 'out') {
-                axis.axis = d3.axisTop(axis.scale)
-            }
-        }
-        else if (reserved.location === 'bottom') {
-            if (axis.orientation === 'in') {
-                axis.axis = d3.axisTop(axis.scale)
-            }
-            if (axis.orientation === 'out') {
-                axis.axis = d3.axisBottom(axis.scale)
-            }
-        }
-        else if (reserved.location === 'left') {
-            if (axis.orientation === 'in') {
-                axis.axis = d3.axisRight(axis.scale)
-            }
-            if (axis.orientation === 'out') {
-                axis.axis = d3.axisLeft(axis.scale)
-            }
-        }
-        else if (reserved.location === 'right') {
-            if (axis.orientation === 'in') {
-                axis.axis = d3.axisLeft(axis.scale)
-            }
-            if (axis.orientation === 'out') {
-                axis.axis = d3.axisRight(axis.scale)
-            }
-        }
-
-        if (reserved.drawing === 'time') {
-            axis.axis.tickFormat(d3.timeFormat('%H:%M'))
-        }
-
-        axis.g = reserved.g.append('g')
-        axis.g.attr(
-            'transform',
-            'translate('
-        + reserved.boxes[axis.track].x
-        + ','
-        + reserved.boxes[axis.track].y
-        + ')'
-        )
-        axis.g
-            .attr('class', 'axis')
-            .call(axis.axis)
-            .style('pointer-events', 'none')
-            .style('user-select', 'none')
-        axis.g.style('opacity', 1)
-
-        core_axis(axis)
+    this.update_domain = update_domain
+    function get_domain() {
+        return reserved.domain
     }
+    this.get_domain = get_domain
+
     function get_axis() {
         return reserved.axis
     }
     this.get_axis = get_axis
     function update_axis(opt_in) {
         reserved = window.merge_obj(reserved, opt_in)
-        apply_zoom_translate()
-        core_axis(reserved.axis)
-        updateAzerty()
+        apply_focus()
+        core_axis(reserved.axis_parameters)
+        updateBrush()
     }
     this.update_axis = update_axis
 
-    function update() {
-        apply_zoom_translate()
+    // function update() {
+    //     apply_focus()
+    //
+    //     if (reserved.axis_parameters.zoom) {
+    //         core_axis(reserved.axis_parameters)
+    //     }
+    //     if (reserved.brush_parameters.zoom) {
+    //         updateBrush()
+    //     }
+    // }
+    // this.update = update
 
-        if (reserved.axis.zoom) {
-            core_axis(reserved.axis)
-        }
-        if (reserved.azerty.zoom) {
-            updateAzerty()
-        }
-    }
-    this.update = update
+    function apply_focus() {
+        reserved.axis.scale.domain(reserved.domain.raw)
 
-    function apply_zoom_translate() {
-        reserved.axis.scale.domain(reserved.domain).range(reserved.range)
-
-        let newDomain = deep_copy(reserved.domain)
-        if (reserved.type === 'horizontal') {
-            newDomain[0] = reserved.axis.scale.invert(reserved.focus.translate.x)
-            newDomain[1] = reserved.axis.scale.invert(
-                reserved.focus.translate.x + reserved.box.w * reserved.focus.zoom.kx
-            )
+        reserved.domain.focus = deep_copy(reserved.domain.raw)
+        if (reserved.main.location === 'top' || reserved.main.location === 'bottom') {
+            reserved.domain.focus[0]
+            = reserved.axis.scale.invert( reserved.focus.relative.translate.x
+              * reserved.main.box.w)
+            reserved.domain.focus[1]
+            = reserved.axis.scale.invert((reserved.focus.relative.translate.x
+              + reserved.focus.relative.zoom.kx)
+              * reserved.main.box.w)
         }
-        else if (reserved.location === 'vertical') {
-            newDomain[1] = reserved.axis.scale.invert(reserved.focus.translate.y)
-            newDomain[0] = reserved.axis.scale.invert(
-                reserved.focus.translate.y + reserved.box.h * reserved.focus.zoom.ky
-            )
+        else if (reserved.main.location === 'left' || reserved.main.location === 'right') {
+            reserved.domain.focus[0]
+            = reserved.axis.scale.invert( reserved.focus.relative.translate.y
+              * reserved.main.box.h)
+            reserved.domain.focus[1]
+            = reserved.axis.scale.invert((reserved.focus.relative.translate.y
+              + reserved.focus.relative.zoom.ky)
+              * reserved.main.box.h)
         }
-        reserved.axis.scale.domain(newDomain)
+        // reserved.axis.scale.domain(reserved.domain.focus)
     }
 }

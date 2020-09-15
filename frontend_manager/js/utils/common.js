@@ -42,7 +42,7 @@ window.unique = function(opt_in) {
     }
 
     return prefix + rnd_now + postfix
-    // return prefix + get_time_msec().toString() + postfix
+    // return prefix + get_time_now_msec().toString() + postfix
 }
 let unique = window.unique
 
@@ -1479,7 +1479,7 @@ window.RunLoop = function(opt_in) {
             return
         }
 
-        let time = parseInt(is_def(opt_in.time) ? opt_in.time : get_time_msec())
+        let time = parseInt(is_def(opt_in.time) ? opt_in.time : get_time_now_msec())
         runs[opt_in.tag].push({
             data: opt_in.data,
             time: time,
@@ -2087,7 +2087,7 @@ window.IconBadge = function() {
             '/static/piggy-bank.svg',
         ]
 
-        if (n_icon < 0) {
+        if (!is_def(n_icon) || n_icon < 0) {
             return [ '', null ]
         }
 
@@ -2116,15 +2116,12 @@ function load_svg_file(opt_in) {
     let icon_path = opt_in.icon_path
     let func_end = is_def(opt_in.func_end) ? opt_in.func_end : null
 
-    d3.xml(icon_path, function(error, documentFragment) {
-        if (error) {
-            console.error('problem with d3.xml() for', svg_id, error)
-            throw error
-        }
+    d3.xml(icon_path).then(function(documentFragment) {
         let svg_node = documentFragment.getElementsByTagName('svg')
         if (svg_node[0]) {
+            // assign an id, and then later do e.g., g.select("#"+id_now);
             let node = g_now.node().appendChild(svg_node[0])
-            node.id = svg_id // assign an id, and then later do e.g., g.select("#"+id_now);
+            node.id = svg_id 
         }
 
         // exec function after we're done here
@@ -2606,8 +2603,14 @@ window.date_to_string = function(date_in) {
 }
 
 // the number of milliseconds elapsed since January 1, 1970 00:00:00 UTC
-window.get_time_msec = function() {
+window.get_time_now_msec = function() {
     return Date.now()
+}
+
+// the number of milliseconds elapsed since January 1, 1970 00:00:00 UTC
+// with reference to date_time
+window.get_date_time = function(date_time) {
+    return new Date(date_time)
 }
 
 // ------------------------------------------------------------------
@@ -3136,7 +3139,7 @@ window.add_accordion_div = function(opt_in) {
 //   function checkSetZoomFunc() {
 //     if(prevWheel < 0) return;
 
-//     let time_dif = get_time_msec() - prevWheel;
+//     let time_dif = get_time_now_msec() - prevWheel;
 //     if(time_dif > timeWheel) {
 //       exeFunc( ((countWheel > 0) ? 1 : -1) );
 
@@ -3151,7 +3154,7 @@ window.add_accordion_div = function(opt_in) {
 //   // ------------------------------------------------------------------
 //   function doIntMouse(){
 //     countWheel += (event.detail<0) ? 1 : (event.wheelDelta>0) ? 1 : -1;;
-//     prevWheel   = get_time_msec();
+//     prevWheel   = get_time_now_msec();
 //     return;
 //   };
 

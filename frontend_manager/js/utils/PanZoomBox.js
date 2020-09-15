@@ -1,9 +1,4 @@
 /* global d3 */
-/* global times */
-/* global is_def */
-/* global deep_copy */
-/* global cols_blues */
-/* global PlotBrushZoom */
 /* global get_d3_node_box */
 
 // ------------------------------------------------------------------
@@ -26,15 +21,29 @@ window.PanZoomBox = function() {
             },
             interaction: {
                 wheel: {
+                    shiftKey: {
+                        type: 'zoom',
+                        end: () => {},
+                    },
                     default: {
-                        type: 'default',
-                        start: () => {},
-                        drag: () => {},
+                        type: 'scroll_y',
                         end: () => {},
                     },
                 },
                 drag: {
                     default: {
+                        type: 'drag_trans',
+                        start: () => {
+                            console.log('drag_trans_fun_callback-start')
+                        },
+                        drag: () => {
+                            console.log('drag_trans_fun_callback-drag')
+                        },
+                        end: () => {
+                            console.log('drag_trans_fun_callback-end')
+                        },
+                    },
+                    shiftKey: {
                         type: 'zoom_rect',
                         start: () => {
                             console.log('drag_trans_fun_callback-start')
@@ -49,7 +58,7 @@ window.PanZoomBox = function() {
                 },
                 db_click: {
                     default: {
-                        type: 'default',
+                        type: 'fit',
                         end: () => {},
                     },
                 },
@@ -74,18 +83,6 @@ window.PanZoomBox = function() {
         return reserved.focus.relative
     }
     this.get_focus = get_focus
-    // function get_focus_percent() {
-    //     return {
-    //         zoom: {
-    //             kx: reserved.focus.zoom,
-    //             ky: reserved.focus.zoom,
-    //         },
-    //         translate: {
-    //             x: 0,
-    //             y: 0,
-    //         },
-    //     }
-    // }
 
     function init_background() {
         reserved.background = reserved.main.g
@@ -124,9 +121,6 @@ window.PanZoomBox = function() {
         reserved.content = reserved.clipping.clipBody
             .append('g')
             .attr('id', reserved.main.tag + '_content')
-        reserved.content.on('click', () => {
-            console.log('click')
-        })
     }
     function init_focus() {
         reserved.focus = {
@@ -165,113 +159,200 @@ window.PanZoomBox = function() {
         init_clipping()
         init_content()
         init_focus()
-        // interaction_drag()
+        interaction_drag()
+        interaction_wheel()
+        interaction_dbclick()
         // init_shortcut()
 
         update_focus()
     }
     this.init = init
 
-    function init_db_click() {
-
+    function interaction_dbclick() {
+        reserved.main.g.on('dblclick', function() {
+            d3.event.preventDefault()
+            set_content_rel({
+                zoom: {
+                    kx: 1,
+                    ky: 1,
+                },
+                trans: {
+                    x: 0,
+                    y: 0,
+                },
+            })
+        })
     }
     function interaction_wheel() {
-
-    }
-    function interaction_drag() {
-        let drag_function_bib = {
-            zoom_rect: {
-                start: function() {
-                    console.log('drag_zoom_fun_core-start')
-                    // reserved.brush.meta.x = d3.event.x
-                    // reserved.brush.meta.y = d3.event.y
-                    // reserved.clipping.maing.append('rect')
-                    //     .attr('id', 'zoom_rect')
-                    //     .attr('x', reserved.brush.meta.x)
-                    //     .attr('y', reserved.brush.meta.y)
-                    //     .attr('width', 0)
-                    //     .attr('height', 0)
-                    //     .attr('fill', 'none')
-                    //     .attr('stroke', '#000000')
-                    //     .attr('stroke-width', 2)
-                    //     .attr('stroke-dasharray', [ 8, 2 ])
-                },
-                drag: function() {
-                    console.log('drag_zoom_fun_core-drag')
-                    // reserved.clipping.maing.select('rect#zoom_rect')
-                    //     .attr('x', d3.event.x > reserved.brush.meta.x
-                    //         ? reserved.brush.meta.x
-                    //         : d3.event.x)
-                    //     .attr('y', d3.event.y > reserved.brush.meta.y
-                    //         ? reserved.brush.meta.y
-                    //         : d3.event.y)
-                    //     .attr('width', Math.abs(d3.event.x - reserved.brush.meta.x))
-                    //     .attr('height', Math.abs(d3.event.y - reserved.brush.meta.y))
-                },
+        let wheel_var = {
+            x: 0,
+            y: 0,
+            key: undefined,
+            coef_zoom: 1.2,
+            coef_trans: 0.05,
+        }
+        let wheel_function_bib = {
+            zoom: {
                 end: function() {
-                    console.log('drag_zoom_fun_core-end')
-                    //               reserved.clipping.maing.select('rect#zoom_rect')
-                    //                   .remove()
-                    //
-                    //               let trans_percent = {
-                    //                   x: (d3.event.x > reserved.brush.meta.x
-                    //                       ? reserved.brush.meta.x
-                    //                       : d3.event.x)
-                    //           / reserved.main.box.w,
-                    //                   y: (d3.event.y > reserved.brush.meta.y
-                    //                       ? reserved.brush.meta.y
-                    //                       : d3.event.y)
-                    //           / reserved.main.box.h,
-                    //               }
-                    //               reserved.zoom.coef.x = reserved.zoom.coef.x
-                    // + (trans_percent.x
-                    //     * reserved.main.box.w
-                    //     * reserved.zoom.coef.kx)
-                    //               reserved.zoom.coef.y = reserved.zoom.coef.y
-                    // + (trans_percent.y
-                    //     * reserved.main.box.h
-                    //     * reserved.zoom.coef.ky)
-                    //
-                    //               let zoom_percent = {
-                    //                   x: Math.abs(d3.event.x - reserved.brush.meta.x)
-                    //       / reserved.main.box.w,
-                    //                   y: Math.abs(d3.event.y - reserved.brush.meta.y)
-                    //       / reserved.main.box.h,
-                    //               }
-                    //               reserved.zoom.coef.kx = zoom_percent.x * reserved.zoom.coef.kx
-                    //               reserved.zoom.coef.ky = zoom_percent.y * reserved.zoom.coef.ky
-                    //
-                    //               reserved.zoom.meta.kx.previous = reserved.zoom.meta.kx.now
-                    //               reserved.zoom.meta.kx.now = 1 / reserved.zoom.coef.kx
-                    //               reserved.zoom.meta.ky.previous = reserved.zoom.meta.ky.now
-                    //               reserved.zoom.meta.ky.now = 1 / reserved.zoom.coef.ky
-                    //
-                    //               brush_zoom_link('top-bottom', {
-                    //                   brush: reserved.brush,
-                    //                   zoom: reserved.zoom,
-                    //               })
-                    //               brush_zoom_link('left-right', {
-                    //                   brush: reserved.brush,
-                    //                   zoom: reserved.zoom,
-                    //               })
-                    //               reserved.brush.meta.x = 0
-                    //               reserved.brush.meta.y = 0
+                    var direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+                    let new_zoom = {
+                        kx: reserved.focus.relative.zoom.kx
+                        * (direction === 'down'
+                            ? wheel_var.coef_zoom
+                            : (1 / wheel_var.coef_zoom)),
+                        ky: reserved.focus.relative.zoom.ky
+                        * (direction === 'down'
+                            ? wheel_var.coef_zoom
+                            : (1 / wheel_var.coef_zoom)),
+                    }
+                    set_content_rel({
+                        zoom: {
+                            kx: new_zoom.kx,
+                            ky: new_zoom.ky,
+                        },
+                        trans: {
+                            x: reserved.focus.relative.translate.x
+                            - (new_zoom.kx - reserved.focus.relative.zoom.kx) * 0.5,
+                            y: reserved.focus.relative.translate.y
+                            - (new_zoom.ky - reserved.focus.relative.zoom.ky) * 0.5,
+                        },
+                    })
                 },
             },
-            drag_trans: {
-                start: function(){
-                    console.log('drag_trans_fun_core-start')
-                },
-                drag: function() {
-                    console.log('drag_trans_fun_core-drag')
-                },
+            scroll_y: {
                 end: function() {
-                    console.log('drag_trans_fun_core-end')
+                    var direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+                    let new_y = reserved.focus.relative.translate.y
+                    + (direction === 'down'
+                        ? wheel_var.coef_trans
+                        : (-wheel_var.coef_trans))
+                    if (new_y < 0) {
+                        new_y = 0
+                    }
+                    if (new_y > (1 - reserved.focus.relative.zoom.ky)) {
+                        new_y = (1 - reserved.focus.relative.zoom.ky)
+                    }
+                    console.log(new_y)
+                    set_content_rel({
+                        trans: {
+                            x: reserved.focus.relative.translate.x,
+                            y: new_y,
+                        },
+                    })
                 },
             },
         }
 
-        reserved.content
+        reserved.main.g.on('wheel', function() {
+            for (var key in reserved.interaction.wheel) {
+                if (d3.event[key]) {
+                    wheel_var.key = key
+                    wheel_function_bib[reserved.interaction.wheel[key].type].end()
+                    reserved.interaction.wheel[key].end()
+                    return
+                }
+            }
+            key = 'default'
+            wheel_var.key = key
+            wheel_function_bib[reserved.interaction.wheel[key].type].end()
+            reserved.interaction.wheel[key].end()
+        })
+    }
+    function interaction_drag() {
+        let drag_var = {
+            x: 0,
+            y: 0,
+            key: undefined,
+        }
+        let drag_function_bib = {
+            zoom_rect: {
+                start: function() {
+                    drag_var.x = d3.event.x
+                    drag_var.y = d3.event.y
+                    reserved.main.g.append('rect')
+                        .attr('id', 'zoom_rect')
+                        .attr('x', drag_var.x)
+                        .attr('y', drag_var.y)
+                        .attr('width', 0)
+                        .attr('height', 0)
+                        .attr('fill', 'none')
+                        .attr('stroke', '#000000')
+                        .attr('stroke-width', 2)
+                        .attr('stroke-dasharray', [ 8, 2 ])
+                },
+                drag: function() {
+                    reserved.main.g.select('rect#zoom_rect')
+                        .attr('x', d3.event.x > drag_var.x
+                            ? drag_var.x
+                            : d3.event.x)
+                        .attr('y', d3.event.y > drag_var.y
+                            ? drag_var.y
+                            : d3.event.y)
+                        .attr('width', Math.abs(d3.event.x - drag_var.x))
+                        .attr('height', Math.abs(d3.event.y - drag_var.y))
+                },
+                end: function() {
+                    reserved.main.g.select('rect#zoom_rect')
+                        .remove()
+                    let vertical_values = {
+                        y: (d3.event.y > drag_var.y
+                            ? drag_var.y - reserved.main.box.y
+                            : d3.event.y - reserved.main.box.y) / reserved.main.box.h,
+                        ky: Math.abs(d3.event.y - drag_var.y) / reserved.main.box.h,
+                    }
+                    let horizontal_values = {
+                        x: (d3.event.x > drag_var.x
+                            ? drag_var.x - reserved.main.box.x
+                            : d3.event.x - reserved.main.box.x) / reserved.main.box.w,
+                        kx: Math.abs(d3.event.x - drag_var.x) / reserved.main.box.w,
+                    }
+
+                    // console.log(reserved.focus.relative.zoom)
+                    // console.log(reserved.focus.relative.translate)
+                    // console.log(vertical_values, horizontal_values)
+                    set_content_rel({
+                        zoom: {
+                            kx: reserved.focus.relative.zoom.kx * horizontal_values.kx,
+                            ky: reserved.focus.relative.zoom.ky * vertical_values.ky,
+                        },
+                        trans: {
+                            x: reserved.focus.relative.translate.x
+                            + (reserved.focus.relative.zoom.kx * horizontal_values.x),
+                            y: reserved.focus.relative.translate.y
+                            + (reserved.focus.relative.zoom.ky * vertical_values.y),
+                        },
+                    })
+
+                    drag_var.x = 0
+                    drag_var.y = 0
+                    update_focus()
+                },
+            },
+            drag_trans: {
+                start: function(){
+                    drag_var.x = d3.event.x
+                    drag_var.y = d3.event.y
+                },
+                drag: function() {
+                    set_content_abs({
+                        trans: {
+                            x: reserved.focus.absolute.translate.x
+                            + (d3.event.x - drag_var.x),
+                            y: reserved.focus.absolute.translate.y
+                            + (d3.event.y - drag_var.y),
+                        },
+                    })
+                    drag_var.x = d3.event.x
+                    drag_var.y = d3.event.y
+                },
+                end: function() {
+                    drag_var.x = 0
+                    drag_var.y = 0
+                },
+            },
+        }
+
+        reserved.main.g
             .on('mouseover', function() {
                 d3.select(this).style('cursor', 'crosshair')
             })
@@ -282,166 +363,110 @@ window.PanZoomBox = function() {
         let interactions = d3.drag()
             .on('start', function() {
                 for (var key in reserved.interaction.drag) {
-                    if (d3.event.sourceEvent[key] || key === 'default'){
+                    if (d3.event.sourceEvent[key]) {
+                        drag_var.key = key
                         drag_function_bib[reserved.interaction.drag[key].type].start()
                         reserved.interaction.drag[key].start()
+                        return
                     }
                 }
+                key = 'default'
+                drag_var.key = key
+                drag_function_bib[reserved.interaction.drag[key].type].start()
+                reserved.interaction.drag[key].start()
             })
             .on('drag', function() {
-                for (var key in reserved.interaction.drag) {
-                    if (d3.event.sourceEvent[key] || key === 'default'){
-                        drag_function_bib[reserved.interaction.drag[key].type].drag()
-                        reserved.interaction.drag[key].drag()
-                    }
-                }
+                drag_function_bib[reserved.interaction.drag[drag_var.key].type].drag()
+                reserved.interaction.drag[drag_var.key].drag()
+
             })
             .on('end', function() {
-                for (var key in reserved.interaction.drag) {
-                    if (d3.event.sourceEvent[key] || key === 'default'){
-                        drag_function_bib[reserved.interaction.drag[key].type].end()
-                        reserved.interaction.drag[key].end()
-                    }
-                }
+                drag_function_bib[reserved.interaction.drag[drag_var.key].type].end()
+                reserved.interaction.drag[drag_var.key].end()
+
             })
 
-        reserved.content
+        reserved.main.g
             .call(interactions)
-        console.log(reserved.content)
     }
 
-    // function init_shortcut() {
-    //     reserved.shortcut = {
-    //         'fit': function() {
-    //             reserved.focus.absolute.zoom.kx
-    //               = reserved.main.box.w / reserved.focus.dimension.w
-    //             reserved.focus.absolute.zoom.ky
-    //               = reserved.main.box.h / reserved.focus.dimension.h
-    //             // let content_box = get_d3_node_box(reserved.content)
-    //             // reserved.focus.absolute.translate.x
-    //             //   = -content_box.x * (reserved.focus.absolute.zoom.kx - 1)
-    //             // reserved.focus.absolute.translate.y
-    //             //   = -content_box.y * (reserved.focus.absolute.zoom.ky - 1)
-    //
-    //             reserved.focus.relative.zoom = {
-    //                 kx: 1,
-    //                 ky: 1,
-    //             }
-    //             reserved.focus.relative.translate = {
-    //                 x: 0,
-    //                 y: 0,
-    //             }
-    //             update_focus()
-    //         },
-    //         'start': function() {
-    //             reserved.focus.zoom.kx = 1
-    //             reserved.focus.zoom.ky = 1
-    //             reserved.focus.translate.x = 0
-    //             reserved.focus.translate.y = 0
-    //             update_focus()
-    //         },
-    //         'end': function() {
-    //             reserved.focus.zoom.kx = 1
-    //             reserved.focus.zoom.ky = 1
-    //             reserved.focus.translate.x = -(reserved.focus.dimension.w
-    //               - reserved.main.box.w)
-    //             reserved.focus.translate.y = -(reserved.focus.dimension.h
-    //               - reserved.main.box.h)
-    //             update_focus()
-    //         },
-    //     }
-    // }
-    // function use_content_shortcut(short_name) {
-    //     reserved.shortcut[short_name]()
-    // }
-    // this.use_content_shortcut = use_content_shortcut
-    // function add_content_zoom_shortcut() {
-    //
-    // }
-    // this.add_content_zoom_shortcut = add_content_zoom_shortcut
-
     function update_focus() {
+        // console.log('absolute', reserved.focus.absolute)
         reserved.content
-            .attr('transform', 'translate('
-              + reserved.focus.absolute.translate.x
-              + ','
-              + reserved.focus.absolute.translate.y
-              + '),scale('
+            .transition()
+            .duration(100)
+            .attr('transform', 'scale('
               + reserved.focus.absolute.zoom.kx
               + ','
               + reserved.focus.absolute.zoom.ky
+              + '),translate('
+              + reserved.focus.absolute.translate.x
+              + ','
+              + reserved.focus.absolute.translate.y
               + ')')
     }
 
-    // function compute_content_zoom() {
-    //     reserved.focus.absolute.zoom = {
-    //         kx: reserved.focus.absolute.zoom.kx
-    //           * (reserved.main.box.w / reserved.focus.dimension.w),
-    //         ky: reserved.focus.absolute.zoom.ky
-    //           * (reserved.main.box.h / reserved.focus.dimension.h),
-    //     }
-    // }
-    // this.compute_content_zoom = compute_content_zoom
-    // function compute_content_trans() {
-    //     reserved.focus.translate.x
-    //       = reserved.focus.translate.x
-    //       * (reserved.focus.zoom.kx - 1)
-    //     reserved.focus.translate.y
-    //       = reserved.focus.translate.y
-    //       * (reserved.focus.zoom.ky - 1)
-    // }
-    // this.compute_content_trans = compute_content_trans
+    function set_content_rel(opt_in) {
+        // console.log('opt_in', opt_in)
+        if (opt_in.zoom) {
+            reserved.focus.relative.zoom = opt_in.zoom
+            reserved.focus.absolute.zoom = {
+                kx: reserved.main.box.w
+            / (reserved.focus.relative.zoom.kx
+              * reserved.focus.dimension.w),
+                ky: reserved.main.box.h
+            / (reserved.focus.relative.zoom.ky
+              * reserved.focus.dimension.h),
+            }
+        }
+        if (opt_in.trans) {
+            reserved.focus.relative.translate = opt_in.trans
+            reserved.focus.absolute.translate = {
+                x: -reserved.focus.dimension.w
+            * reserved.focus.relative.translate.x,
+                y: -reserved.focus.dimension.h
+            * reserved.focus.relative.translate.y,
+            }
+        }
+        // console.log(reserved.focus.relative)
+        // console.log(reserved.focus.absolute)
+        // console.log(reserved.main.box)
+        // console.log('relative', reserved.focus.relative)
+        update_focus()
+    }
+    this.set_content_rel = set_content_rel
+    function set_content_abs(opt_in) {
+        if (opt_in.zoom) {
+            reserved.focus.absolute.zoom = opt_in.zoom
+            reserved.focus.relative.zoom = {
+                kx: reserved.focus.absolute.zoom.kx
+          * (reserved.main.box.w / reserved.focus.dimension.w),
+                ky: reserved.focus.absolute.zoom.ky
+          * (reserved.main.box.h / reserved.focus.dimension.h),
+            }
+        }
+        if (opt_in.trans) {
+            reserved.focus.absolute.translate = opt_in.trans
+            reserved.focus.relative.translate = {
+                x: -reserved.focus.absolute.translate.x / reserved.focus.dimension.w,
+                y: -reserved.focus.absolute.translate.y / reserved.focus.dimension.h,
+            }
+        }
+        update_focus()
+    }
+    this.set_content_abs = set_content_abs
 
-    function set_content_zoom_rel(zoom) {
-        reserved.focus.relative.zoom = zoom
-        reserved.focus.absolute.zoom = {
-            kx: reserved.main.box.w
-              / (reserved.focus.relative.zoom.kx
-                * reserved.focus.dimension.w),
-            ky: reserved.main.box.h
-              / (reserved.focus.relative.zoom.ky
-                * reserved.focus.dimension.h),
-        }
-        update_focus()
-    }
-    this.set_content_zoom_rel = set_content_zoom_rel
-    function set_content_zoom_abs(zoom) {
-        reserved.focus.absolute.zoom = zoom
-        reserved.focus.relative.zoom = {
-            kx: reserved.focus.absolute.zoom.kx
-            * (reserved.main.box.w / reserved.focus.dimension.w),
-            ky: reserved.focus.absolute.zoom.ky
-            * (reserved.main.box.h / reserved.focus.dimension.h),
-        }
-    }
-    this.set_content_zoom_abs = set_content_zoom_abs
-
-    function set_content_trans_rel(trans) {
-        reserved.focus.relative.translate = trans
-        reserved.focus.absolute.translate = {
-            x: -reserved.focus.dimension.w
-              * reserved.focus.relative.translate.x,
-            y: -reserved.focus.dimension.h
-              * reserved.focus.relative.translate.y,
-        }
-        update_focus()
-    }
-    this.set_content_trans_rel = set_content_trans_rel
-    function set_content_trans_abs(trans) {
-        reserved.focus.absolute.translate = trans
-        reserved.focus.relative.translate = {
-            x: -reserved.focus.absolute.translate.x / reserved.focus.dimension.w,
-            y: -reserved.focus.absolute.translate.y / reserved.focus.dimension.h,
-        }
-        update_focus()
-    }
-    this.set_content_trans_abs = set_content_trans_abs
     function set_content_dim(dimension) {
+        let old_dim = reserved.focus.dimension
         if (!dimension) {
             let content_box = get_d3_node_box(reserved.content)
             reserved.focus.dimension = {
                 w: content_box.width,
                 h: content_box.height,
+            }
+            if (old_dim.w === content_box.width
+              && old_dim.h === content_box.height) {
+                return
             }
         }
         else {
@@ -451,16 +476,20 @@ window.PanZoomBox = function() {
             }
         }
 
-        // reserved.focus.zoom.absolute
-        reserved.focus.relative.zoom = {
-            kx: reserved.focus.absolute.zoom.kx
-          * (reserved.main.box.w / reserved.focus.dimension.w),
-            ky: reserved.focus.absolute.zoom.ky
-          * (reserved.main.box.h / reserved.focus.dimension.h),
-        }
-
-        // compute_content_zoom()
-        update_focus()
+        set_content_rel({
+            zoom: {
+                kx: (reserved.focus.relative.zoom.kx * old_dim.w)
+                / reserved.focus.dimension.w,
+                ky: (reserved.focus.relative.zoom.ky * old_dim.h)
+                / reserved.focus.dimension.h,
+            },
+            trans: {
+                x: (reserved.focus.relative.translate.x * old_dim.w)
+                / reserved.focus.dimension.w,
+                y: (reserved.focus.relative.translate.y * old_dim.h)
+                / reserved.focus.dimension.h,
+            },
+        })
     }
     this.set_content_dim = set_content_dim
 }

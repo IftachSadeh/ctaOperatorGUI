@@ -14,6 +14,9 @@
         window.WIDGET_TYPE = '${widget_type}'
         window.DISPLAY_USER_ID = '${display_user_id}'
         window.DISPLAY_USER_GROUP = '${display_user_group}'
+
+        window.D3_VERS_5 = true
+
     </script>
 
     <meta charset="UTF-8" />
@@ -25,8 +28,9 @@
     <!-- <link rel="icon" type="image/x-icon" href="/static/site_icon.png"/> -->
     <link rel="icon" type="image/x-icon" href="/static/icon-batman.png"/>
 
-    <script type="text/javascript" src="/static/d3/d3.js"></script>
-    <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
+    <!-- <script type="text/javascript" src="/static/d3/v4/d3.js"></script> -->
+    <script type="text/javascript" src="/static/d3/v5/d3.v5.min.js"></script>
+    <!-- <script type="text/javascript" src="/static/d3/v6/d3.v6.min.js"></script> -->
     <!-- <script src="https://d3js.org/d3.v6.min.js"></script> -->
 
     <script type="text/javascript" src="/static/d3_hexbin/d3-hexbin.v0.2.min.js"></script>
@@ -44,7 +48,7 @@
 
     <div id="title_div" class="menu_header site_header"></div>
     
-    <div class="menu_header" style="opacity: 0; padding-left: 24px; padding-bottom: 5px; margin-top: -40px; font-size: 15px;" id="debug_text_div">${display_user_id}</div>
+    <div class="menu_header" style="opacity: 0;" id="debug_text_div"></div>
 
     <div id="base_app_div"></div>
 

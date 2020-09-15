@@ -6,9 +6,11 @@
 /* global PlotBrushZoom */
 /* global PanZoomBox */
 
-// ------------------------------------------------------------------
-//
-// ------------------------------------------------------------------
+window.load_script({
+    source: 'utils_scrollBox',
+    script: '/js/utils/PanZoomBox.js',
+})
+
 window.ScrollBox = function() {
     let reserved
 
@@ -61,7 +63,7 @@ window.ScrollBox = function() {
         reserved.pan_zoom_box.init({
             main: {
                 tag: reserved.main.tag + '_pan_zoom_box',
-                g: reserved.main.g,
+                g: reserved.main.g.append('g').attr('id', 'pan_zoom_box'),
                 box: reserved.main.box,
             },
         })
@@ -327,13 +329,15 @@ window.ScrollBox = function() {
 
     function convert_to_brush_zoom_template(opt_in) {
         let axis_default = {
-            g: undefined,
-            box: {
-                x: 0,
-                y: 0,
-                w: reserved.main.box.w,
-                h: reserved.main.box.h,
-                marg: 0,
+            main: {
+                g: undefined,
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: reserved.main.box.w,
+                    h: reserved.main.box.h,
+                    marg: 0,
+                },
             },
             style: {
                 axis: {
@@ -396,13 +400,23 @@ window.ScrollBox = function() {
     function init_scroll() {
         function create_scroller(type, location) {
             let converted_axis = convert_to_brush_zoom_template({
-                g: reserved.scroll[type].g.append('g'),
-                id: location,
-                location: location,
-                type: 'linear',
-                profile: 'scrollbox',
-                domain: [ 0, reserved.main.box[type === 'vertical' ? 'h' : 'w'] ],
-                range: [ 0, reserved.main.box[type === 'vertical' ? 'h' : 'w'] ],
+                main: {
+                    id: location,
+                    g: reserved.scroll[type].g.append('g'),
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: 0,
+                        h: 0,
+                        marg: 0,
+                    },
+                    location: location,
+                    drawing: 'linear',
+                    profile: 'scrollbox',
+                },
+                domain: {
+                    raw: [ 0, reserved.main.box[type === 'vertical' ? 'h' : 'w'] ],
+                },
             })
             let scroller = new PlotBrushZoom()
             scroller.init(converted_axis)
@@ -554,102 +568,6 @@ window.ScrollBox = function() {
         }
     }
 
-    // function brush_zoom_link() {
-    //     if (reserved.scroll.horizontal.enabled) {
-    //         for (let i = 0; i < reserved.scroll.horizontal.scroller.length; i++) {
-    //             reserved.scroll.horizontal.scroller[i]
-    //                 .set_brush_zoom_factor_horizontal({
-    //                     brush: reserved.brush,
-    //                     zoom: reserved.zoom,
-    //                 })
-    //         }
-    //     }
-    //     if (reserved.scroll.vertical.enabled) {
-    //         for (let i = 0; i < reserved.scroll.vertical.scroller.length; i++) {
-    //             reserved.scroll.vertical.scroller[i]
-    //                 .set_brush_zoom_factor_vertical({
-    //                     brush: reserved.brush,
-    //                     zoom: reserved.zoom,
-    //                 })
-    //         }
-    //         console.log({
-    //             brush: reserved.brush,
-    //             zoom: reserved.zoom,
-    //         })
-    //     }
-    //     // update_data()
-    // }
-    //
-    // function get_brush_zoom_factor() {
-    //     return {
-    //         zoom: reserved.zoom,
-    //         brush: reserved.brush,
-    //     }
-    // }
-    // this.get_brush_zoom_factor = get_brush_zoom_factor
-    // function update_scroll_dim(opt_in) {
-    //     if (opt_in.height) {
-    //         let new_zoom = {
-    //             coef: {
-    //                 y: reserved.zoom.coef.y,
-    //                 ky: reserved.main.box.h / opt_in.height,
-    //             },
-    //             meta: {
-    //                 ky: {
-    //                     now: 1 / (reserved.main.box.h / opt_in.height),
-    //                     previous: reserved.zoom.meta.ky.now,
-    //                     point: [ -1, -1 ],
-    //                 },
-    //             },
-    //         }
-    //         console.log(reserved.zoom, new_zoom)
-    //         reserved.zoom = window.overwrite_obj(reserved.zoom, new_zoom)
-    //     }
-    //     if (opt_in.width) {
-    //         let new_zoom = {
-    //             coef: {
-    //                 x: reserved.zoom.coef.x,
-    //                 kx: opt_in.width / reserved.main.box.w,
-    //             },
-    //             meta: {
-    //                 kx: {
-    //                     now: 1 / (opt_in.width / reserved.main.box.w),
-    //                     previous: reserved.zoom.meta.kx.now,
-    //                     point: [ -1, -1 ],
-    //                 },
-    //             },
-    //         }
-    //         reserved.zoom = window.overwrite_obj(reserved.zoom, new_zoom)
-    //     }
-    //     brush_zoom_link()
-    // }
-    // this.update_scroll_dim = update_scroll_dim
-    // function set_brush_zoom_factor(new_brush_zoom_factor) {
-    //     reserved.zoom = window.overwrite_obj(reserved.zoom, new_brush_zoom_factor.zoom)
-    //     reserved.brush = window.overwrite_obj(reserved.brush, new_brush_zoom_factor.brush)
-    // }
-    // this.set_brush_zoom_factor = set_brush_zoom_factor
-    // function set_brush_zoom_factor_horizontal(new_brush_zoom_factor) {
-    //     let merged_axis = window.overwrite_obj(axis_default, opt_in)
-    //     reserved.zoom.coef.x = new_brush_zoom_factor.zoom.coef.x
-    //     reserved.zoom.coef.kx = new_brush_zoom_factor.zoom.coef.kx
-    //     reserved.zoom.meta.x = new_brush_zoom_factor.zoom.meta.x
-    //     reserved.zoom.meta.kx = new_brush_zoom_factor.zoom.meta.kx
-    //     reserved.brush.coef.x = new_brush_zoom_factor.brush.coef.x
-    //     reserved.brush.meta.x = new_brush_zoom_factor.brush.meta.x
-    // }
-    // this.set_brush_zoom_factor_horizontal = set_brush_zoom_factor_horizontal
-    // function set_brush_zoom_factor_vertical(new_brush_zoom_factor) {
-    //     reserved.zoom = window.overwrite_obj(reserved.zoom, new_brush_zoom_factor.zoom)
-    //     reserved.brush = window.overwrite_obj(reserved.brush, new_brush_zoom_factor.brush)
-    //     // reserved.zoom.coef.y = new_brush_zoom_factor.zoom.coef.y
-    //     // reserved.zoom.coef.ky = new_brush_zoom_factor.zoom.coef.ky
-    //     // reserved.zoom.meta.y = new_brush_zoom_factor.zoom.meta.y
-    //     // reserved.zoom.meta.ky = new_brush_zoom_factor.zoom.meta.ky
-    //     // reserved.brush.coef.y = new_brush_zoom_factor.brush.coef.y
-    //     // reserved.brush.meta.y = new_brush_zoom_factor.brush.meta.y
-    // }
-    // this.set_brush_zoom_factor_vertical = set_brush_zoom_factor_vertical
 
     function update_box(box) {
         reserved.main.box = box

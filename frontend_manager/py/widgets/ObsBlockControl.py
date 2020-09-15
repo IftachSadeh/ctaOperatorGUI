@@ -3,91 +3,91 @@ from frontend_manager.py.utils.BaseWidget import BaseWidget
 
 
 # ------------------------------------------------------------------
-#  ObsBlockControl
-# ------------------------------------------------------------------
 class ObsBlockControl(BaseWidget):
-    time_of_night = {}
-    inst_health = []
-    block_keys = [['wait'], ['run'], ['done', 'cancel', 'fail']]
-    blocks = {}
-    for keys_now in block_keys:
-        blocks[keys_now[0]] = []
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def __init__(self, widget_id="", socket_manager=None, *args, **kwargs):
+    def __init__(self, widget_id=None, sm=None, *args, **kwargs):
         # standard common initialisations
         BaseWidget.__init__(
             self,
             widget_id=widget_id,
-            socket_manager=socket_manager,
+            sm=sm,
         )
 
-        # ------------------------------------------------------------------
         # widget-specific initialisations
-        # ------------------------------------------------------------------
-        self.tel_ids = self.socket_manager.inst_data.get_inst_ids(
-            inst_types=['LST', 'MST', 'SST']
-        )
+        self.time_of_night = {}
+        self.inst_health = []
+        self.block_keys = [['wait'], ['run'], ['done', 'cancel', 'fail']]
+        self.blocks = {}
+        for keys_now in self.block_keys:
+            self.blocks[keys_now[0]] = []
 
-        # FIXME - need to add lock?
-        if len(ObsBlockControl.inst_health) == 0:
+        self.tel_ids = self.sm.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
+
+        if len(self.inst_health) == 0:
             for id_now in self.tel_ids:
-                ObsBlockControl.inst_health.append({"id": id_now, "val": 0})
+                self.inst_health.append({'id': id_now, 'val': 0})
 
         return
 
     # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-
-    def setup(self, *args):
+    async def setup(self, *args):
         # standard common initialisations
-        BaseWidget.setup(self, *args)
+        await BaseWidget.setup(self, args)
 
-        with self.socket_manager.lock:
+        with self.sm.lock:
             wgt = self.redis.h_get(
                 name='ws;widget_info',
                 key=self.widget_id,
+                default_val=None,
             )
-            self.widget_state = wgt["widget_state"]
-            self.widget_state["focus_id"] = ""
+            # do stuff on None!!!!!!!!!!!!!!
 
-        # initial dataset and send to client
-        opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.send_widget_init_data(opt_in=opt_in)
+            self.widget_state = wgt['widget_state']
+            self.widget_state['focus_id'] = ''
 
-        # start a thread which will call update_data() and send 1Hz data updates
-        # to all sessions in the group
-        opt_in = {'widget': self, 'data_func': self.get_data}
-        self.socket_manager.add_widget_loop(opt_in=opt_in)
+        # initialise dataset and send to client
+        opt_in = {
+            'widget': self,
+            'event_name': 'init_data',
+            'data_func': self.get_data,
+        }
+        await self.sm.emit_widget_event(opt_in=opt_in)
+
+        # start an update loop for this particular instance
+        opt_in = {
+            'widget': self,
+            'loop_scope': 'unique_by_id',
+            'data_func': self.get_data,
+            'sleep_sec': 3,
+            'loop_id': 'update_data_widget_id',
+            'event_name': 'update_data',
+        }
+        await self.sm.add_widget_loop(opt_in=opt_in)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data=None)
+        await BaseWidget.back_from_offline(self, args)
 
-        # with ObsBlockControl.lock:
-        #     print('-- back_from_offline',self.widget_type,self.widget_id)
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_data(self):
-        ObsBlockControl.time_of_night = get_time_of_night(self)
+    async def get_data(self):
+        self.time_of_night = get_time_of_night(self)
         self.get_blocks()
         self.get_tel_health()
 
         data = {
-            "time_of_night": ObsBlockControl.time_of_night,
-            "inst_health": ObsBlockControl.inst_health,
-            "blocks": ObsBlockControl.blocks
+            'time_of_night': self.time_of_night,
+            'inst_health': self.inst_health,
+            'blocks': self.blocks
         }
 
         return data
@@ -98,12 +98,12 @@ class ObsBlockControl(BaseWidget):
     def get_tel_health(self):
         self.redis.pipe.reset()
         for id_now in self.tel_ids:
-            self.redis.pipe.h_get(name="inst_health;" + str(id_now), key="health")
+            self.redis.pipe.h_get(name='inst_health;' + str(id_now), key='health')
         redis_data = self.redis.pipe.execute()
 
         for i in range(len(redis_data)):
             id_now = self.tel_ids[i]
-            ObsBlockControl.inst_health[i]["val"] = redis_data[i]
+            self.inst_health[i]['val'] = redis_data[i]
 
         return
 
@@ -111,7 +111,7 @@ class ObsBlockControl(BaseWidget):
     #
     # ------------------------------------------------------------------
     def get_blocks(self):
-        for keys_now in ObsBlockControl.block_keys:
+        for keys_now in self.block_keys:
             self.redis.pipe.reset()
             for key in keys_now:
                 self.redis.pipe.get('obs_block_ids_' + key)
@@ -125,35 +125,35 @@ class ObsBlockControl(BaseWidget):
 
             key = keys_now[0]
             blocks = self.redis.pipe.execute()
-            ObsBlockControl.blocks[key] = sorted(
+            self.blocks[key] = sorted(
                 blocks,
                 cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
             )
 
-        # print ObsBlockControl.blocks
+        # print self.blocks
 
-        # dur = [x['timestamp'] for x in ObsBlockControl.blocks] ; print dur
-        # print ObsBlockControl.blocks['wait'][5]['exe_state']
+        # dur = [x['timestamp'] for x in self.blocks] ; print dur
+        # print self.blocks['wait'][5]['exe_state']
 
-        # ObsBlockControl.blocks = [ unpackb(x) for x in redis_data ]
+        # self.blocks = [ unpackb(x) for x in redis_data ]
 
-        # ObsBlockControl.blocks = []
+        # self.blocks = []
         # for block in redis_data:
-        #   ObsBlockControl.blocks.append(unpackb(block))
+        #   self.blocks.append(unpackb(block))
 
         # self.sortBlocks()
 
-        # if len(ObsBlockControl.blocks) > 10: ObsBlockControl.blocks = ObsBlockControl.blocks[0:9]
-        # if len(ObsBlockControl.blocks) > 20: ObsBlockControl.blocks = ObsBlockControl.blocks[0:11]
-        # # # # print ObsBlockControl.blocks
+        # if len(self.blocks) > 10: self.blocks = self.blocks[0:9]
+        # if len(self.blocks) > 20: self.blocks = self.blocks[0:11]
+        # # # # print self.blocks
         # # for bb in range(9):
         # for bb in range(20):
-        #   if len(ObsBlockControl.blocks) <= bb: break
-        #   ObsBlockControl.blocks[bb]['exe_state'] = 'run'
-        #   ObsBlockControl.blocks[bb]['run_phase'] = ['run_take_data']
-        #   # ObsBlockControl.blocks[bb]['run_phase'] = ['run_config_mount']
-        #   # print ObsBlockControl.blocks[bb]
-        #   # if bb < 10: ObsBlockControl.blocks[bb]['exe_state'] = 'run'
-        #   # else:     ObsBlockControl.blocks[bb]['exe_state'] = 'wait'
+        #   if len(self.blocks) <= bb: break
+        #   self.blocks[bb]['exe_state'] = 'run'
+        #   self.blocks[bb]['run_phase'] = ['run_take_data']
+        #   # self.blocks[bb]['run_phase'] = ['run_config_mount']
+        #   # print self.blocks[bb]
+        #   # if bb < 10: self.blocks[bb]['exe_state'] = 'run'
+        #   # else:     self.blocks[bb]['exe_state'] = 'wait'
 
         return

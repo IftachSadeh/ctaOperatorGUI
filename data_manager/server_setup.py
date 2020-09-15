@@ -11,11 +11,14 @@ import copy
 import importlib
 import multiprocessing
 from time import sleep
+from watchdog.observers import Observer
+from watchdog.events import PatternMatchingEventHandler
 
 from shared.LogParser import LogParser
 from shared.server_args import parse_args
 from shared.utils import has_acs
 # from shared.BaseConfig import BaseConfig
+from shared.utils import get_time
 
 
 class SetupServer():
@@ -35,7 +38,11 @@ class SetupServer():
         # logging level
         log_level = settings['log_level']
         # development mode
-        self.reload = settings['reload']
+        self.reload_services = settings['reload']
+
+        # time to wait between file changes (if multiple files change at the
+        # same time, this avoids multiple reloading)
+        self.time_wait_sec = 3
 
         self.log = LogParser(
             base_config=None,
@@ -143,84 +150,145 @@ class SetupServer():
     def run_server(self):
         """run the services, watching for file changes (for development) in order to reload
         """
-        while True:
-            try:
-                # short wait to allow possible previous iterations to clear
-                sleep(1)
-                self.deep_module_reload(is_verb=True)
+        def spawn_procs():
+            """create processes for each service
+            """
 
-                multi_procs = []
-                interrupt_sig = multiprocessing.Event()
+            # short wait to allow possible previous iterations to clear
+            sleep(1)
 
-                for n_service in range(len(self.services)):
-                    service_name = self.services[n_service]['name']
-                    is_blocking = self.services[n_service]['is_blocking']
-                    multi_proc = multiprocessing.Process(
-                        target=self.run_service,
-                        kwargs={
-                            'interrupt_sig': interrupt_sig,
-                            'service_name': service_name,
-                        },
-                    )
-                    multi_proc.start()
+            self.deep_module_reload(is_verb=True)
 
-                    if is_blocking:
-                        # blocking services will be run until they finish
-                        multi_proc.join()
-                    else:
-                        # non-blocking services will run asynchronously
-                        multi_procs += [multi_proc]
+            self.multi_procs = []
+            self.interrupt_sig = multiprocessing.Event()
 
-                # block the loop untill file changes are detected
-                n_sec_wait = 1
-                cmnd_watch = (
-                    'fswatch -1 -e ".*" -i "\\.py$" -l ' + str(n_sec_wait) + ' '
-                    + ' '.join(self.reload_dirs)
+            for n_service in range(len(self.services)):
+                service_name = self.services[n_service]['name']
+                is_blocking = self.services[n_service]['is_blocking']
+                multi_proc = multiprocessing.Process(
+                    target=self.run_service,
+                    kwargs={
+                        'interrupt_sig': self.interrupt_sig,
+                        'service_name': service_name,
+                    },
                 )
-                changed = subprocess.check_output(cmnd_watch, shell=True)
+                multi_proc.start()
 
-                try:
-                    changed = changed.decode('utf-8').replace('\n', '  ')
-                except Exception:
-                    pass
-                self.log.info([
-                    ['o', ' - detected changes in: '],
-                    ['g', changed],
-                    ['o', ' ...'],
-                ])
-
-                # upon changes, send the interrupt signal to all asynchronous services
-                interrupt_sig.set()
-
-                # wait for all asynchronously services to finish
-                for multi_proc in multi_procs:
+                if is_blocking:
+                    # blocking services will be run until they finish
                     multi_proc.join()
+                else:
+                    # non-blocking services will run asynchronously
+                    self.multi_procs += [multi_proc]
 
-                if not self.reload:
-                    raise KeyboardInterrupt
+            return
 
-            except KeyboardInterrupt:
-                self.log.info([['g', ' ' + ('=' * 55)]])
-                self.log.info([['g', ' - Done !', ('=' * 50)]])
-                self.log.info([['g', ' ' + ('=' * 75)]])
+        def clear_procs():
+            """cleanup processes for all services
+            """
 
-                # attempt a graceful exit
-                interrupt_sig.set()
+            # upon changes, send the interrupt signal to all asynchronous services
+            self.interrupt_sig.set()
+
+            # wait for all asynchronously services to finish
+            for multi_proc in self.multi_procs:
                 multi_proc.join()
 
-                break
+            return
 
-            except Exception as e:
-                # for development purposes, we may continue the
-                # loop instead of raising the exception
-                self.log.info([['wr', e]])
-                traceback.print_tb(e.__traceback__)
+        class FileChangeHandler(PatternMatchingEventHandler):
+            def on_any_event(self, event):
+                """overloaded function from PatternMatchingEventHandler, called
+                   on any watched file change
+                """
 
-                if not self.reload:
-                    raise e
+                # print(f'event type: {event.event_type}  path : {event.src_path}')
+
+                if not self._need_reload():
+                    return
+                self.set_reload_time_sec()
+
+                clear_procs()
+                if self._reload_services:
+                    spawn_procs()
                 else:
-                    self.log.info([['wr', ' - will retry to run services ...']])
-                    sleep(1)
-                    pass
+                    self.set_can_keep_reloading(False)
+                return
+
+            def set_reload_time_wait_sec(self, time_wait_sec):
+                self._reload_time_wait_sec = time_wait_sec
+                return
+
+            def set_reload_time_sec(self, reload_time_sec=None):
+                self._reload_time_sec = (
+                    reload_time_sec if reload_time_sec is not None else get_time('sec')
+                )
+                return
+
+            def _need_reload(self):
+                return (
+                    get_time('sec') - self._reload_time_sec > self._reload_time_wait_sec
+                )
+
+            def set_reload_services(self, reload_services):
+                self._reload_services = reload_services
+                return
+
+            def set_can_keep_reloading(self, can_reload):
+                self._can_reload = can_reload
+                return
+
+            def get_can_keep_reloading(self):
+                return self._can_reload
+
+        # watch all python files, ignoring the current one
+        event_handler = FileChangeHandler(
+            patterns=['*.py'],
+            ignore_patterns=['*/server_setup.py'],
+        )
+        event_handler.set_reload_time_sec(reload_time_sec=0)
+        event_handler.set_can_keep_reloading(True)
+        event_handler.set_reload_services(self.reload_services)
+        event_handler.set_reload_time_wait_sec(self.time_wait_sec)
+
+        def add_file_observers(observers):
+            for dir_name in self.reload_dirs:
+                observer = Observer()
+                observer.schedule(event_handler, path=dir_name, recursive=True)
+                observer.start()
+
+                observers += [observer]
+            return
+
+        def final_cleanup(observers):
+            self.log.info([['o', ' ' + ('=' * 55)]])
+            self.log.info([['o', ' - Done !', ('=' * 50)]])
+            self.log.info([['o', ' ' + ('=' * 75)]])
+
+            for observer in observers:
+                observer.stop()
+            for observer in observers:
+                observer.join()
+
+            clear_procs()
+
+        try:
+            spawn_procs()
+
+            observers = []
+            add_file_observers(observers)
+
+            while event_handler.get_can_keep_reloading():
+                sleep(1)
+
+            final_cleanup(observers)
+
+        except KeyboardInterrupt:
+            final_cleanup(observers)
+
+        except Exception as e:
+            self.log.info([['wr', e]])
+            traceback.print_tb(e.__traceback__)
+            raise e
 
         return

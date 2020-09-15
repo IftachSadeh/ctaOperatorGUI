@@ -19,7 +19,7 @@ class ArrayZoomer(BaseWidget):
     # ------------------------------------------------------------------
     async def setup(self, *args):
         # standard common initialisations
-        await BaseWidget.setup(self, *args)
+        await BaseWidget.setup(self, args)
 
         # send initialisation event. for this view, no data are sent, as
         # all the interesting stuff happens as part of the arr_zoomer_ask_for_init_data
@@ -33,8 +33,8 @@ class ArrayZoomer(BaseWidget):
         return
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         # standard common initialisations
-        await BaseWidget.back_from_offline(self, data=None)
+        await BaseWidget.back_from_offline(self, args)
 
         return

@@ -11,20 +11,21 @@ class BaseWidget():
     widget_group_sess = dict()
 
     # ------------------------------------------------------------------
-    def __init__(self, widget_id='', sm=None, *args, **kwargs):
+    def __init__(self, widget_id=None, sm=None, *args, **kwargs):
         self.log = LogParser(base_config=sm.base_config, title=__name__)
 
         # the parent of this widget
         self.sm = sm
         # the shared basic configuration class
         self.base_config = self.sm.base_config
+        self.sess_id = self.sm.sess_id
 
         # the id of this instance
         self.widget_id = widget_id
         # widget-class and widget group names
         self.widget_type = self.__class__.__name__
         # for common threading
-        self.widget_group = (self.sm.user_group_id + '_' + self.widget_type)
+        self.widget_group = self.sm.user_group_id + '_' + self.widget_type
 
         # redis interface
         self.redis = RedisManager(
@@ -37,8 +38,9 @@ class BaseWidget():
         self.log_send_packet = False
 
         # fixed or dynamic icon
-        self.n_icon = -1
-        self.icon_id = -1
+        self.n_icon = None
+        # self.n_icon = -1
+        # self.icon_id = -1
 
         # list of utility classes to loop over
         self.my_utils = dict()
@@ -53,10 +55,16 @@ class BaseWidget():
     async def setup(self, *args):
         self.setup_args = args
 
-        widget_info = self.redis.h_get(name='ws;widget_info', key=self.widget_id)
-        if self.n_icon == -1:
+        widget_info = await self.sm.get_lazy_widget_info(
+            sess_id=self.sess_id,
+            widget_id=self.widget_id,
+        )
+        if widget_info is None:
+            return
+
+        if self.n_icon is None:
             self.n_icon = widget_info['n_icon']
-            self.icon_id = widget_info['icon_id']
+            # self.icon_id = widget_info['icon_id']
 
         # override the global logging variable with a
         # name corresponding to the current session id
@@ -78,7 +86,7 @@ class BaseWidget():
         util_id = data['util_id']
         util_type = data['util_type']
 
-        self.log.debug([
+        self.log.info([
             ['b', ' - util_setup: '],
             ['y', util_type],
             ['b', ' with '],
@@ -86,6 +94,16 @@ class BaseWidget():
             ['b', ' to '],
             ['o', self.widget_id],
         ])
+
+        widget_info = await self.sm.get_lazy_widget_info(
+            sess_id=self.sess_id,
+            widget_id=self.widget_id,
+        )
+        if widget_info is None:
+            return
+
+        if util_id not in widget_info['util_ids']:
+            widget_info['util_ids'] += [util_id]
 
         # dynamic loading of the module
         util_source = self.sm.util_module_dir + '.' + util_type
@@ -108,10 +126,6 @@ class BaseWidget():
 
         # run the setup function of the util
         await self.my_utils[util_id].setup(self.setup_args)
-
-        widget_info = self.redis.h_get(name='ws;widget_info', key=self.widget_id)
-        if util_id not in widget_info['util_ids']:
-            widget_info['util_ids'] += [util_id]
 
         self.redis.h_set(name='ws;widget_info', key=self.widget_id, data=widget_info)
 
@@ -174,7 +188,7 @@ class BaseWidget():
         """
 
         lock_name = (
-            'ws;' + self.my_utils[util_id].class_name + ';'
+            'ws;base_widget;util_func;' + self.my_utils[util_id].class_name + ';'
             + self.my_utils[util_id].util_id
         )
 
@@ -194,7 +208,7 @@ class BaseWidget():
         return is_locked
 
     # ------------------------------------------------------------------
-    async def back_from_offline(self, data=None):
+    async def back_from_offline(self, *args):
         """interface function for back-from-offline events
         """
 
@@ -214,6 +228,6 @@ class BaseWidget():
 
         # loop over utils
         for util_now in self.my_utils.values():
-            await util_now.back_from_offline()
+            await util_now.back_from_offline(args)
 
         return

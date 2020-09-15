@@ -64,8 +64,8 @@ window.PlotTimeSeries = function() {
         init_axis()
         init_interaction()
         init_clipping()
-        init_brush()
-        init_zoom()
+        // init_brush()
+        // init_zoom()
 
         reserved.clipping.maing.append('rect')
             .attr('x', 0)
@@ -584,7 +584,6 @@ window.PlotTimeSeries = function() {
             current.append('g')
                 .attr('id', 'inner_dots')
         }
-
         let axis_x = get_axis(data.axis_x).axis.get_axis().scale
         let axis_y = get_axis(data.axis_y).axis.get_axis().scale
         current.select('path#plot_path')
@@ -899,13 +898,15 @@ window.PlotTimeSeries = function() {
     }
     function convert_to_brush_zoom_template(axis) {
         let axis_default = {
-            g: reserved.main.g.append('g'),
-            box: {
-                x: 0,
-                y: 0,
-                w: reserved.main.box.w,
-                h: reserved.main.box.h,
-                marg: 0,
+            main: {
+                g: reserved.main.g.append('g'),
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: reserved.main.box.w,
+                    h: reserved.main.box.h,
+                    marg: 0,
+                },
             },
             style: {
                 axis: {
@@ -937,45 +938,40 @@ window.PlotTimeSeries = function() {
         }
         let axis_width = 25
         let marg = 5
-        if (axis.location === 'bottom') {
-            axis_default.box.y = reserved.main.box.h
+        if (axis.main.location === 'bottom') {
+            axis_default.main.box.y = reserved.main.box.h
               + ((axis_width * reserved.axis.bottom.length)
               + (marg * reserved.axis.bottom.length))
-            axis_default.box.h = axis_width
+            axis_default.main.box.h = axis_width
             axis_default.style.axis.tickSize = -reserved.main.box.h
-            axis_default.range = [ 0, axis_default.box.w ]
         }
-        else if (axis.location === 'top') {
-            axis_default.box.y = -(axis_width * (reserved.axis.top.length + 1))
+        else if (axis.main.location === 'top') {
+            axis_default.main.box.y = -(axis_width * (reserved.axis.top.length + 1))
               - (marg * reserved.axis.top.length)
-            axis_default.box.h = axis_width
+            axis_default.main.box.h = axis_width
             axis_default.style.axis.tickSize = -reserved.main.box.h
-            axis_default.range = [ 0, axis_default.box.w ]
         }
-        else if (axis.location === 'left') {
-            axis_default.box.x = -(axis_width * (reserved.axis.left.length + 1))
+        else if (axis.main.location === 'left') {
+            axis_default.main.box.x = -(axis_width * (reserved.axis.left.length + 1))
               - (marg * reserved.axis.left.length)
-            axis_default.box.w = axis_width
+            axis_default.main.box.w = axis_width
             axis_default.style.axis.tickSize = -reserved.main.box.w
-            axis_default.range = [ axis_default.box.h, 0 ]
         }
-        else if (axis.location === 'right') {
-            axis_default.box.x = reserved.main.box.w
+        else if (axis.main.location === 'right') {
+            axis_default.main.box.x = reserved.main.box.w
               + (axis_width * reserved.axis.right.length
               + marg * reserved.axis.right.length)
-            axis_default.box.w = axis_width
+            axis_default.main.box.w = axis_width
             axis_default.style.axis.tickSize = -reserved.main.box.w
-            axis_default.range = [ axis_default.box.h, 0 ]
         }
         let merged_axis = window.merge_obj(axis_default, axis)
         return merged_axis
     }
     function add_axis(axis) {
         let converted_axis = convert_to_brush_zoom_template(axis)
-
         let brush_zoom_axis = new PlotBrushZoom()
-
-        if (axis.location === 'top') {
+        console.log(converted_axis)
+        if (converted_axis.main.location === 'top') {
             converted_axis.zoom.callback = function() {
                 let new_brush_zoom = brush_zoom_axis.get_brush_zoom_factor()
                 set_brush_zoom_factor_horizontal(new_brush_zoom)
@@ -983,11 +979,11 @@ window.PlotTimeSeries = function() {
             }
             brush_zoom_axis.init(converted_axis)
             reserved.axis.top.push({
-                id: axis.id,
+                id: converted_axis.main.id,
                 axis: brush_zoom_axis,
             })
         }
-        else if (axis.location === 'bottom') {
+        else if (converted_axis.main.location === 'bottom') {
             converted_axis.zoom.callback = function() {
                 let new_brush_zoom = brush_zoom_axis.get_brush_zoom_factor()
                 set_brush_zoom_factor_horizontal(new_brush_zoom)
@@ -995,11 +991,11 @@ window.PlotTimeSeries = function() {
             }
             brush_zoom_axis.init(converted_axis)
             reserved.axis.bottom.push({
-                id: axis.id,
+                id: converted_axis.main.id,
                 axis: brush_zoom_axis,
             })
         }
-        else if (axis.location === 'left') {
+        else if (converted_axis.main.location === 'left') {
             converted_axis.zoom.callback = function() {
                 let new_brush_zoom = brush_zoom_axis.get_brush_zoom_factor()
                 set_brush_zoom_factor_vertical(new_brush_zoom)
@@ -1007,11 +1003,11 @@ window.PlotTimeSeries = function() {
             }
             brush_zoom_axis.init(converted_axis)
             reserved.axis.left.push({
-                id: axis.id,
+                id: converted_axis.main.id,
                 axis: brush_zoom_axis,
             })
         }
-        else if (axis.location === 'right') {
+        else if (converted_axis.main.location === 'right') {
             converted_axis.zoom.callback = function() {
                 let new_brush_zoom = brush_zoom_axis.get_brush_zoom_factor()
                 set_brush_zoom_factor_vertical(new_brush_zoom)
@@ -1019,7 +1015,7 @@ window.PlotTimeSeries = function() {
             }
             brush_zoom_axis.init(converted_axis)
             reserved.axis.right.push({
-                id: axis.id,
+                id: converted_axis.main.id,
                 axis: brush_zoom_axis,
             })
         }

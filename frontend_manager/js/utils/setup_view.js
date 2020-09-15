@@ -16,84 +16,75 @@ setup_view.view102 = function() {
         name_tag: 'PanelSync',
         table_title: 'Panel synchronization',
         has_icon: false,
-        has_drawer: false,
     })
 
     sock.add_widget({
         name_tag: 'ArrayZoomer',
         table_title: 'Telescope health',
         has_icon: true,
-        has_drawer: true,
     })
 
     // // sock.add_widget({
     // //   name_tag: 'azPlots',
     // //   table_title: 'Telescope health plots',
     // //   has_icon: true,
-    // //   has_drawer: false
     // // })
 
     sock.add_widget({
         name_tag: 'SubArrGrp',
         table_title: 'Sub-array pointings',
         has_icon: true,
-        has_drawer: false,
     })
 
     // sock.add_widget({
     //   name_tag: 'NightSched',
     //   table_title: 'Nightly Schedule',
     //   has_icon: true,
-    //   has_drawer: false
     // })
 
     sock.add_widget({
         name_tag: 'SchedBlockController',
         table_title: 'Scheduling blocks inspector',
         has_icon: true,
-        has_drawer: false,
     })
 
     sock.add_widget({
         name_tag: 'SchedBlockInspector',
         table_title: 'Scheduling Blocks Inspector',
         has_icon: true,
-        has_drawer: false,
     })
 
     sock.add_widget({
         name_tag: 'SchedBlocks',
         table_title: 'Observing blocks',
         has_icon: true,
-        has_drawer: false,
     })
 
     // sock.add_widget({
     //     name_tag: 'CommentSched',
     //     table_title: 'Comment Night Schedule',
     //     has_icon: true,
-    //     has_drawer: false,
     // })
 
     sock.add_widget({
         name_tag: 'PlotsDash',
         table_title: 'plots Dashboard',
         has_icon: true,
-        has_drawer: false,
     })
 
-    sock.add_widget({
-        name_tag: 'WeatherMonitoring',
-        table_title: 'Weather Monitoring',
-        has_icon: true,
-        has_drawer: false,
-    })
+    console.log('bring back WeatherMonitoring...')
+    if (false) {
+        sock.add_widget({
+            name_tag: 'WeatherMonitoring',
+            table_title: 'Weather Monitoring',
+            has_icon: true,
+        })
+    }
 
     sock.add_widget({
         name_tag: 'EmptyExample',
         table_title: 'empty_example',
         has_icon: true,
-        has_drawer: false,
     })
 }
 
@@ -105,19 +96,18 @@ setup_view.view200 = function() {
         name_tag: 'ArrayZoomer',
         table_title: 'Telescope health',
         has_icon: true,
-        has_drawer: true,
     })
+
     // sock.add_widget({
     //     name_tag: 'ArrayZoomer',
     //     table_title: 'Telescope health',
     //     has_icon: true,
-    //     has_drawer: true,
     // })
+    
     // sock.add_widget({
     //     name_tag: 'EmptyExample',
     //     table_title: 'empty_example',
     //     has_icon: true,
-    //     has_drawer: false,
     // })
 }
 
@@ -129,7 +119,6 @@ setup_view.view201 = function() {
         name_tag: 'PlotsDash',
         table_title: 'Plots Dashboard',
         has_icon: true,
-        has_drawer: false,
     })
 }
 
@@ -141,7 +130,6 @@ setup_view.view202 = function() {
         name_tag: 'SubArrGrp',
         table_title: 'Sub-array pointings',
         has_icon: true,
-        has_drawer: false,
     })
 }
 
@@ -153,14 +141,13 @@ setup_view.view203 = function() {
         name_tag: 'PanelSync',
         table_title: 'Panel synchronization',
         has_icon: false,
-        has_drawer: false,
     })
-    sock.add_widget({
-        name_tag: 'PanelSync',
-        table_title: 'Panel synchronization',
-        has_icon: false,
-        has_drawer: false,
-    })
+
+    // sock.add_widget({
+    //     name_tag: 'PanelSync',
+    //     table_title: 'Panel synchronization',
+    //     has_icon: false,
+    // })
 }
 
 // -------------------------------------------------------------------
@@ -171,23 +158,7 @@ setup_view.view204 = function() {
         name_tag: 'SchedBlocks',
         table_title: 'Observing blocks',
         has_icon: true,
-        has_drawer: false,
     })
-    // sock.add_widget({
-    //   name_tag:"ObsBlockControl", table_title:"Scheduling Block Control", has_icon:true, has_drawer:false
-    // });
-    // sock.add_widget({
-    //   name_tag:"NightSched", table_title:"Nightly Schedule", has_icon:true, has_drawer:false
-    // })
-    // sock.add_widget({
-    //   name_tag:"SchedBlocks", table_title:"Observing blocks", has_icon:true, has_drawer:false
-    // });
-    // sock.add_widget({
-    //   name_tag:"SchedBlocks", table_title:"Observing blocks", has_icon:true, has_drawer:false
-    // });
-    // sock.add_widget({
-    //   name_tag:"SchedBlocks", table_title:"Observing blocks", has_icon:true, has_drawer:false
-    // });
 }
 
 // -------------------------------------------------------------------
@@ -198,7 +169,6 @@ setup_view.view205 = function() {
         name_tag: 'CommentSched',
         table_title: 'Comment Night Schedule',
         has_icon: true,
-        has_drawer: false,
     })
 }
 
@@ -208,15 +178,14 @@ setup_view.view205 = function() {
 setup_view.view206 = function() {
     sock.add_widget({
         name_tag: 'SchedBlockController',
-        table_title: 'Scheduling blocks inspector',
+        table_title: 'Scheduling blocks controller',
         has_icon: true,
-        has_drawer: false,
     })
+    
     sock.add_widget({
         name_tag: 'SchedBlockInspector',
-        table_title: 'Scheduling blocks controller',
+        table_title: 'Scheduling blocks inspector',
         has_icon: false,
-        has_drawer: true,
     })
 }
 
@@ -225,33 +194,52 @@ setup_view.view207 = function() {
         name_tag: 'WeatherMonitoring',
         table_title: 'Weather Monitoring',
         has_icon: true,
-        has_drawer: false,
     })
 }
 
+
+// -------------------------------------------------------------------
+// test load
+// -------------------------------------------------------------------
+setup_view.view001 = function() {
+    let n_widgets = 10 
+    let name_tags = [
+        'ArrayZoomer',
+        // 'SubArrGrp',
+        // 'SchedBlockController',
+        // 'SchedBlockInspector',
+        // 'SchedBlocks',
+        // 'EmptyExample',
+        // 'PanelSync',
+
+        // 'PlotsDash',
+        // 'WeatherMonitoring',
+    ]
+
+    $.each(name_tags, function(_, name_tag) {
+        for (var i = 0; i < n_widgets; i++) {
+            sock.add_widget({
+                name_tag: name_tag,
+                table_title: (name_tag + ' ' + (i+1) + ' / ' + n_widgets),
+                has_icon: true,
+            })
+        }
+    })
+}
 // -------------------------------------------------------------------
 // empty_example
 // -------------------------------------------------------------------
 setup_view.view000 = function() {
-    // sock.add_widget({
-    //   name_tag: 'MyTestExample',
-    //   table_title: 'myTestExample',
-    //   has_icon: true,
-    //   has_drawer: false
-    // })
-
     sock.add_widget({
         name_tag: 'EmptyExample',
         table_title: 'empty_example 0',
         has_icon: true,
-        has_drawer: false,
     })
 
     sock.add_widget({
         name_tag: 'EmptyExample',
         table_title: 'empty_example 1',
         has_icon: true,
-        has_drawer: false,
     })
 }
 
@@ -264,7 +252,6 @@ setup_view.view000 = function() {
 //         name_tag: 'TestExample',
 //         table_title: 'TestExample 0',
 //         has_icon: true,
-//         has_drawer: false,
 //     })
 // }
 

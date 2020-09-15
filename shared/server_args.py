@@ -82,6 +82,7 @@ def parse_args(app_name):
         widget_info = [
             'view102',
             'view000',
+            'view001',
             'view_refresh_all',
             'view200',
             'view201',
