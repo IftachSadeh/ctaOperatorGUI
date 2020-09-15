@@ -18,6 +18,15 @@ class SchedBlockController(BaseWidget):
             sm=sm,
         )
 
+        self.time_information = {
+            'history_step_sec': -1,
+            'history_duration_sec': -1,
+            'history_start_sec': -1,
+            'is_night_now': -1,
+            'night_end_sec': -1,
+            'night_start_sec': -1,
+            'time_now_sec': -1,
+        }
         # widget-specific initialisations
         self.block_keys = [['wait'], ['run'], ['done', 'cancel', 'fail']]
         self.blocks = {}
@@ -85,32 +94,26 @@ class SchedBlockController(BaseWidget):
 
         return
 
+    def update_time_information(self):
+        clock_sim = get_clock_sim_data(self)
+        self.time_information = {
+            'is_night_now': clock_sim['is_night_now'],
+            'night_end_sec': clock_sim['night_end_sec'] * 1000,
+            'night_start_sec': clock_sim['night_start_sec'] * 1000,
+            'time_now_sec': clock_sim['time_now_sec'] * 1000,
+        }
+
     # ------------------------------------------------------------------
     async def get_data(self):
+        self.update_time_information()
         self.get_blocks()
         self.get_tel_health()
         self.get_events()
         self.get_clock_events()
         self.get_target()
 
-        clock_sim = get_clock_sim_data(self)
-
-        time_now_sec = clock_sim['time_now_sec']
-        night_start_sec = clock_sim['night_start_sec']
-        night_end_sec = clock_sim['night_end_sec']
-        # print('----', time_now_sec, night_start_sec, night_end_sec)
-
-        time_of_night_date = {
-            'date_start': secs_to_datetime(night_start_sec).strftime('%Y-%m-%d %H:%M:%S'),
-            'date_end': secs_to_datetime(night_end_sec).strftime('%Y-%m-%d %H:%M:%S'),
-            'date_now': secs_to_datetime(time_now_sec).strftime('%Y-%m-%d %H:%M:%S'),
-            'now': int(time_now_sec),
-            'start': int(night_start_sec),
-            'end': int(night_end_sec),
-        }
-
         data = {
-            'time_of_night': time_of_night_date,
+            'time_information': self.time_information,
             'inst_health': self.inst_health,
             'blocks': self.blocks,
             'external_events': self.external_events,
@@ -182,6 +185,10 @@ class SchedBlockController(BaseWidget):
 
             key = keys_now[0]
             blocks = pipe.execute()
+            for block in blocks:
+                block['time']['start'] = block['time']['start'] * 1000
+                block['time']['duration'] = block['time']['duration'] * 1000
+                block['time']['end'] = block['time']['end'] * 1000
             self.blocks[key] = sorted(blocks, key=lambda a: float(a['time']['start']))
 
             # if key == 'run' and len(self.blocks[key]) > 0:

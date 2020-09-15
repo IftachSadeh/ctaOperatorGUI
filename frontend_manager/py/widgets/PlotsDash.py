@@ -1,6 +1,7 @@
 import random
 from datetime import datetime
 from shared.utils import flatten_dict, get_time
+from shared.ClockSim import get_clock_sim_data
 from frontend_manager.py.utils.BaseWidget import BaseWidget
 
 
@@ -16,6 +17,16 @@ class PlotsDash(BaseWidget):
             widget_id=widget_id,
             sm=sm,
         )
+
+        self.time_information = {
+            'history_step_sec': -1,
+            'history_duration_sec': -1,
+            'history_start_sec': -1,
+            'is_night_now': -1,
+            'night_end_sec': -1,
+            'night_start_sec': -1,
+            'time_now_sec': -1,
+        }
 
         # widget-specific initialisations
         self.tel_category = 'Telescope'
@@ -287,17 +298,19 @@ class PlotsDash(BaseWidget):
                 'context': {}
             })
 
+    def update_time_information(self):
+        clock_sim = get_clock_sim_data(self)
+        self.time_information = {
+            'is_night_now': clock_sim['is_night_now'],
+            'night_end_sec': clock_sim['night_end_sec'] * 1000,
+            'night_start_sec': clock_sim['night_start_sec'] * 1000,
+            'time_now_sec': clock_sim['time_now_sec'] * 1000,
+        }
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     async def get_data(self):
-        time_of_night_date = {
-            'date_now':
-            datetime.fromtimestamp(get_time('msec') / 1000.0
-                                   ).strftime('%Y-%m-%d %H:%M:%S'),
-            'now':
-            get_time('msec')
-        }
+        self.update_time_information()
 
         data_out = self.get_tel_data('Mx10', ['camera', 'mount'])
 
@@ -306,9 +319,9 @@ class PlotsDash(BaseWidget):
         ordered_past = self.order_urgent_past_key()
         ordered_timestamp = self.order_urgent_past_key_time()
         ordered_current = self.order_urgent_current_key()
-        # print 'get_data', self.widget_id
+
         data = {
-            'time_of_night': time_of_night_date,
+            'time_information': self.time_information,
             'data_out': self.tel_ids,
             'hierarchy': {
                 'relationship': self.relationship,

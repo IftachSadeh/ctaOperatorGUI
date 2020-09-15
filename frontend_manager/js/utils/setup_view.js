@@ -103,7 +103,7 @@ setup_view.view200 = function() {
     //     table_title: 'Telescope health',
     //     has_icon: true,
     // })
-    
+
     // sock.add_widget({
     //     name_tag: 'EmptyExample',
     //     table_title: 'empty_example',
@@ -181,7 +181,7 @@ setup_view.view206 = function() {
         table_title: 'Scheduling blocks controller',
         has_icon: true,
     })
-    
+
     sock.add_widget({
         name_tag: 'SchedBlockInspector',
         table_title: 'Scheduling blocks inspector',
@@ -254,4 +254,3 @@ setup_view.view000 = function() {
 //         has_icon: true,
 //     })
 // }
-

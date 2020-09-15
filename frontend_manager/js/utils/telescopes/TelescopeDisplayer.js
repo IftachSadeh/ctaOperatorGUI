@@ -12,11 +12,6 @@
 /* global RunLoop */
 /* global inst_health_col */
 
-load_script({
-    source: 'utils_scrollTable',
-    script: '/js/utils/ScrollBox.js',
-})
-
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
@@ -1201,39 +1196,51 @@ window.TelescopeDisplayer = function(opt_in) {
         com.main.scroll.scrollBox = new ScrollBox()
         let ntag = com.main.tag + 'Scroll'
         com.main.scroll.scrollBox.init({
-            tag: ntag,
-            g_box: com.main.scroll.scrollBoxG,
-            box_data: {
-                x: 0,
-                y: 0,
-                w: com.main.box.w,
-                h: com.main.box.h,
-            },
-            use_relative_coords: true,
-            locker: new Locker(),
-            lockers: [ ntag + 'update_data' ],
-            lock_zoom: {
-                all: ntag + 'zoom',
-                during: ntag + 'zoom_during',
-                end: ntag + 'zoom_end',
-            },
-            run_loop: new RunLoop({
+            main: {
                 tag: ntag,
-            }),
-            can_scroll: true,
-            scrollVertical: false,
-            scroll_horizontal: true,
-            scroll_height: 0,
-            scroll_width: 0,
-            background: 'transparent',
-            scroll_rec_h: {
-                h: 2,
-            },
-            scroll_recs: {
-                w: 2,
+                g: com.main.scroll.scrollBoxG,
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: com.main.box.w,
+                    h: com.main.box.h,
+                },
             },
         })
-        com.main.scroll.scrollG = com.main.scroll.scrollBox.get('inner_g')
+        // com.main.scroll.scrollBox.init({
+        //     tag: ntag,
+        //     g_box: com.main.scroll.scrollBoxG,
+        //     box_data: {
+        //         x: 0,
+        //         y: 0,
+        //         w: com.main.box.w,
+        //         h: com.main.box.h,
+        //     },
+        //     use_relative_coords: true,
+        //     locker: new Locker(),
+        //     lockers: [ ntag + 'update_data' ],
+        //     lock_zoom: {
+        //         all: ntag + 'zoom',
+        //         during: ntag + 'zoom_during',
+        //         end: ntag + 'zoom_end',
+        //     },
+        //     run_loop: new RunLoop({
+        //         tag: ntag,
+        //     }),
+        //     can_scroll: true,
+        //     scrollVertical: false,
+        //     scroll_horizontal: true,
+        //     scroll_height: 0,
+        //     scroll_width: 0,
+        //     background: 'transparent',
+        //     scroll_rec_h: {
+        //         h: 2,
+        //     },
+        //     scroll_recs: {
+        //         w: 2,
+        //     },
+        // })
+        com.main.scroll.scrollG = com.main.scroll.scrollBox.get_content()
         com.main.background = com.main.scroll.scrollG.append('g')
         com.main.foreground = com.main.scroll.scrollG.append('g')
     }

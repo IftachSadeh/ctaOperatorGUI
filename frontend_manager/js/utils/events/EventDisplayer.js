@@ -1383,39 +1383,51 @@ window.EventDisplayer = function(opt_in) {
         let ntag = com.main.tag + 'Scroll'
         com.main.scroll.scrollBox = new ScrollBox()
         com.main.scroll.scrollBox.init({
-            tag: ntag,
-            g_box: com.main.scroll.scrollBoxG,
-            box_data: {
-                x: 0,
-                y: 0,
-                w: com.main.box.w,
-                h: com.main.box.h,
-            },
-            use_relative_coords: true,
-            locker: new Locker(),
-            lockers: [ 'eventDisplayerScroll' + 'update_data' ],
-            lock_zoom: {
-                all: 'eventDisplayerScroll' + 'zoom',
-                during: 'eventDisplayerScroll' + 'zoom_during',
-                end: 'eventDisplayerScroll' + 'zoom_end',
-            },
-            run_loop: new RunLoop({
-                tag: 'eventDisplayerScroll',
-            }),
-            can_scroll: true,
-            scrollVertical: false,
-            scroll_horizontal: true,
-            scroll_height: 0,
-            scroll_width: 0,
-            background: 'transparent',
-            scroll_rec_h: {
-                h: 2,
-            },
-            scroll_recs: {
-                w: 2,
+            main: {
+                tag: 'urgent_supervision_scrollbox',
+                g: com.main.scroll.scrollBoxG,
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: com.main.box.w,
+                    h: com.main.box.h,
+                },
             },
         })
-        com.main.scroll.scrollG = com.main.scroll.scrollBox.get('inner_g')
+        // com.main.scroll.scrollBox.init({
+        //     tag: ntag,
+        //     g_box: com.main.scroll.scrollBoxG,
+        //     box_data: {
+        //         x: 0,
+        //         y: 0,
+        //         w: com.main.box.w,
+        //         h: com.main.box.h,
+        //     },
+        //     use_relative_coords: true,
+        //     locker: new Locker(),
+        //     lockers: [ 'eventDisplayerScroll' + 'update_data' ],
+        //     lock_zoom: {
+        //         all: 'eventDisplayerScroll' + 'zoom',
+        //         during: 'eventDisplayerScroll' + 'zoom_during',
+        //         end: 'eventDisplayerScroll' + 'zoom_end',
+        //     },
+        //     run_loop: new RunLoop({
+        //         tag: 'eventDisplayerScroll',
+        //     }),
+        //     can_scroll: true,
+        //     scrollVertical: false,
+        //     scroll_horizontal: true,
+        //     scroll_height: 0,
+        //     scroll_width: 0,
+        //     background: 'transparent',
+        //     scroll_rec_h: {
+        //         h: 2,
+        //     },
+        //     scroll_recs: {
+        //         w: 2,
+        //     },
+        // })
+        com.main.scroll.scrollG = com.main.scroll.scrollBox.get_content()
     }
     function initBackground() {
         com.main.g.append('rect')

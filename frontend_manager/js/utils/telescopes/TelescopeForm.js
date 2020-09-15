@@ -124,56 +124,6 @@ window.TelescopeForm = function(opt_in) {
     }
     this.update = update
 
-    function initScrollBox(tag, g, box, background) {
-        if (background.enabled) {
-            g.append('rect')
-                .attr('class', 'background')
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('width', box.w)
-                .attr('height', box.h)
-                .style('fill', background.fill)
-                .style('stroke', background.stroke)
-                .style('stroke-width', background.strokeWidth)
-        }
-
-        let scrollBox = new ScrollBox()
-        scrollBox.init({
-            tag: tag,
-            g_box: g,
-            box_data: {
-                x: 0,
-                y: 0,
-                w: box.w,
-                h: box.h,
-            },
-            use_relative_coords: true,
-            locker: new Locker(),
-            lockers: [ tag + 'update_data' ],
-            lock_zoom: {
-                all: tag + 'zoom',
-                during: tag + 'zoom_during',
-                end: tag + 'zoom_end',
-            },
-            run_loop: new RunLoop({
-                tag: tag,
-            }),
-            can_scroll: true,
-            scrollVertical: true,
-            scroll_horizontal: false,
-            scroll_height: 0,
-            scroll_width: 0,
-            background: 'transparent',
-            scroll_rec_h: {
-                h: 4,
-            },
-            scroll_recs: {
-                w: 4,
-            },
-        })
-        return scrollBox
-    }
-
     function createTitle() {
         function drawHealthBar() {
 
@@ -738,10 +688,15 @@ window.TelescopeForm = function(opt_in) {
         }
 
         let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + tbox.y + ')')
-        let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {
-            enabled: false,
+        let scrollBox = new ScrollBox()
+        scrollBox.init({
+            main: {
+                tag: 'targetListScroll',
+                g: blockg,
+                box: tbox,
+            },
         })
-        let innerg = scrollBox.get('inner_g')
+        let innerg = scrollBox.get_content()
 
         let pntsPos = {
         }
