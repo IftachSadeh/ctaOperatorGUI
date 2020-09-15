@@ -84,30 +84,47 @@ class InstData():
         # print(' -- FIXME -- implement SBs ....')
 
         try:
-            # ------------------------------------------------------------------
             # south
-            # ------------------------------------------------------------------
             if self.is_south_site():
-                id_now = 'SA_0'
-                sub_array_tels[id_now] = ['Lx01', 'Lx02', 'Lx03', 'Lx04', 'Mx04']
-                id_now = 'SA_1'
+                id_now = 'SA_00'
+                sub_array_tels[id_now] = ['Lx01', 'Lx02', 'Lx03', 'Lx04']
+                id_now = 'SA_01'
                 sub_array_tels[id_now] = [
-                    'Lx01', 'Lx02', 'Lx03', 'Lx04', 'Mx04', 'Mx05', 'Mx06', 'Mx07',
-                    'Mx08', 'Mx09'
+                    'Mx01', 'Mx02', 'Mx03', 'Mx04', 'Mx05', 'Mx06', 'Mx07', 'Mx08',
+                    'Mx09', 'Mx10', 'Mx11', 'Mx12', 'Mx13'
+                ]
+                id_now = 'SA_02'
+                sub_array_tels[id_now] = [
+                    'Mx14', 'Mx15', 'Mx16', 'Mx17', 'Mx18', 'Mx19', 'Mx20', 'Mx21',
+                    'Mx22', 'Mx23', 'Mx24', 'Mx25'
+                ]
+                id_now = 'SA_03'
+                sub_array_tels[id_now] = [
+                    'Sx01', 'Sx02', 'Sx03', 'Sx04', 'Sx05', 'Sx06', 'Sx07', 'Sx08',
+                    'Sx09', 'Sx10', 'Sx11', 'Sx12', 'Sx13', 'Sx14', 'Sx15', 'Sx16',
+                    'Sx17', 'Sx18', 'Sx19', 'Sx20', 'Sx21', 'Sx22', 'Sx23', 'Sx24',
+                    'Sx25', 'Sx26', 'Sx27', 'Sx28', 'Sx29', 'Sx30', 'Sx31', 'Sx32',
+                    'Sx33', 'Sx34', 'Sx35', 'Sx36', 'Sx37', 'Sx38', 'Sx39', 'Sx40',
+                    'Sx41', 'Sx42', 'Sx43', 'Sx44', 'Sx45', 'Sx46', 'Sx47', 'Sx48',
+                    'Sx49', 'Sx50', 'Sx51', 'Sx52', 'Sx53', 'Sx54', 'Sx55', 'Sx56',
+                    'Sx57', 'Sx58', 'Sx59', 'Sx60', 'Sx61', 'Sx62', 'Sx63', 'Sx64',
+                    'Sx65', 'Sx66', 'Sx67', 'Sx68', 'Sx69', 'Sx70'
                 ]
 
-            # ------------------------------------------------------------------
             # north
-            # ------------------------------------------------------------------
             elif not self.is_south_site():
-                id_now = 'SA_0'
-                sub_array_tels[id_now] = ['Lx01', 'Lx02', 'Lx03', 'Lx04', 'Mx01']
-                id_now = 'SA_1'
+                id_now = 'SA_00'
+                sub_array_tels[id_now] = ['Lx01', 'Lx02']
+                id_now = 'SA_01'
+                sub_array_tels[id_now] = ['Lx03', 'Lx04']
+                id_now = 'SA_02'
                 sub_array_tels[id_now] = [
-                    'Mx02', 'Mx03', 'Mx04', 'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09'
+                    'Mx01', 'Mx02', 'Mx03', 'Mx04', 'Mx05', 'Mx06', 'Mx07', 'Mx08'
                 ]
-                id_now = 'SA_2'
-                sub_array_tels[id_now] = ['Mx05', 'Mx06', 'Mx07']
+                id_now = 'SA_03'
+                sub_array_tels[id_now] = [
+                    'Mx09', 'Mx10', 'Mx11', 'Mx12', 'Mx13', 'Mx14', 'Mx15'
+                ]
             else:
                 raise Exception()
         except Exception:
@@ -116,6 +133,23 @@ class InstData():
                 ['wr', ' --> Will terminate!'],
             ])
             raise Exception()
+
+        id_now = 'SA_04'
+        sub_array_tels[id_now] = sub_array_tels['SA_00'] + sub_array_tels['SA_01']
+
+        id_now = 'SA_05'
+        sub_array_tels[id_now] = sub_array_tels['SA_04'] + sub_array_tels['SA_02']
+        id_now = 'SA_06'
+        sub_array_tels[id_now] = sub_array_tels['SA_04'] + sub_array_tels['SA_03']
+        id_now = 'SA_07'
+        sub_array_tels[id_now] = sub_array_tels['SA_02'] + sub_array_tels['SA_03']
+        id_now = 'SA_08'
+        sub_array_tels[id_now] = sub_array_tels['SA_04'] + sub_array_tels['SA_07']
+
+        id_now = 'SA_09'
+        sub_array_tels[id_now] = sub_array_tels['SA_00'] + sub_array_tels['SA_02']
+        id_now = 'SA_11'
+        sub_array_tels[id_now] = sub_array_tels['SA_01'] + sub_array_tels['SA_03']
 
         InstData.sub_array_tels = sub_array_tels
         self.set_tel_id_to_sub_array()
@@ -1235,6 +1269,28 @@ class InstData():
             InstData.tel_id_to_types[tel_id] = self.get_tel_type(tel_id)
 
         return
+
+    # ------------------------------------------------------------------
+    def get_allowed_sub_arrays(self, sa_id, include_self=False):
+        while not InstData.has_init:
+            sleep(0.01)
+
+        sub_array_tels = InstData.sub_array_tels
+
+        allowed_sub_arrays = []
+
+        tel_ids = sub_array_tels[sa_id]
+        n_tels = len(tel_ids)
+
+        for (check_sa_id, check_tel_ids) in sub_array_tels.items():
+            if sa_id == check_sa_id and not include_self:
+                continue
+            check_n_tels = len(check_tel_ids)
+            common_ids = set(tel_ids + check_tel_ids)
+            if len(common_ids) == n_tels + check_n_tels:
+                allowed_sub_arrays += [check_sa_id]
+
+        return allowed_sub_arrays
 
     # ------------------------------------------------------------------
     def get_inst_id_to_types(self, is_copy=True):
