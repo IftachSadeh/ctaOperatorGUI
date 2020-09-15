@@ -652,17 +652,17 @@ window.PlotBrushZoom = function() {
     //
     //     reserved.main.g
     //         .on('wheel', function() {
-    //             d3.event.preventDefault()
+    //             event.preventDefault()
     //             if (reserved.main.location === 'left'
-    //             || reserved.main.location === 'right') { // d3.event.ctrlKey
+    //             || reserved.main.location === 'right') { // event.ctrlKey
     //                 reserved.zoom.meta.ky.point = d3.mouse(d3.select(this).node())
     //
-    //                 let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
+    //                 let sign = -Math.abs(event.deltaY) / event.deltaY
     //
     //                 reserved.zoom.meta.ky.previous = reserved.zoom.meta.ky.now
     //
     //                 reserved.zoom.meta.ky.now
-    //                 += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+    //                 += sign * Math.log(Math.abs(event.deltaY)) * 0.02
     //                 if (reserved.zoom.meta.ky.now < reserved.zoom.meta.ky.min) {
     //                     reserved.zoom.meta.ky.now = reserved.zoom.meta.ky.min
     //                 }
@@ -674,12 +674,12 @@ window.PlotBrushZoom = function() {
     //             else {
     //                 reserved.zoom.meta.kx.point = d3.mouse(d3.select(this).node())
     //
-    //                 let sign = -Math.abs(d3.event.deltaY) / d3.event.deltaY
+    //                 let sign = -Math.abs(event.deltaY) / event.deltaY
     //
     //                 reserved.zoom.meta.kx.previous = reserved.zoom.meta.kx.now
     //
     //                 reserved.zoom.meta.kx.now
-    //                 += sign * Math.log(Math.abs(d3.event.deltaY)) * 0.02
+    //                 += sign * Math.log(Math.abs(event.deltaY)) * 0.02
     //                 if (reserved.zoom.meta.kx.now < reserved.zoom.meta.kx.min) {
     //                     reserved.zoom.meta.kx.now = reserved.zoom.meta.kx.min
     //                 }
@@ -697,8 +697,8 @@ window.PlotBrushZoom = function() {
     //                 .drag()
     //                 .on('start', function() {})
     //                 .on('drag', function() {
-    //                     reserved.focus.translate.x = d3.event.dx
-    //                     reserved.focus.translate.y = d3.event.dy
+    //                     reserved.focus.translate.x = event.dx
+    //                     reserved.focus.translate.y = event.dy
     //
     //                     computeDragFactor()
     //                     update()
@@ -711,7 +711,7 @@ window.PlotBrushZoom = function() {
     //         )
     // }
     function interaction_wheel() {
-        console.error('BUG - upgrade to d3.pointer(event) - https://observablehq.com/@d3/d3v6-migration-guide#pointer')
+        // console.error('BUG - upgrade to d3.pointer(event) - https://observablehq.com/@d3/d3v6-migration-guide#pointer')
 
         let wheel_var = {
             x: 0,
@@ -722,8 +722,8 @@ window.PlotBrushZoom = function() {
         }
         let wheel_function_bib = {
             zoom: {
-                end: function() {
-                    var direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+                end: function(event) {
+                    var direction = event.wheelDelta < 0 ? 'down' : 'up'
                     let new_zoom = {
                         kx: reserved.focus.relative.zoom.kx
                         * (direction === 'down'
@@ -775,8 +775,8 @@ window.PlotBrushZoom = function() {
                 },
             },
             scroll: {
-                end: function() {
-                    var direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+                end: function(event) {
+                    var direction = event.wheelDelta < 0 ? 'down' : 'up'
                     if (reserved.main.location === 'left' || reserved.main.location === 'right') {
                         let new_y = reserved.focus.relative.translate.y
                       + (direction === 'down'
@@ -807,18 +807,18 @@ window.PlotBrushZoom = function() {
             },
         }
 
-        reserved.main.g.on('wheel', function() {
+        reserved.main.g.on('wheel', function(event) {
             for (var key in reserved.interaction.wheel) {
-                if (d3.event[key]) {
+                if (event[key]) {
                     wheel_var.key = key
-                    wheel_function_bib[reserved.interaction.wheel[key].type].end()
+                    wheel_function_bib[reserved.interaction.wheel[key].type].end(event)
                     reserved.interaction.wheel[key].end()
                     return
                 }
             }
             key = 'default'
             wheel_var.key = key
-            wheel_function_bib[reserved.interaction.wheel[key].type].end()
+            wheel_function_bib[reserved.interaction.wheel[key].type].end(event)
             reserved.interaction.wheel[key].end()
         })
     }
@@ -830,13 +830,13 @@ window.PlotBrushZoom = function() {
         }
         let drag_function_bib = {
             drag_trans: {
-                start: function(){
-                    drag_var.x = d3.event.x
-                    drag_var.y = d3.event.y
+                start: function(event){
+                    drag_var.x = event.x
+                    drag_var.y = event.y
                 },
-                drag: function() {
+                drag: function(event) {
                     if (reserved.main.location === 'left' || reserved.main.location === 'right') {
-                        reserved.focus.relative.translate.y += (d3.event.y - drag_var.y) / reserved.main.box.h
+                        reserved.focus.relative.translate.y += (event.y - drag_var.y) / reserved.main.box.h
                         if (reserved.focus.relative.translate.y < 0) {
                             reserved.focus.relative.translate.y = 0
                         }
@@ -845,7 +845,7 @@ window.PlotBrushZoom = function() {
                         }
                     }
                     else {
-                        reserved.focus.relative.translate.x += (d3.event.x - drag_var.x) / reserved.main.box.w
+                        reserved.focus.relative.translate.x += (event.x - drag_var.x) / reserved.main.box.w
                         if (reserved.focus.relative.translate.x < 0) {
                             reserved.focus.relative.translate.x = 0
                         }
@@ -853,14 +853,14 @@ window.PlotBrushZoom = function() {
                             reserved.focus.relative.translate.x = (1 - reserved.focus.relative.zoom.kx)
                         }
                     }
-                    drag_var.x = d3.event.x
-                    drag_var.y = d3.event.y
+                    drag_var.x = event.x
+                    drag_var.y = event.y
 
                     apply_focus()
                     core_axis()
                     updateBrush()
                 },
-                end: function() {
+                end: function(event) {
                     drag_var.x = 0
                     drag_var.y = 0
                 },
@@ -876,9 +876,9 @@ window.PlotBrushZoom = function() {
             })
 
         let interactions = d3.drag()
-            .on('start', function() {
+            .on('start', function(event) {
                 for (var key in reserved.interaction.drag) {
-                    if (d3.event.sourceEvent[key]) {
+                    if (event.sourceEvent[key]) {
                         drag_var.key = key
                         drag_function_bib[reserved.interaction.drag[key].type].start()
                         reserved.interaction.drag[key].start()
@@ -887,16 +887,16 @@ window.PlotBrushZoom = function() {
                 }
                 key = 'default'
                 drag_var.key = key
-                drag_function_bib[reserved.interaction.drag[key].type].start()
+                drag_function_bib[reserved.interaction.drag[key].type].start(event)
                 reserved.interaction.drag[key].start()
             })
             .on('drag', function() {
-                drag_function_bib[reserved.interaction.drag[drag_var.key].type].drag()
+                drag_function_bib[reserved.interaction.drag[drag_var.key].type].drag(event)
                 reserved.interaction.drag[drag_var.key].drag()
 
             })
             .on('end', function() {
-                drag_function_bib[reserved.interaction.drag[drag_var.key].type].end()
+                drag_function_bib[reserved.interaction.drag[drag_var.key].type].end(event)
                 reserved.interaction.drag[drag_var.key].end()
 
             })
