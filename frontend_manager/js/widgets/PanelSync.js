@@ -786,7 +786,7 @@ let main_panel_sync = function(opt_in) {
             if (!locker.is_free('in_init')) {
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
 

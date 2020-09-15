@@ -291,7 +291,7 @@ let main_empty_example = function(opt_in) {
             if (!locker.is_free('in_init' + widget_id)) {
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
             // console.log('lllllllllll',widget_id,data_in.n_circ)
@@ -319,7 +319,7 @@ let main_empty_example = function(opt_in) {
                 // console.log('will delay update_data', data_in)
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
             locker.add(tag_empty_example + 'update_data' + widget_id)

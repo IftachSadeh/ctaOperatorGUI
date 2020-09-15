@@ -1026,7 +1026,7 @@ let main_obs_block_control = function(opt_in) {
             if (!locker.is_free('in_init')) {
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
 
@@ -1048,7 +1048,7 @@ let main_obs_block_control = function(opt_in) {
                 // console.log('will delay updateRecData',locker.get_actives([tagObsBlkCnt+"update_data_once", tagTelScroll+"_zoom", tagBlockQueueOld+"_zoom"]));
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
             locker.add(tagObsBlkCnt + 'update_data')
@@ -1153,7 +1153,7 @@ let main_obs_block_control = function(opt_in) {
                 // console.log('will delay _block_focus_');
                 setTimeout(function() {
                     block_focus(opt_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
             locker.add(tagObsBlkCnt + 'update_data')

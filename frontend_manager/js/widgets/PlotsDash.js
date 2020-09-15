@@ -421,7 +421,7 @@ let main_plots_dash = function(opt_in) {
         if (!locker.are_free([ 'pushNewHierachyKeys' ])) {
             setTimeout(function() {
                 update_data_once(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
         locker.add('update_data')

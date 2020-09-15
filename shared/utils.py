@@ -167,7 +167,7 @@ def get_rnd_seed():
 
 
 # ------------------------------------------------------------------
-def get_rnd(n_digits=2, out_type=int, is_unique_seed=False):
+def get_rnd(n_digits=2, out_type=int, is_unique_seed=True):
     n_digits = max(n_digits, 1)
     rnd_min = pow(10, n_digits - 1)
     rnd_max = pow(10, n_digits) - 1

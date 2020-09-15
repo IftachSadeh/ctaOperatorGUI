@@ -52,7 +52,7 @@ class SchedBlocks(BaseWidget):
             'widget': self,
             'loop_scope': 'unique_by_id',
             'data_func': self.get_data,
-            'sleep_sec': 3,
+            'sleep_sec': 10,
             'loop_id': 'update_data_widget_id',
             'event_name': 'update_data',
         }
@@ -136,6 +136,7 @@ class SchedBlocks(BaseWidget):
 
         return
 
+    # ------------------------------------------------------------------
     def get_events(self):
         pipe = self.redis.get_pipe()
         pipe.get(name='external_events')
@@ -145,6 +146,7 @@ class SchedBlocks(BaseWidget):
 
         return
 
+    # ------------------------------------------------------------------
     def get_clock_events(self):
         pipe = self.redis.get_pipe()
         pipe.get(name='external_clock_events')
@@ -154,8 +156,6 @@ class SchedBlocks(BaseWidget):
 
         return
 
-    # ------------------------------------------------------------------
-    #
     # ------------------------------------------------------------------
     def get_blocks(self):
         for keys_now in self.block_keys:

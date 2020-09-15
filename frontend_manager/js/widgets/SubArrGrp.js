@@ -322,7 +322,7 @@ let main_sub_arr_grp = function(opt_in) {
         ) {
             setTimeout(function() {
                 update_data_once(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
         // console.log('update_data')

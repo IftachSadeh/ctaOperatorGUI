@@ -941,7 +941,7 @@ window.ArrZoomerBase = function(opt_in_top) {
             // console.log('delay-s0 ....',data_in.type,data_in.emit_time )
             setTimeout(function() {
                 update_s0(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
         // console.log('do   -s0 ....',data_in.type,data_in.emit_time )
@@ -978,7 +978,7 @@ window.ArrZoomerBase = function(opt_in_top) {
         if (!locker.are_free([ 'zoom', 'auto_zoom_target', 'data_change' ])) {
             setTimeout(function() {
                 update_s1(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
 
@@ -1047,7 +1047,7 @@ window.ArrZoomerBase = function(opt_in_top) {
     //     if (!locker.are_free([ 'zoom', 'auto_zoom_target', 'data_change' ])) {
     //         setTimeout(function() {
     //             sub_arr_update(data_in)
-    //         }, 10)
+    //         }, times.wait_loop)
     //         return
     //     }
 

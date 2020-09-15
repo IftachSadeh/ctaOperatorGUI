@@ -574,7 +574,7 @@ let main_sched_blockController = function(opt_in) {
             // console.log('pushing...');
             setTimeout(function() {
                 update_data_once(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
         locker.add('update_data')

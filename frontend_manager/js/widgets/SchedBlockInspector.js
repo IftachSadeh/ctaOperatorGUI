@@ -1084,7 +1084,7 @@ let main_sched_blocksInspector = function(opt_in) {
         if (!locker.are_free([ 'pushNewSchedule' ])) {
             setTimeout(function() {
                 update_data_once(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
 

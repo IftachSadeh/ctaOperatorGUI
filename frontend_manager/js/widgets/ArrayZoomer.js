@@ -429,7 +429,7 @@ let main_arr_zoomer = function(opt_in) {
             if (!is_def(arr_zoomer_base.get_ele('main'))) {
                 setTimeout(function() {
                     auto_trans_test()
-                }, 0.2)
+                }, 10)
                 return
             }
             arr_zoomer_base.get_ele('main').zoom_to_target_main({

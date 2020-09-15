@@ -74,9 +74,7 @@ class SchedulerStandalone(ServiceManager):
         self.min_n_tel_block = 4
         self.max_n_free_tels = 5
 
-        self.name_prefix = get_rnd(out_type=str)
-        if len(self.name_prefix) > 6:
-            self.name_prefix = self.name_prefix[len(self.name_prefix) - 6:]
+        self.name_prefix = get_rnd(n_digits=5, out_type=str) 
 
         self.az_min_max = [-180, 180]
         self.zen_min_max_tel = [0, 70]
@@ -116,6 +114,8 @@ class SchedulerStandalone(ServiceManager):
         self.n_nights = -1
 
         self.update_name = 'obs_block_update'
+        self.sched_block_prefix = 'sched_block_'
+        self.obs_block_prefix = 'obs_block_'
 
         rnd_seed = get_rnd_seed()
         self.rnd_gen = Random(rnd_seed)
@@ -173,7 +173,7 @@ class SchedulerStandalone(ServiceManager):
             if can_break:
                 break
 
-            base_name = (
+            base_cycle_name = (
                 self.name_prefix + '_' + str(self.n_init_cycle) + '_' + str(n_cycle_now)
                 + '_'
             )
@@ -183,11 +183,11 @@ class SchedulerStandalone(ServiceManager):
             n_tels = len(tel_ids)
 
             # choose number of Scheduling blocks for this part of night (while loop)
-            n_sched_blocks = min(
+            n_cycle_sched_blocks = min(
                 floor(n_tels / self.min_n_tel_block), self.max_n_sched_block
             )
-            n_sched_blocks = max(
-                self.rnd_gen.randint(1, n_sched_blocks), self.min_n_sched_block
+            n_cycle_sched_blocks = max(
+                self.rnd_gen.randint(1, n_cycle_sched_blocks), self.min_n_sched_block
             )
 
             if debug_tmp:
@@ -202,13 +202,15 @@ class SchedulerStandalone(ServiceManager):
 
             sched_block_duration_sec = []
 
-            for n_sched_block_now in range(n_sched_blocks):
-                sched_block_id = 'sched_block_' + base_name + str(n_sched_block_now)
+            for n_sched_block_now in range(n_cycle_sched_blocks):
+                sched_block_id = (
+                    self.sched_block_prefix + base_cycle_name + str(n_sched_block_now)
+                )
 
                 n_sched_blocks += 1
 
-                if n_sched_block_now < n_sched_blocks - 1:
-                    n_tel_now = max(self.min_n_tel_block, len(tel_ids) - n_sched_blocks)
+                if n_sched_block_now < n_cycle_sched_blocks - 1:
+                    n_tel_now = max(self.min_n_tel_block, len(tel_ids) - n_cycle_sched_blocks)
                     n_tel_now = self.rnd_gen.randint(self.min_n_tel_block, n_tel_now)
                     n_tel_now = min(n_tel_now, len(tel_ids))
                 else:
@@ -229,6 +231,7 @@ class SchedulerStandalone(ServiceManager):
 
                 if debug_tmp:
                     print(
+                        ' -- n_sched_blocks:', n_sched_blocks,
                         ' -- n_sched_block_now / n_tel_now:', n_sched_block_now,
                         n_tel_now, '-------', sched_block_id
                     )
@@ -244,8 +247,12 @@ class SchedulerStandalone(ServiceManager):
 
                 for n_obs_now in range(n_obs_blocks):
                     obs_block_id = (
-                        'obs_block_' + base_name + str(n_sched_block_now) + '_'
-                        + str(n_obs_now)
+                        self.obs_block_prefix + base_cycle_name
+                        + str(n_sched_block_now) + '_' + str(n_obs_now)
+                    )
+
+                    obs_block_name = (
+                        str(n_sched_blocks) + ' (' + str(n_obs_now) + ')'
                     )
 
                     self.exe_phase[obs_block_id] = ''
@@ -304,7 +311,7 @@ class SchedulerStandalone(ServiceManager):
                     metadata = {
                         'n_sched': n_sched_blocks,
                         'n_obs': n_obs_now,
-                        'block_name': str(n_sched_blocks) + ' (' + str(n_obs_now) + ')'
+                        'block_name': obs_block_name
                     }
 
                     telescopes = {
@@ -800,7 +807,7 @@ class SchedulerStandalone(ServiceManager):
         return
 
     # ------------------------------------------------------------------
-    def loop_main(self):
+    def loop_main(self): 
         self.log.info([['g', ' - starting SchedulerStandalone.loop_main ...']])
         sleep(0.1)
 
