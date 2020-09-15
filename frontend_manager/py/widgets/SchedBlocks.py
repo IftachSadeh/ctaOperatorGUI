@@ -17,6 +17,16 @@ class SchedBlocks(BaseWidget):
             sm=sm,
         )
 
+        self.time_information = {
+            'history_step_sec': -1,
+            'history_duration_sec': -1,
+            'history_start_sec': -1,
+            'is_night_now': -1,
+            'night_end_sec': -1,
+            'night_start_sec': -1,
+            'time_now_sec': -1,
+        }
+
         # widget-specific initialisations
         self.block_keys = [['wait'], ['run'], ['done', 'cancel', 'fail']]
         self.blocks = {}
@@ -67,54 +77,25 @@ class SchedBlocks(BaseWidget):
 
         return
 
+    def update_time_information(self):
+        clock_sim = get_clock_sim_data(self)
+        self.time_information = {
+            'is_night_now': clock_sim['is_night_now'],
+            'night_end_sec': clock_sim['night_end_sec'] * 1000,
+            'night_start_sec': clock_sim['night_start_sec'] * 1000,
+            'time_now_sec': clock_sim['time_now_sec'] * 1000,
+        }
+
     # ------------------------------------------------------------------
     async def get_data(self):
+        self.update_time_information()
         self.get_blocks()
         self.get_events()
         self.get_clock_events()
         self.get_tel_health()
 
-        clock_sim = get_clock_sim_data(self)
-
-        time_now_sec = clock_sim['time_now_sec']
-        night_start_sec = clock_sim['night_start_sec']
-        night_end_sec = clock_sim['night_end_sec']
-        # print('----', time_now_sec, night_start_sec, night_end_sec)
-
-        time_of_night_date = {
-            'date_start': secs_to_datetime(night_start_sec).strftime('%Y-%m-%d %H:%M:%S'),
-            'date_end': secs_to_datetime(night_end_sec).strftime('%Y-%m-%d %H:%M:%S'),
-            'date_now': secs_to_datetime(time_now_sec).strftime('%Y-%m-%d %H:%M:%S'),
-            'now': int(time_now_sec),
-            'start': int(night_start_sec),
-            'end': int(night_end_sec),
-        }
-        # print(time_of_night_date)
-
-        # self.time_of_night = get_time_of_night(self)
-
-        # #  int(time.mktime(datetime(2018, 9, 16, 21, 30).timetuple()))
-        # time_of_night_date = {
-        #     'date_start':
-        #     datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
-        #     'date_end': (
-        #         datetime(2018, 9, 16, 21, 30)
-        #         + timedelta(seconds=int(self.time_of_night['end']))
-        #     ).strftime('%Y-%m-%d %H:%M:%S'),
-        #     'date_now': (
-        #         datetime(2018, 9, 16, 21, 30)
-        #         + timedelta(seconds=int(self.time_of_night['now']))
-        #     ).strftime('%Y-%m-%d %H:%M:%S'),
-        #     'now':
-        #     int(self.time_of_night['now']),
-        #     'start':
-        #     int(self.time_of_night['start']),
-        #     'end':
-        #     int(self.time_of_night['end'])
-        # }
-
         data = {
-            'time_of_night': time_of_night_date,
+            'time_information': self.time_information,
             'inst_health': self.inst_health,
             'tel_ids': self.tel_ids,
             'blocks': self.blocks,
@@ -173,6 +154,10 @@ class SchedBlocks(BaseWidget):
 
             key = keys_now[0]
             blocks = pipe.execute()
+            for block in blocks:
+                block['time']['start'] = block['time']['start'] * 1000
+                block['time']['duration'] = block['time']['duration'] * 1000
+                block['time']['end'] = block['time']['end'] * 1000
             self.blocks[key] = sorted(
                 blocks,
                 key=lambda a: float(a['time']['start'])

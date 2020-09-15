@@ -488,7 +488,7 @@ function main_sched_blocks(opt_in) {
                 let end_time_sec = is_def(opt_in.end_time_sec)
                     ? opt_in.end_time_sec
                     : undefined
-                if (end_time_sec < Number(shared.data.server.time_of_night.now)) {
+                if (end_time_sec < Number(shared.data.server.time_information.time_now_sec)) {
                     return color_theme.blocks.shutdown
                 }
 
@@ -572,8 +572,8 @@ function main_sched_blocks(opt_in) {
         shared.data.server = data_in.data
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
-            ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
-            ce[i].end_time_sec = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_information.night_start_sec))
+            ce[i].end_time_sec = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_information.night_start_sec))
         }
         // sortBlocksByState()
 
@@ -627,7 +627,7 @@ function main_sched_blocks(opt_in) {
         svgFreeTels.update_data()
 
         let current_time = {
-            date: new Date(shared.data.server.time_of_night.date_now),
+            date: new Date(shared.data.server.time_information.time_now_sec),
         }
         svg.foreground.select('text#currentHour').text(d3.timeFormat('%H:%M')(current_time.date))
     }
@@ -639,8 +639,8 @@ function main_sched_blocks(opt_in) {
 
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
-            ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
-            ce[i].end_time_sec = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_information.night_start_sec))
+            ce[i].end_time_sec = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_information.night_start_sec))
         }
         // sortBlocksByState()
         update()
@@ -836,19 +836,19 @@ function main_sched_blocks(opt_in) {
         this.init_data = init_data
 
         function update_data() {
-            let date = new Date(shared.data.server.time_of_night.date_now)
+            let date = new Date(shared.data.server.time_information.time_now_sec)
             let current_time = {
                 date: date,
-                time: Number(shared.data.server.time_of_night.now),
+                time: Number(shared.data.server.time_information.time_now_sec),
             }
-            let axisTop = brushZoomPast.get_axis().axis.scale().domain()
+            let axisTop = brushZoomPast.get_domain().focus
             let start_time_sec = {
                 date: axisTop[0],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0]) / -1000,
+                time: (new Date(shared.data.server.time_information.night_start_sec).getTime() - axisTop[0]) / -1000,
             }
             let end_time_sec = {
                 date: axisTop[1],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1]) / -1000,
+                time: (new Date(shared.data.server.time_information.night_start_sec).getTime() - axisTop[1]) / -1000,
             }
             event_queue_serverPast.update_data({
                 time: {
@@ -870,9 +870,9 @@ function main_sched_blocks(opt_in) {
         function update() {
             // block_queue_serverPast.update({
             //   time: {
-            //     current_time: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
-            //     start_time_sec: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
-            //     end_time_sec: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
+            //     current_time: {date: new Date(shared.data.server.time_information.time_now_sec), time: Number(shared.data.server.time_information.time_now_sec)},
+            //     start_time_sec: {date: new Date(shared.data.server.time_information.night_start_sec), time: Number(shared.data.server.time_information.night_start_sec)},
+            //     end_time_sec: {date: new Date(shared.data.server.time_information.night_end_sec), time: Number(shared.data.server.time_information.night_end_sec)}
             //   }
             // })
         }
@@ -1056,19 +1056,19 @@ function main_sched_blocks(opt_in) {
         this.init_data = init_data
 
         function update_data() {
-            let date = new Date(shared.data.server.time_of_night.date_now)
+            let date = new Date(shared.data.server.time_information.time_now_sec)
             let current_time = {
                 date: date,
-                time: Number(shared.data.server.time_of_night.now),
+                time: Number(shared.data.server.time_information.time_now_sec),
             }
-            let axisTop = brushZoomFutur.get_axis().axis.scale().domain()
+            let axisTop = brushZoomFutur.get_domain().focus
             let start_time_sec = {
                 date: axisTop[0],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0]) / -1000,
+                time: (new Date(shared.data.server.time_information.night_start_sec).getTime() - axisTop[0]) / -1000,
             }
             let end_time_sec = {
                 date: axisTop[1],
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1]) / -1000,
+                time: (new Date(shared.data.server.time_information.night_start_sec).getTime() - axisTop[1]) / -1000,
             }
 
             event_queue_serverFutur.update_data({
@@ -1089,10 +1089,10 @@ function main_sched_blocks(opt_in) {
         this.update_data = update_data
 
         function update() {
-            // let date = new Date(shared.data.server.time_of_night.date_now)
-            // let current_time = {date: date, time: Number(shared.data.server.time_of_night.now)}
-            // let start_time_sec = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.time_of_night.now)}
-            // let end_time_sec = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.time_of_night.now) + (3600 * 8)}
+            // let date = new Date(shared.data.server.time_information.time_now_sec)
+            // let current_time = {date: date, time: Number(shared.data.server.time_information.time_now_sec)}
+            // let start_time_sec = {date: new Date(shared.data.server.time_information.time_now_sec).setSeconds(date.getSeconds()), time: Number(shared.data.server.time_information.time_now_sec)}
+            // let end_time_sec = {date: new Date(shared.data.server.time_information.time_now_sec).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.time_information.time_now_sec) + (3600 * 8)}
             // block_queue_server_futur.update_data({
             //   time: {
             //     current_time: current_time,
@@ -1120,205 +1120,52 @@ function main_sched_blocks(opt_in) {
 
             brushZoomPast = new PlotBrushZoom()
             brushZoomPast.init({
-                g: reserved.g, //svg.g.append('g').append('g'),
-                box: brushBox,
-
-                domain: [ 0, 100 ],
-                id: 'past',
-                location: 'bottom',
-                profile: 'focus',
-                range: [ 0, brushBox.w ],
-                type: 'time',
-
-                // clipping: {
-                //     enabled: true,
-                // },
-                // axis: [
-                //     {
-                //         id: 'top',
-                //         enabled: true,
-                //         main: {
-                //             g: undefined,
-                //             box: {
-                //                 x: 0,
-                //                 y: brushBox.h * 0.0,
-                //                 w: brushBox.w,
-                //                 h: brushBox.h * 0.2,
-                //                 marg: 0,
-                //             },
-                //             type: 'top',
-                //             attr: {
-                //                 text: {
-                //                     enabled: false,
-                //                     size: 14,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //                 path: {
-                //                     enabled: true,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //             },
-                //         },
-                //         axis: undefined,
-                //         scale: undefined,
-                //         domain: [ 0, 1000 ],
-                //         range: [ 0, brushBox.w ],
-                //         brush: {
-                //             zoom: true,
-                //             brush: true,
-                //         },
-                //     },
-                //     {
-                //         id: 'middle',
-                //         enabled: true,
-                //         showAxis: true,
-                //         main: {
-                //             g: undefined,
-                //             box: {
-                //                 x: 0,
-                //                 y: brushBox.h * 0.8,
-                //                 w: brushBox.w,
-                //                 h: brushBox.h * 0.0,
-                //                 marg: 0,
-                //             },
-                //             type: 'top',
-                //             attr: {
-                //                 text: {
-                //                     enabled: true,
-                //                     size: 16,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //                 path: {
-                //                     enabled: true,
-                //                     stroke: color_theme.dark.stroke,
-                //                     fill: color_theme.dark.stroke,
-                //                 },
-                //             },
-                //         },
-                //         axis: undefined,
-                //         scale: undefined,
-                //         domain: [ 0, 1000 ],
-                //         range: [ 0, brushBox.w ],
-                //         brush: {
-                //             zoom: false,
-                //             brush: false,
-                //         },
-                //     },
-                //     {
-                //         id: 'bottom',
-                //         enabled: true,
-                //         showAxis: true,
-                //         main: {
-                //             g: undefined,
-                //             box: {
-                //                 x: 0,
-                //                 y: brushBox.h * 0.2,
-                //                 w: brushBox.w,
-                //                 h: brushBox.h * 0.2,
-                //                 marg: 0,
-                //             },
-                //             type: 'bottom',
-                //             attr: {
-                //                 text: {
-                //                     enabled: false,
-                //                     size: 16,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //                 path: {
-                //                     enabled: true,
-                //                     stroke: color_theme.medium.stroke,
-                //                     fill: color_theme.medium.stroke,
-                //                 },
-                //             },
-                //         },
-                //         axis: undefined,
-                //         scale: undefined,
-                //         domain: [ 0, 1000 ],
-                //         range: [ 0, brushBox.w ],
-                //         brush: {
-                //             zoom: true,
-                //             brush: true,
-                //         },
-                //     },
-                // ],
-                // content: {
-                //     enabled: true,
-                //     main: {
-                //         g: undefined,
-                //         box: {
-                //             x: 0,
-                //             y: brushBox.h * 0.2,
-                //             w: brushBox.w,
-                //             h: brushBox.h * 0.6,
-                //             marg: 0,
-                //         },
-                //         attr: {
-                //             fill: color_theme.medium.background,
-                //         },
-                //     },
-                // },
-                // focus: {
-                //     enabled: true,
-                //     main: {
-                //         g: undefined,
-                //         box: {
-                //             x: 0,
-                //             y: brushBox.h * 0.2,
-                //             w: brushBox.w,
-                //             h: brushBox.h * 0.6,
-                //             marg: 0,
-                //         },
-                //         attr: {
-                //             fill: color_theme.darker.background,
-                //             opacity: 1,
-                //             stroke: color_theme.darker.stroke,
-                //         },
-                //     },
-                // },
-
-                brush: {
-                    coef: {
-                        x: 0,
-                        y: 0,
-                    },
-                    callback: () => {},
-                    enabled: true,
+                main: {
+                    g: reserved.g, //svg.g.append('g').append('g'),
+                    box: brushBox,
+                    id: 'past',
+                    location: 'bottom',
+                    profile: 'focus',
+                    drawing: 'time',
                 },
-                zoom: {
-                    coef: {
-                        kx: 1,
-                        ky: 1,
-                        x: 0,
-                        y: 0,
-                    },
-                    callback: function() {
-                        svg_blocks_queue_serverFutur.update_data()
-                        svg_events_queue_serverFutur.update_data()
-                    },
-                    enabled: true,
-                },
+                //
+                // brush: {
+                //     coef: {
+                //         x: 0,
+                //         y: 0,
+                //     },
+                //     callback: () => {},
+                //     enabled: true,
+                // },
+                // zoom: {
+                //     coef: {
+                //         kx: 1,
+                //         ky: 1,
+                //         x: 0,
+                //         y: 0,
+                //     },
+                //     callback: function() {
+                //         svg_blocks_queue_serverFutur.update_data()
+                //         svg_events_queue_serverFutur.update_data()
+                //     },
+                //     enabled: true,
+                // },
             })
         }
         this.init_data = init_data
 
         function update_data() {
-            let date = new Date(shared.data.server.time_of_night.date_now)
+            let date = new Date(shared.data.server.time_information.time_now_sec)
             let start_time_sec = {
-                date: new Date(new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() - (3600 * 8))),
-                time: Number(shared.data.server.time_of_night.now) - (3600 * 8),
+                date: new Date(new Date(shared.data.server.time_information.time_now_sec).setSeconds(date.getSeconds() - (3600 * 8))),
+                time: Number(shared.data.server.time_information.time_now_sec) - (3600 * 8),
             }
             let end_time_sec = {
-                date: new Date(shared.data.server.time_of_night.date_now),
-                time: Number(shared.data.server.time_of_night.now),
+                date: new Date(shared.data.server.time_information.time_now_sec),
+                time: Number(shared.data.server.time_information.time_now_sec),
             }
 
-            brushZoomPast.update_axis({
-                domain: [ start_time_sec.date, end_time_sec.date ],
-            })
+            brushZoomPast.update_domain([ start_time_sec.date, end_time_sec.date ])
         }
         this.update_data = update_data
 
@@ -1342,53 +1189,49 @@ function main_sched_blocks(opt_in) {
             brushZoomFutur = new PlotBrushZoom()
 
             brushZoomFutur.init({
-                g: reserved.g,
-                box: brushBox,
-
-                domain: [ 0, 100 ],
-                id: 'futur',
-                location: 'bottom',
-                profile: 'focus',
-                range: [ 0, brushBox.w ],
-                type: 'time',
-
-                brush: {
-                    coef: {
-                        x: 0,
-                        y: 0,
-                    },
-                    callback: () => {},
-                    enabled: true,
+                main: {
+                    g: reserved.g,
+                    box: brushBox,
+                    id: 'futur',
+                    location: 'bottom',
+                    profile: 'focus',
+                    drawing: 'time',
                 },
-                zoom: {
-                    coef: {
-                        kx: 1,
-                        ky: 1,
-                        x: 0,
-                        y: 0,
-                    },
-                    callback: function() {
-                        // svg_blocks_queue_serverFutur.update_data()
-                        // svg_events_queue_serverFutur.update_data()
-                    },
-                    enabled: true,
-                },
+                // brush: {
+                //     coef: {
+                //         x: 0,
+                //         y: 0,
+                //     },
+                //     callback: () => {},
+                //     enabled: true,
+                // },
+                // zoom: {
+                //     coef: {
+                //         kx: 1,
+                //         ky: 1,
+                //         x: 0,
+                //         y: 0,
+                //     },
+                //     callback: function() {
+                //         // svg_blocks_queue_serverFutur.update_data()
+                //         // svg_events_queue_serverFutur.update_data()
+                //     },
+                //     enabled: true,
+                // },
             })
         }
         this.init_data = init_data
 
         function update_data() {
             let start_time_sec = {
-                date: new Date(shared.data.server.time_of_night.date_now),
-                time: Number(shared.data.server.time_of_night.now),
+                date: new Date(shared.data.server.time_information.time_now_sec),
+                time: Number(shared.data.server.time_information.time_now_sec),
             }
             let end_time_sec = {
-                date: new Date(new Date(shared.data.server.time_of_night.date_now).setSeconds(start_time_sec.date.getSeconds() + (3600 * 8))),
-                time: Number(shared.data.server.time_of_night.now) + (3600 * 8),
+                date: new Date(new Date(shared.data.server.time_information.time_now_sec).setSeconds(start_time_sec.date.getSeconds() + (3600 * 8))),
+                time: Number(shared.data.server.time_information.time_now_sec) + (3600 * 8),
             }
-            brushZoomFutur.update_axis({
-                domain: [ start_time_sec.date, end_time_sec.date ],
-            })
+            brushZoomFutur.update_domain([ start_time_sec.date, end_time_sec.date ])
         }
         this.update_data = update_data
 
@@ -1747,17 +1590,17 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let current_time = {
-                date: new Date(shared.data.server.time_of_night.date_now),
-                time: shared.data.server.time_of_night.now,
+                date: new Date(shared.data.server.time_information.time_now_sec),
+                time: shared.data.server.time_information.time_now_sec,
             }
-            let axisTop = brushZoomPast.get_axis().axis.scale().domain()
+            let axisTop = brushZoomPast.get_domain().focus
             let start_time_sec = {
                 date: axisTop[0],
-                time: shared.data.server.time_of_night.now - 3600 * 8,
+                time: axisTop[0],
             }
             let end_time_sec = {
                 date: axisTop[1],
-                time: shared.data.server.time_of_night.now,
+                time: axisTop[1],
             }
 
             block_queue_serverPast.update_data({
@@ -2134,17 +1977,17 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let current_time = {
-                date: new Date(shared.data.server.time_of_night.date_now),
-                time: shared.data.server.time_of_night.now,
+                date: new Date(shared.data.server.time_information.time_now_sec),
+                time: shared.data.server.time_information.time_now_sec,
             }
-            let axisTop = brushZoomFutur.get_axis().axis.scale().domain()
+            let axisTop = brushZoomFutur.get_domain().focus
             let start_time_sec = {
                 date: axisTop[0],
-                time: shared.data.server.time_of_night.now,
+                time: axisTop[0],
             }
             let end_time_sec = {
                 date: axisTop[1],
-                time: shared.data.server.time_of_night.now + 3600 * 8,
+                time: axisTop[1],
             }
 
             block_queue_server_futur.update_data({
@@ -2593,7 +2436,7 @@ function main_sched_blocks(opt_in) {
                 let grunphase = d3.select(this).select('g#grunphase')
                 updateConfigDataFinish(grunphase)
                 let step = dispatchRunPhase(d3.select(this).select('#grunphase'), block.run_phase, d3.select(this).select('#text'))
-                let percent = 1 - (block.time.end - shared.data.server.time_of_night.now) / (block.time.end - block.time.start)
+                let percent = 1 - (block.time.end - shared.data.server.time_information.time_now_sec) / (block.time.end - block.time.start)
                 let middleRect = headerBoxRunningPhase.x + (headerBoxRunningPhase.w * 0.5)
 
                 d3.select(this).select('#middle')

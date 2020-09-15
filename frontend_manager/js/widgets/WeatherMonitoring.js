@@ -36,10 +36,6 @@ window.load_script({
 })
 window.load_script({
     source: main_script_tag,
-    script: '/js/utils/PanZoomBox.js',
-})
-window.load_script({
-    source: main_script_tag,
     script: '/js/utils/PlotTimeBar.js',
 })
 window.load_script({
@@ -530,8 +526,6 @@ let main_weather_monitoring = function(opt_in) {
         initBox()
 
         shared.server = data_in.data
-        console.log(data_in.data)
-        console.log(new Date(data_in.data.time_information.night_start_sec * 1000))
         loadMesures()
 
         svg_main_measures_tracking.init_data()
@@ -840,7 +834,7 @@ let main_weather_monitoring = function(opt_in) {
         shared.server.urgent = []
         for (let i = 0; i < shared.server.sensors.length; i++) {
             for (let j = 0; j < shared.server.sensors[i].length; j++) {
-                if (shared.server.sensors[i][j].status.current === 'ERROR') {
+                if (Math.random() > 0.85) {
                     shared.server.urgent.push({
                         type: 'sensor',
                         data: shared.server.sensors[i][j],
@@ -850,7 +844,7 @@ let main_weather_monitoring = function(opt_in) {
         }
         for (let i = 0; i < shared.server.measures.length; i++) {
             let d = shared.server.measures[i]
-            if (d.status.current.y < 16.6 || d.status.current.y > 83.4) {
+            if (Math.random() > 0.85) {
                 shared.server.urgent.push({
                     type: 'measure',
                     data: d,
@@ -1579,6 +1573,8 @@ let main_weather_monitoring = function(opt_in) {
                 draw_origin_token(g, d)
                 draw_type_token(g, d)
                 draw_text_token(g, d)
+                g.append('text')
+                    .text(i)
             })
             let merge = current.merge(enter)
 
@@ -3459,20 +3455,26 @@ let main_weather_monitoring = function(opt_in) {
             })
 
             focusedPlot.add_axis({
-                id: 'left',
-                location: 'left',
-                type: 'linear',
-                profile: 'focus',
-                domain: [ 0, 100 ],
-                range: [ box.focus_measures.h, 0 ],
+                main: {
+                    id: 'left',
+                    location: 'left',
+                    type: 'linear',
+                    profile: 'focus',
+                },
+                domain: {
+                    raw: [ 0, 100 ],
+                },
             })
             focusedPlot.add_axis({
-                id: 'bottom',
-                location: 'bottom',
-                type: 'time',
-                profile: 'context',
-                domain: [ shared.server.time_information.history_start_sec, shared.server.time_information.time_now_sec ],
-                range: [ 0, box.focus_measures.w ],
+                main: {
+                    id: 'bottom',
+                    location: 'bottom',
+                    drawing: 'time',
+                    profile: 'context',
+                },
+                domain: {
+                    raw: [ shared.server.time_information.history_start_sec, shared.server.time_information.time_now_sec ],
+                },
             })
 
             return

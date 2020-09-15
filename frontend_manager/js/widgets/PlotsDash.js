@@ -400,7 +400,7 @@ let main_plots_dash = function(opt_in) {
         }
         // shared.server.urgent.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
 
-        shared.time.current = new Date(shared.server.time_of_night.date_now)
+        shared.time.current = new Date(shared.server.time_information.time_now_sec)
         shared.time.range = 1000 * (3600 * parseInt(3) + 60 * parseInt(0))
         shared.time.from = new Date()
         shared.time.from.setTime(shared.time.current.getTime() - shared.time.range)
@@ -429,7 +429,7 @@ let main_plots_dash = function(opt_in) {
 
         // shared.server.hierarchy.keys = tempsavehierarchy.keys
         // shared.server.urgent.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
-        shared.time.current = new Date(shared.server.time_of_night.date_now)
+        shared.time.current = new Date(shared.server.time_information.time_now_sec)
         // updateMeasures()
 
         svgPinnedPlots.update_data()
@@ -451,55 +451,6 @@ let main_plots_dash = function(opt_in) {
         n_keep: 1,
     })
 
-    function initScrollBox(tag, g, box, background, isVertical) {
-        if (background.enabled) {
-            g.append('rect')
-                .attr('class', 'background')
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('width', box.w)
-                .attr('height', box.h)
-                .style('fill', background.fill)
-                .style('stroke', background.stroke)
-                .style('stroke-width', background.strokeWidth)
-        }
-
-        let scrollBox = new ScrollBox()
-        scrollBox.init({
-            tag: tag,
-            g_box: g,
-            box_data: {
-                x: 0,
-                y: 0,
-                w: box.w,
-                h: box.h,
-            },
-            use_relative_coords: true,
-            locker: new Locker(),
-            lockers: [ tag + 'update_data' ],
-            lock_zoom: {
-                all: tag + 'zoom',
-                during: tag + 'zoom_during',
-                end: tag + 'zoom_end',
-            },
-            run_loop: new RunLoop({
-                tag: tag,
-            }),
-            can_scroll: true,
-            scrollVertical: isVertical,
-            scroll_horizontal: !isVertical,
-            scroll_height: 0,
-            scroll_width: 0,
-            background: 'transparent',
-            scroll_rec_h: {
-                h: 4,
-            },
-            scroll_recs: {
-                w: 4,
-            },
-        })
-        return scrollBox
-    }
     let colorCategory = [ '#dddddd' ]
     // let colorCategory = ['#440154FF', '#482677FF', '#404788FF', '#33638DFF', '#287D8EFF', '#1F968BFF', '#29AF7FFF', '#55C667FF', '#95D840FF', '#DCE319FF']
     // let colorCategory = ['#543005','#8c510a','#bf812d','#dfc27d','#f6e8c3','#dedede','#c7eae5','#80cdc1','#35978f','#01665e','#003c30']
@@ -651,7 +602,7 @@ let main_plots_dash = function(opt_in) {
                 previous: [],
             }
             status.current = deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[0])
-            status.current.x = new Date(shared.server.time_of_night.date_now)
+            status.current.x = new Date(shared.server.time_information.time_now_sec)
             status.gradient = Math.floor((Math.random() * 20) - 10)
             for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
                 if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined
@@ -677,7 +628,7 @@ let main_plots_dash = function(opt_in) {
                 previous: [],
             }
             status.current = deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[0])
-            status.current.x = new Date(shared.server.time_of_night.date_now)
+            status.current.x = new Date(shared.server.time_information.time_now_sec)
             status.gradient = Math.floor((Math.random() * 20) - 10)
             for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
                 if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined
@@ -959,8 +910,8 @@ let main_plots_dash = function(opt_in) {
             time: Number(shared.time.from.getTime()),
         }
         let end_time_sec = {
-            date: new Date(shared.server.time_of_night.date_now),
-            time: Number(shared.server.time_of_night.now),
+            date: new Date(shared.server.time_information.time_now_sec),
+            time: Number(shared.server.time_information.time_now_sec),
         }
 
         plotObject.update_axis({
@@ -1016,8 +967,8 @@ let main_plots_dash = function(opt_in) {
             focusedPlot = null
         }
         function focusOnPlot(plotData) {
-            let currentDate = new Date(shared.server.time_of_night.date_now)
-            let previousDate = new Date(new Date(shared.server.time_of_night.date_now).setHours(currentDate.getHours() - 1))
+            let currentDate = new Date(shared.server.time_information.time_now_sec)
+            let previousDate = new Date(new Date(shared.server.time_information.time_now_sec).setHours(currentDate.getHours() - 1))
             let scrollBoxPlot = {
                 x: scrollBoxBoard.x + scrollBoxBoard.w * 0.1,
                 y: scrollBoxBoard.y + 50,
@@ -1073,10 +1024,11 @@ let main_plots_dash = function(opt_in) {
             // }
 
             focusedPlot.add_axis({
-                id: 'left',
-                location: 'left',
-                type: 'linear',
-                profile: 'focus',
+                main: {
+                    id: 'left',
+                    location: 'left',
+                    drawing: 'linear',
+                    profile: 'focus',
                 // axis: {
                 //     profile: 'focus',
                 //     display: false,
@@ -1087,12 +1039,14 @@ let main_plots_dash = function(opt_in) {
                 //     profile: 'focus',
                 //     display: false,
                 // },
-                domain: [ 0, 100 ],
+                },
+                domain: {
+                    raw: [ 0, 100 ],
+                },
                 // domain: {
                 //     context: [ 0, 100 ],
                 //     focus: [ 0, 100 ],
                 // },
-                range: [ scrollBoxPlot.h, 0 ],
             })
 
             // focusedPlot.add_axis({
@@ -1168,12 +1122,15 @@ let main_plots_dash = function(opt_in) {
             //
             // })
             focusedPlot.add_axis({
-                id: 'bottom',
-                location: 'bottom',
-                type: 'time',
-                profile: 'context',
-                domain: [ previousDate.getTime(), currentDate.getTime() ],
-                range: [ 0, scrollBoxPlot.w ],
+                main: {
+                    id: 'bottom',
+                    location: 'bottom',
+                    drawing: 'time',
+                    profile: 'context',
+                },
+                domain: {
+                    raw: [ previousDate.getTime(), currentDate.getTime() ],
+                },
             })
             // focusedPlot.add_axis({
             //     id: 'left',
@@ -1340,8 +1297,14 @@ let main_plots_dash = function(opt_in) {
             let g = svgPinnedPlotsg.append('g')
                 .attr('id', 'pinned_eles')
                 .attr('transform', 'translate(' + scrollBoxList.x + ',' + scrollBoxList.y + ')')
-            scrollPinnedList = initScrollBox('pinned_elesScrollbox', g, scrollBoxList, {
-            }, true)
+            scrollPinnedList = new ScrollBox()
+            scrollPinnedList.init({
+                main: {
+                    tag: 'pinned_elesScrollbox',
+                    g: g,
+                    box: scrollBoxList,
+                },
+            })
             g.append('line')
                 .attr('id', 'toplimit')
                 .attr('x1', 0)
@@ -1520,12 +1483,12 @@ let main_plots_dash = function(opt_in) {
             is_focused = !is_focused
             if (is_focused) {
                 scrollBoxList.w = scrollBoxList.w * shrinkFrac
-                scrollPinnedList.update_box({
-                    x: 0,
-                    y: 0,
-                    w: scrollBoxList.w,
-                    h: scrollBoxList.h,
-                }, 600)
+                // scrollPinnedList.update_box({
+                //     x: 0,
+                //     y: 0,
+                //     w: scrollBoxList.w,
+                //     h: scrollBoxList.h,
+                // }, 600)
                 let gg = svgPinnedPlotsg.select('g#pinned_eles')
                 gg.select('line#toplimit')
                     .transition()
@@ -1640,11 +1603,12 @@ let main_plots_dash = function(opt_in) {
             }
 
             // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
-            scrollPinnedList.reset_vertical_scroller({
-                can_scroll: true,
-                keepFrac: true,
-                scroll_height: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
-            })
+            scrollPinnedList.updated_content()
+            // scrollPinnedList.reset_vertical_scroller({
+            //     can_scroll: true,
+            //     keepFrac: true,
+            //     scroll_height: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
+            // })
         }
         function listBib(g, d, i, caller) {
             let dim = {
@@ -1717,11 +1681,12 @@ let main_plots_dash = function(opt_in) {
             }
 
             // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
-            scrollPinnedList.reset_vertical_scroller({
-                can_scroll: true,
-                keepFrac: true,
-                scroll_height: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
-            })
+            scrollPinnedList.updated_content()
+            // scrollPinnedList.reset_vertical_scroller({
+            //     can_scroll: true,
+            //     keepFrac: true,
+            //     scroll_height: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
+            // })
         }
         function dummy_plots(g, box, i) {
             focusedPlot = new PlotTimeSeries()
@@ -1854,7 +1819,7 @@ let main_plots_dash = function(opt_in) {
             }
             let shrinkFrac = 0.3
             let perline = Math.floor(scrollBoxList.w / dim.w)
-            let allPinned = scrollPinnedList.get('inner_g').selectAll('g.pinned')
+            let allPinned = scrollPinnedList.get_content().selectAll('g.pinned')
                 .data(shared.server.pinned, function(d) {
                     return d.id
                 })
@@ -2335,8 +2300,14 @@ let main_plots_dash = function(opt_in) {
                 h: (categoryBox.h - 0 * shared.server.urgent.urgent_current.length) / shared.server.urgent.urgent_current.length,
             }
             leftg = g.append('g').attr('id', 'lefturgent').attr('transform', 'translate(' + leftDim.x + ',' + leftDim.y + ')')
-            focusScrollbox = initScrollBox('focusScrollbox', leftg.append('g').attr('transform', 'translate(' + itemBox.x + ',' + 0 + ')'), itemBox, {
-            }, true)
+            focusScrollbox = new ScrollBox()
+            focusScrollbox.init({
+                main: {
+                    tag: 'focusScrollbox',
+                    g: leftg.append('g').attr('transform', 'translate(' + itemBox.x + ',' + 0 + ')'),
+                    box: itemBox,
+                },
+            })
         }
         function initMiddlePart(g) {
             line = shared.server.urgent.urgentKey.length
@@ -2369,8 +2340,14 @@ let main_plots_dash = function(opt_in) {
             //   .attr('stroke-width', 0)
             //   .style('opacity', 1)
             //   .attr('fill', 'black')
-            scrollbox = initScrollBox('urgentPlotsScrollbox', rightg.append('g').attr('transform', 'translate(' + rightBox.x + ',' + 0 + ')'), rightBox, {
-            }, true)
+            scrollbox = new ScrollBox()
+            scrollbox.init({
+                main: {
+                    tag: 'urgentPlotsScrollbox',
+                    g: rightg.append('g').attr('transform', 'translate(' + rightBox.x + ',' + 0 + ')'),
+                    box: rightBox,
+                },
+            })
         }
 
         function initTelPart(g) {
@@ -2418,8 +2395,8 @@ let main_plots_dash = function(opt_in) {
         this.update_data = update_data
 
         function drawTelPart() {
-            let currentDate = new Date(shared.server.time_of_night.date_now)
-            let previousDate = new Date(shared.server.time_of_night.date_now).setHours(currentDate.getHours() - 1)
+            let currentDate = new Date(shared.server.time_information.time_now_sec)
+            let previousDate = new Date(shared.server.time_information.time_now_sec).setHours(currentDate.getHours() - 1)
             telplot.update_axis({
                 id: 'bottom',
                 domain: [ previousDate, currentDate ],
@@ -2558,8 +2535,8 @@ let main_plots_dash = function(opt_in) {
         }
 
         function drawMiddlePart() {
-            let currentDate = new Date(shared.server.time_of_night.date_now)
-            let previousDate = new Date(shared.server.time_of_night.date_now).setHours(currentDate.getHours() - 1)
+            let currentDate = new Date(shared.server.time_information.time_now_sec)
+            let previousDate = new Date(shared.server.time_information.time_now_sec).setHours(currentDate.getHours() - 1)
             // middleplot.update_axis({
             //     id: 'bottom',
             //     domain: [ previousDate, currentDate ],
@@ -2999,7 +2976,7 @@ let main_plots_dash = function(opt_in) {
 
             // function drawItem () {
             //   let nbperline = Math.floor((itemBox.w) / (itemDim.w + itemDim.offsetL))
-            //   allPlots = focusScrollbox.get('inner_g').selectAll('g.plot')
+            //   allPlots = focusScrollbox.get_content().selectAll('g.plot')
             //     .data(categoryfocus, function (d) {
             //       return d.id
             //     })
@@ -3045,7 +3022,7 @@ let main_plots_dash = function(opt_in) {
             //     //   .attr('text-anchor', 'start')
             //     //   .attr('transform', 'translate(' + (2) + ',' + (itemDim.h - 22) + ')')
             //     // d3.select(this).append('text')
-            //     //   .text(d3.timeFormat('%H:%M')(new Date(shared.server.time_of_night.date_now)))
+            //     //   .text(d3.timeFormat('%H:%M')(new Date(shared.server.time_information.time_now_sec)))
             //     //   .style('fill', '#000000')
             //     //   .style('font-weight', 'bold')
             //     //   .style('font-size', '11px')
@@ -3063,7 +3040,7 @@ let main_plots_dash = function(opt_in) {
             //   let generalIndex = [0, 0]
             //   gMerge.each(function (d, i) {
             //     // let start_time_sec = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-            //     // let end_time_sec = {date: new Date(shared.server.time_of_night.date_now), time: Number(shared.server.time_of_night.now)}
+            //     // let end_time_sec = {date: new Date(shared.server.time_information.time_now_sec), time: Number(shared.server.time_information.time_now_sec)}
             //     //
             //     // dd.plotObject.update_axis({
             //     //   id: 'bottom',
@@ -3595,7 +3572,7 @@ let main_plots_dash = function(opt_in) {
                     .attr('id', d => d)
                 gEnterGroup.each(function(d, i) {
                     let g = d3.select(this)
-                    // scrollbox.get('inner_g').append('g').attr('id', d => d)
+                    // scrollbox.get_content().append('g').attr('id', d => d)
                     g.style('opacity', 0.2)
                     g.append('rect')
                         .attr('id', 'front')
@@ -3656,7 +3633,7 @@ let main_plots_dash = function(opt_in) {
                     .remove()
             }
             function drawItem() {
-                let allGroup = rightItems.selectAll('g.category') // scrollbox.get('inner_g').selectAll('g.category')
+                let allGroup = rightItems.selectAll('g.category') // scrollbox.get_content().selectAll('g.category')
                     .data(shared.server.urgent.urgent_current)
                 let gEnterGroup = allGroup.enter()
                     .append('g')
@@ -3847,8 +3824,8 @@ let main_plots_dash = function(opt_in) {
                                 time: Number(shared.time.from.getTime()),
                             }
                             let end_time_sec = {
-                                date: new Date(shared.server.time_of_night.date_now),
-                                time: Number(shared.server.time_of_night.now),
+                                date: new Date(shared.server.time_information.time_now_sec),
+                                time: Number(shared.server.time_information.time_now_sec),
                             }
 
                             // newplotbox.h -= offset

@@ -80,25 +80,6 @@ class WeatherMonitoring(BaseWidget):
     # ------------------------------------------------------------------
     async def get_data(self):
         self.update_time_information()
-        # DL_FIXME - hardcoded dates !?!
-        # time_of_night_date = {
-        #     'date_start':
-        #     datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
-        #     'date_end': (
-        #         datetime(2018, 9, 16, 21, 30)
-        #         + timedelta(seconds=int(WeatherMonitoring.time_of_night['end']))
-        #     ).strftime('%Y-%m-%d %H:%M:%S'),
-        #     'date_now': (
-        #         datetime(2018, 9, 16, 21, 30)
-        #         + timedelta(seconds=int(WeatherMonitoring.time_of_night['now']))
-        #     ).strftime('%Y-%m-%d %H:%M:%S'),
-        #     'now':
-        #     int(WeatherMonitoring.time_of_night['now']),
-        #     'start':
-        #     int(WeatherMonitoring.time_of_night['start']),
-        #     'end':
-        #     int(WeatherMonitoring.time_of_night['end'])
-        # }
 
         tel_indices = 6
         # DL_FIXME - why is keys_now a dict?
