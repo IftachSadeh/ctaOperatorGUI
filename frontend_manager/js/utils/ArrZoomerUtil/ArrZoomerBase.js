@@ -941,7 +941,7 @@ window.ArrZoomerBase = function(opt_in_top) {
             // console.log('delay-s0 ....',data_in.type,data_in.emit_time )
             setTimeout(function() {
                 update_s0(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
         // console.log('do   -s0 ....',data_in.type,data_in.emit_time )
@@ -978,7 +978,7 @@ window.ArrZoomerBase = function(opt_in_top) {
         if (!locker.are_free([ 'zoom', 'auto_zoom_target', 'data_change' ])) {
             setTimeout(function() {
                 update_s1(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
 
@@ -1047,7 +1047,7 @@ window.ArrZoomerBase = function(opt_in_top) {
     //     if (!locker.are_free([ 'zoom', 'auto_zoom_target', 'data_change' ])) {
     //         setTimeout(function() {
     //             sub_arr_update(data_in)
-    //         }, 10)
+    //         }, times.wait_loop)
     //         return
     //     }
 
@@ -1307,7 +1307,10 @@ window.ArrZoomerBase = function(opt_in_top) {
                 },
             },
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
         
         if (this_top.has_init) {
             sock.socket.server_log({
@@ -1385,7 +1388,10 @@ window.ArrZoomerBase = function(opt_in_top) {
                 method_args: data,
             },
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
 
         return
     }
@@ -1434,7 +1440,10 @@ window.ArrZoomerBase = function(opt_in_top) {
                 method_args: data_widget,
             },
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
 
         return
     }

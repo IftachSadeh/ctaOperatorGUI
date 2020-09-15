@@ -224,8 +224,8 @@ let main_empty_example = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
 
@@ -291,7 +291,7 @@ let main_empty_example = function(opt_in) {
             if (!locker.is_free('in_init' + widget_id)) {
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
             // console.log('lllllllllll',widget_id,data_in.n_circ)
@@ -319,7 +319,7 @@ let main_empty_example = function(opt_in) {
                 // console.log('will delay update_data', data_in)
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
             locker.add(tag_empty_example + 'update_data' + widget_id)
@@ -341,7 +341,10 @@ let main_empty_example = function(opt_in) {
                 method_args: my_message_data,
             }
 
-            sock.socket.emit('widget', emit_data)
+            sock.socket.emit({
+                name: 'widget',
+                data: emit_data,
+            })
 
             // -------------------------------------------------------------------
             // do random stuff on updates ...

@@ -284,11 +284,11 @@ window.SchedblockForm = function(opt_in) {
             .on('click', function() {
                 com.tree.events.click('sched_block', schedB.blocks[0].sched_block_id)
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 d3.select(this).style('cursor', 'pointer')
                 d3.select(this).attr('fill', colorPalette.darker.background)
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 d3.select(this).style('cursor', 'default')
                 d3.select(this).attr('fill', colorPalette.dark.background)
             })
@@ -356,11 +356,11 @@ window.SchedblockForm = function(opt_in) {
             .on('click', function() {
                 // com.tree.events.click('sched_block', data.sched_block_id)
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 // d3.select(this).style('cursor', 'pointer')
                 // d3.select(this).attr('fill', colorPalette.darker.background)
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 // d3.select(this).style('cursor', 'default')
                 // d3.select(this).attr('fill', colorPalette.dark.background)
             })
@@ -388,11 +388,11 @@ window.SchedblockForm = function(opt_in) {
                 .on('click', function() {
                     com.tree.events.click('block', schedB.blocks[i].obs_block_id)
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     d3.select(this).attr('fill', palette.color.background)
                 })
@@ -418,11 +418,11 @@ window.SchedblockForm = function(opt_in) {
                 .on('click', function() {
                     com.tree.events.change(com.data.schedB)
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     d3.select(this).attr('fill', d3.color(colorPalette.dark.background).darker(0.9))
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     d3.select(this).attr('fill', colorPalette.dark.background)
                 })
@@ -583,11 +583,11 @@ window.SchedblockForm = function(opt_in) {
                 .on('click', function() {
                     com.schedule.events.click('block', schedB.blocks[i].obs_block_id)
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     d3.select(this).attr('fill', palette.color.background)
                 })
@@ -795,10 +795,11 @@ window.SchedblockForm = function(opt_in) {
                     .style('opacity', 0)
                 let buttong = ig.append('g').style('opacity', 0.1)
                 if (!(!com.schedule.editabled || !stillEditable)) {
-                    ig.on('mouseenter', function(d) {
-                        buttong.transition().duration(100).style('opacity', 1)
-                    })
-                        .on('mouseleave', function(d) {
+                    ig
+                        .on('mouseenter', function(e, d) {
+                            buttong.transition().duration(100).style('opacity', 1)
+                        })
+                        .on('mouseleave', function(e, d) {
                             buttong.transition().duration(100).style('opacity', 0.1)
                         })
                 }
@@ -1651,11 +1652,11 @@ window.SchedblockForm = function(opt_in) {
                     .on('click', function() {
                         com.schedule.events.click('block', d.obs_block_id)
                     })
-                    .on('mouseover', function(d) {
+                    .on('mouseover', function(e, d) {
                         d3.select(this).style('cursor', 'pointer')
                         d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
                     })
-                    .on('mouseout', function(d) {
+                    .on('mouseout', function(e, d) {
                         d3.select(this).style('cursor', 'default')
                         d3.select(this).attr('fill', palette.color.background)
                     })

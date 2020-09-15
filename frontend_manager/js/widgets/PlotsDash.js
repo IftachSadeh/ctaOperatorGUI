@@ -103,7 +103,10 @@ let sock_plots_dash = function(opt_in) {
             method_name: 'plotDash_push_new_hirch_keys',
             method_args: data,
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget',
+            data: emit_data,
+        })
     }
 }
 
@@ -205,8 +208,8 @@ let main_plots_dash = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
 
@@ -246,12 +249,12 @@ let main_plots_dash = function(opt_in) {
                 x: 0,
                 y: middleSeparation,
             }
-            function dragstarted(d) {}
-            function dragged(d) {
-                middleBarPos.y = middleBarPos.y + d3.event.dy
+            function dragstarted(e, d) {}
+            function dragged(e, d) {
+                middleBarPos.y = middleBarPos.y + e.dy
                 gmiddle.attr('transform', 'translate(' + middleBarPos.x + ',' + middleBarPos.y + ')')
             }
-            function dragended(d) {}
+            function dragended(e, d) {}
 
             let gmiddle = svg.back.append('g')
                 .attr('transform', 'translate(' + middleBarPos.x + ',' + middleBarPos.y + ')')
@@ -418,7 +421,7 @@ let main_plots_dash = function(opt_in) {
         if (!locker.are_free([ 'pushNewHierachyKeys' ])) {
             setTimeout(function() {
                 update_data_once(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
         locker.add('update_data')
@@ -1393,16 +1396,16 @@ let main_plots_dash = function(opt_in) {
             }
         }
 
-        function dragstarted(d) {
+        function dragstarted(e, d) {
             d3.select(this).raise()
         }
-        function dragged(d) {
+        function dragged(e, d) {
             let transform = get_transformation(d3.select(this).attr('transform'))
 
             d3.select(this)
-                .attr('transform', 'translate(' + (transform.translateX + d3.event.dx) + ',' + (transform.translateY + d3.event.dy) + ')')
+                .attr('transform', 'translate(' + (transform.translateX + e.dx) + ',' + (transform.translateY + e.dy) + ')')
         }
-        function dragended(d) {}
+        function dragended(e, d) {}
         function createPinnedItem() {
 
         }
@@ -1421,14 +1424,16 @@ let main_plots_dash = function(opt_in) {
                 function dist(a, b) {
                     return Math.sqrt(Math.pow(a[0] - b[0], 2), Math.pow(a[1] - b[1], 2))
                 }
-                selection.on('mousedown', function() {
-                    d3.event.stopPropagation()
-                    down = d3.mouse(document.body)
+                selection.on('mousedown', function(e) {
+                    e.stopPropagation()
+                    // down = d3.mouse(document.body)
+                    down = d3.pointer(e)
                     last = +new Date()
                     args = arguments
                 })
-                selection.on('mouseup', function() {
-                    if (dist(down, d3.mouse(document.body)) > tolerance) {
+                selection.on('mouseup', function(e) {
+                    // if (dist(down, d3.mouse(document.body)) > tolerance)
+                    if (dist(down, d3.pointer(e)) > tolerance) {
                         return
                     }
                     else {

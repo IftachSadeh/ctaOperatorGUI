@@ -2169,7 +2169,7 @@ window.BlockFilters = function(opt_in) {
             .style('fill', com.main.color_theme.medium.background)
             .style('stroke', com.main.color_theme.medium.stroke)
             .style('stroke-width', 0)
-            .on('click', function(d) {
+            .on('click', function(e, d) {
                 d3.select(this)
                     .transition()
                     .duration(times.anim)
@@ -2208,7 +2208,7 @@ window.BlockFilters = function(opt_in) {
             .style('fill', com.main.color_theme.medium.background)
             .style('stroke', com.main.color_theme.medium.stroke)
             .style('stroke-width', 0.0)
-            .on('click', function(d) {
+            .on('click', function(e, d) {
                 d3.select(this)
                     .transition()
                     .duration(times.anim)
@@ -2247,7 +2247,7 @@ window.BlockFilters = function(opt_in) {
             .style('fill', com.main.color_theme.medium.background)
             .style('stroke', com.main.color_theme.medium.stroke)
             .style('stroke-width', 0.0)
-            .on('click', function(d) {
+            .on('click', function(e, d) {
                 addFilterToken('target')
                 create_targetsFilter({
                 })
@@ -2276,7 +2276,7 @@ window.BlockFilters = function(opt_in) {
             .style('fill', com.main.color_theme.medium.background)
             .style('stroke', com.main.color_theme.medium.stroke)
             .style('stroke-width', 0.0)
-            .on('click', function(d) {
+            .on('click', function(e, d) {
                 addFilterToken('time')
                 createTimeFilters({
                 })

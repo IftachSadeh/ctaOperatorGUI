@@ -244,7 +244,11 @@ function SocketManager() {
         this_sock_int.get_on_events = get_on_events
 
         // send a socket event by event name
-        function emit(event_name, data_in, metadata_in) {
+        function emit(opt_in) {
+            let event_name = opt_in.name
+            let data_in = opt_in.data
+            let metadata_in = opt_in.metadata
+
             if (!is_def(data_in)) {
                 data_in = {
                 }
@@ -290,7 +294,11 @@ function SocketManager() {
                 date: (new Date()).toString(),
             }
 
-            this_sock_int.emit(event_name, data_in.data, metadata)
+            this_sock_int.emit({
+                name: event_name, 
+                data: data_in.data, 
+                metadata: metadata,
+            })
 
             // local print in the client if needed
             if (log_level === LOG_LEVELS.ERROR) {
@@ -408,13 +416,11 @@ function SocketManager() {
                     log_level: LOG_LEVELS.INFO,
                 })
             }
-
-            // this_top.socket.emit('test_socket_evt', {test: 0})
-            // this_top.socket.emit('test_socket_evt', {test: 1})
             
-            this_top.socket.emit('sess_setup_begin', data_out)
-
-            // this_top.socket.emit('test_socket_evt', {test: 2})
+            this_top.socket.emit({
+                name: 'sess_setup_begin',
+                data: data_out,
+            })
 
             if (test_log) {
                 this_top.socket.server_log({
@@ -453,7 +459,9 @@ function SocketManager() {
             // in case of reconnection, make sure the server has registered
             // all the widgets for this session
             if (!is_first) {
-                this_top.socket.emit('sess_setup_finalised')
+                this_top.socket.emit({
+                    name: 'sess_setup_finalised',
+                })
                 
                 $.each(this_top.sess_widgets, function(widget_id, ele_0) {
                     let widget_type = ele_0.widget_type
@@ -539,7 +547,10 @@ function SocketManager() {
                 },
             }
             // let the server know that the ping was received
-            this_top.socket.emit('heartbeat_pong', emit_data)
+            this_top.socket.emit({
+                name: 'heartbeat_pong', 
+                data: emit_data,
+            })
         }
         this_top.socket.add_listener({
             name: 'heartbeat_ping',
@@ -558,8 +569,6 @@ function SocketManager() {
             return
         }
         function _check_ping_delay() {
-            // this_top.socket.emit('test_socket_evt', {test: 1})
-
             let ping_event_total_delay_msec = 0
             if (!document.hidden) {
                 let ping_interval_msec = get_time_now_msec() - ping_event_time_msec
@@ -695,11 +704,17 @@ function SocketManager() {
             }
             if (has_changed) {
                 if (is_offline) {
-                    this_top.socket.emit('sess_to_offline')
+                    this_top.socket.emit({
+                        name: 'sess_to_offline',
+                    })
                 }
                 else if (!is_first) {
-                    this_top.socket.emit('sess_to_online')
-                    this_top.socket.emit('back_from_offline')
+                    this_top.socket.emit({
+                        name: 'sess_to_online',
+                    })
+                    this_top.socket.emit({
+                        name: 'back_from_offline',
+                    })
                 }
             }
         }
@@ -939,7 +954,10 @@ function SocketManager() {
         // }
 
         if (is_def(this_top.socket)) {
-            this_top.socket.emit('update_sync_state_from_client', opt_in)
+            this_top.socket.emit({
+                name: 'update_sync_state_from_client', 
+                data: opt_in,
+            })
             // this_top.socket.emit('send_sync_state_to_server', data_now)
         }
     }
@@ -1006,7 +1024,10 @@ function SocketManager() {
             prev_mouse_move = Date.now()
 
             if (!this_top.con_stat.is_offline() && is_def(this_top.socket)) {
-                this_top.socket.emit('set_active_widget', opt_in.data)
+                this_top.socket.emit({
+                    name: 'set_active_widget', 
+                    data: opt_in.data,
+                })
             }
             // console.log("onmousemove",opt_in.data.widget_id)
         })
@@ -1132,7 +1153,10 @@ function SocketManager() {
             n_icon: n_icon,
             // icon_id: icon_id,
         }
-        this_top.socket.emit('widget', data_out)
+        this_top.socket.emit({
+            name: 'widget', 
+            data: data_out,
+        })
         
         return
     }

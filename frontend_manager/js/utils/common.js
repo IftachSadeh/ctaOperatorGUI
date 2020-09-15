@@ -820,22 +820,26 @@ window.inst_health_frac = function(health) {
 // transition times (if the window/tab is inactive, flush_hidden_d3() makes sure all animations
 // are flushed, and these times are ignored
 // ------------------------------------------------------------------
-let timescale = 1
+let evt_timescale = 1
+let anim_timescale = 0.75
 let times = {
-    // basic scaling of all times
-    timescale: timescale,
+    // basic scaling factors for times
+    evt_timescale: evt_timescale,
+    anim_timescale: anim_timescale,
     // animation duration for general graphical elements
-    anim: 250 * timescale,
+    anim: 250 * anim_timescale,
     // animation duration for text
-    anim_txt: 150 * timescale,
+    anim_txt: 150 * anim_timescale,
     // base timescale for zooming
-    base_zoom: 350 * timescale,
+    base_zoom: 300 * anim_timescale,
     // time to wait between update loop checks
-    wait_loop: 200 * timescale,
+    wait_loop: 200 * evt_timescale,
     // time to wait before panel synchronisation
-    wait_sync_state: 250 * timescale,
+    wait_sync_state: 250 * evt_timescale,
     // time to wait between func-queue loop checks
     wait_queue_loop: 200,
+    // time to wait between pushing functions to the execution queue in RunLoop
+    run_loop_push_wait: 100,
 }
 window.times = times
 
@@ -1368,7 +1372,7 @@ let Locker = window.Locker
 
 window.RunLoop = function(opt_in) {
     let base_tag = opt_in.tag
-    let push_wait = 10
+    let push_wait = times.run_loop_push_wait
     let runs = {
     }
     let n_keep = {
@@ -1387,7 +1391,7 @@ window.RunLoop = function(opt_in) {
         n_keep[tag] = is_def(opt_in.n_keep) ? opt_in.n_keep : -1
         func[tag] = opt_in.func
         wait[tag] = is_def(opt_in.wait) ? opt_in.wait : times.wait_loop
-        wait[tag] = Math.max(wait[tag], 100)
+        wait[tag] = Math.max(wait[tag], times.wait_loop)
 
         if (!is_def(tag) || !is_def(func[tag])) {
             console.error(' - bad setting for exeLoop.init() :', base_tag, opt_in)

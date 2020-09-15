@@ -83,7 +83,6 @@ def parse_args(app_name):
             'view102',
             'view000',
             'view001',
-            'view_refresh_all',
             'view200',
             'view201',
             'view202',

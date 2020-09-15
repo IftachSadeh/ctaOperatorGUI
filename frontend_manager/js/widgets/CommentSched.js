@@ -133,7 +133,10 @@ let sock_comment_sched = function(opt_in) {
     //     "method_name":"comment_schedAskTelData",
     //     "method_args":data
     //   };
-    //   sock.socket.emit("widget", emit_data);
+    // sock.socket.emit({
+    //     name: 'widget',
+    //     data: emit_data,
+    // })
     //   return;
     // }
 }
@@ -322,8 +325,8 @@ let main_comment_sched = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
 

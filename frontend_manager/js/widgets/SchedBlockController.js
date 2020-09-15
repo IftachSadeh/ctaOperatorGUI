@@ -129,7 +129,10 @@ let sock_sched_block_controller = function(opt_in) {
     //     'method_name':'sched_block_controllerAskTelData',
     //     'method_args':data
     //   };
-    //   sock.socket.emit('widget', emit_data);
+    // sock.socket.emit({
+    //     name: 'widget',
+    //     data: emit_data,
+    // })
     //   return;
     // }
 
@@ -155,7 +158,10 @@ let sock_sched_block_controller = function(opt_in) {
     //             method_name: 'sched_block_controller_push_queue',
     //             method_args: data,
     //         }
-    //         sock.socket.emit('widget', emit_data)
+    //         sock.socket.emit({
+    //             name: 'widget',
+    //             data: emit_data,
+    //         })
     //     }
 
     //     sock.socket.on('sched_block_controller_new_queue', function(data) {
@@ -270,8 +276,8 @@ let main_sched_blockController = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
             svg.g = svg.svg.append('g')
@@ -565,7 +571,7 @@ let main_sched_blockController = function(opt_in) {
             // console.log('pushing...');
             setTimeout(function() {
                 update_data_once(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
         locker.add('update_data')
@@ -2599,10 +2605,10 @@ let main_sched_blockController = function(opt_in) {
             //   .style('opacity', 0)
             //   .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
             //   .attr('height', range)
-            //   .on('mouseover', function (d) {
+            //   .on('mouseover', function (e, d) {
             //     mouseHover(d3.select(this), d, 'small')
             //   })
-            //   .on('mouseout', function (d) {
+            //   .on('mouseout', function (e, d) {
             //     mouseOut(d3.select(this), d, 'small')
             //   })
             gMerge.select('rect#smallused')
@@ -2645,10 +2651,10 @@ let main_sched_blockController = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'small')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'small')
                 })
             gMerge.select('rect#smallmin')
@@ -2694,10 +2700,10 @@ let main_sched_blockController = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'small')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'small')
                 })
 
@@ -2708,10 +2714,10 @@ let main_sched_blockController = function(opt_in) {
             //   .style('opacity', 0)
             //   .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
             //   .attr('height', range)
-            //   .on('mouseover', function (d) {
+            //   .on('mouseover', function (e, d) {
             //     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
             //   })
-            //   .on('mouseout', function (d) {
+            //   .on('mouseout', function (e, d) {
             //     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
             //   })
             gMerge.select('rect#mediumused')
@@ -2754,10 +2760,10 @@ let main_sched_blockController = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
                 })
             gMerge.select('rect#mediummin')
@@ -2803,10 +2809,10 @@ let main_sched_blockController = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
                 })
 
@@ -2817,10 +2823,10 @@ let main_sched_blockController = function(opt_in) {
             //   .style('opacity', 0)
             //   .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
             //   .attr('height', range)
-            //   .on('mouseover', function (d) {
+            //   .on('mouseover', function (e, d) {
             //     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
             //   })
-            //   .on('mouseout', function (d) {
+            //   .on('mouseout', function (e, d) {
             //     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
             //   })
             gMerge.select('rect#largeused')
@@ -2863,10 +2869,10 @@ let main_sched_blockController = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
                 })
             gMerge.select('rect#largemin')
@@ -2912,10 +2918,10 @@ let main_sched_blockController = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
                 })
 
@@ -3658,16 +3664,16 @@ let main_sched_blockController = function(opt_in) {
                             .attr('fill', color.background)
                             .attr('stroke', color.stroke)
                             .attr('stroke-width', 0.1)
-                            .on('click', function() {
+                            .on('click', function(_) {
                                 cleanBack()
                                 display = undefined
                                 focusManager.focusOn('block', d.obs_block_id)
                             })
-                            .on('mouseover', function(d) {
+                            .on('mouseover', function(e, d) {
                                 d3.select(this).style('cursor', 'pointer')
                                 d3.select(this).attr('fill', d3.color(color.background).darker(0.9))
                             })
-                            .on('mouseout', function(d) {
+                            .on('mouseout', function(e, d) {
                                 d3.select(this).style('cursor', 'default')
                                 d3.select(this).attr('fill', color.background)
                             })
@@ -3756,12 +3762,12 @@ let main_sched_blockController = function(opt_in) {
                             .attr('fill', color_theme.dark.background)
                             .attr('stroke', color_theme.dark.stroke)
                             .attr('stroke-width', 0.6)
-                            .on('click', function() {
+                            .on('click', function(_) {
                                 cleanBack()
                                 display = undefined
                                 focusManager.focusOn('sched_block', d.id)
                             })
-                            .on('mouseover', function() {
+                            .on('mouseover', function(_) {
                                 gback.select('g#blocks').remove()
                                 let gb = g.append('g').attr('id', 'blocks')
                                 // let overflow = (i % square) + d.blocks.length > square ? square - ((i % square) + d.blocks.length) : 0
@@ -3774,7 +3780,7 @@ let main_sched_blockController = function(opt_in) {
                                 d3.select(this).style('cursor', 'pointer')
                                 d3.select(this).attr('fill', color_theme.darker.background)
                             })
-                            .on('mouseout', function() {
+                            .on('mouseout', function(_) {
                                 // g.select('g#blocks').remove()
                                 d3.select(this).style('cursor', 'default')
                                 d3.select(this).attr('fill', color_theme.dark.background)
@@ -3840,16 +3846,16 @@ let main_sched_blockController = function(opt_in) {
                         .attr('stroke-width', 0.6)
                     // .style('boxShadow', '10px 20px 30px black')
                         .attr('rx', height)
-                        .on('click', function() {
+                        .on('click', function(_) {
                             cleanBack()
                             display = undefined
                             focusManager.focusOn('target', d.id)
                         })
-                        .on('mouseover', function(d) {
+                        .on('mouseover', function(e, d) {
                             d3.select(this).style('cursor', 'pointer')
                             d3.select(this).attr('fill', color_theme.darker.background)
                         })
-                        .on('mouseout', function(d) {
+                        .on('mouseout', function(e, d) {
                             d3.select(this).style('cursor', 'default')
                             d3.select(this).attr('fill', color_theme.dark.background)
                         })
@@ -4087,7 +4093,7 @@ let main_sched_blockController = function(opt_in) {
                     'stroke-width': 0.2,
                     'rx': 2,
                 }
-            ).on('click', function() {
+            ).on('click', function(_) {
                 if (display) {
                     cleanBack()
                     if (display === 'blocks') {
@@ -4097,9 +4103,9 @@ let main_sched_blockController = function(opt_in) {
                 }
                 display = 'blocks'
                 createBlockMapping()
-            }).on('mouseover', function() {
+            }).on('mouseover', function(_) {
                 d3.select(this).attr('fill', color_theme.darker.background)
-            }).on('mouseout', function() {
+            }).on('mouseout', function(_) {
                 d3.select(this).attr('fill', color_theme.dark.background)
             })
             new_d3_node(gfore,
@@ -4129,7 +4135,7 @@ let main_sched_blockController = function(opt_in) {
                     'stroke-width': 0.2,
                     'rx': 2,
                 }
-            ).on('click', function() {
+            ).on('click', function(_) {
                 if (display) {
                     cleanBack()
                     if (display === 'targets') {
@@ -4139,9 +4145,9 @@ let main_sched_blockController = function(opt_in) {
                 }
                 display = 'targets'
                 create_targetsMapping()
-            }).on('mouseover', function() {
+            }).on('mouseover', function(_) {
                 d3.select(this).attr('fill', color_theme.darker.background)
-            }).on('mouseout', function() {
+            }).on('mouseout', function(_) {
                 d3.select(this).attr('fill', color_theme.dark.background)
             })
             new_d3_node(gfore,
@@ -4171,7 +4177,7 @@ let main_sched_blockController = function(opt_in) {
                     'stroke-width': 0.2,
                     'rx': 2,
                 }
-            ).on('click', function() {
+            ).on('click', function(_) {
                 if (display) {
                     cleanBack()
                     if (display === 'telescopes') {
@@ -4181,9 +4187,9 @@ let main_sched_blockController = function(opt_in) {
                 }
                 display = 'telescopes'
                 createTelescopesMapping()
-            }).on('mouseover', function() {
+            }).on('mouseover', function(_) {
                 d3.select(this).attr('fill', color_theme.darker.background)
-            }).on('mouseout', function() {
+            }).on('mouseout', function(_) {
                 d3.select(this).attr('fill', color_theme.dark.background)
             })
             new_d3_node(gfore,
@@ -4856,14 +4862,14 @@ let main_sched_blockController = function(opt_in) {
                         .attr('stroke-width', 0.6)
                     // .style('boxShadow', '10px 20px 30px black')
                         .attr('rx', height)
-                        .on('click', function() {
+                        .on('click', function(_) {
                             focusManager.focusOn('target', d.id)
                         })
-                        .on('mouseover', function(d) {
+                        .on('mouseover', function(e, d) {
                             d3.select(this).style('cursor', 'pointer')
                             d3.select(this).attr('fill', color_theme.darker.background)
                         })
-                        .on('mouseout', function(d) {
+                        .on('mouseout', function(e, d) {
                             d3.select(this).style('cursor', 'default')
                             d3.select(this).attr('fill', color_theme.dark.background)
                         })
@@ -4989,13 +4995,13 @@ let main_sched_blockController = function(opt_in) {
                             .attr('fill', color.background)
                             .attr('stroke', color.stroke)
                             .attr('stroke-width', 0.2)
-                            .on('click', function() {
+                            .on('click', function(_) {
                                 focusManager.focusOn('block', d.obs_block_id)
                             })
-                            .on('mouseover', function(d) {
+                            .on('mouseover', function(e, d) {
                                 d3.select(this).style('cursor', 'pointer')
                             })
-                            .on('mouseout', function(d) {
+                            .on('mouseout', function(e, d) {
                                 d3.select(this).style('cursor', 'default')
                             })
                         g.append('text')

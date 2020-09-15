@@ -74,12 +74,12 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
     input.on('focus', function() {
         $(this).select()
     })
-    input.on('wheel', function() {
+    input.on('wheel', function(event) {
         if (!$(this).is(':focus')) {
             return
         }
-        d3.event.preventDefault()
-        let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+        event.preventDefault()
+        let direction = event.wheelDelta < 0 ? 'down' : 'up'
         let new_val = parseInt(input.property('value'))
         if (direction === 'up') {
             new_val += 1
@@ -96,8 +96,7 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
         input.property('value', ('0' + new_val).slice(-2))
         events.change(input.property('value'))
     })
-    input.on('keyup', function() {
-        let event = d3.event
+    input.on('keyup', function(event) {
         if (event.keyCode === 13) {
             event.preventDefault()
             events.enter(input.property('value'))
@@ -181,13 +180,13 @@ window.input_number_d3 = function(g, box, id, opt_in, events) {
     linker.input.on('focus', function() {
         $(this).select()
     })
-    linker.input.on('wheel', function() {
+    linker.input.on('wheel', function(event) {
         if (!$(this).is(':focus')) {
             return
         }
-        d3.event.preventDefault()
-        d3.event.stopPropagation()
-        let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+        event.preventDefault()
+        event.stopPropagation()
+        let direction = event.wheelDelta < 0 ? 'down' : 'up'
         let new_val = parseInt(linker.input.property('value'))
         if (direction === 'up' && new_val < opt_in.max) {
             new_val += 1
@@ -199,8 +198,7 @@ window.input_number_d3 = function(g, box, id, opt_in, events) {
         events.change(linker.input.property('value'))
         return
     })
-    linker.input.on('keyup', function() {
-        let event = d3.event
+    linker.input.on('keyup', function(event) {
         if (event.keyCode === 13) {
             event.preventDefault()
             events.enter(linker.input.property('value'))

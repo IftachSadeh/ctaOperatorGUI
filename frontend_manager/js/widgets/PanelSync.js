@@ -81,8 +81,10 @@ let sock_panel_sync = function(opt_in) {
             widget_id: opt_in.widget_id,
             method_name: 'ask_data',
         }
-
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget',
+            data: emit_data,
+        })
     }
 
     // -------------------------------------------------------------------
@@ -104,7 +106,10 @@ let sock_panel_sync = function(opt_in) {
             method_name: 'set_client_sync_groups',
             method_args: data,
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget',
+            data: emit_data,
+        })
     }
 }
 
@@ -293,10 +298,10 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         let tag_main = widget_type
         let tag_icon = tag_main + 'icons'
-        let tag_circ = tag_main + 'telCirc'
-        let tag_ttl = tag_main + 'telTitle'
-        let tag_vor = tag_main + 'telVor'
-        let tag_grid_rec = tag_main + 'colLeft'
+        let tag_circ = tag_main + 'tel_circ'
+        let tag_ttl = tag_main + 'tel_title'
+        let tag_vor = tag_main + 'tel_vor'
+        let tag_grid_rec = tag_main + 'col_left'
         let tag_left_in = tag_main + 'data_in'
         let tag_empty = tag_main + 'empty'
         let tag_clip_path = tag_main + 'tag_clip_path'
@@ -410,8 +415,8 @@ let main_panel_sync = function(opt_in) {
                 // .on("dblclick.zoom", null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
 
@@ -499,7 +504,7 @@ let main_panel_sync = function(opt_in) {
                 grps.hov_id_grp_start = d_in.parent.data.id
             }
 
-            com.drag_main_start = function(d_in, this_ele) {
+            com.drag_main_start = function(event, d_in, this_ele) {
                 locker.add({
                     id: tag_main + 'in_drag',
                     override: true,
@@ -508,10 +513,10 @@ let main_panel_sync = function(opt_in) {
                 do_drag_main_start(d_in, this_ele)
             }
 
-            com.drag_main_during = function(d_in, this_ele) {
+            com.drag_main_during = function(event, d_in, this_ele) {
                 d3.select(this_ele).attr('transform', function(d) {
-                    d.x = d3.event.x
-                    d.y = d3.event.y
+                    d.x = event.x
+                    d.y = event.y
                     return 'translate(' + d.x + ',' + d.y + ')'
                 })
             }
@@ -532,7 +537,7 @@ let main_panel_sync = function(opt_in) {
                 grps.hov_id_grp_start = null
             }
 
-            com.drag_main_end = function(d_in, this_ele) {
+            com.drag_main_end = function(event, d_in, this_ele) {
                 do_drag_main_end(d_in, this_ele)
 
                 locker.remove({
@@ -544,14 +549,14 @@ let main_panel_sync = function(opt_in) {
 
             com.drag_main = d3
                 .drag()
-                .on('start', function(d) {
-                    com.drag_main_start(d, this)
+                .on('start', function(e, d) {
+                    com.drag_main_start(e, d, this)
                 })
-                .on('drag', function(d) {
-                    com.drag_main_during(d, this)
+                .on('drag', function(e, d) {
+                    com.drag_main_during(e, d, this)
                 })
-                .on('end', function(d) {
-                    com.drag_main_end(d, this)
+                .on('end', function(e, d) {
+                    com.drag_main_end(e, d, this)
                 })
 
             // -------------------------------------------------------------------
@@ -559,7 +564,7 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             let icon_side = null
             let icon_side_sel = null
-            com.drag_side_start = function(d_in) {
+            com.drag_side_start = function(event, d_in) {
                 locker.add({
                     id: tag_main + 'in_drag',
                     override: true,
@@ -584,8 +589,8 @@ let main_panel_sync = function(opt_in) {
                         .transition('in_out')
                         .duration(times.anim / 5)
                         .attr('transform', function(d) {
-                            d.x = d3.event.x - shift_main_g[0]
-                            d.y = d3.event.y - shift_main_g[1]
+                            d.x = event.x - shift_main_g[0]
+                            d.y = event.y - shift_main_g[1]
                             return 'translate(' + d.x + ',' + d.y + ')'
                         })
                 }
@@ -593,21 +598,25 @@ let main_panel_sync = function(opt_in) {
                 if (is_def(icon_side)) {
                     do_drag_main_start(icon_side, this)
                 }
+
+                return
             }
 
-            com.drag_side_during = function(d_in) {
+            com.drag_side_during = function(event, d_in) {
                 if (!is_def(icon_side)) {
                     return
                 }
 
                 icon_side_sel.attr('transform', function(d) {
-                    d.x = d3.event.x - shift_main_g[0]
-                    d.y = d3.event.y - shift_main_g[1]
+                    d.x = event.x - shift_main_g[0]
+                    d.y = event.y - shift_main_g[1]
                     return 'translate(' + d.x + ',' + d.y + ')'
                 })
+             
+                return
             }
 
-            com.drag_side_end = function(d_in) {
+            com.drag_side_end = function(event, d_in) {
                 do_drag_main_end(icon_side, this)
 
                 icon_side = null
@@ -618,6 +627,8 @@ let main_panel_sync = function(opt_in) {
                     override: true,
                     delay: delay_after_drag,
                 })
+            
+                return
             }
 
             com.drag_side = d3
@@ -775,7 +786,7 @@ let main_panel_sync = function(opt_in) {
             if (!locker.is_free('in_init')) {
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
 
@@ -1034,7 +1045,6 @@ let main_panel_sync = function(opt_in) {
                         delay: delay_after_add_empty,
                     })
                 })
-                // .attr("stroke-width", 2).attr("stroke", "red")
         }
 
         // -------------------------------------------------------------------
@@ -1042,7 +1052,7 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         function set_hierarchy() {
             // console.log(grps.data);
-            // let tag_circ = "telCirc";
+            // let tag_circ = "tel_circ";
 
             com.hirch = d3.hierarchy(grps.data).sum(function(_) {
                 return 1
@@ -1096,7 +1106,6 @@ let main_panel_sync = function(opt_in) {
                 .style('fill-opacity', function(d) {
                     return hirch_opac_fill(d)
                 })
-                // .on("mouseover", hirchStyleHover).on("click", hierarchy_style_click).on("dblclick", hirchStyleDblclick)
                 .merge(circ)
                 .each(function(d) {
                     if (d.depth === 2) {
@@ -1229,20 +1238,20 @@ let main_panel_sync = function(opt_in) {
         function side_col_click(d_in) {
             let id_now = unique()
             if (is_def(d_in)) {
-                let n_icon = d_in.data.data.data.n_icon
-                let trg_widg_id = d_in.data.data.data.trg_widg_id
+                let n_icon = d_in.data.data.n_icon
+                let trg_widg_id = d_in.data.data.trg_widg_id
 
                 let init_xyr = {
                 }
                 let scale_r = 1.2
-                init_xyr.r = d_in.data.w / 2
+                init_xyr.r = d_in.w / 2
                 
                 init_xyr.x = (
-                    (d_in.data.x + d_in.data.w / 2)
+                    (d_in.x + d_in.w / 2)
                     - (shift_main_g[0] - (scale_r - 1) * init_xyr.r / 2)
                 )
                 init_xyr.y = (
-                    (d_in.data.y + d_in.data.h / 2)
+                    (d_in.y + d_in.h / 2)
                     - (shift_main_g[1] - (scale_r - 1) * init_xyr.r / 2)
                 )
                 init_xyr.r *= scale_r
@@ -1624,25 +1633,20 @@ let main_panel_sync = function(opt_in) {
         }
 
         function set_vor() {
-            let show_vor = false
+            let show_vor_lines = false
 
-            let vor_func = d3
-                .voronoi()
-                .x(function(d) {
-                    return d.x
-                })
-                .y(function(d) {
-                    return d.y
-                })
-                .extent([ [ 0, 0 ], [ svg_dims.w[0], svg_dims.h[0] ] ])
-
-            let data = com.hirch_desc.filter(function(d) {
+            let vor_data = com.hirch_desc.filter(function(d) {
                 return d.depth === 2
             })
+
+            let voronoi = d3.Delaunay
+                .from(vor_data, d => d.x, d => d.y)
+                .voronoi([ 0, 0, svg_dims.w[0], svg_dims.h[0] ])
+
             let vor = com.vor.g
                 .selectAll('path.' + tag_vor)
-                .data(vor_func.polygons(data), function(d) {
-                    return d.data.id
+                .data(vor_data, function(d, i) {
+                    return d.id
                 })
 
             vor
@@ -1652,62 +1656,62 @@ let main_panel_sync = function(opt_in) {
                 .style('fill', 'transparent')
                 .style('opacity', '0')
                 .attr('vector-effect', 'non-scaling-stroke')
-                .on('mouseover', function(d) {
-                    // console.log('in ',is_def(d)?d.data.data.id:"-");
+                .style('stroke-width', 0)
+                .style('opacity', 0)
+                .style('stroke-width', '0')
+                .style('stroke', '#4F94CD')
+                // .on('mouseover', (d, i) => console.log(i,d))
+                .on('mouseover', function(e, d) {
                     if (is_def(d)) {
                         highlight({
-                            id: d.data.data.id,
+                            id: d.data.id,
                             data: [{
-                                x: d.data.x,
-                                y: d.data.y,
-                                r: d.data.r,
+                                x: d.x,
+                                y: d.y,
+                                r: d.r,
                             }],
                             type: {
                                 name: 'pulse',
                                 duration: 1500,
-                                col: hirch_style_stroke(d.data),
+                                col: hirch_style_stroke(d),
                             },
                         })
 
-                        grps.hov_id_grp_now = d.data.data.id
+                        grps.hov_id_grp_now = d.data.id
                     }
                 })
-                .on('mouseout', function(d) {
-                    // console.log('out',is_def(d)?d.data.data.id:"-");
+                .on('mouseout', function(e, d) {
                     grps.hov_id_grp_now = null
 
                     highlight({
-                        id: d.data.data.id,
+                        id: d.data.id,
                         data: [],
                         type: {
                             name: 'pulse',
                             duration: 1500,
-                            col: hirch_style_stroke(d.data),
+                            col: hirch_style_stroke(d),
                         },
                     })
                 })
                 .merge(vor)
-                .call(function(d) {
-                    d.attr('d', vor_ploy_func)
-                })
-                // .on("mouseover", tel_data.vorHov)
-                // .on("click",     tel_data.vor_click)
-                // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:dblclick_zoom_in_out }); })
-
-            if (show_vor) {
-                com.vor.g
-                    .selectAll('path.' + tag_vor)
-                    .style('opacity', '0.25')
-                    .style('stroke-width', '1.5')
-                    .style('stroke', '#E91E63')
-            }
+                .attr('d', (d, i) => voronoi.renderCell(i))
 
             vor
                 .exit()
                 .transition('out')
-                .duration(times.anim / 2)
+                .duration(1)
                 .attr('opacity', 0)
                 .remove()
+
+            if (show_vor_lines) {
+                com.vor.g
+                    .selectAll('path.' + tag_vor)
+                    .style('opacity', '0.5')
+                    .style('stroke-width', '2.5')
+                    .style('stroke', '#E91E63')
+            }
+
+            return
         }
 
         // -------------------------------------------------------------------

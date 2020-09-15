@@ -560,7 +560,10 @@ class AsyncLoops():
                     ['y', ' - high server load / slow connection for '],
                     ['r', self.sess_id],
                     ['y', ' ? --> '],
-                    ['o', interval_now_msec, 'msec delay for', send_interval_msec, 'sleep'],
+                    [
+                        'o', interval_now_msec, 'msec delay for', send_interval_msec,
+                        'sleep'
+                    ],
                 ])
 
         self.log.info([

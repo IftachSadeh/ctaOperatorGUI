@@ -38,7 +38,9 @@ $.getScript('/js/utils/common.js', function() {
                     },
                     execute: function() {
                         base_app.setup_opt_socks()
-                        sock.socket.emit('sess_setup_finalised')
+                        sock.socket.emit({
+                            name: 'sess_setup_finalised',
+                        })
                     },
                     wait: 25,
                 })
@@ -827,7 +829,10 @@ function BaseApp() {
                 is_skip_daytime: is_skip_daytime,
                 is_short_night: is_short_night,
             }
-            socket.emit('set_sim_clock_sim_params', data_emit)
+            socket.emit({
+                name: 'set_sim_clock_sim_params',
+                data: data_emit,
+            })
 
             return
         }
@@ -844,16 +849,10 @@ function BaseApp() {
 
 
         setTimeout(function() {
-            socket.emit('ask_sim_clock_sim_params')
+            socket.emit({
+                name: 'ask_sim_clock_sim_params',
+            })
         }, times.wait_loop)
-
-        // data_emit = {
-        //     data: {
-        //         speed_factor: 999,
-        //     },
-        // }
-        // socket.emit('set_sim_clock_sim_params', data_emit)
-
 
         return
     }

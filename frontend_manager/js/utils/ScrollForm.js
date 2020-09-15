@@ -720,9 +720,9 @@ window.ScrollForm = function(opt_in) {
     //         com.component.content_div.interrupt()
     //       }
     //     })
-    //     .on('wheel.zoom', function () {
-    //       d3.event.preventDefault()
-    //       let newScrollTop = com.component.content_div._groups[0][0].scrollTop + d3.event.deltaY
+    //     .on('wheel.zoom', function (e) {
+    //       e.preventDefault()
+    //       let newScrollTop = com.component.content_div._groups[0][0].scrollTop + e.deltaY
     //       if (newScrollTop < sizes[local][1]) {
     //         com.component.content_div
     //           .transition()

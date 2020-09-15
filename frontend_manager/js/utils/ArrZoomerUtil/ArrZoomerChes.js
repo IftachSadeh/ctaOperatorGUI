@@ -36,7 +36,7 @@ window.ArrZoomerChes = function(opt_in_top) {
     // basic lenght for absolute scaling of e.g., fonts
     let base_w = 100
     let add_ches_outline = false
-    let show_vor = false
+    let show_vor_lines = false
 
     let n_cols = opt_in_top.n_cols
     let aspect_ratio = opt_in_top.aspect_ratio
@@ -117,7 +117,7 @@ window.ArrZoomerChes = function(opt_in_top) {
         let cell_h = svg_dims.h / n_rows
         let cell_r = Math.min(cell_w, cell_h)
 
-        let vor_data = []
+        com.ches_g.vor_data = []
 
         let n_tel = 0
         for (let n_row = 0; n_row < n_rows; ++n_row) {
@@ -145,7 +145,7 @@ window.ArrZoomerChes = function(opt_in_top) {
                     rect_w: cell_w,
                     rect_h: cell_h,
                 }
-                vor_data.push({
+                com.ches_g.vor_data.push({
                     id: id_now,
                     x: text_x,
                     y: text_y,
@@ -171,18 +171,6 @@ window.ArrZoomerChes = function(opt_in_top) {
                 .style('stroke-opacity', 1)
                 .attr('vector-effect', 'non-scaling-stroke')
         }
-
-        let vor_func = d3
-            .voronoi()
-            .x(function(d) {
-                return d.x
-            })
-            .y(function(d) {
-                return d.y
-            })
-            .extent([ [ 0, 0 ], [ svg_dims.w, svg_dims.h ] ])
-
-        com.ches_g.vor = vor_func.polygons(vor_data)
 
         return
     }
@@ -396,7 +384,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             // let scale_r = is_south ? 2.0 : 1.1
 
             let is_ele_on
-            let data_in_id = (is_def(data_in.data) ? data_in.data.id : '')
+            let data_in_id = (is_def(data_in) ? data_in.id : '')
             if (is_on) {
                 is_ele_on = function(d) {
                     return d.id === data_in_id
@@ -481,25 +469,31 @@ window.ArrZoomerChes = function(opt_in_top) {
             return
         }
 
-
-        // ------------------------------------------------------------------
         // vor cels for selection
-        // ------------------------------------------------------------------
-        com.ches_g.g
-            .selectAll('path')
-            .data(com.ches_g.vor)
+        let voronoi = d3.Delaunay
+            .from(com.ches_g.vor_data, d => d.x, d => d.y)
+            .voronoi([ 0, 0, svg_dims.w, svg_dims.h ])
+
+        let tag_vor = 'vor'
+        let vor = com.ches_g.g
+            .selectAll('path.' + tag_vor)
+            .data(com.ches_g.vor_data, function(d, i) {
+                return d.id
+            })
+
+        vor
             .enter()
             .append('path')
+            .attr('class', tag_vor)
             .style('fill', 'transparent')
-            .attr('vector-effect', 'non-scaling-stroke')
             .style('opacity', '0')
+            .attr('vector-effect', 'non-scaling-stroke')
             .style('stroke-width', 0)
-            .style('stroke', '#383B42')
-            // .style("opacity", "0.25").style("stroke-width", "0.75").style("stroke", "#E91E63")//.style("stroke", "white")
-            .call(function(d) {
-                d.attr('d', vor_ploy_func)
-            })
-            .on('click', function(d) {
+            .style('opacity', 0)
+            .style('stroke-width', '0')
+            .style('stroke', '#4F94CD')
+            // // .on('mouseover', (d, i) => console.log(i,d))
+            .on('click', function(e, d) {
                 tel_data.vor_dblclick({
                     source: 'com.ches_g.g',
                     d: d,
@@ -507,21 +501,30 @@ window.ArrZoomerChes = function(opt_in_top) {
                     scale_to_zoom: zooms.len['1.2'],
                 })
             })
-            // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:true }); }) // dousnt work well...
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 focus_tel(d, true)
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 focus_tel(d, false)
             })
+            .merge(vor)
+            .attr('d', (d, i) => voronoi.renderCell(i))
 
-        if (show_vor) {
+        vor.exit()
+            .transition('out')
+            .duration(1)
+            .attr('opacity', 0)
+            .remove()
+
+        if (show_vor_lines) {
             com.ches_g.g
-                .selectAll('path')
+                .selectAll('path.' + tag_vor)
                 .style('opacity', '0.5')
-                .style('stroke-width', '1.5')
+                .style('stroke-width', '2.5')
                 .style('stroke', '#E91E63')
         }
+
+        return
     }
 
     // ------------------------------------------------------------------

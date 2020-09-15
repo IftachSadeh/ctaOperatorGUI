@@ -537,8 +537,8 @@ window.PlotBrushZoom = function() {
                 d3.select(this).style('cursor', 'default')
             })
 
-        reserved.brush.g.on('wheel', function() {
-            d3.event.preventDefault()
+        reserved.brush.g.on('wheel', function(event) {
+            event.preventDefault()
         })
     }
     function init_focus() {
@@ -711,6 +711,8 @@ window.PlotBrushZoom = function() {
     //         )
     // }
     function interaction_wheel() {
+        console.error('BUG - upgrade to d3.pointer(event) - https://observablehq.com/@d3/d3v6-migration-guide#pointer')
+
         let wheel_var = {
             x: 0,
             y: 0,
@@ -956,7 +958,14 @@ window.PlotBrushZoom = function() {
     }
     this.set_focus = set_focus
 
+
     function compute_overlap(axis, all_ticks, key) {
+        // ??????????????????????????????????????????????????????????
+        // DL_FIXME -
+        // profiling shows this function is a bootleneck...
+        // what's going on here and how can you simplify it?
+        // ??????????????????????????????????????????????????????????
+
         let begin = [ 1 ]
         let end = [ 1 ]
 

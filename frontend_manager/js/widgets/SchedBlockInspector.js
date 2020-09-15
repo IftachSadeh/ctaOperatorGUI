@@ -206,7 +206,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 new_schedule: opt_in.new_schedule,
             },
         }
-        sock.socket.emit('widget', emit_data)
+        sock.socket.emit({
+            name: 'widget',
+            data: emit_data,
+        })
     }
 
     let new_queue_evt = function(data_in) {
@@ -531,10 +534,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     .on('click', function() {
 
                     })
-                    .on('mouseover', function(d) {
+                    .on('mouseover', function(e, d) {
                         d3.select(this).attr('fill', color_theme.darkest.background)
                     })
-                    .on('mouseout', function(d) {
+                    .on('mouseout', function(e, d) {
                         d3.select(this).attr('fill', color_theme.bright.background)
                     })
                 svg.back.append('image')
@@ -667,13 +670,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     .style('opacity', 0.8)
                     .style('pointer-events', 'none')
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 pattern.select.patternLock.select('rect')
                     .style('opacity', 0.8)
                     .attr('fill', d3.color(colorPalette.darker.background).darker(0.1))
                 d3.select(this).attr('fill', color_theme.darkest.background)
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 pattern.select.patternLock.select('rect')
                     .style('opacity', 1)
                     .attr('fill', colorPalette.darker.background)
@@ -721,8 +724,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
             svg.g = svg.svg.append('g')
@@ -858,10 +861,10 @@ let main_sched_blocksInspector = function(opt_in) {
                         // callOptimizer()
                         svgSummaryMetrics.update_dataBQ()
                     })
-                    .on('mouseover', function(d) {
+                    .on('mouseover', function(e, d) {
                         d3.select(this).attr('fill', color_theme.darkest.background)
                     })
-                    .on('mouseout', function(d) {
+                    .on('mouseout', function(e, d) {
                         d3.select(this).attr('fill', color_theme.bright.background)
                     })
                 svg.back.append('image')
@@ -1078,7 +1081,7 @@ let main_sched_blocksInspector = function(opt_in) {
         if (!locker.are_free([ 'pushNewSchedule' ])) {
             setTimeout(function() {
                 update_data_once(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
 
@@ -1138,11 +1141,11 @@ let main_sched_blocksInspector = function(opt_in) {
                 .on('click', function() {
                     pushNewSchedule()
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     d3.select(this).attr('fill', d3.color('gold').darker())
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     d3.select(this).attr('fill', 'gold')
                 })
@@ -3015,8 +3018,8 @@ let main_sched_blocksInspector = function(opt_in) {
                         drag: {
                             start: svgFocusOverlay.dragStart,
                             tick: svgFocusOverlay.dragTick,
-                            end: function(d) {
-                                let res = svgFocusOverlay.dragEnd(d)
+                            end: function(e, d) {
+                                let res = svgFocusOverlay.dragEnd(e, d)
                                 if (res) {
                                     changeBlockProperties(d, false, 'start_time_sec')
                                 }
@@ -4070,10 +4073,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'small')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'small')
                 })
             gMerge.select('rect#smallmin')
@@ -4119,10 +4122,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'small')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'small')
                 })
                 .each(function(d) {
@@ -4187,10 +4190,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
                 })
             gMerge.select('rect#mediummin')
@@ -4236,10 +4239,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
                 })
                 .each(function(d) {
@@ -4304,10 +4307,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
                 })
             gMerge.select('rect#largemin')
@@ -4353,10 +4356,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     return 1
                 })
                 .attr('fill-opacity', 0.6)
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
                 })
                 .each(function(d) {
@@ -4956,7 +4959,10 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             return false
         }
-        function dragStart(d) {
+
+
+        function dragStart(e, d) {
+            console.log(e, d)
             if (!canDrag(d)) {
                 return
             }
@@ -4965,7 +4971,9 @@ let main_sched_blocksInspector = function(opt_in) {
                 focusManager.focusOn('block', d.obs_block_id)
             }
 
-            reserved.drag.mousecursor = d3.mouse(reserved.drag.g._groups[0][0])
+            reserved.drag.mousecursor = d3.pointer(e)
+            // reserved.drag.mousecursor = d3.mouse(reserved.drag.g._groups[0][0])
+
             reserved.drag.offset = reserved.drag.mousecursor[0] - reserved.drag.position.left
 
             reserved.drag.mode = {
@@ -4977,7 +4985,9 @@ let main_sched_blocksInspector = function(opt_in) {
 
         }
         this.dragStart = dragStart
-        function dragTick(d) {
+
+
+        function dragTick(e, d) {
             if (!canDrag(d)) {
                 return
             }
@@ -4987,13 +4997,13 @@ let main_sched_blocksInspector = function(opt_in) {
 
             reserved.drag.atLeastOneTick = true
 
-            if (d3.event.dx < 0
+            if (e.dx < 0
               && Math.floor(reserved.drag.timescale
-                  .invert(reserved.drag.position.left + d3.event.dx))
+                  .invert(reserved.drag.position.left + e.dx))
               < Number(shared.data.server.time_information.time_now_sec)) {
                 return
             }
-            reserved.drag.position.left += d3.event.dx
+            reserved.drag.position.left += e.dx
 
             if (reserved.drag.position.left < 0) {
                 reserved.drag.position.left = 0
@@ -5072,7 +5082,9 @@ let main_sched_blocksInspector = function(opt_in) {
             svg_blocks_queue_server.update()
         }
         this.dragTick = dragTick
-        function dragEnd(d) {
+
+
+        function dragEnd(e, d) {
             reserved.drag.locked = false
             if (!reserved.drag.atLeastOneTick) {
                 return
@@ -5245,7 +5257,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     .on('click', function() {
                         svgRight_info.focusOnConflict(conflict_button[j])
                     })
-                    .on('mouseover', function(d) {
+                    .on('mouseover', function(e, d) {
                         for (let j = 0; j < linked.length; j++) {
                             let nb = {
                                 x: Number(linked[j].d3.attr('x')),
@@ -5266,7 +5278,7 @@ let main_sched_blocksInspector = function(opt_in) {
                         }
                         blockQueue.highlightBlocks(conflict_button[j].d.blocks)
                     })
-                    .on('mouseout', function(d) {
+                    .on('mouseout', function(e, d) {
                         for (let j = 0; j < linked.length; j++) {
                             let nb = {
                                 x: Number(linked[j].d3.attr('x')),
@@ -5290,7 +5302,7 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             if (conflict_button[j].d3) {
                 conflict_button[j].d3
-                    .on('mouseover', function(d) {
+                    .on('mouseover', function(e, d) {
                         d3.select(this)
                             .style('cursor', 'pointer')
                             .select('rect').attr('fill', colorPalette.darkest.background)
@@ -5299,7 +5311,7 @@ let main_sched_blocksInspector = function(opt_in) {
                             linked[j].d3.attr('fill', d3.color('#000000'))
                         }
                     })
-                    .on('mouseout', function(d) {
+                    .on('mouseout', function(e, d) {
                         d3.select(this).style('cursor', 'default')
                         if (conflictFocused.d === conflict_button[j].d) {
                             return
@@ -5508,11 +5520,11 @@ let main_sched_blocksInspector = function(opt_in) {
                     }
                     navigateHistory('backward')
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     d3.select(this).style('opacity', 1)
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     d3.select(this).style('opacity', 0.5)
                 })
@@ -5530,11 +5542,11 @@ let main_sched_blocksInspector = function(opt_in) {
                     }
                     navigateHistory('forward')
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     d3.select(this).style('opacity', 1)
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     d3.select(this).style('opacity', 0.5)
                 })
@@ -5610,11 +5622,11 @@ let main_sched_blocksInspector = function(opt_in) {
                                 display = undefined
                                 focusManager.focusOn('block', d.obs_block_id)
                             })
-                            .on('mouseover', function(d) {
+                            .on('mouseover', function(e, d) {
                                 d3.select(this).style('cursor', 'pointer')
                                 d3.select(this).attr('fill', d3.color(color.background).darker(0.9))
                             })
-                            .on('mouseout', function(d) {
+                            .on('mouseout', function(e, d) {
                                 d3.select(this).style('cursor', 'default')
                                 d3.select(this).attr('fill', color.background)
                             })
@@ -5793,11 +5805,11 @@ let main_sched_blocksInspector = function(opt_in) {
                             display = undefined
                             focusManager.focusOn('target', d.id)
                         })
-                        .on('mouseover', function(d) {
+                        .on('mouseover', function(e, d) {
                             d3.select(this).style('cursor', 'pointer')
                             d3.select(this).attr('fill', color_theme.darker.background)
                         })
-                        .on('mouseout', function(d) {
+                        .on('mouseout', function(e, d) {
                             d3.select(this).style('cursor', 'default')
                             d3.select(this).attr('fill', color_theme.dark.background)
                         })
@@ -7179,11 +7191,11 @@ let main_sched_blocksInspector = function(opt_in) {
                             .on('click', function() {
                                 focusManager.focusOn('sched_block', d.id)
                             })
-                            .on('mouseover', function(d) {
+                            .on('mouseover', function(e, d) {
                                 d3.select(this).style('cursor', 'pointer')
                                 d3.select(this).attr('fill', colorPalette.darker.background)
                             })
-                            .on('mouseout', function(d) {
+                            .on('mouseout', function(e, d) {
                                 d3.select(this).style('cursor', 'default')
                                 d3.select(this).attr('fill', colorPalette.dark.background)
                             })
@@ -7267,11 +7279,11 @@ let main_sched_blocksInspector = function(opt_in) {
                             .attr('stroke', palette.color.stroke)
                             .attr('stroke-width', 0.1)
                             .on('click', function() {})
-                            .on('mouseover', function(d) {
+                            .on('mouseover', function(e, d) {
                                 d3.select(this).style('cursor', 'pointer')
                                 d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
                             })
-                            .on('mouseout', function(d) {
+                            .on('mouseout', function(e, d) {
                                 d3.select(this).style('cursor', 'default')
                                 d3.select(this).attr('fill', palette.color.background)
                             })
@@ -7292,10 +7304,10 @@ let main_sched_blocksInspector = function(opt_in) {
                                 return 'transparent'
                             })
                             .on('click', function() {})
-                            .on('mouseover', function(d) {
+                            .on('mouseover', function(e, d) {
                                 d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
                             })
-                            .on('mouseout', function(d) {
+                            .on('mouseout', function(e, d) {
                                 d3.select(this).attr('fill', 'transparent')
                             })
                     })
@@ -8988,8 +9000,8 @@ let main_sched_blocksInspector = function(opt_in) {
                         drag: {
                             start: svgFocusOverlay.dragStart,
                             tick: svgFocusOverlay.dragTick,
-                            end: function(d) {
-                                let res = svgFocusOverlay.dragEnd(d)
+                            end: function(e, d) {
+                                let res = svgFocusOverlay.dragEnd(e, d)
                                 if (res) {
                                     changeBlockProperties(d, false, 'start_time_sec')
                                 }

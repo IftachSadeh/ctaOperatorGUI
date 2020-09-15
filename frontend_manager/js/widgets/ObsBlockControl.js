@@ -129,7 +129,7 @@ let main_obs_block_control = function(opt_in) {
         tag: widget_id,
     })
 
-    
+
     let update_data_evt = function(data_in) {
         if (data_in.metadata.widget_id !== widget_id) {
             return
@@ -311,8 +311,8 @@ let main_obs_block_control = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
 
@@ -471,7 +471,7 @@ let main_obs_block_control = function(opt_in) {
                 show_counts: true,
                 vor_click: function(d) {
                     block_focus({
-                        id: d.data.id,
+                        id: d.id,
                     })
                 },
                 lockers: [ tagObsBlkCnt + 'update_data' ],
@@ -503,12 +503,12 @@ let main_obs_block_control = function(opt_in) {
                 tag: tagTelScroll,
                 g_box: gTelBox,
                 box_data: telScrolBoxData,
-                vor_click: function(opt_in) {
+                vor_click: function(d) {
                     send_sync_state_to_server({
                         type: 'sync_tel_focus',
                         sync_time: Date.now(),
                         zoom_state: 1,
-                        target: opt_in.data.id,
+                        target: d.id,
                     })
                 },
                 lockers: [ tagObsBlkCnt + 'update_data' ],
@@ -1026,7 +1026,7 @@ let main_obs_block_control = function(opt_in) {
             if (!locker.is_free('in_init')) {
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
 
@@ -1048,7 +1048,7 @@ let main_obs_block_control = function(opt_in) {
                 // console.log('will delay updateRecData',locker.get_actives([tagObsBlkCnt+"update_data_once", tagTelScroll+"_zoom", tagBlockQueueOld+"_zoom"]));
                 setTimeout(function() {
                     update_data(data_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
             locker.add(tagObsBlkCnt + 'update_data')
@@ -1153,7 +1153,7 @@ let main_obs_block_control = function(opt_in) {
                 // console.log('will delay _block_focus_');
                 setTimeout(function() {
                     block_focus(opt_in)
-                }, 10)
+                }, times.wait_loop)
                 return
             }
             locker.add(tagObsBlkCnt + 'update_data')

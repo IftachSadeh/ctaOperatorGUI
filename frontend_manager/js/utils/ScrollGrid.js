@@ -127,8 +127,8 @@ window.ScrollGrid = function(opt_in) {
     lockers.zoom_during = lockers.lockers.slice().concat([ lock_zoom.during ])
     lockers.zoom_end = lockers.lockers.slice().concat([ lock_zoom.end ])
 
-    let vor_show_lines = (
-        is_def(vor_opt.vor_show_lines) ? vor_opt.vor_show_lines : false
+    let show_vor_lines = (
+        is_def(vor_opt.show_vor_lines) ? vor_opt.show_vor_lines : false
     )
     let vor_mouseover = (
         is_def(vor_opt.mouseover) ? vor_opt.mouseover : null
@@ -231,32 +231,17 @@ window.ScrollGrid = function(opt_in) {
             ]
         }
 
-        let extent = [
-            [ x0, y0 ],
-            [
-                x0 + w0 - scroll_rec_marg[0],
-                y0 + h0 - scroll_rec_marg[1],
-            ],
-        ]
-
-        let vor_func = d3
-            .voronoi()
-            .x(function(d) {
-                return d.x + d.w / 2
-            })
-            .y(function(d) {
-                return d.y + d.h / 2
-            })
-            .extent(extent)
-
         let vor_data = recs[main_tag]
 
+        let voronoi = d3.Delaunay
+            .from(vor_data, d => d.x + d.w / 2, d => d.y + d.h / 2)
+            .voronoi([ x0, y0, x0 + w0 - scroll_rec_marg[0], y0 + h0 - scroll_rec_marg[1] ])
+
+        let tag_vor = 'vor'
         let vor = com.g_vor
             .selectAll('path.' + tag_vor)
-            .data(vor_func.polygons(vor_data), function(d) {
-                if (d) {
-                    return d.data.id
-                }
+            .data(vor_data, function(d, i) {
+                return d.id
             })
 
         vor
@@ -268,24 +253,31 @@ window.ScrollGrid = function(opt_in) {
             .attr('vector-effect', 'non-scaling-stroke')
             .style('stroke-width', 0)
             .style('opacity', 0)
-            .style('stroke', '#383B42')
-            .style('stroke-width', '.5')
-            .style('opacity', vor_show_lines ? 1 : 0)
+            .style('stroke-width', '0')
             .style('stroke', '#4F94CD')
+            // .on('mouseover', (d, i) => console.log(i,d))
             .on('mouseover', vor_mouseover)
             .on('mouseout', vor_mouseout)
             .on('dblclick', vor_dblclick)
             .on('click', vor_click)
-            // .style("pointer-events", "none")
-            // .call(com[tag_drag])
-            // .on("mouseover", function(d) { console.log(d.data.id);  }) // debugging
             .merge(vor)
-            // .transition("clipPath").duration(1000)
-            .call(function(d) {
-                d.attr('d', vor_ploy_func)
-            })
+            .attr('d', (d, i) => voronoi.renderCell(i))
 
-        vor.exit().remove()
+        vor
+            .exit()
+            .transition('out')
+            .duration(1)
+            .attr('opacity', 0)
+            .remove()
+
+        if (show_vor_lines) {
+            com.g_vor
+                .selectAll('path.' + tag_vor)
+                .style('opacity', '0.5')
+                .style('stroke-width', '2.5')
+                .style('stroke', '#E91E63')
+        }
+
 
         if (vor_call) {
             com.g_vor.selectAll('path.' + tag_vor).call(vor_call)
@@ -293,6 +285,8 @@ window.ScrollGrid = function(opt_in) {
         else if (has_bot_top) {
             com.g_vor.selectAll('path.' + tag_vor).call(com[tag_drag])
         }
+
+        return
     }
 
     function xy_frac_zoom(xy_frac_in) {
@@ -488,7 +482,7 @@ window.ScrollGrid = function(opt_in) {
     // ------------------------------------------------------------------
     com.tot_trans = 0
     function setup_zoom() {
-        com.zoom_start = function() {
+        com.zoom_start = function(e) {
             if (!has_bot_top) {
                 return
             }
@@ -502,13 +496,13 @@ window.ScrollGrid = function(opt_in) {
         }
 
         let delay = 0
-        com.zoom_during = function() {
+        com.zoom_during = function(e) {
             if (!has_bot_top) {
                 return
             }
-            // if(!is_def(d3.event.sourceEvent)) return;
+            // if(!is_def(e.sourceEvent)) return;
             // isInZoom = true
-            in_user_zoom = is_def(d3.event.sourceEvent)
+            in_user_zoom = is_def(e.sourceEvent)
 
             if (locker.are_free(lockers.zoom_during)) {
                 locker.add({
@@ -523,8 +517,8 @@ window.ScrollGrid = function(opt_in) {
                 let trans = null
                 delay = 0
                 if (in_user_zoom) {
-                    let wd_x = d3.event.sourceEvent.deltaX
-                    let wd_y = d3.event.sourceEvent.deltaY
+                    let wd_x = e.sourceEvent.deltaX
+                    let wd_y = e.sourceEvent.deltaY
                     let wd_xy = Math.abs(wd_x) > Math.abs(wd_y) ? -1 * wd_x : wd_y
 
                     trans = is_def(wd_xy) ? -1 * wd_xy : 0
@@ -603,7 +597,7 @@ window.ScrollGrid = function(opt_in) {
             return
         }
 
-        com.zoom_end = function() {
+        com.zoom_end = function(e) {
             if (!has_bot_top) {
                 return
             }
@@ -695,7 +689,7 @@ window.ScrollGrid = function(opt_in) {
             return
         }
 
-        com.drag_start = function(coords) {
+        com.drag_start = function(e, coords) {
             locker.add({
                 id: lock_zoom.all,
                 override: true,
@@ -725,7 +719,7 @@ window.ScrollGrid = function(opt_in) {
             }
         }
 
-        com.drag_during = function(coords_in) {
+        com.drag_during = function(e, coords_in) {
             is_in_drag = true
 
             if (is_in_scroll_drag) {
@@ -743,12 +737,12 @@ window.ScrollGrid = function(opt_in) {
                 })
             }
             else {
-                let trans = is_horz ? -d3.event.dx : d3.event.dy
+                let trans = is_horz ? -e.dx : e.dy
                 com.do_trans(trans)
             }
         }
 
-        com.drag_end = function() {
+        com.drag_end = function(e) {
             locker.remove({
                 id: lock_zoom.all,
                 override: true,
@@ -777,14 +771,14 @@ window.ScrollGrid = function(opt_in) {
 
         com[tag_drag] = d3.drag()
         com[tag_drag]
-            .on('start', function(_) {
-                com.drag_start(d3.mouse(this))
+            .on('start', function(e) {
+                com.drag_start(e, d3.pointer(e))
             })
-            .on('drag', function(_) {
-                com.drag_during(d3.mouse(this))
+            .on('drag', function(e) {
+                com.drag_during(e, d3.pointer(e))
             })
-            .on('end', function(_) {
-                com.drag_end()
+            .on('end', function(e) {
+                com.drag_end(e)
             })
 
         set_zoom_status()
@@ -862,9 +856,9 @@ window.ScrollGrid = function(opt_in) {
             .attr('y', is_horz ? y0 + h0 : y0)
             .attr('width', is_horz ? w0 : 0)
             .attr('height', is_horz ? 0 : h0)
-            .on('click', function(_) {
+            .on('click', function(e) {
                 rec_bck_click_once({
-                    coords: d3.mouse(this),
+                    coords: d3.pointer(e),
                 })
             })
             .call(com[tag_drag])

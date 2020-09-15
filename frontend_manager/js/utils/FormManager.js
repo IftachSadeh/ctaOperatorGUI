@@ -161,11 +161,11 @@ window.FormManager = function() {
 
         let form = com.main_div[id]
             .append('form')
-        // prevent form sub on Enter key
-            .on('keydown', function() {
-                if (d3.event.which === 13) {
+            // prevent form sub on Enter key
+            .on('keydown', function(event) {
+                if (event.which === 13) {
                     if (preventDefault) {
-                        d3.event.preventDefault()
+                        event.preventDefault()
                     }
                     if (formSubFunc) {
                         formSubFunc(opt_in)
@@ -176,7 +176,7 @@ window.FormManager = function() {
                 'background',
                 opt_in.background ? opt_in.background.input : '#f0f0f0'
             )
-        // .style("width", window.svgWidthScale[tagForm]())
+            // .style("width", window.svgWidthScale[tagForm]())
 
         com.input[id] = form
             .append('input')
@@ -184,7 +184,7 @@ window.FormManager = function() {
             .attr('type', 'text')
             .attr('value', opt_in.data.data.text ? opt_in.data.data.text : '')
             .attr('required', 'true')
-        // .attr("maxlength", 10).attr("type", 'radio')
+            // .attr("maxlength", 10).attr("type", 'radio')
             .style('font-size', font_size)
 
         form.append('div').attr('class', 'formMngrBar')

@@ -241,20 +241,21 @@ window.PanelManager = function() {
     }
     let drag = d3
         .drag()
-        .on('start', function(d, i) {
-            d3.event.sourceEvent.stopPropagation()
+        .on('start', function(e, d) {
+            e.sourceEvent.stopPropagation()
             com.manager.setFocusOnGroup(d.get('panelGroup'))
-            d.startDragX = d3.event.x
-            d.startDragY = d3.event.y
+            d.startDragX = e.x
+            d.startDragY = e.y
         })
-        .on('drag', function(d, i) {
-            let offsetX = d.get('transX') + (d3.event.x - d.startDragX)
-            let offsetY = d.get('transY') + (d3.event.y - d.startDragY)
+        .on('drag', function(e, d) {
+            let offsetX = d.get('transX') + (e.x - d.startDragX)
+            let offsetY = d.get('transY') + (e.y - d.startDragY)
             d3
                 .select(this)
                 .attr('transform', 'translate(' + offsetX + ',' + offsetY + ')')
         })
         .on('end', function(d, i) {
+            console.error('BUG for de/v6 : input event instead of d3.event ... do we get i ?')
             if (
                 Math.sqrt(
                     Math.pow(d3.event.x - d.startDragX, 2)

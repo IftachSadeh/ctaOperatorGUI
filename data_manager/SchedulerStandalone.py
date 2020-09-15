@@ -47,6 +47,7 @@ class SchedulerStandalone(ServiceManager):
         self.interrupt_sig = interrupt_sig
 
         self.tel_ids = self.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
+        self.sub_array_insts = self.inst_data.get_sub_array_insts()
 
         self.no_sub_arr_name = self.base_config.no_sub_arr_name
 
@@ -58,8 +59,8 @@ class SchedulerStandalone(ServiceManager):
         self.expire_sec = 86400 * 2  # two days
         # self.expire_sec = 5
 
-        self.max_n_obs_block = 4 if self.site_type == 'N' else 7
-        self.max_n_obs_block = min(self.max_n_obs_block, floor(len(self.tel_ids) / 4))
+        # self.max_n_obs_block = 4 if self.site_type == 'N' else 7
+        # self.max_n_obs_block = min(self.max_n_obs_block, floor(len(self.tel_ids) / 4))
 
         # sleep duration for thread loops
         self.loop_sleep_sec = 1
@@ -74,9 +75,7 @@ class SchedulerStandalone(ServiceManager):
         self.min_n_tel_block = 4
         self.max_n_free_tels = 5
 
-        self.name_prefix = get_rnd(out_type=str)
-        if len(self.name_prefix) > 6:
-            self.name_prefix = self.name_prefix[len(self.name_prefix) - 6:]
+        self.name_prefix = get_rnd(n_digits=5, out_type=str)
 
         self.az_min_max = [-180, 180]
         self.zen_min_max_tel = [0, 70]
@@ -116,6 +115,8 @@ class SchedulerStandalone(ServiceManager):
         self.n_nights = -1
 
         self.update_name = 'obs_block_update'
+        self.sched_block_prefix = 'sched_block_'
+        self.obs_block_prefix = 'obs_block_'
 
         rnd_seed = get_rnd_seed()
         self.rnd_gen = Random(rnd_seed)
@@ -159,7 +160,7 @@ class SchedulerStandalone(ServiceManager):
 
         is_cycle_done = False
         n_cycle_now = 0
-        n_sched_blocks = -1
+        n_sched_block = -1
         overhead_sec = self.obs_block_sec * 0.05
 
         tot_sched_duration_sec = night_start_sec
@@ -173,28 +174,43 @@ class SchedulerStandalone(ServiceManager):
             if can_break:
                 break
 
-            base_name = (
+            base_cycle_name = (
                 self.name_prefix + '_' + str(self.n_init_cycle) + '_' + str(n_cycle_now)
                 + '_'
             )
             n_cycle_now += 1
 
-            tel_ids = copy.deepcopy(self.tel_ids)
-            n_tels = len(tel_ids)
+            # derive a random combination of sub-arrays which do not
+            # conflict with each other
+            sub_array_ids = list(self.sub_array_insts.keys())
+            n_sa_0 = self.rnd_gen.randint(0, len(sub_array_ids) - 1)
+            sa_id_0 = sub_array_ids[n_sa_0]
 
-            # choose number of Scheduling blocks for this part of night (while loop)
-            n_sched_blocks = min(
-                floor(n_tels / self.min_n_tel_block), self.max_n_sched_block
-            )
-            n_sched_blocks = max(
-                self.rnd_gen.randint(1, n_sched_blocks), self.min_n_sched_block
-            )
+            allowed_sa_ids = self.inst_data.get_allowed_sub_arrays(sa_id_0)
+
+            sa_ids = [sa_id_0]
+            while len(allowed_sa_ids) > 0:
+                # select a random id from the allowed list of the initial sa
+                check_n_sa = self.rnd_gen.randint(0, len(allowed_sa_ids) - 1)
+                sa_id_add = allowed_sa_ids[check_n_sa]
+                allowed_sa_ids.remove(sa_id_add)
+
+                # check if this id is allowed by all included sas
+                check_sa_ids = []
+                for sa_id in sa_ids:
+                    check_sa_ids_now = self.inst_data.get_allowed_sub_arrays(sa_id)
+                    check_sa_ids += [int(sa_id_add in check_sa_ids_now)]
+
+                # add the new sa if it is allowed by all
+                if sum(check_sa_ids) == len(check_sa_ids):
+                    sa_ids += [sa_id_add]
 
             if debug_tmp:
                 precent = (tot_sched_duration_sec - night_start_sec) / night_duration_sec
-                print('--------------------------------------------------------')
+                print()
+                print('-' * 100)
                 print(
-                    '- n_nights/n_cycle_now',
+                    ' -    n_nights/n_cycle_now',
                     [self.n_nights, n_cycle_now],
                     'tot_sched_duration_sec / percentage:',
                     [tot_sched_duration_sec, int(100 * precent)],
@@ -202,26 +218,21 @@ class SchedulerStandalone(ServiceManager):
 
             sched_block_duration_sec = []
 
-            for n_sched_block_now in range(n_sched_blocks):
-                sched_block_id = 'sched_block_' + base_name + str(n_sched_block_now)
+            # for n_sched_block_now in range(n_cycle_sched_blocks):
+            for n_sched_block_now in range(len(sa_ids)):
+                sched_block_id = (
+                    self.sched_block_prefix + base_cycle_name + str(n_sched_block_now)
+                )
 
-                n_sched_blocks += 1
+                n_sched_block += 1
 
-                if n_sched_block_now < n_sched_blocks - 1:
-                    n_tel_now = max(self.min_n_tel_block, len(tel_ids) - n_sched_blocks)
-                    n_tel_now = self.rnd_gen.randint(self.min_n_tel_block, n_tel_now)
-                    n_tel_now = min(n_tel_now, len(tel_ids))
-                else:
-                    n_tel_now = (
-                        len(tel_ids) - self.rnd_gen.randint(0, self.max_n_free_tels)
-                    )
-                if n_tel_now < self.min_n_tel_block:
-                    continue
+                sa_id = sa_ids[n_sched_block_now]
+                tel_ids = self.sub_array_insts[sa_id]
+                n_tel_now = len(tel_ids)
+                
+                if debug_tmp:
+                    print(' --   sub-array:', sa_id, '\n', ' ' * 15, tel_ids)
 
-                # choose some tels in available ones
-                sched_tel_ids = random.sample(tel_ids, n_tel_now)
-                # and remove them from allTels list
-                tel_ids = [x for x in tel_ids if x not in sched_tel_ids]
                 # choose the number of obs blocks inside these blocks
                 n_obs_blocks = self.rnd_gen.randint(
                     self.min_n_obs_block, self.max_n_obs_block
@@ -229,7 +240,8 @@ class SchedulerStandalone(ServiceManager):
 
                 if debug_tmp:
                     print(
-                        ' -- n_sched_block_now / n_tel_now:', n_sched_block_now,
+                        ' ---  n_sched_block:', n_sched_block,
+                        ' ---  n_sched_block_now / n_tel_now:', n_sched_block_now,
                         n_tel_now, '-------', sched_block_id
                     )
 
@@ -244,9 +256,11 @@ class SchedulerStandalone(ServiceManager):
 
                 for n_obs_now in range(n_obs_blocks):
                     obs_block_id = (
-                        'obs_block_' + base_name + str(n_sched_block_now) + '_'
-                        + str(n_obs_now)
+                        self.obs_block_prefix + base_cycle_name + str(n_sched_block_now)
+                        + '_' + str(n_obs_now)
                     )
+
+                    obs_block_name = (str(n_sched_block) + ' (' + str(n_obs_now) + ')')
 
                     self.exe_phase[obs_block_id] = ''
 
@@ -276,7 +290,7 @@ class SchedulerStandalone(ServiceManager):
 
                     pointings = get_rnd_pointings(
                         self=self,
-                        tel_ids=sched_tel_ids,
+                        tel_ids=tel_ids,
                         targets=targets,
                         sched_block_id=sched_block_id,
                         obs_block_id=obs_block_id,
@@ -285,7 +299,7 @@ class SchedulerStandalone(ServiceManager):
 
                     if debug_tmp:
                         print(
-                            ' --- n_obs_now / start_time_sec / duration:',
+                            ' ---- n_obs_now / start_time_sec / duration:',
                             n_obs_now,
                             block_duration_sec,
                             obs_block_sec,
@@ -302,35 +316,29 @@ class SchedulerStandalone(ServiceManager):
                     exe_state = {'state': 'wait', 'can_run': True}
 
                     metadata = {
-                        'n_sched': n_sched_blocks,
+                        'n_sched': n_sched_block,
                         'n_obs': n_obs_now,
-                        'block_name': str(n_sched_blocks) + ' (' + str(n_obs_now) + ')'
+                        'block_name': obs_block_name
                     }
 
                     telescopes = {
                         'large': {
                             'min':
-                            int(len(list(filter(lambda x: 'L' in x, sched_tel_ids))) / 2),
-                            'max':
-                            4,
-                            'ids':
-                            list(filter(lambda x: 'L' in x, sched_tel_ids))
+                            int(len(list(filter(lambda x: 'L' in x, tel_ids))) / 2),
+                            'max': 4,
+                            'ids': list(filter(lambda x: 'L' in x, tel_ids))
                         },
                         'medium': {
                             'min':
-                            int(len(list(filter(lambda x: 'M' in x, sched_tel_ids))) / 2),
-                            'max':
-                            25,
-                            'ids':
-                            list(filter(lambda x: 'M' in x, sched_tel_ids))
+                            int(len(list(filter(lambda x: 'M' in x, tel_ids))) / 2),
+                            'max': 25,
+                            'ids': list(filter(lambda x: 'M' in x, tel_ids))
                         },
                         'small': {
                             'min':
-                            int(len(list(filter(lambda x: 'S' in x, sched_tel_ids))) / 2),
-                            'max':
-                            70,
-                            'ids':
-                            list(filter(lambda x: 'S' in x, sched_tel_ids))
+                            int(len(list(filter(lambda x: 'S' in x, tel_ids))) / 2),
+                            'max': 70,
+                            'ids': list(filter(lambda x: 'S' in x, tel_ids))
                         }
                     }
 
@@ -345,7 +353,7 @@ class SchedulerStandalone(ServiceManager):
                         'run_phase': [],
                         'targets': targets,
                         'pointings': pointings,
-                        'tel_ids': sched_tel_ids,
+                        'tel_ids': tel_ids,
                     }
 
                     pipe.set(

@@ -1651,8 +1651,7 @@ window.EventDisplayer = function(opt_in) {
                 .style('stroke-opacity', 0)
                 .style('stroke-dasharray', [])
                 .attr('vector-effect', 'non-scaling-stroke')
-                .on('click', function(d) {
-                    let event = d3.event
+                .on('click', function(event, d) {
                     let node = d3.select(this)
                     node.attr('clicked', 1)
 
@@ -1669,29 +1668,29 @@ window.EventDisplayer = function(opt_in) {
                         com.events.event.click(d)
                     }, 250)
                 })
-                .on('dblclick', function(d) {
+                .on('dblclick', function(e, d) {
                     let node = d3.select(this)
                     node.attr('clicked', 2)
                 })
-                .on('mouseover', function(d) {
+                .on('mouseover', function(e, d) {
                     d3.select(this).style('cursor', 'pointer')
                     com.events.event.mouseover(d)
                 })
-                .on('mouseout', function(d) {
+                .on('mouseout', function(e, d) {
                     d3.select(this).style('cursor', 'default')
                     com.events.event.mouseout(d)
                 })
                 .call(d3.drag()
-                    .on('start', function(d) {
+                    .on('start', function(e, d) {
                         com.interaction = {
                         }
                         com.interaction.oldG = parent
                         com.events.event.drag.start(d)
                     })
-                    .on('drag', function(d) {
+                    .on('drag', function(e, d) {
                         com.events.event.drag.tick(d)
                     })
-                    .on('end', function(d) {
+                    .on('end', function(e, d) {
                         com.events.event.drag.end(d)
                     }))
             d3.select(this).append('rect')

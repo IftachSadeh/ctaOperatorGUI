@@ -116,14 +116,14 @@ window.block_icon = function(g, dim, name, events, color_theme) {
         .attr('stroke-width', 0.6)
     // .style('boxShadow', '10px 20px 30px black')
         .attr('rx', dim.w)
-        .on('click', function() {
+        .on('click', function(e) {
             events.click()
         })
-        .on('mouseover', function(d) {
+        .on('mouseover', function(e, d) {
             d3.select(this).style('cursor', 'pointer')
             d3.select(this).attr('fill', color_theme.darker.background)
         })
-        .on('mouseout', function(d) {
+        .on('mouseout', function(e, d) {
             d3.select(this).style('cursor', 'default')
             d3.select(this).attr('fill', color_theme.dark.background)
         })
@@ -380,7 +380,7 @@ window.inputDate = function(g, box, id, opt_in, events) {
         input.attr('disabled')
         return
     }
-    input.on('change', function(d) {
+    input.on('change', function(e, d) {
         let new_val = parseInt(input.property('value'))
         if (new_val > opt_in.max) {
             new_val = opt_in.max
@@ -391,15 +391,15 @@ window.inputDate = function(g, box, id, opt_in, events) {
         input.property('value', ('0' + new_val).slice(-2))
         events.change(input.property('value'))
     })
-    input.on('focus', function() {
+    input.on('focus', function(e) {
         $(this).select()
     })
-    input.on('wheel', function(d) {
+    input.on('wheel', function(e, d) {
         if (!$(this).is(':focus')) {
             return
         }
-        d3.event.preventDefault()
-        let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+        e.preventDefault()
+        let direction = e.wheelDelta < 0 ? 'down' : 'up'
         let new_val = parseInt(input.property('value'))
         if (direction === 'up') {
             new_val += 1
@@ -416,8 +416,8 @@ window.inputDate = function(g, box, id, opt_in, events) {
         input.property('value', ('0' + new_val).slice(-2))
         events.change(input.property('value'))
     })
-    input.on('keyup', function() {
-        let event = d3.event
+    input.on('keyup', function(e) {
+        let event = e
         if (event.keyCode === 13) {
             event.preventDefault()
             events.enter(input.property('value'))
@@ -431,7 +431,7 @@ window.inputDate = function(g, box, id, opt_in, events) {
         .style('box-shadow', '0 0 0 0.3pt #000000 inset')
         .style('border-radius', '10px 0px 0px 10px')
         .style('font-size', headerSize + 'px')
-        .on('click', function() {
+        .on('click', function(e) {
             let oldValue = parseInt(input.property('value'))
             let new_val = oldValue
             if (oldValue > opt_in.min) {
@@ -449,7 +449,7 @@ window.inputDate = function(g, box, id, opt_in, events) {
         .style('box-shadow', '0 0 0 0.3pt #000000 inset')
         .style('border-radius', '0px 10px 10px 0px')
         .style('font-size', headerSize + 'px')
-        .on('click', function() {
+        .on('click', function(e) {
             let oldValue = parseInt(input.property('value'))
             let new_val = oldValue
             if (oldValue < opt_in.max) {
@@ -487,7 +487,7 @@ window.inputNumber = function(g, box, id, opt_in, events) {
             .style('box-shadow', '0 0 0 0.3pt #000000 inset')
             .style('border-radius', '10px 0px 0px 10px')
             .style('font-size', headerSize + 'px')
-            .on('click', function() {
+            .on('click', function(e) {
                 let oldValue = parseInt(linker.input.property('value'))
                 let new_val = oldValue
                 if (oldValue > opt_in.min) {
@@ -520,7 +520,7 @@ window.inputNumber = function(g, box, id, opt_in, events) {
         linker.input.attr('disabled')
         return
     }
-    linker.input.on('change', function(d) {
+    linker.input.on('change', function(e, d) {
         let new_val = parseInt(linker.input.property('value'))
         if (new_val > opt_in.max) {
             new_val = opt_in.max
@@ -531,16 +531,16 @@ window.inputNumber = function(g, box, id, opt_in, events) {
         linker.input.property('value', ('' + new_val).slice(-2))
         events.change(linker.input.property('value'))
     })
-    linker.input.on('focus', function() {
+    linker.input.on('focus', function(e) {
         $(this).select()
     })
-    linker.input.on('wheel', function(d) {
+    linker.input.on('wheel', function(e, d) {
         if (!$(this).is(':focus')) {
             return
         }
-        d3.event.preventDefault()
-        d3.event.stopPropagation()
-        let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+        e.preventDefault()
+        e.stopPropagation()
+        let direction = e.wheelDelta < 0 ? 'down' : 'up'
         let new_val = parseInt(linker.input.property('value'))
         if (direction === 'up' && new_val < opt_in.max) {
             new_val += 1
@@ -551,8 +551,8 @@ window.inputNumber = function(g, box, id, opt_in, events) {
         linker.input.property('value', ('' + new_val).slice(-2))
         events.change(linker.input.property('value'))
     })
-    linker.input.on('keyup', function() {
-        let event = d3.event
+    linker.input.on('keyup', function(e) {
+        let event = e
         if (event.keyCode === 13) {
             event.preventDefault()
             events.enter(linker.input.property('value'))
@@ -567,7 +567,7 @@ window.inputNumber = function(g, box, id, opt_in, events) {
         .style('box-shadow', '0 0 0 0.3pt #000000 inset')
         .style('border-radius', '0px 10px 10px 0px')
         .style('font-size', headerSize + 'px')
-        .on('click', function() {
+        .on('click', function(e) {
             let oldValue = parseInt(linker.input.property('value'))
             let new_val = oldValue
             if (oldValue < opt_in.max) {
@@ -594,7 +594,7 @@ window.dropDown_div = function(g, box, id, opt_in, events) {
         root_div.html(opt_in.value)
         return root_div
     }
-    // div.on('mouseover', function (d) {
+    // div.on('mouseover', function (e, d) {
     //   if (d.event.mouseover) {
     //     div.style('background', function (d) {
     //       return (d.style && d.style.color) ? d3.color(d.style.color).darker(0.4) : d3.color(color_theme.brighter.background).darker(0.4)
@@ -602,7 +602,7 @@ window.dropDown_div = function(g, box, id, opt_in, events) {
     //     d.event.mouseover(d)
     //   }
     // })
-    // div.on('mouseout', function (d) {
+    // div.on('mouseout', function (e, d) {
     //   if (d.event.mouseout) {
     //     div.style('background', function (d) {
     //       return (d.style && d.style.color) ? d.style.color : color_theme.brighter.background
@@ -636,7 +636,7 @@ window.dropDown_div = function(g, box, id, opt_in, events) {
         .style('height', '100%')
         .style('box-shadow', '0 0 0 0.1pt #eeeeee inset')
         .style('font-size', opt_in['font-size'])
-        .on('change', function(d) {
+        .on('change', function(e, d) {
             events.change(selector.property('value'))
         })
     selector.selectAll('option')

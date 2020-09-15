@@ -228,8 +228,8 @@ let main_weather_monitoring = function(opt_in) {
                 .on('dblclick.zoom', null)
 
             if (disable_scroll_svg) {
-                svg.svg.on('wheel', function() {
-                    d3.event.preventDefault()
+                svg.svg.on('wheel', function(event) {
+                    event.preventDefault()
                 })
             }
 
@@ -551,7 +551,7 @@ let main_weather_monitoring = function(opt_in) {
         if (!locker.are_free([ 'pushNewSchedule' ])) {
             setTimeout(function() {
                 update_data_once(data_in)
-            }, 10)
+            }, times.wait_loop)
             return
         }
 
@@ -3280,7 +3280,7 @@ let main_weather_monitoring = function(opt_in) {
             if (!locker.is_free(arr_zoomer_lock_init_key)) {
                 setTimeout(function() {
                     set_user_styles()
-                }, 10)
+                }, times.wait_loop)
                 return
             }
 
@@ -3314,7 +3314,7 @@ let main_weather_monitoring = function(opt_in) {
         if (!is_def(arr_zoomer.get_ele('main'))) {
             setTimeout(function() {
                 auto_trans_test(arr_zoomer, target)
-            }, 0.2)
+            }, 20)
             return
         }
         arr_zoomer.get_ele('main').zoom_to_target_main({

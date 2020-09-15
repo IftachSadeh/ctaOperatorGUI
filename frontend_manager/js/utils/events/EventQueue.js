@@ -797,14 +797,14 @@ window.EventQueue = function() {
                 // if (d.data.priority === 2) { return '#FFCA28' }
                 // if (d.data.priority === 3) { return '#FFA000' }
             })
-            .on('mouseover', function(d) {
+            .on('mouseover', function(e, d) {
                 d3.select(this).attr('stroke-width', 3.5)
                     .style('stroke-opacity', 1)
                     .style('stroke', '#000000')
                     .style('fill', '#ffffff')
                     .style('fill-opacity', '1')
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(e, d) {
                 d3.select(this).attr('stroke-width', 0.5)
                     .style('stroke-opacity', 0.7)
                     .style('stroke', '#000000')
@@ -816,7 +816,7 @@ window.EventQueue = function() {
                         // if (d.data.priority === 3) { return '#FFA000' }
                     })
             })
-            .on('click', function(d) {
+            .on('click', function(e, d) {
                 com.blocks.events.click()
             })
             .merge(rect)
