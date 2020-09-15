@@ -1538,7 +1538,10 @@ window.ArrZoomerBase = function(opt_in_top) {
             parent_name: data.parent_name,
             prop_data: is_def(data.data) ? data.data : [],
         }
-        get_ele('tree').set_hierarchy_ches_data(ches_data)
+
+        if (get_ele('tree')) {
+            get_ele('tree').set_hierarchy_ches_data(ches_data)
+        }
 
         return
     }
