@@ -58,7 +58,21 @@ class LogParser():
             )
         )
 
+        # allowed log levels, shared with the client
+        self._log_levels = {
+            'DEBUG': 'DEBUG',
+            'INFO': 'INFO',
+            'WARNING': 'WARNING',
+            'WARN': 'WARN',
+            'ERROR': 'ERROR',
+        }
+
         return
+
+    # ------------------------------------------------------------------
+    @property
+    def log_levels(self):
+        return self._log_levels
 
     # ------------------------------------------------------------------
     def set_logging_config(self):
@@ -196,9 +210,9 @@ class LogParser():
         with LogParser.lock:
             self.log.error(self.parse_msg(msg_in), *args, **kwargs)
 
-    def critical(self, msg_in, *args, **kwargs):
-        with LogParser.lock:
-            self.log.critical(self.parse_msg(msg_in), *args, **kwargs)
+    # def critical(self, msg_in, *args, **kwargs):
+    #     with LogParser.lock:
+    #         self.log.critical(self.parse_msg(msg_in), *args, **kwargs)
 
     # ------------------------------------------------------------------
     # color output

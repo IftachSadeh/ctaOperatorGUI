@@ -135,20 +135,10 @@ class InstHealth(ServiceManager):
     # ------------------------------------------------------------------
     def set_tel_health_s1(self, id_now):
         self.inst_health_s1[id_now] = {
-            'id':
-            id_now,
-            self.health_tag:
-            self.inst_health_s0[id_now][self.health_tag],
-            'status':
-            'run',
-            'data': [
-                v for (k, v) in self.inst_health_sub[id_now].items()
-                # self.inst_health_sub[id_now]['camera'],
-                # self.inst_health_sub[id_now]['mirror'],
-                # self.inst_health_sub[id_now]['mount'],
-                # self.inst_health_sub[id_now]['daq'],
-                # self.inst_health_sub[id_now]['aux']
-            ]
+            'id': id_now,
+            self.health_tag: self.inst_health_s0[id_now][self.health_tag],
+            'status': 'run',
+            'data': [v for v in self.inst_health_sub[id_now].values()]
         }
 
         return
@@ -187,6 +177,22 @@ class InstHealth(ServiceManager):
         pipe = self.redis.get_pipe()
 
         for id_now in self.tel_ids:
+
+            # example change of the connection status (negative health value)
+            if (id_now in ['Lx02']):
+                rnd = rnd_gen.random()
+                sign = 1 if rnd < 0.5 else -1
+
+                self.inst_health_s0[id_now][self.health_tag] = (
+                    sign * abs(self.inst_health_s0[id_now][self.health_tag])
+                )
+
+                pipe.h_set(
+                    name='inst_health;' + str(id_now),
+                    key=self.health_tag,
+                    data=self.inst_health_s0[id_now][self.health_tag],
+                )
+
             if (self.debug_updates >= 2) or (id_now in ['Lx01']):
                 update_frac_now = 1
             else:

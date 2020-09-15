@@ -43,6 +43,7 @@ class SessionManager():
         tel_ids = self.inst_data.get_inst_ids()
         tel_id_to_types = self.inst_data.get_inst_id_to_types()
         categorical_types = self.inst_data.get_categorical_types()
+        inst_states = self.inst_data.inst_states
 
         data = {
             'serv_id': self.serv_id,
@@ -52,6 +53,8 @@ class SessionManager():
             'tel_id_to_types': tel_id_to_types,
             'categorical_types': categorical_types,
             'is_simulation': self.is_simulation,
+            'inst_states': inst_states,
+            'log_levels': self.log.log_levels,
         }
         await self.emit(event_name='initial_connect', data=data)
 

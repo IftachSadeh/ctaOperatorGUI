@@ -10,6 +10,7 @@
 /* global icon_badge */
 /* global run_when_ready */
 /* global loaded_scripts */
+/* global set_tel_state_funcs */
 /* global get_time_now_msec */
 /* global LOG_LEVELS */
 
@@ -376,8 +377,12 @@ function SocketManager() {
             tel_info.tel_ids = data_in.tel_ids
             tel_info.tel_id_to_types = data_in.tel_id_to_types
             tel_info.categorical_types = data_in.categorical_types
-            window.SOCKET_INFO = tel_info
             
+            window.SOCKET_INFO = tel_info
+            window.LOG_LEVELS = data_in.log_levels
+
+            set_tel_state_funcs(data_in.inst_states)
+
             this_top.sess_id = String(data_in.sess_id)
             this_top.user_id = String(window.DISPLAY_USER_ID)
             this_top.user_group = String(window.DISPLAY_USER_GROUP)

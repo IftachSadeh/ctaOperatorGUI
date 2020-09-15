@@ -434,7 +434,9 @@ let main_arr_zoomer = function(opt_in) {
             }
             arr_zoomer_base.get_ele('main').zoom_to_target_main({
                 // target: 'init',
-                target: 'Mx01',
+                target: 'Lx01',
+                // target: 'Lx02',
+                // target: 'Mx01',
                 // scale: arr_zoomer_base.zooms.len['0.1.5'],
                 scale: arr_zoomer_base.zooms.len['1.2'],
                 // scale: arr_zoomer_base.zooms.len['0.0'],
