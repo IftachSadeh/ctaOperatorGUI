@@ -126,8 +126,8 @@ window.SchedblockForm = function(opt_in) {
     this.update = update
 
     function changeBlockTime(block, type, hour, min, sec) {
-        let start_time_sec = new Date(com.data.time_of_night.date_start)
-        let end_time_sec = new Date(com.data.time_of_night.date_end)
+        let start_time_sec = new Date(com.data.time_of_night.night_start_sec)
+        let end_time_sec = new Date(com.data.time_of_night.night_end_sec)
         switch (type) {
         case 'start_time_sec':
             if (Number(hour) >= 0 && Number(hour) <= end_time_sec.getHours()) {
@@ -136,7 +136,7 @@ window.SchedblockForm = function(opt_in) {
                 end_time_sec.setSeconds(Number(sec))
             }
             else {
-                end_time_sec = new Date(com.data.time_of_night.date_start)
+                end_time_sec = new Date(com.data.time_of_night.night_start_sec)
                 end_time_sec.setHours(Number(hour))
                 end_time_sec.setMinutes(Number(min))
                 end_time_sec.setSeconds(Number(sec))
@@ -155,7 +155,7 @@ window.SchedblockForm = function(opt_in) {
                 end_time_sec.setSeconds(Number(sec))
             }
             else {
-                end_time_sec = new Date(com.data.time_of_night.date_start)
+                end_time_sec = new Date(com.data.time_of_night.night_start_sec)
                 end_time_sec.setHours(Number(hour))
                 end_time_sec.setMinutes(Number(min))
                 end_time_sec.setSeconds(Number(sec))
@@ -178,9 +178,9 @@ window.SchedblockForm = function(opt_in) {
             g.select('#second').select('input').property('value', sec)
         }
 
-        start_time_sec = new Date(com.data.time_of_night.date_start)
+        start_time_sec = new Date(com.data.time_of_night.night_start_sec)
         start_time_sec.setSeconds(start_time_sec.getSeconds() + block.time.start)
-        end_time_sec = new Date(com.data.time_of_night.date_start)
+        end_time_sec = new Date(com.data.time_of_night.night_start_sec)
         end_time_sec.setSeconds(end_time_sec.getSeconds() + block.time.start + block.time.duration)
         let duration = new Date(end_time_sec)
         duration.setHours(duration.getHours() - start_time_sec.getHours())
@@ -1102,9 +1102,9 @@ window.SchedblockForm = function(opt_in) {
                 },
             })
 
-            let start_time_sec = new Date(com.data.time_of_night.date_start)
+            let start_time_sec = new Date(com.data.time_of_night.night_start_sec)
             start_time_sec.setSeconds(start_time_sec.getSeconds() + d.time.start)
-            let end_time_sec = new Date(com.data.time_of_night.date_start)
+            let end_time_sec = new Date(com.data.time_of_night.night_start_sec)
             end_time_sec.setSeconds(end_time_sec.getSeconds() + d.time.start + d.time.duration)
             let duration = new Date(end_time_sec)
             duration.setHours(duration.getHours() - start_time_sec.getHours())

@@ -1928,12 +1928,12 @@ let main_sched_blockController = function(opt_in) {
 
         function update_data() {
             let start_time_sec = {
-                date: new Date(shared.data.server.time_information.night_start_sec),
-                time: Number(shared.data.server.time_information.night_start_sec),
+                date: shared.data.server.time_information.night_start_sec,
+                time: shared.data.server.time_information.night_start_sec,
             }
             let end_time_sec = {
-                date: new Date(shared.data.server.time_information.night_end_sec),
-                time: Number(shared.data.server.time_information.night_end_sec),
+                date: shared.data.server.time_information.night_end_sec,
+                time: shared.data.server.time_information.night_end_sec,
             }
             brushZoom.update_domain([ start_time_sec.date, end_time_sec.date ])
         }

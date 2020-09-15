@@ -2702,7 +2702,7 @@ window.BlockDisplayer = function(opt_in) {
                 }
                 let insert = false
                 for (let j = 0; j < track.length; j++) {
-                    if (track[j] + 3600 < startT) {
+                    if (track[j] + 3600 * 1000 < startT) {
                         scheds[i].track = j
                         scheds[i].startT = startT
                         scheds[i].endT = endT

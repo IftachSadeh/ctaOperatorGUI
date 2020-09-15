@@ -126,6 +126,8 @@ function main_sched_blocks(opt_in) {
     }
     let svg_dims = {
     }
+    let time_futur = 8 * 3600 * 1000
+    let time_past = 8 * 3600 * 1000
 
     let event_queue_serverPast = null
     let event_queue_serverFutur = null
@@ -570,6 +572,7 @@ function main_sched_blocks(opt_in) {
         initBox()
 
         shared.data.server = data_in.data
+        console.log(shared.data.server)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
             ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_information.night_start_sec))
@@ -636,7 +639,7 @@ function main_sched_blocks(opt_in) {
     // -------------------------------------------------------------------
     function update_data(data_in) {
         shared.data.server = data_in.data
-
+        console.log(shared.data.server)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
             ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_information.night_start_sec))
@@ -1157,14 +1160,14 @@ function main_sched_blocks(opt_in) {
         function update_data() {
             let date = new Date(shared.data.server.time_information.time_now_sec)
             let start_time_sec = {
-                date: new Date(new Date(shared.data.server.time_information.time_now_sec).setSeconds(date.getSeconds() - (3600 * 8))),
-                time: Number(shared.data.server.time_information.time_now_sec) - (3600 * 8),
+                date: shared.data.server.time_information.time_now_sec - time_past,
+                time: shared.data.server.time_information.time_now_sec - time_past,
             }
             let end_time_sec = {
-                date: new Date(shared.data.server.time_information.time_now_sec),
-                time: Number(shared.data.server.time_information.time_now_sec),
+                date: shared.data.server.time_information.time_now_sec,
+                time: shared.data.server.time_information.time_now_sec,
             }
-
+            console.log(start_time_sec, end_time_sec)
             brushZoomPast.update_domain([ start_time_sec.date, end_time_sec.date ])
         }
         this.update_data = update_data
@@ -1224,12 +1227,12 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let start_time_sec = {
-                date: new Date(shared.data.server.time_information.time_now_sec),
-                time: Number(shared.data.server.time_information.time_now_sec),
+                date: shared.data.server.time_information.time_now_sec,
+                time: shared.data.server.time_information.time_now_sec,
             }
             let end_time_sec = {
-                date: new Date(new Date(shared.data.server.time_information.time_now_sec).setSeconds(start_time_sec.date.getSeconds() + (3600 * 8))),
-                time: Number(shared.data.server.time_information.time_now_sec) + (3600 * 8),
+                date: shared.data.server.time_information.time_now_sec + time_futur,
+                time: shared.data.server.time_information.time_now_sec + time_futur,
             }
             brushZoomFutur.update_domain([ start_time_sec.date, end_time_sec.date ])
         }
@@ -1989,7 +1992,6 @@ function main_sched_blocks(opt_in) {
                 date: axisTop[1],
                 time: axisTop[1],
             }
-
             block_queue_server_futur.update_data({
                 time: {
                     current_time: current_time,
