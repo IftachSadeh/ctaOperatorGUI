@@ -1647,40 +1647,53 @@ window.BlockDisplayer = function(opt_in) {
 
             com.blockForm.forms.scroll.scrollBox = new ScrollBox()
             com.blockForm.forms.scroll.scrollBox.init({
-                tag: 'blockDisplayerFormScroll',
-                g_box: com.blockForm.forms.scroll.scrollBoxG,
-                box_data: {
-                    x: 0,
-                    y: 0,
-                    w: com.blockForm.forms.box.w,
-                    h: com.blockForm.forms.box.h,
-                    marg: 0,
-                },
-                use_relative_coords: true,
-                locker: new Locker(),
-                lockers: [ 'blockDisplayerFormScroll' + 'update_data' ],
-                lock_zoom: {
-                    all: 'ScrollBox' + 'zoom',
-                    during: 'ScrollBox' + 'zoom_during',
-                    end: 'ScrollBox' + 'zoom_end',
-                },
-                run_loop: new RunLoop({
-                    tag: 'inputHistoryScrollBox',
-                }),
-                can_scroll: true,
-                scrollVertical: false,
-                scroll_horizontal: true,
-                scroll_height: 0,
-                scroll_width: com.blockForm.forms.box.w + 0.01,
-                background: 'transparent',
-                scroll_rec_h: {
-                    h: 4,
-                },
-                scroll_recs: {
-                    w: 2,
+                main: {
+                    tag: 'blockDisplayerFormScroll',
+                    g: com.blockForm.forms.scroll.scrollBoxG,
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: com.blockForm.forms.box.w,
+                        h: com.blockForm.forms.box.h,
+                        marg: 0,
+                    },
                 },
             })
-            com.blockForm.forms.scroll.scrollG = com.blockForm.forms.scroll.scrollBox.get('inner_g')
+            // com.blockForm.forms.scroll.scrollBox.init({
+            //     tag: 'blockDisplayerFormScroll',
+            //     g_box: com.blockForm.forms.scroll.scrollBoxG,
+            //     box_data: {
+            //         x: 0,
+            //         y: 0,
+            //         w: com.blockForm.forms.box.w,
+            //         h: com.blockForm.forms.box.h,
+            //         marg: 0,
+            //     },
+            //     use_relative_coords: true,
+            //     locker: new Locker(),
+            //     lockers: [ 'blockDisplayerFormScroll' + 'update_data' ],
+            //     lock_zoom: {
+            //         all: 'ScrollBox' + 'zoom',
+            //         during: 'ScrollBox' + 'zoom_during',
+            //         end: 'ScrollBox' + 'zoom_end',
+            //     },
+            //     run_loop: new RunLoop({
+            //         tag: 'inputHistoryScrollBox',
+            //     }),
+            //     can_scroll: true,
+            //     scrollVertical: false,
+            //     scroll_horizontal: true,
+            //     scroll_height: 0,
+            //     scroll_width: com.blockForm.forms.box.w + 0.01,
+            //     background: 'transparent',
+            //     scroll_rec_h: {
+            //         h: 4,
+            //     },
+            //     scroll_recs: {
+            //         w: 2,
+            //     },
+            // })
+            com.blockForm.forms.scroll.scrollG = com.blockForm.forms.scroll.scrollBox.get_content()
         }
         function init() {
             com.blockForm.forms.g = com.main.g.append('g')
@@ -3167,39 +3180,51 @@ window.BlockDisplayer = function(opt_in) {
         let ntag = com.main.tag + 'Scroll'
         com.main.scroll.scrollBox = new ScrollBox()
         com.main.scroll.scrollBox.init({
-            tag: ntag,
-            g_box: com.main.scroll.scrollBoxG,
-            box_data: {
-                x: 0,
-                y: 0,
-                w: com.main.box.w,
-                h: com.main.box.h,
-            },
-            use_relative_coords: true,
-            locker: new Locker(),
-            lockers: [ 'blockDisplayerScroll' + 'update_data' ],
-            lock_zoom: {
-                all: 'blockDisplayerScroll' + 'zoom',
-                during: 'blockDisplayerScroll' + 'zoom_during',
-                end: 'blockDisplayerScroll' + 'zoom_end',
-            },
-            run_loop: new RunLoop({
-                tag: 'blockDisplayerScroll',
-            }),
-            can_scroll: true,
-            scrollVertical: false,
-            scroll_horizontal: true,
-            scroll_height: 0,
-            scroll_width: 0,
-            background: 'transparent',
-            scroll_rec_h: {
-                h: 2,
-            },
-            scroll_recs: {
-                w: 2,
+            main: {
+                tag: ntag,
+                g: com.main.scroll.scrollBoxG,
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: com.main.box.w,
+                    h: com.main.box.h,
+                },
             },
         })
-        com.main.scroll.scrollG = com.main.scroll.scrollBox.get('inner_g')
+        // com.main.scroll.scrollBox.init({
+        //     tag: ntag,
+        //     g_box: com.main.scroll.scrollBoxG,
+        //     box_data: {
+        //         x: 0,
+        //         y: 0,
+        //         w: com.main.box.w,
+        //         h: com.main.box.h,
+        //     },
+        //     use_relative_coords: true,
+        //     locker: new Locker(),
+        //     lockers: [ 'blockDisplayerScroll' + 'update_data' ],
+        //     lock_zoom: {
+        //         all: 'blockDisplayerScroll' + 'zoom',
+        //         during: 'blockDisplayerScroll' + 'zoom_during',
+        //         end: 'blockDisplayerScroll' + 'zoom_end',
+        //     },
+        //     run_loop: new RunLoop({
+        //         tag: 'blockDisplayerScroll',
+        //     }),
+        //     can_scroll: true,
+        //     scrollVertical: false,
+        //     scroll_horizontal: true,
+        //     scroll_height: 0,
+        //     scroll_width: 0,
+        //     background: 'transparent',
+        //     scroll_rec_h: {
+        //         h: 2,
+        //     },
+        //     scroll_recs: {
+        //         w: 2,
+        //     },
+        // })
+        com.main.scroll.scrollG = com.main.scroll.scrollBox.get_content()
     }
     function initBackground() {
         com.main.g.append('rect')

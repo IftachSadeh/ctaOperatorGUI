@@ -209,56 +209,6 @@ window.SchedblockForm = function(opt_in) {
     //   com.data.block.pointing_name = save + '/' + newPointing
     // }
 
-    function initScrollBox(tag, g, box, background) {
-        if (background.enabled) {
-            g.append('rect')
-                .attr('class', 'background')
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('width', box.w)
-                .attr('height', box.h)
-                .style('fill', background.fill)
-                .style('stroke', background.stroke)
-                .style('stroke-width', background['stroke-width'])
-        }
-
-        let scrollBox = new ScrollBox()
-        scrollBox.init({
-            tag: tag,
-            g_box: g,
-            box_data: {
-                x: 0,
-                y: 0,
-                w: box.w,
-                h: box.h,
-            },
-            use_relative_coords: true,
-            locker: new Locker(),
-            lockers: [ tag + 'update_data' ],
-            lock_zoom: {
-                all: tag + 'zoom',
-                during: tag + 'zoom_during',
-                end: tag + 'zoom_end',
-            },
-            run_loop: new RunLoop({
-                tag: tag,
-            }),
-            can_scroll: true,
-            scrollVertical: true,
-            scroll_horizontal: false,
-            scroll_height: 0,
-            scroll_width: 0,
-            background: 'transparent',
-            scroll_rec_h: {
-                h: 4,
-            },
-            scroll_recs: {
-                w: 4,
-            },
-        })
-        return scrollBox
-    }
-
     function createSchedulingObservingBlocksTree() {
         let schedB = com.data.schedB
         let box = com.tree.box
@@ -585,10 +535,15 @@ window.SchedblockForm = function(opt_in) {
         }
 
         let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (headerSize + 3) + ')')
-        com.schedule.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {
-            enabled: false,
+        com.schedule.scrollBox = new ScrollBox()
+        com.schedule.scrollBox.init({
+            main: {
+                tag: 'targetRessourceScroll',
+                g: blockg,
+                box: box,
+            },
         })
-        let innerg = com.schedule.scrollBox.get('inner_g')
+        let innerg = com.schedule.scrollBox.get_content()
         let current = innerg
             .selectAll('g.block')
             .data(schedB.blocks, function(d) {
@@ -1191,10 +1146,7 @@ window.SchedblockForm = function(opt_in) {
             .style('opacity', 0)
             .remove()
 
-        com.schedule.scrollBox.reset_vertical_scroller({
-            can_scroll: true,
-            scroll_height: line * schedB.blocks.length,
-        })
+        com.schedule.scrollBox.updated_content()
         box.h += headerSize + 3
 
         // if (box.h - headerSize - 3 > (line + 2) * schedB.blocks.length) return
@@ -1399,8 +1351,15 @@ window.SchedblockForm = function(opt_in) {
             h: line * 1.5,
         }
         let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
-        let scrollBoxt = initScrollBox(com.main.tag + 'targetListScroll', blocktg, tbox, back)
-        let innertg = scrollBoxt.get('inner_g')
+        let scrollBoxt = new ScrollBox()
+        scrollBoxt.init({
+            main: {
+                tag: 'targetListScroll',
+                g: blocktg,
+                box: tbox,
+            },
+        })
+        let innertg = scrollBoxt.get_content()
 
         target_point = []
         for (let j = 0; j < schedB.blocks.length; j++) {
@@ -1602,8 +1561,15 @@ window.SchedblockForm = function(opt_in) {
             h: box.h - (headerSize * 2 + 10 + line),
         }
         let blockpg = g.append('g').attr('transform', 'translate(' + 0 + ',' + pbox.y + ')')
-        let scrollBoxp = initScrollBox(com.main.tag + 'pointingListScroll', blockpg, pbox, back)
-        let innerpg = scrollBoxp.get('inner_g')
+        let scrollBoxp = new ScrollBox()
+        scrollBoxp.init({
+            main: {
+                tag: 'pointingListScroll',
+                g: blockpg,
+                box: pbox,
+            },
+        })
+        let innerpg = scrollBoxp.get_content()
 
         let marg = 2
         let innerOffset = 0
@@ -1743,9 +1709,6 @@ window.SchedblockForm = function(opt_in) {
                 .remove()
         }
         blockCore(com.data.schedB.blocks, innerpg, marg)
-        scrollBoxp.reset_vertical_scroller({
-            can_scroll: true,
-            scroll_height: scroll_height,
-        })
+        scrollBoxp.updated_content()
     }
 }

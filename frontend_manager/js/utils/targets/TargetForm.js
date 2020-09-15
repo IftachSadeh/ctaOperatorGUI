@@ -123,56 +123,6 @@ window.TargetForm = function(opt_in) {
     }
     this.update = update
 
-    function initScrollBox(tag, g, box, background) {
-        if (background.enabled) {
-            g.append('rect')
-                .attr('class', 'background')
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('width', box.w)
-                .attr('height', box.h)
-                .style('fill', background.fill)
-                .style('stroke', background.stroke)
-                .style('stroke-width', background.strokeWidth)
-        }
-
-        let scrollBox = new ScrollBox()
-        scrollBox.init({
-            tag: tag,
-            g_box: g,
-            box_data: {
-                x: 0,
-                y: 0,
-                w: box.w,
-                h: box.h,
-            },
-            use_relative_coords: true,
-            locker: new Locker(),
-            lockers: [ tag + 'update_data' ],
-            lock_zoom: {
-                all: tag + 'zoom',
-                during: tag + 'zoom_during',
-                end: tag + 'zoom_end',
-            },
-            run_loop: new RunLoop({
-                tag: tag,
-            }),
-            can_scroll: true,
-            scrollVertical: true,
-            scroll_horizontal: false,
-            scroll_height: 0,
-            scroll_width: 0,
-            background: 'transparent',
-            scroll_rec_h: {
-                h: 4,
-            },
-            scroll_recs: {
-                w: 4,
-            },
-        })
-        return scrollBox
-    }
-
     function createTitle() {
         let tar = com.data.target
         let box = com.tree.box
@@ -295,10 +245,15 @@ window.TargetForm = function(opt_in) {
         // }
 
         let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (3 + 0) + ')')
-        com.ressource.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {
-            enabled: false,
+        com.ressource.scrollBox = new ScrollBox()
+        com.ressource.scrollBox.init({
+            main: {
+                tag: 'targetRessourceScroll',
+                g: blockg,
+                box: box,
+            },
         })
-        let innerg = com.ressource.scrollBox.get('inner_g')
+        let innerg = com.ressource.scrollBox.get_content()
 
         let squareTemplate = {
             '1': [{
@@ -578,10 +533,7 @@ window.TargetForm = function(opt_in) {
                 .remove()
         }
         schedCore(scheds, innerg, 4)
-        com.ressource.scrollBox.reset_vertical_scroller({
-            can_scroll: true,
-            scroll_height: 2 + scheds.length * line,
-        })
+        com.ressource.scrollBox.updated_content()
         blockg.append('line')
             .attr('x1', box.x)
             .attr('y1', box.h)
@@ -729,10 +681,15 @@ window.TargetForm = function(opt_in) {
             h: box.h - headerSize * 7.5,
         }
         let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + tbox.y + ')')
-        let scrollBox = initScrollBox(com.main.tag + 'targetListScroll', blockg, tbox, {
-            enabled: false,
+        let scrollBox = new ScrollBox()
+        scrollBox.init({
+            main: {
+                tag: 'targetListScroll',
+                g: blockg,
+                box: tbox,
+            },
         })
-        let innerg = scrollBox.get('inner_g')
+        let innerg = scrollBox.get_content()
 
         let allPoint = []
         let line = 20
@@ -905,10 +862,7 @@ window.TargetForm = function(opt_in) {
             .attr('stroke', colorPalette.dark.stroke)
             .attr('stroke-width', 0.2)
             .style('opacity', scroll_height > tbox.h ? 1 : 0)
-        scrollBox.reset_vertical_scroller({
-            can_scroll: true,
-            scroll_height: scroll_height,
-        })
+        scrollBox.updated_content()
 
         let gt = g.append('g')
             .attr('id', 'telsDisplayer')

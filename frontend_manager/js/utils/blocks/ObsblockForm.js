@@ -131,56 +131,6 @@ window.ObsblockForm = function(opt_in) {
     }
     this.update = update
 
-    function initScrollBox(tag, g, box, background) {
-        if (background.enabled) {
-            g.append('rect')
-                .attr('class', 'background')
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('width', box.w)
-                .attr('height', box.h)
-                .style('fill', background.fill)
-                .style('stroke', background.stroke)
-                .style('stroke-width', background.strokeWidth)
-        }
-
-        let scrollBox = new ScrollBox()
-        scrollBox.init({
-            tag: tag,
-            g_box: g,
-            box_data: {
-                x: 0,
-                y: 0,
-                w: box.w,
-                h: box.h,
-            },
-            use_relative_coords: true,
-            locker: new Locker(),
-            lockers: [ tag + 'update_data' ],
-            lock_zoom: {
-                all: tag + 'zoom',
-                during: tag + 'zoom_during',
-                end: tag + 'zoom_end',
-            },
-            run_loop: new RunLoop({
-                tag: tag,
-            }),
-            can_scroll: true,
-            scrollVertical: true,
-            scroll_horizontal: false,
-            scroll_height: 0,
-            scroll_width: 0,
-            background: 'transparent',
-            scroll_rec_h: {
-                h: 4,
-            },
-            scroll_recs: {
-                w: 4,
-            },
-        })
-        return scrollBox
-    }
-
     function initSchedulingObservingBlocksTree() {
         let data = com.data.block
         let schedB = com.data.schedB
@@ -1391,10 +1341,15 @@ window.ObsblockForm = function(opt_in) {
             h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1),
         }
         let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
-        let scrollBoxt = initScrollBox(com.main.tag + 'targetListScroll', blocktg, tbox, {
-            enabled: false,
+        let scrollBoxt = new ScrollBox()
+        scrollBoxt.init({
+            main: {
+                tag: 'targetListScroll',
+                g: blocktg,
+                box: tbox,
+            },
         })
-        let innertg = scrollBoxt.get('inner_g')
+        let innertg = scrollBoxt.get_content()
         com.target.target = {
             scroll: scrollBoxt,
             box: tbox,
@@ -1467,10 +1422,7 @@ window.ObsblockForm = function(opt_in) {
                 .remove()
         }
         targetCore(data.targets, innertg, 0)
-        scrollBoxt.reset_vertical_scroller({
-            can_scroll: true,
-            scroll_height: line * data.targets.length,
-        })
+        scrollBoxt.updated_content()
 
         let pbox = {
             x: label[1].x,
@@ -1479,10 +1431,15 @@ window.ObsblockForm = function(opt_in) {
             h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1),
         }
         let blockpg = g.append('g').attr('transform', 'translate(' + pbox.x + ',' + pbox.y + ')')
-        let scrollBoxp = initScrollBox(com.main.tag + 'pointingListScroll', blockpg, pbox, {
-            enabled: false,
+        let scrollBoxp = new ScrollBox()
+        scrollBoxp.init({
+            main: {
+                tag: 'pointingListScroll',
+                g: blockpg,
+                box: pbox,
+            },
         })
-        let innerpg = scrollBoxp.get('inner_g')
+        let innerpg = scrollBoxp.get_content()
         com.target.pointing = {
             scroll: scrollBoxp,
             box: pbox,
@@ -1553,10 +1510,7 @@ window.ObsblockForm = function(opt_in) {
                 .remove()
         }
         pointingCore(data.pointings, innerpg, 0)
-        scrollBoxp.reset_vertical_scroller({
-            can_scroll: true,
-            scroll_height: line * data.pointings.length,
-        })
+        scrollBoxp.updated_content()
 
         // function pointingCore (trg, pointings, pg, x, y, w, h) {
         //   if (com.target.editable) {
@@ -2123,10 +2077,7 @@ window.ObsblockForm = function(opt_in) {
                 .remove()
         }
         targetCore(data.targets, innertg, 0)
-        com.target.target.scroll.reset_vertical_scroller({
-            can_scroll: true,
-            scroll_height: line * data.targets.length,
-        })
+        com.target.target.scroll.updated_content()
 
         let pbox = com.target.pointing.box
         let innerpg = com.target.pointing.scroll.get('inner_g')
@@ -2172,10 +2123,7 @@ window.ObsblockForm = function(opt_in) {
                 .remove()
         }
         pointingCore(data.pointings, innerpg, 0)
-        com.target.pointing.scroll.reset_vertical_scroller({
-            can_scroll: true,
-            scroll_height: line * data.pointings.length,
-        })
+        com.target.pointing.scroll.updated_content()
 
         com.targetBlock.update_data({
             data: {
@@ -2698,13 +2646,18 @@ window.ObsblockForm = function(opt_in) {
             .delay(200)
             .duration(600)
             .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-        let scroll = initScrollBox(com.main.tag + 'focusedConflictListScroll', otherg, box, {
-            enabled: false,
-        }, true)
+        let scroll = new ScrollBox()
+        scroll.init({
+            main: {
+                tag: 'focusedConflictListScroll',
+                g: otherg,
+                box: box,
+            },
+        })
         function initTelescope_information(block, box) {
             innerOtherBlock[block.obs_block_id] = {
             }
-            let g = scroll.get('inner_g').append('g')
+            let g = scroll.get_content().append('g')
                 .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
             // g.append('rect')
             //   .attr('x', 0)
@@ -3108,10 +3061,7 @@ window.ObsblockForm = function(opt_in) {
             }
             initTelescope_information(blocks[i], ibox)
         }
-        scroll.reset_vertical_scroller({
-            can_scroll: true,
-            scroll_height: sizeRow * blocks.length,
-        })
+        scroll.updated_content()
 
         otherg.append('line')
             .attr('x1', 0)
