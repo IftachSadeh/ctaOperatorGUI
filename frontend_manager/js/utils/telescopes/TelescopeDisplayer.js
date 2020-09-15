@@ -664,6 +664,8 @@ window.TelescopeDisplayer = function(opt_in) {
             }
             rect.each(function(d, i) {
                 let g = d3.select(this)
+                let health = is_def(d.health) ? d.health : d.val
+                
                 g.transition()
                     .duration(times.anim)
                     .attr('transform', function(d) {
@@ -677,7 +679,7 @@ window.TelescopeDisplayer = function(opt_in) {
                     .attr('stroke', color_theme.dark.stroke)
                     .transition()
                     .duration(times.anim)
-                    .style('fill', inst_health_col(d.health))
+                    .style('fill', inst_health_col(health))
                     .attr('cx', size.w * 0.5)
                     .attr('cy', size.h * 0.5)
                     .attr('rx', size.w)
