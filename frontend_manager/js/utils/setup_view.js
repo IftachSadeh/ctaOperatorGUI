@@ -103,7 +103,7 @@ setup_view.view200 = function() {
     //     table_title: 'Telescope health',
     //     has_icon: true,
     // })
-    
+
     // sock.add_widget({
     //     name_tag: 'EmptyExample',
     //     table_title: 'empty_example',
@@ -181,7 +181,7 @@ setup_view.view206 = function() {
         table_title: 'Scheduling blocks controller',
         has_icon: true,
     })
-    
+
     sock.add_widget({
         name_tag: 'SchedBlockInspector',
         table_title: 'Scheduling blocks inspector',
@@ -202,7 +202,7 @@ setup_view.view207 = function() {
 // test load
 // -------------------------------------------------------------------
 setup_view.view001 = function() {
-    let n_widgets = 10 
+    let n_widgets = 10
     let name_tags = [
         'ArrayZoomer',
         // 'SubArrGrp',
@@ -220,7 +220,7 @@ setup_view.view001 = function() {
         for (var i = 0; i < n_widgets; i++) {
             sock.add_widget({
                 name_tag: name_tag,
-                table_title: (name_tag + ' ' + (i+1) + ' / ' + n_widgets),
+                table_title: (name_tag + ' ' + (i + 1) + ' / ' + n_widgets),
                 has_icon: true,
             })
         }
@@ -254,12 +254,3 @@ setup_view.view000 = function() {
 //         has_icon: true,
 //     })
 // }
-
-
-// -------------------------------------------------------------------
-// refresh all other views on a refresh of this particular view
-// -------------------------------------------------------------------
-setup_view.view_refresh_all = function() {
-    sock.socket.emit('refreshAll')
-}
-
