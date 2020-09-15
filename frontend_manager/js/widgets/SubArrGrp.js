@@ -3026,7 +3026,7 @@ let main_sub_arr_grp = function(opt_in) {
                     return hirch_style_opac(d, 0)
                 })
                 .on('mouseover', (e, d) => hirch_style_hover(d))
-                .on('click', (e, d) => hierarchy_style_click(d))
+                .on('click', (e, d) => hierarchy_click(d))
                 .on('dblclick', (e, d) => hirch_style_dblclick(d))
                 .merge(circ)
                 .each(function(d) {
@@ -3236,10 +3236,10 @@ let main_sub_arr_grp = function(opt_in) {
                 return
             }
 
-            hierarchy_style_click(d)
+            hierarchy_click(d)
         }
 
-        function hierarchy_style_click(d) {
+        function hierarchy_click(d) {
             function set_on_tel_id_try() {
                 if (locker.is_free('data_change')) {
                     set_on_tel_id(d)
@@ -3263,7 +3263,7 @@ let main_sub_arr_grp = function(opt_in) {
 
             return
         }
-        this_svg_sub_arr.hierarchy_style_click = hierarchy_style_click
+        this_svg_sub_arr.hierarchy_click = hierarchy_click
 
         // FIXME !!!!!!!!!!!!!!!!!!!
         // FIXME !!!!!!!!!!!!!!!!!!!

@@ -133,7 +133,6 @@ window.ArrZoomerChes = function(opt_in_top) {
                 let text_x = rect_x + 0.5 * cell_w
                 let text_y = rect_y + 0.5 * cell_h
 
-
                 com.ches_g.xyr[id_now] = {
                     id: id_now,
                     rc: [ n_row, n_col ],

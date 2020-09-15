@@ -45,7 +45,7 @@ class InstHealth(ServiceManager):
 
         self.inst_health_s0 = dict()
         self.inst_health_s1 = dict()
-        self.inst_health_sub = dict()
+        self.inst_health = dict()
         self.inst_health_sub_flat = dict()
 
         # minimum interval of simulation-time to wait before randomising values
@@ -104,16 +104,20 @@ class InstHealth(ServiceManager):
             }
 
             for key, val in self.inst_health_s0[id_now].items():
-                pipe.h_set(name='inst_health;' + str(id_now), key=key, data=val)
+                pipe.h_set(
+                    name='inst_health;' + str(id_now),
+                    key=key,
+                    data=val,
+                )
 
             # self.redPipe.hmset('inst_health_s0'+str(id_now), self.inst_health_s0[id_now])
 
-        self.inst_health_sub = self.inst_data.get_inst_healths()
+        self.inst_health = self.inst_data.get_inst_healths()
 
         # a flat dict with references to each level of the original dict
         self.inst_health_sub_flat = dict()
         for id_now in self.tel_ids:
-            self.inst_health_sub_flat[id_now] = flatten_dict(self.inst_health_sub[id_now])
+            self.inst_health_sub_flat[id_now] = flatten_dict(self.inst_health[id_now])
 
         for id_now in self.tel_ids:
             self.set_tel_health_s1(id_now)
@@ -125,6 +129,15 @@ class InstHealth(ServiceManager):
                         key=key,
                         data=val['data']['val']
                     )
+
+        self.inst_health_full = self.inst_data.get_inst_health_fulls()
+        for (id_now, inst) in self.inst_health_full.items():
+            for (field_id, data) in inst.items():
+                pipe.h_set(
+                    name='inst_health_full;' + str(id_now),
+                    key=field_id,
+                    data=data,
+                )
 
         pipe.execute()
 
@@ -138,7 +151,7 @@ class InstHealth(ServiceManager):
             'id': id_now,
             self.health_tag: self.inst_health_s0[id_now][self.health_tag],
             'status': 'run',
-            'data': [v for v in self.inst_health_sub[id_now].values()]
+            'data': [v for v in self.inst_health[id_now].values()]
         }
 
         return
@@ -297,14 +310,14 @@ class InstHealth(ServiceManager):
             # call the randomization function
             if id_now in ids:
                 for prop_name in rnd_props:
-                    if prop_name not in self.inst_health_sub[id_now]:
+                    if prop_name not in self.inst_health[id_now]:
                         continue
 
-                    set_rnd_props(self.inst_health_sub[id_now][prop_name])
-                    # if id_now=='L_0': print self.inst_health_sub[id_now][prop_name]
+                    set_rnd_props(self.inst_health[id_now][prop_name])
+                    # if id_now=='L_0': print self.inst_health[id_now][prop_name]
 
                     # sync with the value in self.inst_health_s0
-                    prop_value = self.inst_health_sub[id_now][prop_name]['val']
+                    prop_value = self.inst_health[id_now][prop_name]['val']
                     self.inst_health_s0[id_now][prop_name] = prop_value
                     pipe.h_set(
                         name='inst_health;' + str(id_now), key=prop_name, data=prop_value

@@ -440,7 +440,7 @@ let main_arr_zoomer = function(opt_in) {
                 // scale: arr_zoomer_base.zooms.len['0.1.5'],
                 scale: arr_zoomer_base.zooms.len['1.2'],
                 // scale: arr_zoomer_base.zooms.len['0.0'],
-                duration_scale: 0.5,
+                duration_scale: 0.1,
                 // duration_scale: 1.5,
             })
             return

@@ -1484,6 +1484,71 @@ window.ArrZoomerBase = function(opt_in_top) {
     })
 
     // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
+    function ask_inst_health_full(opt_in) {
+        if (sock.con_stat.is_offline()) {
+            return
+        }
+
+        let prop_id = opt_in.prop_id !== '' ? opt_in.prop_id : null
+
+        let data = {
+            widget_id: widget_id,
+            tel_id: opt_in.tel_id,
+            prop_id: prop_id,
+        }
+
+        let emit_data = {
+            widget_type: widget_type,
+            widget_id: widget_id,
+            method_name: 'util_func',
+            method_args: {
+                util_id: util_id,
+                util_type: util_type,
+                method_name: 'ask_for_data_s1_full',
+                method_args: data,
+            },
+        }
+        sock.socket.emit({
+            name: 'widget', 
+            data: emit_data,
+        })
+
+        return
+    }
+    this_top.ask_inst_health_full = ask_inst_health_full
+
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
+    let arr_zoomer_get_data_s1_full_evt = function(data_in) {
+        let data = data_in.data
+        let metadata = data_in.metadata
+
+        if (sock.con_stat.is_offline()) {
+            return
+        }
+        if (data.util_id !== util_id) {
+            return
+        }
+
+        let ches_data = {
+            tel_id: data.tel_id,
+            parent_name: data.parent_name,
+            prop_data: is_def(data.data) ? data.data : [],
+        }
+        get_ele('tree').set_hierarchy_ches_data(ches_data)
+
+        return
+    }
+    sock.socket.add_listener({
+        name: 'arr_zoomer_get_data_s1_full',
+        func: arr_zoomer_get_data_s1_full_evt,
+        is_singleton: false,
+    })
+
+    // ------------------------------------------------------------------
     // global update for all widgets in all sessions
     // in this case, there is no check on util_id, since the data
     // are the same for all instances (util_id is not defined in the event)

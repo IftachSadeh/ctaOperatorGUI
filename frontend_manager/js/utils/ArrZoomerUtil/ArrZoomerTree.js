@@ -82,11 +82,23 @@ window.ArrZoomerTree = function(opt_in_top) {
         }
     })
 
-    svg_dims.w_diff = svg_dims.w * 0.05
+    svg_dims.w_diff = svg_dims.w * 0.025
     svg_dims.h_diff = has_title ? tel_avgs[1].h : tel_avgs[1].h * 0.8
 
     svg_dims.w_1 = svg_dims.w
     svg_dims.h_1 = svg_dims.h - svg_dims.h_diff
+
+    let node_r = 15
+    let hierarchy_w = svg_dims.w_1 - svg_dims.w_diff
+    let tree_ches_diff = Math.max(node_r * 2.5, svg_dims.w_diff * 2)
+    let tree_frac = 0.8
+    let tree_w = hierarchy_w * tree_frac - tree_ches_diff / 2
+    let ches_w = hierarchy_w * (1 - tree_frac) - tree_ches_diff / 2
+    ches_w += svg_dims.w_diff / 2
+    
+    let hierarchy_h = svg_dims.h_1
+    let tree_h = hierarchy_h
+    let ches_h = hierarchy_h
 
     let tree_gs = ele_base.svgs.tree
     tree_gs.g = ele_base.svgs.g_svg.append('g')
@@ -154,7 +166,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             }, times.wait_loop)
         }
     }
-    this.zoom_to_pos = zoom_to_pos
+    this_top.zoom_to_pos = zoom_to_pos
 
     // ------------------------------------------------------------------
     //
@@ -330,7 +342,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         locker.remove(lock_init_key)
         return
     }
-    this.init_data = init_data
+    this_top.init_data = init_data
 
     // ------------------------------------------------------------------
     //
@@ -394,7 +406,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             }
         }
     }
-    this.set_state_once = set_state_once
+    this_top.set_state_once = set_state_once
 
     // ------------------------------------------------------------------
     // innner arcs for the different properties
@@ -989,10 +1001,12 @@ window.ArrZoomerTree = function(opt_in_top) {
     //
     // ------------------------------------------------------------------
     let prev_tel_hierarchy_prop = ''
+
     function tel_hierarchy(opt_in) {
         function may_update() {
             return locker.is_free([
                 'update_tel_hierarchy_tree',
+                'update_tel_hierarchy_ches',
                 'data_change',
                 's10_bck_arc_change',
                 's10_click_hierarchy',
@@ -1017,10 +1031,6 @@ window.ArrZoomerTree = function(opt_in_top) {
         let tag_text = tag_state + '_text'
         let tag_vor = tag_state + '_vor'
         let tag_links = tag_state + '_path'
-
-        let node_r = 15
-        let tree_w = svg_dims.w_1 - svg_dims.w_diff
-        let tree_h = svg_dims.h_1
 
         function get_ele_id(d) {
             return d.data.id
@@ -1086,8 +1096,14 @@ window.ArrZoomerTree = function(opt_in_top) {
         if (!is_def(com.s10.g_hierarchy)) {
             let trans_y = has_title ? -svg_dims.h_diff : -svg_dims.h_diff * 1.8
             com.s10.g_hierarchy = com.s10.g.append('g')
-            com.s10.g_hierarchy.attr('transform',
+            com.s10.g_tree = com.s10.g_hierarchy.append('g')
+            com.s10.g_ches = com.s10.g_hierarchy.append('g')
+            
+            com.s10.g_tree.attr('transform',
                 'translate(' + (svg_dims.w_diff / 2) + ',' + trans_y + ')'
+            )
+            com.s10.g_ches.attr('transform',
+                'translate(' + (svg_dims.w_diff / 2 + tree_ches_diff + tree_w) + ',' + trans_y + ')'
             )
         }
 
@@ -1117,7 +1133,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                     : insts.data.data_base_s1[tel_id]
             )
             let hirch = d3.hierarchy(data_hierarchy)
-            let tree = d3.tree().size([ tree_h, tree_w ])
+            let tree = d3.tree().size([ ches_h, tree_w ])
             tree(hirch)
 
             desc = hirch.descendants()
@@ -1167,7 +1183,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         // ------------------------------------------------------------------
         // circles
         // ------------------------------------------------------------------
-        let circs = com.s10.g_hierarchy
+        let circs = com.s10.g_tree
             .selectAll('circle.' + tag_nodes)
             .data(desc, get_ele_id)
 
@@ -1220,7 +1236,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         // ------------------------------------------------------------------
         // labels
         // ------------------------------------------------------------------
-        let text = com.s10.g_hierarchy
+        let text = com.s10.g_tree
             .selectAll('text.' + tag_text)
             .data(desc, get_ele_id)
 
@@ -1261,7 +1277,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         function txt_trans(d, _) {
             let d0 = d.node_r + Math.min(10, d.node_r)
             let d1 = get_node_wh_by_id({
-                selction: com.s10.g_hierarchy.selectAll('text.' + tag_text),
+                selction: com.s10.g_tree.selectAll('text.' + tag_text),
                 id: get_ele_id(d),
                 get_id: get_ele_id,
             }).height
@@ -1286,7 +1302,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         // ------------------------------------------------------------------
         // links
         // ------------------------------------------------------------------
-        let path = com.s10.g_hierarchy
+        let path = com.s10.g_tree
             .selectAll('path.' + tag_links)
             .data(data_path, get_ele_id)
 
@@ -1328,9 +1344,11 @@ window.ArrZoomerTree = function(opt_in_top) {
         let voronoi = d3.Delaunay
             .from(desc, d => d.y, d => d.x)
             // .from(desc, d => d.x, d => d.y)
-            .voronoi([ 0, 0, tree_w, tree_h ])
+            .voronoi([
+                - 0.5 * svg_dims.w_diff, 0, tree_w + 0.5 * svg_dims.w_diff, ches_h,
+            ])
 
-        let vor = com.s10.g_hierarchy
+        let vor = com.s10.g_tree
             .selectAll('path.' + tag_vor)
             .data(desc, function(d, i) {
                 return d.id
@@ -1366,7 +1384,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             .remove()
 
         if (show_vor_lines) {
-            com.s10.g_hierarchy
+            com.s10.g_tree
                 .selectAll('path.' + tag_vor)
                 .style('opacity', '0.5')
                 .style('stroke-width', '1.5')
@@ -1403,7 +1421,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                 only_open: true,
             })
 
-            get_ele('main').hierarchy_style_click({
+            get_ele('main').hierarchy_click({
                 prop_in: parent_name,
                 id: id_now,
                 is_open: true,
@@ -1424,7 +1442,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                     return
                 }
 
-                com.s10.g_hierarchy
+                com.s10.g_tree
                     .selectAll('circle.' + tag_nodes)
                     .transition('highlight')
                     .duration(times.anim / 2)
@@ -1435,7 +1453,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                         return (d.data.id === id_now ? 0.6 : 1)
                     })
 
-                com.s10.g_hierarchy
+                com.s10.g_tree
                     .selectAll('text.' + tag_text)
                     .transition('highlight')
                     .duration(times.anim / 2)
@@ -1461,7 +1479,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             }
 
             function reset_r() {
-                com.s10.g_hierarchy
+                com.s10.g_tree
                     .selectAll('circle.' + tag_nodes)
                     .transition('highlight')
                     .duration(times.anim / 2)
@@ -1470,7 +1488,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                     })
                     .style('fill-opacity', 1)
 
-                com.s10.g_hierarchy
+                com.s10.g_tree
                     .selectAll('text.' + tag_text)
                     .transition('highlight')
                     .duration(times.anim / 2)
@@ -1485,12 +1503,245 @@ window.ArrZoomerTree = function(opt_in_top) {
             return
         }
 
+        set_hierarchy_ches_bck({
+            is_open: (desc.length !== 0),
+            ches_w: ches_w,
+            ches_h: ches_h,
+        })
+
         locker.remove({
             id: 'update_tel_hierarchy_tree',
             delay: times.anim,
         })
+    
+        return
     }
-    this.tel_hierarchy = tel_hierarchy
+    this_top.tel_hierarchy = tel_hierarchy
+
+
+    // ------------------------------------------------------------------
+    function set_hierarchy_ches_bck(opt_in) {
+        let is_open = opt_in.is_open
+        let ches_w = opt_in.ches_w
+        let ches_h = opt_in.ches_h
+        
+        let bck_rect_tag = 'bck_ches_rect'
+
+        let data_in = []
+        if (is_open) {
+            data_in = [{
+                x: 0,
+                y: 0,
+                h: ches_h,
+                w: ches_w,
+                opac: 0.05,
+            }]
+        }
+
+        let bck_rect = com.s10.g_ches
+            .selectAll('rect.' + bck_rect_tag)
+            .data(data_in, function(d, i) {
+                return i
+            })
+        
+        bck_rect
+            .enter()
+            .append('rect')
+            .attr('class', bck_rect_tag)
+            .style('fill', '#383b42')
+            .style('pointer-events', 'none')
+            .style('stroke', '#383b42')
+            .style('stroke-width', svg_dims.w_diff)
+            .attr('opacity', 0)
+            .attr('height', d => d.h)
+            .attr('width', d => d.w)
+            .attr('transform',
+                d => 'translate(' + d.x + ',' + d.y + ')'
+            )
+            .merge(bck_rect)
+            .transition('enter')
+            .duration(times.anim)
+            .attr('opacity', d => d.opac)
+            .attr('transform',
+                d => 'translate(' + d.x + ',' + d.y + ')'
+            )
+
+        bck_rect
+            .exit()
+            .transition('out')
+            .duration(times.anim)
+            .attr('opacity', 0)
+            .remove()
+
+        return
+    }
+
+
+    // ------------------------------------------------------------------
+    function set_hierarchy_ches_data(opt_in) {
+        locker.add({
+            id: 'update_tel_hierarchy_ches',
+            override: true,
+        })
+
+        let tel_id = opt_in.tel_id
+        let parent_name = opt_in.parent_name
+        let prop_data = opt_in.prop_data
+        let n_cols = is_def(opt_in.n_cols) ? opt_in.n_cols : 5
+
+        let n_eles = prop_data.length
+        let n_rows = Math.ceil(n_eles / n_cols)
+        let cell_wh = ches_w / n_cols
+        let cell_pad = cell_wh * 0.05
+        cell_wh -= cell_pad
+
+        let n_prop = 0
+        let cell_xyr = []
+        for (let n_row = 0; n_row < n_rows; ++n_row) {
+            for (let n_col = 0; n_col < n_cols; ++n_col) {
+                if (n_prop >= n_eles) {
+                    break
+                }
+
+                let id = 'rec_' + n_row + '_' + n_col
+                let rect_x = 0.5 * cell_pad + (cell_wh + cell_pad) * n_col
+                let rect_y = 0.5 * cell_pad + (cell_wh + cell_pad) * n_row
+
+                cell_xyr.push({
+                    id: prop_data[n_prop].id,
+                    x: rect_x,
+                    y: rect_y,
+                    w: cell_wh,
+                    h: cell_wh,
+                    val: prop_data[n_prop].val,
+                })
+
+                n_prop++
+            }
+        }
+
+        let main_rect_tag = 'main_ches_rect'
+        let main_rect = com.s10.g_ches
+            .selectAll('rect.' + main_rect_tag)
+            .data(cell_xyr, function(d, i) {
+                return d.id
+            })
+        
+        main_rect
+            .enter()
+            .append('rect')
+            .attr('class', main_rect_tag)
+            .style('fill', '#383b42')
+            .style('stroke-width', '0')
+            .attr('opacity', 0)
+            .attr('height', d => d.h)
+            .attr('width', d => d.w)
+            .attr('transform',
+                d => 'translate(' + d.x + ',' + d.y + ')'
+            )
+            .on('click', (e, d) => rec_click(d))
+            .merge(main_rect)
+            .transition('enter')
+            .duration(times.anim)
+            .attr('opacity', 1)
+            .attr('transform',
+                d => 'translate(' + d.x + ',' + d.y + ')'
+            )
+            .style('stroke', function(d) {
+                return inst_health_col(d.val, 0.5)
+            })
+            .style('fill', function(d) {
+                return inst_health_col(d.val)
+            })
+
+
+        main_rect
+            .exit()
+            .transition('out')
+            .duration(times.anim)
+            .attr('opacity', 0)
+            .remove()
+
+
+        // the click function
+        // ------------------------------------------------------------------
+        function rec_click(d) {
+            console.log('click', tel_id, parent_name, d)
+
+            // ele_base.tel_prop_title({
+            //     tel_id: tel_id,
+            //     prop_in: d.prop_id,
+            //     parent_name: 'daq_7_3',
+            //     g_in: com.s01.g_text,
+            //     g_w: svg_dims.w,
+            // })
+
+            // let more = get_ele('more')
+            // if (is_def(more)) {
+            //     more.prop_focus({
+            //         tel_id: tel_id,
+            //         prop_in: 'daq_7_3aaaaaaaaaaaaa',
+            //         parent_name: parent_name,
+            //     })
+            // }
+
+            // if (has_title) {
+            //     ele_base.tel_prop_title({
+            //         tel_id: tel_id,
+            //         prop_in: prop_in,
+            //         parent_name: parent_name,
+            //         font_scale: 0.6,
+            //         g_in: more_gs.more_g_base,
+            //         g_w: svg_dims.w,
+            //     })
+            // }
+
+
+            // set_sub_prop({
+            //     tel_id: tel_id,
+            //     prop_in: d.prop_id,
+            // })
+
+            // let click_in = true
+            // let data_id = d.data.id
+            // let id_now = (is_def(d.parent) ? d.parent.data.id : data_id)
+
+            // let parent_name = insts.data.prop_parent_s1[tel_id][data_id]
+            // if (parent_name === data_id) {
+            //     id_now = parent_name
+            // }
+
+            // if (!is_def(parent_name)) {
+            //     parent_name = ''
+            //     click_in = false
+            // }
+
+            // set_zoom_state()
+
+            // get_ele('main').bck_arc_click({
+            //     click_in: click_in,
+            //     prop_in: parent_name,
+            //     only_open: true,
+            // })
+
+            // get_ele('main').hierarchy_click({
+            //     prop_in: parent_name,
+            //     id: id_now,
+            //     is_open: true,
+            //     sync_prop: data_id,
+            // })
+
+            return
+        }
+
+        locker.remove({
+            id: 'update_tel_hierarchy_ches',
+            delay: times.anim,
+        })
+    
+    }
+    this_top.set_hierarchy_ches_data = set_hierarchy_ches_data
+
 
     // ------------------------------------------------------------------
     //
@@ -1610,7 +1861,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         }
         locker.add('update_tel_hierarchy')
 
-        com.s10.g_hierarchy
+        com.s10.g_tree
             .selectAll('circle')
             .each(function(d) {
                 if (d.data.id === health_tag) {
@@ -1631,14 +1882,14 @@ window.ArrZoomerTree = function(opt_in_top) {
 
         locker.remove('update_tel_hierarchy')
     }
-    this.update_s1 = update_s1
+    this_top.update_s1 = update_s1
 
     function get_widget_state() {
         return {
             zoom_target_prop: zoom_target_prop,
         }
     }
-    this.get_widget_state = get_widget_state
+    this_top.get_widget_state = get_widget_state
 
     return
 }

@@ -1,6 +1,7 @@
 import sys
 import copy
 from time import sleep
+from random import Random
 
 from shared.LogParser import LogParser
 
@@ -661,6 +662,8 @@ class InstData():
 
     # ------------------------------------------------------------------
     def init_tel_health(self):
+        rnd_gen = Random(11239487)
+        
         inst_health = dict()
         tel_ids = InstData.tel_ids
         aux_ids = InstData.aux_ids
@@ -743,34 +746,31 @@ class InstData():
                                 'val': 10
                             },
                             {
-                                'id':
-                                'mount_1_1',
-                                'title':
-                                'Mount_1_1',
-                                'val':
-                                90,
-                                'children': [
-                                    {
-                                        'id': 'mount_1_1_0',
-                                        'title': 'Mount_1_1_0',
-                                        'val': 95
-                                    },
-                                    {
-                                        'id': 'mount_1_1_1',
-                                        'title': 'Mount_1_1_1',
-                                        'val': 95
-                                    },
-                                    {
-                                        'id': 'mount_1_1_2',
-                                        'title': 'Mount_1_1_2',
-                                        'val': 95
-                                    },
-                                    {
-                                        'id': 'mount_1_1_3',
-                                        'title': 'Mount_1_1_3',
-                                        'val': 95
-                                    },
-                                ]
+                                'id': 'mount_1_1',
+                                'title': 'Mount_1_1',
+                                'val': 90,
+                                # 'children': [
+                                #     {
+                                #         'id': 'mount_1_1_0',
+                                #         'title': 'Mount_1_1_0',
+                                #         'val': 95
+                                #     },
+                                #     {
+                                #         'id': 'mount_1_1_1',
+                                #         'title': 'Mount_1_1_1',
+                                #         'val': 95
+                                #     },
+                                #     {
+                                #         'id': 'mount_1_1_2',
+                                #         'title': 'Mount_1_1_2',
+                                #         'val': 95
+                                #     },
+                                #     {
+                                #         'id': 'mount_1_1_3',
+                                #         'title': 'Mount_1_1_3',
+                                #         'val': 95
+                                #     },
+                                # ]
                             },
                             {
                                 'id': 'mount_1_2',
@@ -778,34 +778,31 @@ class InstData():
                                 'val': 60
                             },
                             {
-                                'id':
-                                'mount_1_3',
-                                'title':
-                                'Mount_1_3',
-                                'val':
-                                90,
-                                'children': [
-                                    {
-                                        'id': 'mount_1_3_0',
-                                        'title': 'Mount_1_3_0',
-                                        'val': 95
-                                    },
-                                    {
-                                        'id': 'mount_1_3_1',
-                                        'title': 'Mount_1_3_1',
-                                        'val': 95
-                                    },
-                                    {
-                                        'id': 'mount_1_3_2',
-                                        'title': 'Mount_1_3_2',
-                                        'val': 95
-                                    },
-                                    {
-                                        'id': 'mount_1_3_3',
-                                        'title': 'Mount_1_3_3',
-                                        'val': 95
-                                    },
-                                ]
+                                'id': 'mount_1_3',
+                                'title': 'Mount_1_3',
+                                'val': 90,
+                                # 'children': [
+                                #     {
+                                #         'id': 'mount_1_3_0',
+                                #         'title': 'Mount_1_3_0',
+                                #         'val': 95
+                                #     },
+                                #     {
+                                #         'id': 'mount_1_3_1',
+                                #         'title': 'Mount_1_3_1',
+                                #         'val': 95
+                                #     },
+                                #     {
+                                #         'id': 'mount_1_3_2',
+                                #         'title': 'Mount_1_3_2',
+                                #         'val': 95
+                                #     },
+                                #     {
+                                #         'id': 'mount_1_3_3',
+                                #         'title': 'Mount_1_3_3',
+                                #         'val': 95
+                                #     },
+                                # ]
                             },
                             {
                                 'id': 'mount_1_4',
@@ -850,24 +847,21 @@ class InstData():
                                     'val': 3
                                 },
                                 {
-                                    'id':
-                                    'mirror_1_0',
-                                    'title':
-                                    'Mirror_1_0',
-                                    'val':
-                                    28,
-                                    'children': [
-                                        {
-                                            'id': 'mirror_1_0_0',
-                                            'title': 'Mirror_1_0_0',
-                                            'val': 90
-                                        },
-                                        {
-                                            'id': 'mirror_1_0_1',
-                                            'title': 'Mirror_1_0_1',
-                                            'val': 90
-                                        },
-                                    ]
+                                    'id': 'mirror_1_0',
+                                    'title': 'Mirror_1_0',
+                                    'val': 28,
+                                    # 'children': [
+                                    #     {
+                                    #         'id': 'mirror_1_0_0',
+                                    #         'title': 'Mirror_1_0_0',
+                                    #         'val': 90
+                                    #     },
+                                    #     {
+                                    #         'id': 'mirror_1_0_1',
+                                    #         'title': 'Mirror_1_0_1',
+                                    #         'val': 90
+                                    #     },
+                                    # ]
                                 },
                             ]
                         },
@@ -1274,6 +1268,40 @@ class InstData():
         # ------------------------------------------------------------------
         InstData.inst_health = inst_health
 
+        # ------------------------------------------------------------------
+        # add entries for the 3rd level of the hierarchy, given range_full_props ~100,
+        # we get ~200k properties overall for the South
+        range_full_props = [80, 120]
+
+        inst_health_full = dict()
+        for (inst_id, inst) in inst_health.items():
+            inst_health_full[inst_id] = dict()
+            for (field_id, data) in inst.items():
+                if 'children' in data:
+                    for child_0 in data['children']:
+                        if 'children' in child_0:
+                            for child_1 in child_0['children']:
+                                child_id = child_1['id']
+                                child_title = child_1['title']
+                                # child_val = child_1['val']
+
+                                inst_health_full[inst_id][child_id] = []
+                                for n_prop in range(rnd_gen.randint(*range_full_props)):
+                                    if rnd_gen.random() < 0.2:
+                                        val = rnd_gen.randint(11, 40)
+                                    else:
+                                        val = rnd_gen.randint(60, 99)
+                                    inst_health_full[inst_id][child_id] += [{
+                                        'id':
+                                        child_id + '_' + str(n_prop),
+                                        'title':
+                                        child_title + '_' + str(n_prop),
+                                        'val':
+                                        val,
+                                    }]
+
+        InstData.inst_health_full = inst_health_full
+
         return
 
     # ------------------------------------------------------------------
@@ -1413,6 +1441,16 @@ class InstData():
             sleep(0.01)
 
         out = InstData.inst_health
+        if is_copy:
+            out = copy.deepcopy(out)
+        return out
+
+    # ------------------------------------------------------------------
+    def get_inst_health_fulls(self, is_copy=False):
+        while not InstData.has_init:
+            sleep(0.01)
+
+        out = InstData.inst_health_full
         if is_copy:
             out = copy.deepcopy(out)
         return out

@@ -344,11 +344,11 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
 }
 
 .status-indicator-warn {
-  animation-name: warn_color_pulse;
+  animation-name: warn_bck_color_pulse;
   animation-duration: 5s;
   animation-iteration-count: infinite;
 }
-@keyframes warn_color_pulse {
+@keyframes warn_bck_color_pulse {
   0% {
     background-color: #e0bf3b;
   }
@@ -365,6 +365,36 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
     background-color: #e0bf3b;
   }
 }
+
+.red_color_fill_pulse {
+  animation-name: _red_color_fill_pulse;
+  animation-duration: 5s;
+  animation-iteration-count: infinite;
+}
+@keyframes _red_color_fill_pulse {
+  0% {
+    /*fill: #ED6D6C;*/
+    opacity: 100%;
+  }
+  10% {
+    opacity: 100%;
+    /*fill: #ED6D6C;*/
+  }
+  50% {
+    opacity: 10%;
+    /*fill: blue;*/
+    /*fill: #EF5350;*/
+  }
+  90% {
+    opacity: 100%;
+    /*fill: #ED6D6C;*/
+  }
+  100% {
+    opacity: 100%;
+    /*fill: #ED6D6C;*/
+  }
+}
+
 
 .checkbox_slider {
   position: relative;

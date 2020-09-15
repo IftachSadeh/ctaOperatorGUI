@@ -352,7 +352,7 @@ class ArrZoomerUtil(BaseUtil):
 
         self.log.debug([
             ['b', ' - ask_for_data_s1 '],
-            ['b', self.sm.sess_id, ' , '],
+            ['b', self.sm.sess_id, ', '],
             ['g', data['zoom_state']],
             ['b', ' , '],
             ['y', data['zoom_target']],
@@ -376,6 +376,46 @@ class ArrZoomerUtil(BaseUtil):
             'data': emit_data_s1,
         }
         await self.sm.emit_widget_event(opt_in=opt_in)
+
+        return
+
+    # ------------------------------------------------------------------
+    async def ask_for_data_s1_full(self, *args):
+        data = args[0]
+        tel_id = data['tel_id']
+        prop_id = data['prop_id']
+
+        self.log.debug([
+            ['b', ' - ask_for_data_s1_full '],
+            ['b', self.sm.sess_id, ', '],
+            ['g', tel_id],
+            ['b', ' , '],
+            ['y', prop_id],
+        ])
+
+        health_data = []
+        if prop_id is not None and prop_id != '':
+            health_data = self.redis.h_get(
+                name='inst_health_full;' + str(tel_id),
+                key=prop_id,
+            )
+
+        emit_data_s1 = {
+            'util_id': self.util_id,
+            'widget_id': data['widget_id'],
+            'tel_id': tel_id,
+            'parent_name': prop_id,
+            'data': health_data,
+        }
+
+        opt_in = {
+            'widget': self,
+            'event_name': 'arr_zoomer_get_data_s1_full',
+            'data': emit_data_s1,
+        }
+        await self.sm.emit_widget_event(opt_in=opt_in)
+
+        print('todo: ArrZoomerUtil:ask_for_data_s1_full() - update data_full; - more/title on click ...')
 
         return
 

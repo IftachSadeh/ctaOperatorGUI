@@ -65,6 +65,7 @@ window.ArrZoomerMain = function(opt_in_top) {
     // let is_state_down = ele_base.is_state_down
     let is_state_change = ele_base.is_state_change
     let send_sync_state_to_server = ele_base.send_sync_state_to_server
+    let ask_inst_health_full = ele_base.ask_inst_health_full
   
     ele_base.set_ele(this_top, 'main')
     let get_ele = ele_base.get_ele
@@ -3003,7 +3004,7 @@ window.ArrZoomerMain = function(opt_in_top) {
             locker.add('s10_bck_arc_change')
 
             //
-            hierarchy_style_click({
+            hierarchy_click({
                 prop_in: '',
                 id: '',
                 is_open: false,
@@ -3130,7 +3131,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                     }
                 })
 
-                hierarchy_style_click({
+                hierarchy_click({
                     prop_in: prop_in,
                     id: parent_name,
                     is_open: true,
@@ -3151,7 +3152,7 @@ window.ArrZoomerMain = function(opt_in_top) {
             else {
                 // console.log('tog_hierarchy',prop_in,'--',depth_click[prop_in],click_in)
 
-                hierarchy_style_click({
+                hierarchy_click({
                     prop_in: prop_in,
                     id: prop_in,
                     is_open: click_in,
@@ -3577,7 +3578,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                                     return
                                 }
 
-                                hierarchy_style_click({
+                                hierarchy_click({
                                     prop_in: porp_now,
                                     id: d.data.id,
                                     is_open: true,
@@ -3608,7 +3609,7 @@ window.ArrZoomerMain = function(opt_in_top) {
         //   porp_now = "mirror"
         //   // hierarchy_name = "mirror_1_1"
         //   hierarchy_name = porp_now
-        //   hierarchy_style_click({ prop_in:porp_now, id:hierarchy_name is_open:true })
+        //   hierarchy_click({ prop_in:porp_now, id:hierarchy_name is_open:true })
 
         // }, 4000);
 
@@ -3659,7 +3660,7 @@ window.ArrZoomerMain = function(opt_in_top) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function hierarchy_style_click(opt_in) {
+        function hierarchy_click(opt_in) {
             set_prop_title(opt_in)
             
             if (no_render) {
@@ -3673,7 +3674,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                 'data_change', 's10_click_hierarchy',
             ])) {
                 setTimeout(function() {
-                    hierarchy_style_click(opt_in)
+                    hierarchy_click(opt_in)
                 }, times.anim / 3)
                 return
             }
@@ -3700,9 +3701,18 @@ window.ArrZoomerMain = function(opt_in_top) {
 
             if (this_top.get_zoom_state() === 1) {
                 let arr_zoomer_prop = is_open ? sync_prop : ''
+                
+                // send a synchronisation event for this prop
                 send_sync_state_to_server({
                     type: 'sync_arr_zoomer_prop',
                     sync_time: Date.now(),
+                    tel_id: zooms.target,
+                    prop_id: arr_zoomer_prop,
+                    util_id: util_id,
+                })
+
+                // request full health data for this prop
+                ask_inst_health_full({
                     tel_id: zooms.target,
                     prop_id: arr_zoomer_prop,
                     util_id: util_id,
@@ -3804,7 +3814,7 @@ window.ArrZoomerMain = function(opt_in_top) {
 
             free_me(true)
         }
-        this_top.hierarchy_style_click = hierarchy_style_click
+        this_top.hierarchy_click = hierarchy_click
 
         // ------------------------------------------------------------------
         //
@@ -4206,6 +4216,7 @@ window.ArrZoomerMain = function(opt_in_top) {
             })
 
         circ_fore
+            // .classed('red_color_fill_pulse', d=> d[tag_now] <30 )
             .enter()
             .append('circle')
             .attr('class', tag_now + tag_fore)
@@ -4268,6 +4279,10 @@ window.ArrZoomerMain = function(opt_in_top) {
                     return r
                 }
             })
+            // .classed('red_color_fill_pulse', true)
+
+        // circ_fore.selectAll('circle.' + tag_now + tag_fore).classed('red_color_fill_pulse', true)
+        // console.log(circ_fore.selectAll('circle.' + tag_now + tag_fore))
 
         return
     }
