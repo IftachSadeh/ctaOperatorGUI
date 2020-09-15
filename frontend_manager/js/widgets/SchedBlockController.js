@@ -18,7 +18,6 @@ var main_script_tag = 'SchedBlockController'
 /* global disable_scroll_svg */
 /* global TelescopeDisplayer */
 /* global RunLoop */
-/* global get_tel_state */
 /* global BlockDisplayer */
 /* global ObsblockForm */
 /* global TargetForm */

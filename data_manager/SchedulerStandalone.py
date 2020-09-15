@@ -229,7 +229,7 @@ class SchedulerStandalone(ServiceManager):
                 sa_id = sa_ids[n_sched_block_now]
                 tel_ids = self.sub_array_insts[sa_id]
                 n_tel_now = len(tel_ids)
-                
+
                 if debug_tmp:
                     print(' --   sub-array:', sa_id, '\n', ' ' * 15, tel_ids)
 

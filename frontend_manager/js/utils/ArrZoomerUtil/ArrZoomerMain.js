@@ -288,22 +288,21 @@ window.ArrZoomerMain = function(opt_in_top) {
                     .attr('cx', circ_data.cx)
                     .attr('cy', circ_data.cy)
                     .attr('fill', '#F2F2F2')
-                // gs[clip_g_name]
-                //     .append('rect')
-                //     .attr('x', circ_data.cx - circ_data.r)
-                //     .attr('y', circ_data.cy - circ_data.r)
-                //     .attr('width', circ_data.r * 2)
-                //     .attr('height', circ_data.r * 2)
-                //     .attr('rx', rec_data.rx * 10)
-                //     .attr('ry', rec_data.ry * 10)
-                //     .attr('fill', '#F2F2F2')
-                    
-                //     .attr('x', 0)
-                //     .attr('y', 0)
-                //     .attr('width', 1000)
-                //     .attr('height',1000)
-                //     .attr('rx', 0)
-                //     .attr('ry', 0)
+                    // gs[clip_g_name]
+                    //     .append('rect')
+                    //     .attr('x', circ_data.cx - circ_data.r)
+                    //     .attr('y', circ_data.cy - circ_data.r)
+                    //     .attr('width', circ_data.r * 2)
+                    //     .attr('height', circ_data.r * 2)
+                    //     .attr('rx', rec_data.rx * 10)
+                    //     .attr('ry', rec_data.ry * 10)
+                    //     .attr('fill', '#F2F2F2')
+                    //     .attr('x', 0)
+                    //     .attr('y', 0)
+                    //     .attr('width', 1000)
+                    //     .attr('height',1000)
+                    //     .attr('rx', 0)
+                    //     .attr('ry', 0)
 
                 // ------------------------------------------------------------------
                 // for debugging - add a rect with an x-edge at the center:
@@ -1382,6 +1381,8 @@ window.ArrZoomerMain = function(opt_in_top) {
 
 
             // wether or not to add neighbors of neighbors to the links
+            // and if to add one or two levels of near-neighbors
+            let add_first_order_links = false
             let add_second_order_links = false
             
             // the voronoi info for the current layout
@@ -1408,11 +1409,13 @@ window.ArrZoomerMain = function(opt_in_top) {
                 }
 
                 links_2.physical[ele_id] = []
-                $.each(Array.from(neighbors), function(n_neighbor, neighbor_index) {
-                    links_2.physical[ele_id].push(
-                        insts.data.vor.data_physical[neighbor_index].id
-                    )
-                })
+                if (add_first_order_links) {
+                    $.each(Array.from(neighbors), function(n_neighbor, neighbor_index) {
+                        links_2.physical[ele_id].push(
+                            insts.data.vor.data_physical[neighbor_index].id
+                        )
+                    })
+                }
             })
 
             insts.data.mini = insts.data.xyr_physical
@@ -4254,10 +4257,12 @@ window.ArrZoomerMain = function(opt_in_top) {
             .attr('r', function(d) {
                 let r = insts.data[pos_tag][d.id].r * scale_r[0].health2
                 if (is_focused(d, 1)) {
-                    return r * 2
+                    return 0
+                    // return r * 2
                 }
                 else if (is_focused(d, 0)) {
-                    return r * 1.1
+                    return 0
+                    // return r * 1.1
                 }
                 else {
                     return r

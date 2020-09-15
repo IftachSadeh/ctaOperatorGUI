@@ -1,3 +1,4 @@
+import sys
 import copy
 from time import sleep
 
@@ -12,7 +13,7 @@ class InstData():
     inst_health = None
     site_type = None
     tel_ids = None
-    inst_Ids = None
+    inst_ids = None
     categorical_types = None
     tel_id_to_types = None
     sub_array_tels = None
@@ -46,13 +47,14 @@ class InstData():
 
             self.scale_inst_pos()
 
-            InstData.inst_Ids = copy.deepcopy(
+            InstData.inst_ids = copy.deepcopy(
                 InstData.tel_ids + InstData.aux_ids + InstData.proc_ids
             )
 
             self.init_sub_array_tels()
             self.init_tel_health()
             self.set_inst_id_to_types()
+            self.set_inst_states()
 
             InstData.has_init = True
 
@@ -76,6 +78,44 @@ class InstData():
     @property
     def health_title(self):
         return 'Health'
+
+    # ------------------------------------------------------------------
+    @property
+    def inst_states(self):
+        return self._inst_states
+
+    # ------------------------------------------------------------------
+    def set_inst_states(self):
+
+        small_negative = -10 * sys.float_info.epsilon
+        err_thresh = 30
+        warn_thresh = 55
+        nominal_thresh = 101
+
+        InstData._inst_states = [
+            {
+                'name': 'DISCONNECTED',
+                'thresholds': [-1 * nominal_thresh, small_negative],
+                'colors': ['#00BCD4', '#2196F3'],
+            },
+            {
+                'name': 'ERROR',
+                'thresholds': [small_negative, err_thresh],
+                'colors': ['#ED6D6C', '#EF5350'],
+            },
+            {
+                'name': 'WARNING',
+                'thresholds': [err_thresh, warn_thresh],
+                'colors': ['#FCD975', '#FFEB3B'],
+            },
+            {
+                'name': 'NOMINAL',
+                'thresholds': [warn_thresh, nominal_thresh],
+                'colors': ['#B5C69C', '#AED581'],
+            },
+        ]
+
+        return
 
     # ------------------------------------------------------------------
     def init_sub_array_tels(self):
@@ -1265,7 +1305,7 @@ class InstData():
     # ------------------------------------------------------------------
     def set_inst_id_to_types(self):
         InstData.tel_id_to_types = dict()
-        for tel_id in InstData.inst_Ids:
+        for tel_id in InstData.inst_ids:
             InstData.tel_id_to_types[tel_id] = self.get_tel_type(tel_id)
 
         return
@@ -1329,7 +1369,7 @@ class InstData():
             raise Exception()
 
         if inst_types is None:
-            inst_ids = InstData.inst_Ids
+            inst_ids = InstData.inst_ids
             if is_copy:
                 inst_ids = copy.deepcopy(inst_ids)
         else:
@@ -1337,7 +1377,7 @@ class InstData():
                 inst_types = [inst_types]
 
             inst_ids = [
-                i for i in InstData.inst_Ids
+                i for i in InstData.inst_ids
                 if any(self.is_tel_type(i, inst_type) for inst_type in inst_types)
             ]
         return inst_ids
@@ -1395,4 +1435,46 @@ class InstData():
         out = InstData.tel_id_to_sub_array
         if is_copy:
             out = copy.deepcopy(out)
+        return out
+
+    # ------------------------------------------------------------------
+    def get_inst_health_state(self, health):
+        """mapping between numerical health values and a state
+           used eg to determine the colour code for a given metric
+
+            Parameters
+            ----------
+            name : health
+                a health metric, with expected values within [0, 100]
+                for connected instruments. negative values indicate
+                disconnected instruments.
+        
+            Returns
+            -------
+            str
+                the name of the state
+        """
+
+        # make sure we are ordered in the threshold value
+        states = sorted(InstData._inst_states, key=lambda x: x['thresholds'][1])
+
+        out = None
+        for state in states:
+            if health <= state['thresholds'][1]:
+                out = state['name']
+                break
+
+        if out is None:
+            if health > states[-1]['thresholds'][1]:
+                out = states[-1]['name']
+            else:
+                out = states[0]['name']
+
+            self.log.warning([
+                ['y', ' - trying to get get_inst_health_state() beyond bounds for '],
+                ['b', health],
+                ['y', ' --> setting to '],
+                ['c', out],
+            ])
+
         return out

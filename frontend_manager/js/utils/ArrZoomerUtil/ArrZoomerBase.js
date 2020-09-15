@@ -1032,12 +1032,14 @@ window.ArrZoomerBase = function(opt_in_top) {
             }
         })
 
-        get_ele('main').update_s1(data_in)
+        get_ele('main').update_s1(data_in.data)
         if (get_ele('tree')) {
-            get_ele('tree').update_s1(data_in)
+            get_ele('tree').update_s1(data_in.data)
         }
 
         locker.remove('data_change')
+
+        return
     }
 
     // // ------------------------------------------------------------------

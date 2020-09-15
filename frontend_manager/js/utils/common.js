@@ -72,7 +72,7 @@ let is_def = window.is_def
 window.col_prime = '2F3238'
 window.cols_reds = [
     '#E91E63',
-    '#ff3333',
+    '#FF3333',
     '#F48FB1',
     '#C62828',
     '#AD1457',
@@ -172,32 +172,32 @@ window.color_theme = {
     'dark_Blue_grey': {
         blocks: {
             run: {
-                background: '#377eb8',
+                background: '#377EB8',
                 stroke: '#000000',
                 text: '#000000',
             },
             done: {
-                background: '#4daf4a',
+                background: '#4DAF4A',
                 stroke: '#000000',
                 text: '#000000',
             },
             fail: {
-                background: '#e41a1c',
+                background: '#E41A1C',
                 stroke: '#000000',
                 text: '#000000',
             },
             wait: {
-                background: '#e6e6e6',
+                background: '#E6E6E6',
                 stroke: '#000000',
                 text: '#000000',
             },
             cancelOp: {
-                background: '#984ea3',
+                background: '#984EA3',
                 stroke: '#000000',
                 text: '#000000',
             },
             cancelSys: {
-                background: '#e78ac3',
+                background: '#E78AC3',
                 stroke: '#000000',
                 text: '#000000',
             },
@@ -241,32 +241,32 @@ window.color_theme = {
     'dark_grey': {
         blocks: {
             run: {
-                background: '#377eb8',
+                background: '#377EB8',
                 stroke: '#000000',
                 text: '#000000',
             },
             done: {
-                background: '#4daf4a',
+                background: '#4DAF4A',
                 stroke: '#000000',
                 text: '#000000',
             },
             fail: {
-                background: '#e41a1c',
+                background: '#E41A1C',
                 stroke: '#000000',
                 text: '#000000',
             },
             wait: {
-                background: '#e6e6e6',
+                background: '#E6E6E6',
                 stroke: '#000000',
                 text: '#000000',
             },
             cancelOp: {
-                background: '#984ea3',
+                background: '#984EA3',
                 stroke: '#000000',
                 text: '#000000',
             },
             cancelSys: {
-                background: '#e78ac3',
+                background: '#E78AC3',
                 stroke: '#000000',
                 text: '#000000',
             },
@@ -279,12 +279,12 @@ window.color_theme = {
         darker: {
             background: '#616161',
             stroke: '#263238',
-            text: '#ffffff',
+            text: '#FFFFFF',
         },
         dark: {
             background: '#757575',
             stroke: '#263238',
-            text: '#ffffff',
+            text: '#FFFFFF',
         },
         medium: {
             background: '#9E9E9E',
@@ -315,12 +315,12 @@ window.color_theme = {
                 text: '#000000',
             },
             done: {
-                background: '#b5c69c', // 9CCC65
+                background: '#B5C69C', // 9CCC65
                 stroke: '#000000',
                 text: '#000000',
             },
             fail: {
-                background: '#ed6d6c', // DD2C00
+                background: '#ED6D6C', // DD2C00
                 stroke: '#000000',
                 text: '#000000',
             },
@@ -535,18 +535,6 @@ window.col_mix = function(index) {
 
     return cols_mix[index % cols_mix.length]
 }
-
-// ------------------------------------------------------------------
-// colours for different states (red, yellow, green)
-// ------------------------------------------------------------------
-let LOG_LEVELS = {
-    ERROR: 'ERROR',
-    WARN: 'WARN',
-    WARNING: 'WARNING',
-    INFO: 'INFO',
-    DEBUG: 'DEBUG',
-}
-window.LOG_LEVELS = LOG_LEVELS
 
 // ------------------------------------------------------------------
 // commonly used units and symbols
@@ -771,50 +759,83 @@ window.get_tel_number = function(tel) {
 // });
 // console.log('xxxxx',x);
 
-// ------------------------------------------------------------------
-// colours for different states (red, yellow, green)
-// ------------------------------------------------------------------
-let TEL_STATES = {
-    ERROR: 0,
-    WARNING: 1,
-    NOMINAL: 2,
-}
-window.TEL_STATES = TEL_STATES
 
-let tel_state_color = {
-}
-tel_state_color[TEL_STATES.NOMINAL] = [ '#b5c69c', '#AED581' ]
-tel_state_color[TEL_STATES.WARNING] = [ '#fcd975', '#FFEB3B' ]
-tel_state_color[TEL_STATES.ERROR] = [ '#ed6d6c', '#EF5350' ]
-window.tel_state_color = tel_state_color
 
-window.get_tel_state = function(health) {
-    if (health < 30) {
-        return TEL_STATES.ERROR
-    }
-    else if (health < 55) {
-        return TEL_STATES.WARNING
-    }
-    else {
-        return TEL_STATES.NOMINAL
-    }
-}
-let get_tel_state = window.get_tel_state
-
-window.inst_health_col = function(health, index) {
-    let tel_state = get_tel_state(health)
-    if (!is_def(index)) {
-        return tel_state_color[tel_state][0]
-    }
-    else {
-        return d3.rgb(tel_state_color[tel_state][0]).darker(index)
-    }
-}
-// fraction of health within a red/yellow/green class
-window.inst_health_frac = function(health) {
-    return (100 - health) / 100
-}
 // ------------------------------------------------------------------
+function set_tel_state_funcs(inst_states) {
+    if (is_def(window.TEL_STATES)) {
+        return
+    }
+    
+    let tel_states = {
+    }
+    let tel_state_color = {
+    }
+    let tel_thresholds = {
+    }
+
+    // derive some objects for local/global use
+    $.each(inst_states, function(_, state) {
+        tel_states[state.name] = state.name
+        tel_thresholds[state.name] = state.thresholds
+        tel_state_color[state.name] = state.colors
+    })
+    window.TEL_HEALTH_THRESHOLDS = tel_thresholds
+    window.TEL_STATES = tel_states
+
+    // sort by the threshold
+    let sorted_vals = Object.keys(tel_thresholds).sort(
+        (a,b) => tel_thresholds[a][1] - tel_thresholds[b][1]
+    )
+    // console.log('sorted_vals',sorted_vals)
+    
+    // interface for determining where a value fall between thresholds
+    let get_tel_state = function(health) {
+        if (!is_def(health)) {
+            console.error(' - problem with get_tel_state - value:', health, 'undefined ?!')
+            return tel_states.ERROR
+        }
+        
+        for (let i = 0; i < sorted_vals.length; i++) {
+            let state = sorted_vals[i]
+            let is_in_state = (
+                health > tel_thresholds[state][0]
+                && health <= tel_thresholds[state][1]
+            )
+            if (health <= tel_thresholds[state][1]) {
+                return state
+            }
+        }
+
+        // if for some reason we failed, send an error
+        console.error(' - problem with get_tel_state - value:', health, 'out of bounds ?!')
+        return tel_states.ERROR
+    }
+    window.get_tel_state = get_tel_state
+
+    // colours for different states
+    let inst_health_col = function(health, shade) {
+        let tel_state = window.get_tel_state(health)
+        if (!is_def(shade)) {
+            return tel_state_color[tel_state][0]
+        }
+        else {
+            return d3.rgb(tel_state_color[tel_state][0]).darker(shade)
+        }
+    }
+    window.inst_health_col = inst_health_col
+
+    // fraction of health within a red/yellow/green class
+    let inst_health_frac = function(health) {
+        return (100 - Math.min(0, Math.max(100, health))) * 1e-2
+    }
+    window.inst_health_frac = inst_health_frac
+
+    return
+}
+window.set_tel_state_funcs = set_tel_state_funcs
+
+
 
 // ------------------------------------------------------------------
 // transition times (if the window/tab is inactive, flush_hidden_d3() makes sure all animations
