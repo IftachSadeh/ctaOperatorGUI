@@ -42,6 +42,10 @@ class SchedBlockInspector(SchedBlockController):
 
         data = args[0]
         new_schedule = data['new_schedule']
+        for block in new_schedule:
+            block['time']['start'] = block['time']['start'] / 1000
+            block['time']['duration'] = block['time']['duration'] / 1000
+            block['time']['end'] = block['time']['end'] / 1000
 
         self.redis.set(name='obs_block_update', data=new_schedule)
 
