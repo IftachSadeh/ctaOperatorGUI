@@ -306,6 +306,7 @@ class PlotsDash(BaseWidget):
             'night_start_sec': clock_sim['night_start_sec'] * 1000,
             'time_now_sec': clock_sim['time_now_sec'] * 1000,
         }
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -356,7 +357,7 @@ class PlotsDash(BaseWidget):
         for index in range(len(self.tel_ids)):
             pipe = self.redis.get_pipe()
             for key in self.tel_key:
-                pipe.z_get('inst_health;' + self.tel_ids[index] + ';' + key)
+                pipe.z_get('inst_health_summary;' + self.tel_ids[index] + ';' + key)
             data = pipe.execute()
             n_ele_now = 0
             for key in self.tel_key:
@@ -399,7 +400,7 @@ class PlotsDash(BaseWidget):
         data = {}
         pipe = self.redis.get_pipe()
         for key in keys_now:
-            pipe.z_get('inst_health;' + id + ';' + key)
+            pipe.z_get('inst_health_summary;' + id + ';' + key)
             data[key] = pipe.execute()
         # n_ele = sum([len(v) for v in keys_now])
         # if len(data) != n_ele:
@@ -856,7 +857,7 @@ class PlotsDash(BaseWidget):
         pipe = self.redis.get_pipe()
         for id_now in idV:
             pipe.h_m_get(
-                name='inst_health;' + str(id_now),
+                name='inst_health_summary;' + str(id_now),
                 keys=fields[id_now],
                 default_val=[],
             )

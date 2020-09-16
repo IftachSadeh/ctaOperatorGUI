@@ -105,7 +105,7 @@ class InstHealth(ServiceManager):
 
             for key, val in self.inst_health_s0[id_now].items():
                 pipe.h_set(
-                    name='inst_health;' + str(id_now),
+                    name='inst_health_summary;' + str(id_now),
                     key=key,
                     data=val,
                 )
@@ -113,6 +113,15 @@ class InstHealth(ServiceManager):
             # self.redPipe.hmset('inst_health_s0'+str(id_now), self.inst_health_s0[id_now])
 
         self.inst_health = self.inst_data.get_inst_healths()
+
+        # derive the top-level properties, eg:
+        #   {'inst_0', 'camera', 'prc_0', 'mount', 'mirror',
+        #    'prc_1', 'aux', 'inst_1', 'daq'}
+        self.rnd_props = set()
+        for (k_0, v_0) in self.inst_health.items():
+            for (k_1, v_1) in v_0.items():
+                self.rnd_props.add(k_1)
+        self.rnd_props = list(self.rnd_props)
 
         # a flat dict with references to each level of the original dict
         self.inst_health_sub_flat = dict()
@@ -125,16 +134,17 @@ class InstHealth(ServiceManager):
             for key, val in self.inst_health_sub_flat[id_now].items():
                 if 'val' in val['data']:
                     pipe.h_set(
-                        name='inst_health;' + str(id_now),
+                        name='inst_health_summary;' + str(id_now),
                         key=key,
                         data=val['data']['val']
                     )
 
-        self.inst_health_full = self.inst_data.get_inst_health_fulls()
-        for (id_now, inst) in self.inst_health_full.items():
+        # set the full health metrics for each instrument
+        self.inst_health_deep = self.inst_data.get_inst_health_fulls()
+        for (id_now, inst) in self.inst_health_deep.items():
             for (field_id, data) in inst.items():
                 pipe.h_set(
-                    name='inst_health_full;' + str(id_now),
+                    name='inst_health_deep;' + str(id_now),
                     key=field_id,
                     data=data,
                 )
@@ -174,18 +184,7 @@ class InstHealth(ServiceManager):
         if update_frac is None:
             update_frac = self.update_frac
 
-        rnd_props = [
-            'camera',
-            'mirror',
-            'mount',
-            'daq',
-            'aux',
-            'inst_0',
-            'inst_1',
-            'prc_0',
-            'prc_1',
-        ]
-        n_rnd_props = len(rnd_props)
+        n_rnd_props = len(self.rnd_props)
 
         pipe = self.redis.get_pipe()
 
@@ -201,7 +200,7 @@ class InstHealth(ServiceManager):
                 )
 
                 pipe.h_set(
-                    name='inst_health;' + str(id_now),
+                    name='inst_health_summary;' + str(id_now),
                     key=self.health_tag,
                     data=self.inst_health_s0[id_now][self.health_tag],
                 )
@@ -252,16 +251,16 @@ class InstHealth(ServiceManager):
                 else:
                     bad -= rnd
 
-                if rnd_props[n_prop_now] in arr_props[id_now]:
-                    arr_props[id_now][rnd_props[n_prop_now]] = 100 - rnd
+                if self.rnd_props[n_prop_now] in arr_props[id_now]:
+                    arr_props[id_now][self.rnd_props[n_prop_now]] = 100 - rnd
 
             self.inst_health_s0[id_now] = arr_props[id_now]
 
             self.inst_health_s1[id_now][self.health_tag] = health_tot
 
             for key, val in self.inst_health_s0[id_now].items():
-                pipe.h_set(name='inst_health;' + str(id_now), key=key, data=val)
-                # print('inst_health;' + str(id_now), key, val)
+                pipe.h_set(name='inst_health_summary;' + str(id_now), key=key, data=val)
+                # print('inst_health_summary;' + str(id_now), key, val)
 
         pipe.execute()
 
@@ -271,66 +270,115 @@ class InstHealth(ServiceManager):
 
     # ------------------------------------------------------------------
     def rand_s1(self, tel_id_in=None, rnd_seed=-1):
-        rnd_props = [
-            'camera',
-            'mirror',
-            'mount',
-            'daq',
-            'aux',
-            'inst_0',
-            'inst_1',
-        ]
 
         if rnd_seed < 0:
             rnd_seed = random.randint(0, 100000)
         rnd_gen = Random(rnd_seed)
 
-        # recursive randomization of all 'val' values of the dict and its child elements
-        def set_rnd_props(data_in):
-            for key, value in data_in.items():
-                if key == 'children':
-                    for child in data_in[key]:
-                        set_rnd_props(child)
+        rnd_props = [p for p in self.rnd_props]
 
-                if key == 'val':
-                    rnd_now = rnd_gen.uniform(-10, 10)
-                    if rnd_gen.random() < 0.1:
-                        rnd_now = rnd_gen.uniform(-30, 30)
-                    val = data_in['val'] + ceil(rnd_now)
-                    data_in['val'] = max(20, min(100, int(val)))
+        # recursive randomization of all 'val' values of the
+        # dict and its child elements
+        def set_rnd_props(data_in):
+            keys = data_in.keys()
+
+            if 'children' in keys:
+                for child in data_in['children']:
+                    set_rnd_props(child)
+
+            if 'val' in keys:
+                rnd_val(data_in)
+
+            return
+
+        # in-place randomisation of the 'val' key of an input dict
+        def rnd_val(data_in):
+            if rnd_gen.random() < 0.1:
+                rnd_now = rnd_gen.uniform(-30, 30)
+            else:
+                rnd_now = rnd_gen.uniform(-10, 10)
+
+            val = data_in['val'] + ceil(rnd_now)
+            val = max(-1, min(100, int(val)))
+            data_in['val'] = val
+
             return
 
         ids = self.tel_ids if (tel_id_in is None) else tel_id_in
 
         pipe = self.redis.get_pipe()
 
+        n_rnd_props_0 = 3
+        n_rnd_props_1 = 10
+
         for id_now in self.tel_ids:
             random.shuffle(rnd_props)
 
             # call the randomization function
             if id_now in ids:
+                # randomise the main metrics
                 for prop_name in rnd_props:
                     if prop_name not in self.inst_health[id_now]:
                         continue
 
                     set_rnd_props(self.inst_health[id_now][prop_name])
-                    # if id_now=='L_0': print self.inst_health[id_now][prop_name]
+                    # if id_now == 'Lx01':
+                    #     print (id_now, prop_name, '\n', self.inst_health[id_now][prop_name])
 
                     # sync with the value in self.inst_health_s0
                     prop_value = self.inst_health[id_now][prop_name]['val']
                     self.inst_health_s0[id_now][prop_name] = prop_value
                     pipe.h_set(
-                        name='inst_health;' + str(id_now), key=prop_name, data=prop_value
+                        name='inst_health_summary;' + str(id_now),
+                        key=prop_name,
+                        data=prop_value
                     )
-                    # if id_now=='Ax00':print id_now,prop_name,prop_value
+
+                # randomise the list of full health
+                inst_health_deep = self.redis.h_get_all(
+                    name='inst_health_deep;' + str(id_now),
+                    default_val={},
+                )
+
+                # select a sub sample of properties to randomise
+                props_0 = inst_health_deep.keys()
+                props_0 = random.sample(props_0, min(n_rnd_props_0, len(props_0) - 1))
+
+                # for debugging, always randomise this particular property
+                if id_now == 'Lx01' and 'camera_1_0' not in props_0:
+                    if 'camera_1_0' in inst_health_deep.keys():
+                        props_0 += ['camera_1_0']
+
+                for n_prop_0 in range(len(props_0)):
+                    prop_0_name = props_0[n_prop_0]
+                    props_1 = inst_health_deep[prop_0_name]
+
+                    # select a random sub sample of properties
+                    # by picking their indices in the list
+                    update_indices = random.sample(
+                        range(len(props_1) - 1),
+                        min(n_rnd_props_1,
+                            len(props_1) - 1),
+                    )
+                    # randomise in-place the val of the selected properties
+                    for n_prop_1 in range(len(update_indices)):
+                        prop_1_name = update_indices[n_prop_1]
+                        rnd_val(props_1[prop_1_name])
+
+                    pipe.h_set(
+                        name='inst_health_deep;' + str(id_now),
+                        key=props_0[n_prop_0],
+                        data=props_1,
+                    )
 
                 pipe.execute()
+
                 self.set_tel_health_s1(id_now)
 
             time_now_sec = self.clock_sim.get_time_now_sec()
             time_min = self.clock_sim.get_time_series_start_time_sec()
 
-            base_name = 'inst_health;' + str(id_now)
+            base_name = 'inst_health_summary;' + str(id_now)
 
             for key, val in self.inst_health_sub_flat[id_now].items():
                 if 'val' in val['data']:
@@ -347,8 +395,8 @@ class InstHealth(ServiceManager):
 
             pipe.execute()
 
-        # # self.redis.z_get('inst_health;Lx03;camera_1')
-        # data = self.redis.z_get('inst_health;Lx03;camera_1')
+        # # self.redis.z_get('inst_health_summary;Lx03;camera_1')
+        # data = self.redis.z_get('inst_health_summary;Lx03;camera_1')
         # print('----------->', data)
         # raise Exception('aaaaa aaaaaaaaaa')
 

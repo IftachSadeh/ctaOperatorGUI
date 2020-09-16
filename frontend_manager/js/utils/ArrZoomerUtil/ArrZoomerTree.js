@@ -556,7 +556,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                     .attr('vector-effect', 'non-scaling-stroke')
                     // .attr("id",        function(d) { return my_unique_id+d.id+tag_now; })
                     .attr('class', tag_state + ' ' + tag_now)
-                    // .style("opacity",  function(d) { return is_s0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is_s0)
+                    // .style("opacity",  function(d) { return is_s0 ? "0.1" :  "1" }) // if "#383B42" back-ring (for is_s0)
                     .style('opacity', (is_s0 ? '0.5' : '1'))
                     .attr('transform',
                         'translate(' + pos[porp_now].x
@@ -717,7 +717,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 // .attr("id",        function(d) { return my_unique_id+d.id+tag_now; })
                 .attr('class', tag_state + ' ' + tag_now)
-                // .style("opacity",  function(d) { return is_s0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is_s0)
+                // .style("opacity",  function(d) { return is_s0 ? "0.1" :  "1" }) // if "#383B42" back-ring (for is_s0)
                 .style('opacity', (is_s0 ? '0.5' : '1'))
                 .attr('transform',
                     'translate(' + pos[porp_all].x + ',' + pos[porp_all].y + ')'
@@ -868,9 +868,9 @@ window.ArrZoomerTree = function(opt_in_top) {
             .attr('class', tag_state + ' ' + title_tag)
             .style('opacity', '0')
             .style('fill-opacity', 0.7)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             // .attr("stroke-width", function(d) { return d.strk_w; })
-            .style('stroke', '#383b42')
+            .style('stroke', '#383B42')
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
             .attr('transform', function(d) {
@@ -933,7 +933,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             .attr('opacity', 0)
             // .attr('opacity', 0.1)
             .style('stroke-width', '0')
-            // .style("fill", "#383b42").style("stroke", "red").attr("opacity", 0.1).style("stroke-width", "1")
+            // .style("fill", "#383B42").style("stroke", "red").attr("opacity", 0.1).style("stroke-width", "1")
             .attr('height', function(d) {
                 return d.h
             })
@@ -1250,7 +1250,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                 return font_size(d) + 'px'
             })
             .style('text-anchor', txt_anch)
-            .style('stroke', '#383b42')
+            .style('stroke', '#383B42')
             .attr('pointer-events', 'none')
             .attr('vector-effect', 'non-scaling-stroke')
             .attr('opacity', 0)
@@ -1311,7 +1311,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             .append('path')
             .attr('class', tag_links)
             .style('fill', 'transparent')
-            .style('stroke', '#383b42')
+            .style('stroke', '#383B42')
             .style('stroke-width', '1')
             .attr('vector-effect', 'non-scaling-stroke')
             .attr('pointer-events', 'none')
@@ -1503,11 +1503,17 @@ window.ArrZoomerTree = function(opt_in_top) {
             return
         }
 
+        let is_open = (desc.length !== 0)
         set_hierarchy_ches_bck({
-            is_open: (desc.length !== 0),
+            is_open: is_open,
             ches_w: ches_w,
             ches_h: ches_h,
         })
+
+        if (!is_open) {
+            set_hierarchy_ches_data({
+            })
+        }
 
         locker.remove({
             id: 'update_tel_hierarchy_tree',
@@ -1548,9 +1554,9 @@ window.ArrZoomerTree = function(opt_in_top) {
             .enter()
             .append('rect')
             .attr('class', bck_rect_tag)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             .style('pointer-events', 'none')
-            .style('stroke', '#383b42')
+            .style('stroke', '#383B42')
             .style('stroke-width', svg_dims.w_diff)
             .attr('opacity', 0)
             .attr('height', d => d.h)
@@ -1586,7 +1592,7 @@ window.ArrZoomerTree = function(opt_in_top) {
 
         let tel_id = opt_in.tel_id
         let parent_name = opt_in.parent_name
-        let prop_data = opt_in.prop_data
+        let prop_data = is_def(opt_in.prop_data) ? opt_in.prop_data : []
         let n_cols = is_def(opt_in.n_cols) ? opt_in.n_cols : 5
 
         let n_eles = prop_data.length
@@ -1631,7 +1637,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             .enter()
             .append('rect')
             .attr('class', main_rect_tag)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             .style('stroke-width', '0')
             .attr('opacity', 0)
             .attr('height', d => d.h)
@@ -1640,6 +1646,12 @@ window.ArrZoomerTree = function(opt_in_top) {
                 d => 'translate(' + d.x + ',' + d.y + ')'
             )
             .on('click', (e, d) => rec_click(d))
+            .on('mouseover', function(e, d) {
+                rec_focus(d, true)
+            })
+            .on('mouseout', function(e, d) {
+                rec_focus(d, false)
+            })
             .merge(main_rect)
             .transition('enter')
             .duration(times.anim)
@@ -1663,10 +1675,13 @@ window.ArrZoomerTree = function(opt_in_top) {
             .remove()
 
 
+        function rec_focus(d, is_on) {
+            console.log(' - TODO: ArrZoomerTree.set_hierarchy_ches_data.rec_focus(): add hover function ...', d, is_on)
+        }
+
         // the click function
-        // ------------------------------------------------------------------
         function rec_click(d) {
-            console.log('click', tel_id, parent_name, d)
+            console.log(' - TODO: ArrZoomerTree.set_hierarchy_ches_data.rec_click(): add click function ...', tel_id, parent_name, d)
 
             // ele_base.tel_prop_title({
             //     tel_id: tel_id,
@@ -1815,8 +1830,8 @@ window.ArrZoomerTree = function(opt_in_top) {
             .enter()
             .append('rect')
             .attr('class', rect_tag)
-            .style('fill', '#383b42')
-            // .style("stroke", "#383b42")
+            .style('fill', '#383B42')
+            // .style("stroke", "#383B42")
             .style('pointer-events', 'none')
             .style('stroke-width', '0')
             .attr('opacity', 0)

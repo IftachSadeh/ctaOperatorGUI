@@ -1092,12 +1092,12 @@ let main_sub_arr_grp = function(opt_in) {
                 grad
                     .append('stop')
                     .attr('offset', '25%')
-                    .attr('stop-color', '#383b42')
+                    .attr('stop-color', '#383B42')
                     .attr('stop-opacity', 1)
                 grad
                     .append('stop')
                     .attr('offset', '70%')
-                    .attr('stop-color', '#383b42')
+                    .attr('stop-color', '#383B42')
                     .attr('stop-opacity', 0)
                 // .attr("stop-color", "red").attr("stop-opacity", 1)
 
@@ -1252,7 +1252,7 @@ let main_sub_arr_grp = function(opt_in) {
             ]
             let colLineV = [
                 d3.rgb(cols_reds[8]).brighter(0.5),
-                '#383b42',
+                '#383B42',
                 d3.rgb(cols_yellows[2]).brighter(0.3),
                 col_lbls[2],
                 col_lbls[2],
@@ -1542,7 +1542,7 @@ let main_sub_arr_grp = function(opt_in) {
                             return d.col
                         }
                         else if (trg_tel === 'trg') {
-                            return '#383b42'
+                            return '#383B42'
                         }
                         else {
                             return 'transparent'
@@ -1550,7 +1550,7 @@ let main_sub_arr_grp = function(opt_in) {
                     })
                     .style('stroke', function(d) {
                         return (
-                            (trg_tel === 'tel') ? d3.rgb(d.col).darker(1) : '#383b42'
+                            (trg_tel === 'tel') ? d3.rgb(d.col).darker(1) : '#383B42'
                         )
                     })
                     .on('end', function(_, i) {
@@ -1663,8 +1663,8 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('stroke-width', 0.5)
-                .style('stroke', '#383b42')
-                .style('fill', '#383b42')
+                .style('stroke', '#383B42')
+                .style('fill', '#383B42')
                 .style('pointer-events', 'none')
                 .style('vector-effect', 'non-scaling-stroke')
                 .style('font-size', getFontSize() + 'px')
@@ -1949,7 +1949,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .append('path')
                 .attr('class', 'grat')
                 .attr('stroke-width', 0)
-                .style('stroke', '#383b42')
+                .style('stroke', '#383B42')
                 .style('fill', 'transparent')
                 .style('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
@@ -3107,7 +3107,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('class', tag_text)
                 .style('font-weight', 'bold')
                 .style('opacity', '0')
-                .style('fill', '#383b42')
+                .style('fill', '#383B42')
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .attr('transform', txt_trans)
@@ -3128,7 +3128,7 @@ let main_sub_arr_grp = function(opt_in) {
                     }
                 })
                 .attr('text-anchor', 'middle')
-                .style('stroke', '#383b42')
+                .style('stroke', '#383B42')
                 .merge(text)
                 .each(function(d) {
                     if (!d.children && !is_def(font_size)) {
@@ -3188,11 +3188,11 @@ let main_sub_arr_grp = function(opt_in) {
         }
 
         function hirch_style_stroke(_) {
-            return '#383b42'
-            // return d.children ? "#383b42" : tel_data.id_cols[d.data.id];
+            return '#383B42'
+            // return d.children ? "#383B42" : tel_data.id_cols[d.data.id];
         }
         function hirch_style_fill(d) {
-            return d.children ? '#383b42' : tel_data.id_cols[d.data.id]
+            return d.children ? '#383B42' : tel_data.id_cols[d.data.id]
         }
         function hirch_style_opac(d, scale) {
             if (!d.parent) {
@@ -4121,10 +4121,10 @@ let main_sub_arr_grp = function(opt_in) {
                     return d.val + lbl.units[0]
                 })
                 .attr('class', tag_now + 'lbl_0')
-                // .style("stroke", "#383b42")
+                // .style("stroke", "#383B42")
                 .style('stroke-width', 0)
                 .style('opacity', '0')
-                .style('fill', '#383b42')
+                .style('fill', '#383B42')
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .attr('text-anchor', 'middle')
@@ -4192,9 +4192,9 @@ let main_sub_arr_grp = function(opt_in) {
                     .append('text')
                     .text(symbols.Delta)
                     .attr('class', tag_now + 'lbl_1')
-                    .style('stroke', '#383b42')
+                    .style('stroke', '#383B42')
                     .style('opacity', '0')
-                    .style('fill', '#383b42')
+                    .style('fill', '#383B42')
                     .attr('vector-effect', 'non-scaling-stroke')
                     .style('pointer-events', 'none')
                     .attr('text-anchor', 'middle')
@@ -4236,10 +4236,10 @@ let main_sub_arr_grp = function(opt_in) {
                 .enter()
                 .append('rect')
                 .attr('class', tag_now + '0')
-                .style('stroke', '#383b42')
+                .style('stroke', '#383B42')
                 .style('opacity', '0')
                 .style('stroke-width', '0')
-                .style('fill', '#383b42')
+                .style('fill', '#383B42')
                 .style('pointer-events', 'none')
                 .attr('x', '0')
                 .attr('y', '0')
@@ -4288,7 +4288,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .enter()
                 .append('circle')
                 .attr('class', tag_now + '1')
-                // .style("stroke", "#383b42")
+                // .style("stroke", "#383B42")
                 .style('opacity', '0.7')
                 .style('stroke-width', '0')
                 .style('fill', 'transparent')
@@ -4408,7 +4408,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .enter()
                 .append('path')
                 .attr('class', tag_now + '0')
-                .style('stroke', '#383b42')
+                .style('stroke', '#383B42')
                 .style('opacity', '0.1')
                 .style('stroke-width', '0')
                 .style('fill', 'transparent')
@@ -4455,7 +4455,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .enter()
                 .append('circle')
                 .attr('class', tag_now + '1')
-                // .style("stroke", "#383b42")
+                // .style("stroke", "#383B42")
                 .style('opacity', '0.9')
                 .style('stroke-width', '0')
                 .style('fill', 'transparent')
@@ -4531,7 +4531,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .enter()
                 .append('circle')
                 .attr('class', tag_now + '2')
-                .style('stroke', '#383b42')
+                .style('stroke', '#383B42')
                 .style('opacity', '0.7')
                 .style('stroke-width', 0.1 * scale_rad_1 + 'px')
                 .style('fill', 'transparent')
@@ -4669,10 +4669,10 @@ let main_sub_arr_grp = function(opt_in) {
                     return d.pos + lbl.units[index]
                 })
                 .attr('class', tag_now + 'lbl_0')
-                .style('stroke', '#383b42')
+                .style('stroke', '#383B42')
                 .style('stroke-width', 0.25)
                 .style('opacity', '0')
-                .style('fill', '#383b42')
+                .style('fill', '#383B42')
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .attr('text-anchor', 'middle')
@@ -4731,10 +4731,10 @@ let main_sub_arr_grp = function(opt_in) {
                 .append('text')
                 .text(is_arc ? symbols.delta : symbols.phi)
                 .attr('class', tag_now + 'lbl_1')
-                .style('stroke', '#383b42')
+                .style('stroke', '#383B42')
                 // .style("font-weight", "bold")
                 .style('opacity', '0')
-                .style('fill', '#383b42')
+                .style('fill', '#383B42')
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .attr('text-anchor', 'middle')
@@ -4874,7 +4874,7 @@ let main_sub_arr_grp = function(opt_in) {
                     .append('path')
                     .attr('class', tag_now)
                     .attr('fill', 'transparent')
-                    .attr('stroke', '#383b42')
+                    .attr('stroke', '#383B42')
                     .attr('stroke-width', strk)
                     .attr('opacity', opac)
                     .attr('vector-effect', 'non-scaling-stroke')

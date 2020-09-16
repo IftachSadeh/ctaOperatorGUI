@@ -877,13 +877,13 @@ window.BlockQueueOld = function() {
             .style('font-weight', 'normal')
             .style('opacity', 0)
             .style('fill-opacity', 0.7)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             .style('stroke-width', 0.3)
             .style('stroke-opacity', 1)
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
             .style('stroke', function(d) {
-                return '#383b42'
+                return '#383B42'
             })
             .attr('x', function(d, i) {
                 return d.x + d.w / 2

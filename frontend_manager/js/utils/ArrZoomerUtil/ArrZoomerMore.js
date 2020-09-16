@@ -91,7 +91,7 @@ window.ArrZoomerMore = function(opt_in_top) {
             .attr('width', svg_dims.w)
             .attr('height', svg_dims.h)
             .attr('stroke-width', 0.5)
-            .attr('stroke', '#383b42')
+            .attr('stroke', '#383B42')
             .attr('fill', '#F2F2F2')
             // .attr("fill", "#d698bc")// .attr("fill", "#F2F2F2")
 

@@ -774,11 +774,22 @@ function set_tel_state_funcs(inst_states) {
     let tel_thresholds = {
     }
 
+    window.tel_state_cols = {
+        'DISCONNECTED': ['#824580', '#8A5A7F'],
+        'ERROR': ['#ED6D6C', '#EF5350'],
+        'WARNING': ['#FCD975', '#FFEB3B'],
+        'NOMINAL': ['#B5C69C', '#AED581'],
+    }
+
     // derive some objects for local/global use
     $.each(inst_states, function(_, state) {
         tel_states[state.name] = state.name
         tel_thresholds[state.name] = state.thresholds
-        tel_state_color[state.name] = state.colors
+
+        tel_state_color[state.name] = window.tel_state_cols[state.name]
+        if (!is_def(tel_state_color[state.name])) {
+            console.error(' - undefined state.name for:', state, ' --> undefined color from:', window.tel_state_cols,)
+        }
     })
     window.TEL_HEALTH_THRESHOLDS = tel_thresholds
     window.TEL_STATES = tel_states
@@ -1659,7 +1670,7 @@ window.IconBadge = function() {
         let show_outline = is_def(opt_in.show_outline) ? opt_in.show_outline : false
         let bigger_icon = is_def(opt_in.bigger_icon) ? opt_in.bigger_icon : false
         let col_back = is_def(opt_in.col_back) ? opt_in.col_back : '#F2F2F2'
-        let col_dark = is_def(opt_in.col_dark) ? opt_in.col_dark : '#383b42'
+        let col_dark = is_def(opt_in.col_dark) ? opt_in.col_dark : '#383B42'
         let col_light = is_def(opt_in.col_light) ? opt_in.col_light : '#ececec'
         let icon_col = is_def(opt_in.icon_col) ? opt_in.icon_col : col_dark
         let icon_col_up = is_def(opt_in.icon_col_up)
@@ -1678,7 +1689,7 @@ window.IconBadge = function() {
                 col_back = 'transparent'
             }
             if (!is_def(opt_in.col_light)) {
-                col_light = '#383b42'
+                col_light = '#383B42'
             }
             if (!is_def(opt_in.col_light_opac)) {
                 col_light_opac = 0.2
@@ -1687,7 +1698,7 @@ window.IconBadge = function() {
         // duration*=10
 
         // col_dark = "#104E8B", col_light = "#74CBDE", icon_col = "#9CCC65";
-        // col_dark = "#C2185B", col_light = "#F06292", icon_col = "#383b42";
+        // col_dark = "#C2185B", col_light = "#F06292", icon_col = "#383B42";
 
         let g_outer = parent_svg.append('g')
         let g_inner = g_outer.append('g')
@@ -2215,7 +2226,7 @@ window.bck_pattern = function(opt_in) {
                 .thinner()
                 .lighter()
                 .orientation(com[tag_now].orient)
-                .stroke('#383b42')
+                .stroke('#383B42')
                 .strokeWidth(1)
                 .size(com[tag_now].size)
 
@@ -2248,7 +2259,7 @@ window.bck_pattern = function(opt_in) {
             }
             // .thinner().lighter()
             // .orientation(com[tag_now].orient)
-            // .stroke("#383b42")
+            // .stroke("#383B42")
             // .strokeWidth(1).size(com[tag_now].size)
 
             com[tag_now].g.call(com[tag_now].txtr)
@@ -2315,7 +2326,7 @@ window.bck_pattern = function(opt_in) {
             .append('path')
             .attr('class', tag_now)
             .attr('fill', 'transparent')
-            .attr('stroke', '#383b42')
+            .attr('stroke', '#383B42')
             .attr('stroke-width', strk)
             .attr('vector-effect', 'non-scaling-stroke')
             .merge(path)

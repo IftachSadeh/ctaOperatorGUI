@@ -421,7 +421,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                         .selectAll('path')
                         .attr('vector-effect', 'non-scaling-stroke')
                         .attr('opacity', 0.12)
-                        .style('stroke', '#383b42')
+                        .style('stroke', '#383B42')
                         .style('stroke-width', 1.1)
                         .style('stroke-dasharray', 3.5)
                         // .style('stroke', 'blue')
@@ -433,7 +433,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                         .selectAll('path')
                         .attr('vector-effect', 'non-scaling-stroke')
                         .attr('opacity', 0.08)
-                        .style('stroke', '#383b42')
+                        .style('stroke', '#383B42')
                         .style('stroke-width', 2.2)
                         // .style('stroke', 'red')
 
@@ -478,18 +478,18 @@ window.ArrZoomerMain = function(opt_in_top) {
                         .selectAll('rect')
                         .attr('vector-effect', 'non-scaling-stroke')
                         // .attr('opacity', '0.1')
-                        .style('fill', '#383b42')
-                        .style('stroke', '#383b42')
+                        .style('fill', '#383B42')
+                        .style('stroke', '#383B42')
                         .style('fill-opacity', .15)
                         .style('stroke-width', 0)
                     site_svg
                         .select('#' + 'layer3')
                         .selectAll('path')
                         .attr('vector-effect', 'non-scaling-stroke')
-                        .style('stroke', '#383b42')
+                        .style('stroke', '#383B42')
                         .style('stroke-width', 0.2)
                         .style('stroke-opacity', .6)
-                        .style('fill', '#383b42')
+                        .style('fill', '#383B42')
                         .style('fill-opacity', .03)
                         // .style('stroke', 'green')
                     // ------------------------------------------------------------------
@@ -500,7 +500,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                         .selectAll('path')
                         .attr('vector-effect', 'non-scaling-stroke')
                         .attr('opacity', 0.2)
-                        .style('stroke', '#383b42')
+                        .style('stroke', '#383B42')
                         .style('stroke-width', 0.8)
                         .style('stroke-dasharray', 3.5)
                         // .style('stroke', 'blue')
@@ -512,7 +512,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                         .selectAll('path')
                         .attr('vector-effect', 'non-scaling-stroke')
                         .attr('opacity', 0.4)
-                        .style('stroke', '#383b42')
+                        .style('stroke', '#383B42')
                         .style('stroke-width', 1)
                         .style('stroke-dasharray', 2)
                         .style('stroke-opacity', .15)
@@ -526,7 +526,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                         .selectAll('path')
                         .attr('vector-effect', 'non-scaling-stroke')
                         .attr('opacity', '0.15')
-                        .style('stroke', '#383b42')
+                        .style('stroke', '#383B42')
                         .style('stroke-width', 4)
                         // .style('stroke', 'red')
 
@@ -1762,8 +1762,8 @@ window.ArrZoomerMain = function(opt_in_top) {
             .style('stroke-width', 1)
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
-            .style('fill', '#383b42')
-            .style('stroke', '#383b42')
+            .style('fill', '#383B42')
+            .style('stroke', '#383B42')
             .style('fill-opacity', 0.02)
             .style('stroke-opacity', 0.3)
             .attr('transform', function(d) {
@@ -1801,14 +1801,14 @@ window.ArrZoomerMain = function(opt_in_top) {
             .attr('class', tag_now)
             .style('font-weight', 'bold')
             .style('opacity', 0)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
             .attr('transform', txtTrans)
             .style('fill-opacity', 0.4)
             .style('stroke-width', 0.7)
             .attr('text-anchor', 'middle')
-            .style('stroke', '#383b42')
+            .style('stroke', '#383B42')
             .style('font-size', font_size + 'px')
             // .attr("dy", (font_size/3)+'px' )
             .attr('dy', '0px')
@@ -1850,6 +1850,15 @@ window.ArrZoomerMain = function(opt_in_top) {
         function is_focused(d, n_focus) {
             return focus_ids[n_focus].indexOf(d.id) >= 0
         }
+        function tex_col(d) {
+            let is_inv = (
+                window.get_tel_state(d[health_tag]) == window.TEL_STATES.DISCONNECTED
+            )
+            is_inv = is_inv && !is_focused(d, 0)
+
+            let col = is_inv ? 'F2F2F2' : '#383B42'
+            return col
+        }
 
         let tag_lbl = 'lbls_00_title'
         // let tag_state = 'state_00'
@@ -1880,7 +1889,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                 return d.id
             })
 
-        text
+        let text_sel = text
             .enter()
             .append('text')
             .text(function(d) {
@@ -1889,9 +1898,10 @@ window.ArrZoomerMain = function(opt_in_top) {
             .attr('class', tag_lbl)
             .style('font-weight', 'bold')
             .style('opacity', 0)
-            .style('fill', '#383b42')
-            .style('stroke-width', '0.3')
+            .style('fill', tex_col)
+            .style('pointer-events', 'none')
             .attr('vector-effect', 'non-scaling-stroke')
+            .style('stroke-width', '0.3')
             .style('pointer-events', 'none')
             .style('stroke', '#383b42')
             .style('font-size', function(d) {
@@ -1911,6 +1921,7 @@ window.ArrZoomerMain = function(opt_in_top) {
             .merge(text)
             .transition('in_out')
             .duration(times.anim)
+            .style('fill', tex_col)
             .attr('transform', function(d, _) {
                 let shiftVal = 0
                 if (is_focused(d, 1)) {
@@ -1921,10 +1932,10 @@ window.ArrZoomerMain = function(opt_in_top) {
                 }
                 return (
                     'translate('
-          + insts.data.xyr[d.id].x
-          + ','
-          + (insts.data.xyr[d.id].y - shiftVal)
-          + ')'
+                    + insts.data.xyr[d.id].x
+                    + ','
+                    + (insts.data.xyr[d.id].y - shiftVal)
+                    + ')'
                 )
             })
             .style('font-size', function(d) {
@@ -1934,6 +1945,28 @@ window.ArrZoomerMain = function(opt_in_top) {
                 return font_size(d) / 3 + 'px'
             })
             .style('opacity', 1)
+
+        let stroke_opt = null
+        if (stroke_opt == 0) {
+            // efectively, no stroke
+            text_sel
+                .style('stroke-width', '0.3')
+                .style('stroke', '#383B42')
+        }
+        if (stroke_opt == 1) {
+            // slightly brighter stroke
+            text_sel
+                .style('stroke-width', 0.1)
+                .style('stroke', d => d3.rgb(inst_health_col(d[health_tag])).brighter(1.25))
+                // .style('stroke', d3.rgb('#383B42').brighter(1.5))
+        }
+        if (stroke_opt == 2) {
+            // stroke to match the background
+            text_sel
+                .style('stroke-opacity', 0.4)
+                .style('stroke-width', 0.5)
+                .style('stroke', '#F2F2F2')
+        }
 
         text
             .exit()
@@ -2060,7 +2093,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                             return my_unique_id + d.id + tag_now
                         })
                         .attr('class', tag_state + ' ' + tag_now)
-                    // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
+                    // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383B42" back-ring (for is0)
                         .style('opacity', (is0 ? '0.5' : '1'))
                         .attr('transform', function(d) {
                             return (
@@ -2098,7 +2131,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                         })
                         .style('fill', function(d) {
                             return inst_health_col(d[porp_now])
-                        }) // return is0 ? "#383b42" : inst_health_col(d[porp_now]); })
+                        }) // return is0 ? "#383B42" : inst_health_col(d[porp_now]); })
                         .call(com.arc_tween, {
                             tag_now: tag_now,
                             arc_prev: arc_prev,
@@ -2270,7 +2303,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                     return my_unique_id + d.id + tag_now
                 })
                 .attr('class', tag_state + ' ' + tag_now)
-            // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
+            // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383B42" back-ring (for is0)
                 .style('opacity', (is0 ? '0.5' : '1'))
                 .attr('transform', function(d) {
                     return (
@@ -2308,7 +2341,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                 })
                 .style('fill', function(d) {
                     return inst_health_col(d[porp_now])
-                }) // return is0 ? "#383b42" : inst_health_col(d[porp_now]); })
+                }) // return is0 ? "#383B42" : inst_health_col(d[porp_now]); })
                 .call(com.arc_tween, {
                     tag_now: tag_now,
                     arc_prev: arc_prev,
@@ -2736,11 +2769,11 @@ window.ArrZoomerMain = function(opt_in_top) {
                 })
                 .attr('class', base_tag + ' ' + tag_lbl)
                 .style('opacity', '0')
-                .style('fill', '#383b42')
+                .style('fill', '#383B42')
                 .attr('stroke-width', function(d) {
                     return d.strk_w
                 })
-                .style('stroke', '#383b42')
+                .style('stroke', '#383B42')
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .style('font-weight', 'normal')
@@ -2906,7 +2939,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                                     arc_func[tag_now].rad_00(d),
                                 ]
                             })
-                            .style('stroke', '#383b42')
+                            .style('stroke', '#383B42')
                             .attr('vector-effect', 'non-scaling-stroke')
                             .attr('transform', (
                                 'translate(' + wh / 2 + ',' + wh / 2 + ')')
@@ -2954,7 +2987,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                     d.col = (
                         d.nArc === 0
                             ? inst_health_col(prop_val)
-                            : '#383b42'
+                            : '#383B42'
                     )
                     return d.col
                 }
@@ -3199,7 +3232,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                 .transition('in_out')
                 .duration(times.anim)
                 .style('opacity', 1)
-                .style('fill', '#383b42')
+                .style('fill', '#383B42')
                 .style('fill-opacity', 0.06)
                 // .style("fill-opacity", 0.2)
                 .each(function(d) {
@@ -3317,8 +3350,8 @@ window.ArrZoomerMain = function(opt_in_top) {
                 .text(dIn.data.title)
                 .style('opacity', 0)
                 .style('fill-opacity', 0.8)
-                .style('fill', '#383b42')
-                .style('stroke', d3.rgb('#383b42').brighter(0.25))
+                .style('fill', '#383B42')
+                .style('stroke', d3.rgb('#383B42').brighter(0.25))
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .attr('text-anchor', 'middle')
@@ -3858,7 +3891,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                         }
                     })
                     .style('fill', function(d) {
-                        return d.is_full ? '#383b42' : d.col
+                        return d.is_full ? '#383B42' : d.col
                     })
             })
 
@@ -3905,7 +3938,7 @@ window.ArrZoomerMain = function(opt_in_top) {
         function hierarchy_style_stroke(d, d_ref, depth) {
             return hierarchy_strk_w(d, d_ref, depth) < 0.0001
                 ? 'transparent'
-                : '#383b42'
+                : '#383B42'
         }
 
         function hierarchy_style_opac(d, d_ref, depth) {
@@ -4148,7 +4181,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                 return 0
             })
             .style('stroke-width', 0.4)
-            .style('stroke', '#383b42')
+            .style('stroke', '#383B42')
             .style('fill', '#F2F2F2')
             // .style('fill', 'red')
             .attr('vector-effect', 'non-scaling-stroke')

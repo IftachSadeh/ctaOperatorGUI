@@ -1555,12 +1555,12 @@ let main_panel_sync = function(opt_in) {
                 .style('stroke', function(d) {
                     if (is_def(data_in)) {
                         return d.depth === 1
-                            ? '#383b42'
+                            ? '#383B42'
                             : d3.rgb(hirch_style_stroke(d)).darker(5)
                     }
                     else {
                         return d.depth === 1
-                            ? '#383b42'
+                            ? '#383B42'
                             : d3.rgb(hirch_style_stroke(d)).darker(1)
                     }
                 })
@@ -1871,7 +1871,7 @@ let main_panel_sync = function(opt_in) {
                 type: {
                     name: 'pulse',
                     duration: 100,
-                    col: '#383b42',
+                    col: '#383B42',
                 },
             })
 
@@ -2168,7 +2168,7 @@ let main_panel_sync = function(opt_in) {
                 // if(index == 1) return d3.rgb('#FF9800').brighter(0.5);
                 // if(index == 2) return d3.rgb('#F06292').brighter(0.0095);
             }
-            return '#383b42'
+            return '#383B42'
             // return d3.rgb(hirch_style_fill(d)).darker(1);
         }
         function hirch_style_fill(_) {
@@ -2178,8 +2178,8 @@ let main_panel_sync = function(opt_in) {
             //   if(index == 1) return cols_yellows[0];
             //   if(index == 2) return cols_reds[0];
             // }
-            return '#383b42'
-            // return d.children ? "#383b42" : tel_data.idToCol[d.data.id];
+            return '#383B42'
+            // return d.children ? "#383B42" : tel_data.idToCol[d.data.id];
         }
         function hirch_opac_fill(d, _) {
             if (d.depth === 0) {

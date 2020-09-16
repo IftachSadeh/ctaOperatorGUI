@@ -159,7 +159,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             .attr('width', svg_dims.w)
             .attr('height', svg_dims.h)
             .attr('stroke-width', '0')
-            .attr('fill', '#383b42')
+            .attr('fill', '#383B42')
             // .attr('fill', '#d698bc')// .attr("fill", "#F2F2F2")
 
         if (add_ches_outline) {
@@ -198,8 +198,8 @@ window.ArrZoomerChes = function(opt_in_top) {
             )
             return (
                 index % 2 === 0
-                    ? d3.rgb('#383b42').darker(0.3)
-                    : d3.rgb('#383b42').brighter(0.3)
+                    ? d3.rgb('#383B42').darker(0.3)
+                    : d3.rgb('#383B42').brighter(0.3)
             )
         }
         function text_col_state(d) {
@@ -207,7 +207,7 @@ window.ArrZoomerChes = function(opt_in_top) {
                 return '#F2F2F2'
             }
             else if (get_tel_state(d[tag_prop]) == TEL_STATES.WARNING) {
-                return d3.rgb('#383b42').darker(1)
+                return d3.rgb('#383B42').darker(1)
             }
             else {
                 return '#F2F2F2'
@@ -254,7 +254,7 @@ window.ArrZoomerChes = function(opt_in_top) {
         //         return com.ches_g.xyr[d.id].text_r
         //     })
         //     .style('opacity', 1)
-        //     .style('fill', '#383b42')
+        //     .style('fill', '#383B42')
         //     .merge(circ)
         //     .transition('in_out')
         //     .duration(times.anim)

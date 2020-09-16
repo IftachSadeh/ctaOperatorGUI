@@ -98,7 +98,7 @@ class ObsBlockControl(BaseWidget):
     def get_tel_health(self):
         self.redis.pipe.reset()
         for id_now in self.tel_ids:
-            self.redis.pipe.h_get(name='inst_health;' + str(id_now), key='health')
+            self.redis.pipe.h_get(name='inst_health_summary;' + str(id_now), key='health')
         redis_data = self.redis.pipe.execute()
 
         for i in range(len(redis_data)):

@@ -587,13 +587,13 @@ window.ArrZoomerBase = function(opt_in_top) {
                 return (i === 0 ? 'bold' : 'normal')
             })
             .style('opacity', 0)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             .style('stroke-width', function(d) {
                 return d.strk_w
             })
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
-            .style('stroke', '#383b42')
+            .style('stroke', '#383B42')
             .style('font-size', function(d) {
                 return (font_scale * d.h) + 'px'
             })
@@ -1532,6 +1532,9 @@ window.ArrZoomerBase = function(opt_in_top) {
         if (data.util_id !== util_id) {
             return
         }
+        if (!get_ele('tree')) {
+            return
+        }
 
         let ches_data = {
             tel_id: data.tel_id,
@@ -1539,9 +1542,7 @@ window.ArrZoomerBase = function(opt_in_top) {
             prop_data: is_def(data.data) ? data.data : [],
         }
 
-        if (get_ele('tree')) {
-            get_ele('tree').set_hierarchy_ches_data(ches_data)
-        }
+        get_ele('tree').set_hierarchy_ches_data(ches_data)
 
         return
     }

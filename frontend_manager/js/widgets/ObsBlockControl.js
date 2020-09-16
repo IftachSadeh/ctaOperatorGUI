@@ -1275,7 +1275,7 @@ let main_obs_block_control = function(opt_in) {
                 .style('font-weight', 'normal')
                 .style('opacity', 0)
                 .style('stroke-width', 0)
-                .style('fill', '#383b42')
+                .style('fill', '#383B42')
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .attr('text-anchor', 'left')
@@ -1399,7 +1399,7 @@ let TelSummary = function() {
                 .attr('width', com.box.w)
                 .attr('height', com.box.h)
                 .attr('fill-opacity', 0)
-                .attr('stroke', '#383b42')
+                .attr('stroke', '#383B42')
         }
 
         outer_g
@@ -1411,9 +1411,9 @@ let TelSummary = function() {
             .attr('cy', 0)
             .attr('r', com.box.r)
             .attr('fill', '#F2F2F2')
-        // .attr("fill", "#383b42")
+        // .attr("fill", "#383B42")
             .attr('fill-opacity', 0.7)
-    // .attr("stroke",'#383b42')
+    // .attr("stroke",'#383B42')
     }
     this.init = init
 
@@ -1717,7 +1717,7 @@ let TelSummary = function() {
             .style('font-weight', 'normal')
             .style('opacity', 0)
             .style('stroke-width', 0)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
             .attr('text-anchor', 'middle')
@@ -1823,7 +1823,7 @@ let TelSummary = function() {
             return inst_health_col(val)
         }
         else {
-            return '#383b42'
+            return '#383B42'
         }
     }
 
@@ -1832,7 +1832,7 @@ let TelSummary = function() {
             return tel_state_color[state][0]
         }
         else {
-            return '#383b42'
+            return '#383B42'
         }
     }
 
@@ -2045,7 +2045,7 @@ let TelScroll = function() {
             .style('font-weight', 'normal')
             .style('opacity', 0)
             .style('fill-opacity', 1)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             .style('stroke', '#8B919F')
             .style('stroke-width', 0.3)
             .style('stroke-opacity', 1)
@@ -2314,13 +2314,13 @@ let _obScroll = function() {
             .style('font-weight', 'normal')
             .style('opacity', 0)
             .style('fill-opacity', 0.7)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             .style('stroke-width', 0.3)
             .style('stroke-opacity', 1)
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
             .style('stroke', function(d) {
-                return '#383b42'
+                return '#383B42'
             })
             .attr('x', function(d, i) {
                 return d.x + d.w / 2

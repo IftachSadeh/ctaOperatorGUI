@@ -148,7 +148,7 @@ class SchedBlockController(BaseWidget):
     def get_tel_health(self):
         pipe = self.redis.get_pipe()
         for id_now in self.tel_ids:
-            pipe.h_get(name='inst_health;' + str(id_now), key='health')
+            pipe.h_get(name='inst_health_summary;' + str(id_now), key='health')
         redis_data = pipe.execute()
 
         for i in range(len(redis_data)):

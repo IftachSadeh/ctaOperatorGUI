@@ -91,7 +91,9 @@ class WeatherMonitoring(BaseWidget):
             pipe = self.redis.get_pipe()
             for k, v in keys_now.items():
                 for key in v:
-                    pipe.z_get(name='inst_health;' + self.tel_ids[index] + ';' + key)
+                    pipe.z_get(
+                        name='inst_health_summary;' + self.tel_ids[index] + ';' + key
+                    )
             data = pipe.execute()
             n_ele = sum([len(v) for k, v in keys_now.items()])
             if len(data) != n_ele:

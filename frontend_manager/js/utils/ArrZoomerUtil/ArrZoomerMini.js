@@ -458,11 +458,11 @@ window.ArrZoomerMini = function(opt_in_top) {
             .attr('class', tag_now)
             .style('font-weight', 'bold')
             .style('opacity', 0)
-            .style('fill', '#383b42')
+            .style('fill', '#383B42')
             .style('stroke-width', '0.3')
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
-            .style('stroke', '#383b42')
+            .style('stroke', '#383B42')
             .style('font-size', font_size0 + 'px')
             .attr('dy', font_size0 / 3 + 'px')
             .attr('transform', function(d) {

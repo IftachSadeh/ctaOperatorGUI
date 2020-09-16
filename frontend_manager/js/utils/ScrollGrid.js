@@ -404,7 +404,7 @@ window.ScrollGrid = function(opt_in) {
                     .style('stroke-width', 0)
                     .attr('vector-effect', 'non-scaling-stroke')
                     .style('pointer-events', 'none')
-                    .attr('fill', '#383b42')
+                    .attr('fill', '#383B42')
                     .merge(circ_out)
                     .transition('in_out')
                     .duration(times.anim_txt)

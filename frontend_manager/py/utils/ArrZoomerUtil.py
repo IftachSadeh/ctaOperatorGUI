@@ -25,6 +25,7 @@ class ArrZoomerUtil(BaseUtil):
         self.inst_tel_health = self.inst_data.get_inst_healths(is_copy=True)
 
         self.zoom_state = None
+        self.health_full_prop_id = None
 
         self.sleep_sec = 5
 
@@ -125,7 +126,7 @@ class ArrZoomerUtil(BaseUtil):
 
             zoom_target = zoomer_state['zoom_target']
 
-            await self.update_tel_health_s1(id_in=zoom_target)
+            await self.send_data_s1_full(tel_id=zoom_target)
 
             data = {
                 'util_id': self.util_id,
@@ -275,7 +276,7 @@ class ArrZoomerUtil(BaseUtil):
         ids = self.inst_ids if (id_in is None) else [id_in]
         for id_now in ids:
             pipe.h_m_get(
-                name='inst_health;' + str(id_now),
+                name='inst_health_summary;' + str(id_now),
                 keys=self.tel_fields[id_now],
                 default_val=[],
             )
@@ -297,28 +298,38 @@ class ArrZoomerUtil(BaseUtil):
         return out
 
     # ------------------------------------------------------------------
-    async def update_tel_health_s1(self, id_in):
+    async def send_data_s1_full(self, tel_id):
+
+        await self.update_tel_health_s1(tel_id=tel_id)
+
+        if self.health_full_prop_id is not None:
+            await self.send_data_s1_deep(tel_id=tel_id)
+
+        return
+
+    # ------------------------------------------------------------------
+    async def update_tel_health_s1(self, tel_id):
         """get instrument s1 data
         """
 
         # update the top level of the object, where all the children are shalow copies
         # of self.inst_tel_health, and so are updated through self.tel_sub_health_flat
-        data_s0 = await self.get_tel_health_s0(id_in=id_in)
-        self.tel_health[id_in].update({
+        data_s0 = await self.get_tel_health_s0(id_in=tel_id)
+        self.tel_health[tel_id].update({
             'health': data_s0['health'],
             'status': data_s0['status'],
         })
 
-        fields = self.tel_sub_health_fields[id_in]
+        fields = self.tel_sub_health_fields[tel_id]
         redis_data = self.redis.h_m_get(
-            name='inst_health;' + str(id_in),
+            name='inst_health_summary;' + str(tel_id),
             keys=fields,
             default_val=[],
         )
         if any([d is None for d in redis_data]):
             self.log.warn([
                 ['r', ' - update_tel_health_s1 failed to get name: '],
-                ['y', 'inst_health;' + str(id_in)],
+                ['y', 'inst_health_summary;' + str(tel_id)],
                 ['r', ' , '],
                 ['y', fields],
                 ['r', ' ?!? '],
@@ -328,7 +339,7 @@ class ArrZoomerUtil(BaseUtil):
 
         for n_id in range(len(redis_data)):
             key = fields[n_id]
-            self.tel_sub_health_flat[id_in][key]['data']['val'] = redis_data[n_id]
+            self.tel_sub_health_flat[tel_id][key]['data']['val'] = redis_data[n_id]
 
         return
 
@@ -349,23 +360,28 @@ class ArrZoomerUtil(BaseUtil):
     # ------------------------------------------------------------------
     async def ask_for_data_s1(self, *args):
         data = args[0]
+        widget_id = data['widget_id']
+        zoom_state = data['zoom_state']
+        zoom_target = data['zoom_target']
 
         self.log.debug([
             ['b', ' - ask_for_data_s1 '],
             ['b', self.sm.sess_id, ', '],
-            ['g', data['zoom_state']],
+            ['g', zoom_state],
             ['b', ' , '],
-            ['y', data['zoom_target']],
+            ['y', zoom_target],
+            ['b', ' , '],
+            ['y', self.health_full_prop_id],
         ])
 
-        self.zoom_state['zoom_state'] = data['zoom_state']
-        self.zoom_state['zoom_target'] = data['zoom_target']
+        self.zoom_state['zoom_state'] = zoom_state
+        self.zoom_state['zoom_target'] = zoom_target
 
-        await self.update_tel_health_s1(id_in=data['zoom_target'])
+        await self.update_tel_health_s1(tel_id=data['zoom_target'])
 
         emit_data_s1 = {
             'util_id': self.util_id,
-            'widget_id': data['widget_id'],
+            'widget_id': widget_id,
             'type': 's11',
             'data': self.tel_health[data['zoom_target']],
         }
@@ -384,6 +400,7 @@ class ArrZoomerUtil(BaseUtil):
         data = args[0]
         tel_id = data['tel_id']
         prop_id = data['prop_id']
+        widget_id = data['widget_id']
 
         self.log.debug([
             ['b', ' - ask_for_data_s1_full '],
@@ -393,16 +410,29 @@ class ArrZoomerUtil(BaseUtil):
             ['y', prop_id],
         ])
 
-        health_data = []
+        self.health_full_prop_id = None
         if prop_id is not None and prop_id != '':
-            health_data = self.redis.h_get(
-                name='inst_health_full;' + str(tel_id),
-                key=prop_id,
-            )
+            self.health_full_prop_id = prop_id
+
+            await self.send_data_s1_deep(tel_id=tel_id)
+
+        return
+
+    # ------------------------------------------------------------------
+    async def send_data_s1_deep(self, tel_id):
+        prop_id = self.health_full_prop_id
+        if prop_id is None:
+            return
+
+        health_data = self.redis.h_get(
+            name='inst_health_deep;' + str(tel_id),
+            key=prop_id,
+            default_val=[],
+        )
 
         emit_data_s1 = {
             'util_id': self.util_id,
-            'widget_id': data['widget_id'],
+            'widget_id': self.widget_id,
             'tel_id': tel_id,
             'parent_name': prop_id,
             'data': health_data,
@@ -414,8 +444,6 @@ class ArrZoomerUtil(BaseUtil):
             'data': emit_data_s1,
         }
         await self.sm.emit_widget_event(opt_in=opt_in)
-
-        print('todo: ArrZoomerUtil:ask_for_data_s1_full() - update data_full; - more/title on click ...')
 
         return
 

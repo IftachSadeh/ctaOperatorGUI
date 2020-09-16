@@ -97,22 +97,18 @@ class InstData():
             {
                 'name': 'DISCONNECTED',
                 'thresholds': [-1 * nominal_thresh, small_negative],
-                'colors': ['#00BCD4', '#2196F3'],
             },
             {
                 'name': 'ERROR',
                 'thresholds': [small_negative, err_thresh],
-                'colors': ['#ED6D6C', '#EF5350'],
             },
             {
                 'name': 'WARNING',
                 'thresholds': [err_thresh, warn_thresh],
-                'colors': ['#FCD975', '#FFEB3B'],
             },
             {
                 'name': 'NOMINAL',
                 'thresholds': [warn_thresh, nominal_thresh],
-                'colors': ['#B5C69C', '#AED581'],
             },
         ]
 
@@ -663,7 +659,7 @@ class InstData():
     # ------------------------------------------------------------------
     def init_tel_health(self):
         rnd_gen = Random(11239487)
-        
+
         inst_health = dict()
         tel_ids = InstData.tel_ids
         aux_ids = InstData.aux_ids
@@ -1273,9 +1269,9 @@ class InstData():
         # we get ~200k properties overall for the South
         range_full_props = [80, 120]
 
-        inst_health_full = dict()
+        inst_health_deep = dict()
         for (inst_id, inst) in inst_health.items():
-            inst_health_full[inst_id] = dict()
+            inst_health_deep[inst_id] = dict()
             for (field_id, data) in inst.items():
                 if 'children' in data:
                     for child_0 in data['children']:
@@ -1285,22 +1281,20 @@ class InstData():
                                 child_title = child_1['title']
                                 # child_val = child_1['val']
 
-                                inst_health_full[inst_id][child_id] = []
+                                inst_health_deep[inst_id][child_id] = []
                                 for n_prop in range(rnd_gen.randint(*range_full_props)):
                                     if rnd_gen.random() < 0.2:
                                         val = rnd_gen.randint(11, 40)
                                     else:
                                         val = rnd_gen.randint(60, 99)
-                                    inst_health_full[inst_id][child_id] += [{
-                                        'id':
-                                        child_id + '_' + str(n_prop),
-                                        'title':
-                                        child_title + '_' + str(n_prop),
+                                    inst_health_deep[inst_id][child_id] += [{
+                                        'id': (child_id + '_' + str(n_prop)),
+                                        'title': (child_title + '_' + str(n_prop)),
                                         'val':
-                                        val,
+                                        val
                                     }]
 
-        InstData.inst_health_full = inst_health_full
+        InstData.inst_health_deep = inst_health_deep
 
         return
 
@@ -1450,7 +1444,7 @@ class InstData():
         while not InstData.has_init:
             sleep(0.01)
 
-        out = InstData.inst_health_full
+        out = InstData.inst_health_deep
         if is_copy:
             out = copy.deepcopy(out)
         return out
