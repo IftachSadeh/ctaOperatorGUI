@@ -128,7 +128,7 @@ let main_arr_zoomer = function(opt_in) {
         },
         tree: {
             // aspect_ratio: 6/5,
-            has_title: false,
+            has_title: true,
         },
         lens: {
             aspect_ratio: 4,
@@ -445,7 +445,7 @@ let main_arr_zoomer = function(opt_in) {
             })
             return
         }
-        // auto_trans_test()
+        auto_trans_test()
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
 

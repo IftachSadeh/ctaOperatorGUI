@@ -457,7 +457,7 @@ window.ArrZoomerChes = function(opt_in_top) {
         function focus_tel(data_in, is_on) {
             locker.add('svg_quick_focus_tel')
 
-            let delay = 250
+            let delay = times.hover_focus_delay
             setTimeout(function() {
                 if (locker.n_active('svg_quick_focus_tel') === 1) {
                     focus_tel_once(data_in, is_on)

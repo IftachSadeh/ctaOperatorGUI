@@ -536,6 +536,13 @@ window.col_mix = function(index) {
     return cols_mix[index % cols_mix.length]
 }
 
+window.tel_state_cols = {
+    'DISCONNECTED': ['#824580', '#8A5A7F'],
+    'ERROR': ['#ED6D6C', '#EF5350'],
+    'WARNING': ['#FCD975', '#FFEB3B'],
+    'NOMINAL': ['#B5C69C', '#AED581'],
+}
+
 // ------------------------------------------------------------------
 // commonly used units and symbols
 // ------------------------------------------------------------------
@@ -774,13 +781,6 @@ function set_tel_state_funcs(inst_states) {
     let tel_thresholds = {
     }
 
-    window.tel_state_cols = {
-        'DISCONNECTED': ['#824580', '#8A5A7F'],
-        'ERROR': ['#ED6D6C', '#EF5350'],
-        'WARNING': ['#FCD975', '#FFEB3B'],
-        'NOMINAL': ['#B5C69C', '#AED581'],
-    }
-
     // derive some objects for local/global use
     $.each(inst_states, function(_, state) {
         tel_states[state.name] = state.name
@@ -872,6 +872,10 @@ let times = {
     wait_queue_loop: 200,
     // time to wait between pushing functions to the execution queue in RunLoop
     run_loop_push_wait: 100,
+    // delay to use when hovering between elements (mouseover, mouseout) events
+    // to prevent the exit events from overlapping with enter events, when
+    // switching beteen elements (eg mouseover -> mouseout -> mouseover)
+    hover_focus_delay: 150,
 }
 window.times = times
 

@@ -2479,6 +2479,7 @@ window.ArrZoomerMain = function(opt_in_top) {
                     }
                     insts.data.prop_parent_s1[tel_id][d.id] = porp_now
                     insts.data.prop_title_s1[tel_id][d.id] = d.title
+                    // console.log(' --', porp_now, d.id, d.title,)
                 })
             }
         }

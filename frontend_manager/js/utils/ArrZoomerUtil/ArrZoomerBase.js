@@ -486,24 +486,48 @@ window.ArrZoomerBase = function(opt_in_top) {
         let parent_name = opt_in.parent_name
         let g_in = opt_in.g_in
         let g_w = opt_in.g_w
+        let anim_duration = is_def(opt_in.anim_duration) ? opt_in.anim_duration : times.anim
         let font_scale = is_def(opt_in.font_scale) ? opt_in.font_scale : 1
+        let filter_indices = is_def(opt_in.filter_indices) ? opt_in.filter_indices : null
+        let cleanup = is_def(opt_in.cleanup) ? opt_in.cleanup : false
+
+        let tag_state = 'state_10'
+        let tag_now = tag_state + '_title'
+        let prop_w = g_w / insts.all_props0.length
+        let prop_y = 1.25 * Math.min(prop_w * 0.4, g_w / 15)
+
+        if (cleanup) {
+            let title = g_in
+                .selectAll('text.' + tag_now)
+                .data([])
+
+            if (anim_duration > 0) {
+                title
+                    .exit()
+                    .transition('in_out')
+                    .duration(anim_duration)
+                    .attr('transform', function(d, _) {
+                        return ('translate(' + d.pos[0] * 2 + ',' + d.pos[1] + ')')
+                    })
+                    .style('opacity', 0)
+                    .remove()
+
+            } else {
+                title
+                    .exit()
+                    .remove()
+            }
+            return
+        }
 
         if (prop_in !== '' && !is_def(parent_name)) {
             return
         }
 
-        let prop_w = g_w / insts.all_props0.length
-        let prop_y = 1.25 * Math.min(prop_w * 0.4, g_w / 15)
-
-        // ------------------------------------------------------------------
-        // title on top
-        // ------------------------------------------------------------------
-        let tag_state = 'state_10'
-        let tag_now = tag_state + '_title'
-
         let title_data = []
         title_data.push({
-            id: tag_now + 'tel_id',
+            // id: tag_now + 'tel_id',
+            id: tag_now + '_0',
             text: (tel_id === avg_tag ? avg_tag_title : tel_info.get_title(tel_id)),
             x: 20,
             y: prop_y,
@@ -513,7 +537,8 @@ window.ArrZoomerBase = function(opt_in_top) {
 
         if (is_def(parent_name)) {
             title_data.push({
-                id: tag_now + parent_name,
+                // id: tag_now + parent_name,
+                id: tag_now + '_1',
                 text: insts.prop_titles[tel_id][parent_name],
                 x: 10,
                 y: prop_y,
@@ -523,7 +548,8 @@ window.ArrZoomerBase = function(opt_in_top) {
 
             if (prop_in !== parent_name) {
                 title_data.push({
-                    id: tag_now + prop_in,
+                    // id: tag_now + prop_in,
+                    id: tag_now + '_2',
                     text: insts.data.prop_title_s1[tel_id][prop_in],
                     x: 10,
                     y: prop_y,
@@ -531,6 +557,15 @@ window.ArrZoomerBase = function(opt_in_top) {
                     strk_w: 0,
                 })
             }
+        }
+
+        // filter the titles, and accept only those specified
+        if (is_def(filter_indices)) {
+            let title_data_now = []
+            for (let n_title = 0; n_title < filter_indices.length; ++n_title) {
+                title_data_now.push(title_data[filter_indices[n_title]])
+            }
+            title_data = title_data_now
         }
 
         let title = g_in
@@ -597,8 +632,12 @@ window.ArrZoomerBase = function(opt_in_top) {
             .style('font-size', function(d) {
                 return (font_scale * d.h) + 'px'
             })
+            // .attr('transform', function(d, i) {
+            //     d.pos = [ g_w * 1.1, text_pos(d, i, false) ]
+            //     return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
+            // })
             .attr('transform', function(d, i) {
-                d.pos = [ g_w * 1.1, text_pos(d, i, false) ]
+                d.pos = [ text_pos(d, i, true), text_pos(d, i, false) ]
                 return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
             })
             .merge(title)
@@ -613,16 +652,22 @@ window.ArrZoomerBase = function(opt_in_top) {
             })
             .style('opacity', 1)
 
-        title
-            .exit()
-            .transition('in_out')
-            .duration(times.anim)
-            .attr('transform', function(d, _) {
-                return ('translate(' + d.pos[0] * 2 + ',' + d.pos[1] + ')')
-            })
-            .style('opacity', 0)
-            .remove()
+        if (anim_duration > 0) {
+            title
+                .exit()
+                .transition('in_out')
+                .duration(anim_duration)
+                .attr('transform', function(d, _) {
+                    return ('translate(' + d.pos[0] * 2 + ',' + d.pos[1] + ')')
+                })
+                .style('opacity', 0)
+                .remove()
 
+        } else {
+            title
+                .exit()
+                .remove()
+        }
     
         return
     }

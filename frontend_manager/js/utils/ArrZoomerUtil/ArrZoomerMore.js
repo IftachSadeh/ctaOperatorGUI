@@ -125,6 +125,7 @@ window.ArrZoomerMore = function(opt_in_top) {
             tel_id: avg_tag,
             prop_in: '',
             parent_name: '',
+            // cleanup: true,
         })
         
         set_state_once()
@@ -144,6 +145,7 @@ window.ArrZoomerMore = function(opt_in_top) {
         let parent_name = (
             prop_in === '' ? null : insts.data.prop_parent_s1[tel_id][prop_in]
         )
+        // let cleanup = is_def(opt_in.cleanup) ? opt_in.cleanup : false
 
         if (has_title) {
             ele_base.tel_prop_title({
@@ -153,6 +155,7 @@ window.ArrZoomerMore = function(opt_in_top) {
                 font_scale: 0.6,
                 g_in: more_gs.more_g_base,
                 g_w: svg_dims.w,
+                // cleanup: cleanup,
             })
         }
 

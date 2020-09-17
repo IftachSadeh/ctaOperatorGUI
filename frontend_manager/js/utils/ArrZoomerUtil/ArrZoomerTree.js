@@ -82,23 +82,29 @@ window.ArrZoomerTree = function(opt_in_top) {
         }
     })
 
+    let node_r = 15
+    let tree_frac = 0.72
+    let hierarchy_frac_h = has_title ? 0.95 : 1
+    
     svg_dims.w_diff = svg_dims.w * 0.025
     svg_dims.h_diff = has_title ? tel_avgs[1].h : tel_avgs[1].h * 0.8
 
     svg_dims.w_1 = svg_dims.w
     svg_dims.h_1 = svg_dims.h - svg_dims.h_diff
 
-    let node_r = 15
+    svg_dims.h_diff -= svg_dims.h_1 * (1 - hierarchy_frac_h) / 2
+
     let hierarchy_w = svg_dims.w_1 - svg_dims.w_diff
+    let hierarchy_h = svg_dims.h_1 * hierarchy_frac_h
+    let tree_h = hierarchy_h
+    let ches_h = hierarchy_h - svg_dims.w_diff * 2
+    
     let tree_ches_diff = Math.max(node_r * 2.5, svg_dims.w_diff * 2)
-    let tree_frac = 0.8
     let tree_w = hierarchy_w * tree_frac - tree_ches_diff / 2
     let ches_w = hierarchy_w * (1 - tree_frac) - tree_ches_diff / 2
     ches_w += svg_dims.w_diff / 2
-    
-    let hierarchy_h = svg_dims.h_1
-    let tree_h = hierarchy_h
-    let ches_h = hierarchy_h
+
+    let title_shift = [ -svg_dims.w_diff, 0 ]
 
     let tree_gs = ele_base.svgs.tree
     tree_gs.g = ele_base.svgs.g_svg.append('g')
@@ -140,6 +146,27 @@ window.ArrZoomerTree = function(opt_in_top) {
             tree_gs.g.attr('transform', trans)
         }
         return tree_gs.g
+    }
+
+    function append_gs() {
+        let trans_y = has_title ? -svg_dims.h_diff : -svg_dims.h_diff * 1.9
+        
+        com.s10.g_hierarchy = com.s10.g.append('g')
+        com.s10.g_tree = com.s10.g_hierarchy.append('g')
+        com.s10.g_ches = com.s10.g_hierarchy.append('g')
+        com.s10.g_ches_title = com.s10.g_hierarchy.append('g')
+        
+        com.s10.g_tree.attr('transform',
+            'translate(' + (svg_dims.w_diff / 2) + ',' + trans_y + ')'
+        )
+        com.s10.g_ches.attr('transform',
+            'translate(' + (svg_dims.w_diff / 2 + tree_ches_diff + tree_w)
+            + ',' + (trans_y + (tree_h - ches_h)) + ')'
+        )
+        com.s10.g_ches_title.attr('transform',
+            'translate(' + (svg_dims.w_diff / 2 + tree_ches_diff + tree_w + title_shift[0])
+            + ',' + (trans_y + title_shift[1]) + ')'
+        )
     }
 
     // ------------------------------------------------------------------
@@ -1094,17 +1121,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         // define the containing g with small margins on the sides
         // ------------------------------------------------------------------
         if (!is_def(com.s10.g_hierarchy)) {
-            let trans_y = has_title ? -svg_dims.h_diff : -svg_dims.h_diff * 1.8
-            com.s10.g_hierarchy = com.s10.g.append('g')
-            com.s10.g_tree = com.s10.g_hierarchy.append('g')
-            com.s10.g_ches = com.s10.g_hierarchy.append('g')
-            
-            com.s10.g_tree.attr('transform',
-                'translate(' + (svg_dims.w_diff / 2) + ',' + trans_y + ')'
-            )
-            com.s10.g_ches.attr('transform',
-                'translate(' + (svg_dims.w_diff / 2 + tree_ches_diff + tree_w) + ',' + trans_y + ')'
-            )
+            append_gs()
         }
 
         let has_data_base = (
@@ -1133,7 +1150,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                     : insts.data.data_base_s1[tel_id]
             )
             let hirch = d3.hierarchy(data_hierarchy)
-            let tree = d3.tree().size([ ches_h, tree_w ])
+            let tree = d3.tree().size([ tree_h, tree_w ])
             tree(hirch)
 
             desc = hirch.descendants()
@@ -1345,7 +1362,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             .from(desc, d => d.y, d => d.x)
             // .from(desc, d => d.x, d => d.y)
             .voronoi([
-                - 0.5 * svg_dims.w_diff, 0, tree_w + 0.5 * svg_dims.w_diff, ches_h,
+                - 0.5 * svg_dims.w_diff, 0, tree_w + 0.5 * svg_dims.w_diff, tree_h,
             ])
 
         let vor = com.s10.g_tree
@@ -1589,11 +1606,11 @@ window.ArrZoomerTree = function(opt_in_top) {
             id: 'update_tel_hierarchy_ches',
             override: true,
         })
-
+        
         let tel_id = opt_in.tel_id
         let parent_name = opt_in.parent_name
         let prop_data = is_def(opt_in.prop_data) ? opt_in.prop_data : []
-        let n_cols = is_def(opt_in.n_cols) ? opt_in.n_cols : 5
+        let n_cols = is_def(opt_in.n_cols) ? opt_in.n_cols : 6
 
         let n_eles = prop_data.length
         let n_rows = Math.ceil(n_eles / n_cols)
@@ -1613,14 +1630,22 @@ window.ArrZoomerTree = function(opt_in_top) {
                 let rect_x = 0.5 * cell_pad + (cell_wh + cell_pad) * n_col
                 let rect_y = 0.5 * cell_pad + (cell_wh + cell_pad) * n_row
 
+                let d_now = prop_data[n_prop]
                 cell_xyr.push({
-                    id: prop_data[n_prop].id,
+                    id: d_now.id,
+                    val: d_now.val,
+                    title: d_now.title,
                     x: rect_x,
                     y: rect_y,
                     w: cell_wh,
                     h: cell_wh,
-                    val: prop_data[n_prop].val,
                 })
+
+                // update objects needed for titles
+                insts.data.prop_parent_s1[tel_id][d_now.id] = (
+                    insts.data.prop_parent_s1[tel_id][parent_name]
+                )
+                insts.data.prop_title_s1[tel_id][d_now.id] = d_now.title
 
                 n_prop++
             }
@@ -1638,7 +1663,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             .append('rect')
             .attr('class', main_rect_tag)
             .style('fill', '#383B42')
-            .style('stroke-width', '0')
+            .style('stroke-width', 0)
             .attr('opacity', 0)
             .attr('height', d => d.h)
             .attr('width', d => d.w)
@@ -1647,10 +1672,10 @@ window.ArrZoomerTree = function(opt_in_top) {
             )
             .on('click', (e, d) => rec_click(d))
             .on('mouseover', function(e, d) {
-                rec_focus(d, true)
+                rec_focus(d3.select(this), d, true)
             })
             .on('mouseout', function(e, d) {
-                rec_focus(d, false)
+                rec_focus(d3.select(this), d, false)
             })
             .merge(main_rect)
             .transition('enter')
@@ -1660,12 +1685,12 @@ window.ArrZoomerTree = function(opt_in_top) {
                 d => 'translate(' + d.x + ',' + d.y + ')'
             )
             .style('stroke', function(d) {
-                return inst_health_col(d.val, 0.5)
+                return '#383B42'
+                // return inst_health_col(d.val, 0.5)
             })
             .style('fill', function(d) {
                 return inst_health_col(d.val)
             })
-
 
         main_rect
             .exit()
@@ -1675,13 +1700,54 @@ window.ArrZoomerTree = function(opt_in_top) {
             .remove()
 
 
-        function rec_focus(d, is_on) {
-            console.log(' - TODO: ArrZoomerTree.set_hierarchy_ches_data.rec_focus(): add hover function ...', d, is_on)
+        function rec_focus(this_ele, d, is_on) {
+            locker.add('set_hierarchy_ches_focus')
+
+            this_ele.style('stroke-width', is_on ? 2 : 0)
+            
+            let delay = times.hover_focus_delay
+            setTimeout(function() {
+                if (locker.n_active('set_hierarchy_ches_focus') === 1) {
+                    rec_focus_once(d, is_on)
+                }
+                locker.remove('set_hierarchy_ches_focus')
+            }, delay)
+
+            return
+        }
+        function rec_focus_once(d, is_on) {
+
+            // choose index=2, assuming that we only want the third property,
+            // where the first is the telescope name, the second is the paren,
+            // andthe third is th current, prop_in
+            let filter_indices = [ 2 ]
+            
+            ele_base.tel_prop_title({
+                tel_id: tel_id,
+                prop_in: is_on ? d.id : null,
+                parent_name: is_on ? parent_name : null,
+                font_scale: 0.8,
+                g_in: com.s10.g_ches_title,
+                g_w: 0,
+                filter_indices: filter_indices,
+                anim_duration: 0,
+                cleanup: !is_on,
+            })
+
+            return
         }
 
         // the click function
         function rec_click(d) {
-            console.log(' - TODO: ArrZoomerTree.set_hierarchy_ches_data.rec_click(): add click function ...', tel_id, parent_name, d)
+
+            let more = get_ele('more')
+            if (is_def(more)) {
+                more.prop_focus({
+                    tel_id: tel_id,
+                    prop_in: d.id,
+                    parent_name: parent_name,
+                })
+            }
 
             // ele_base.tel_prop_title({
             //     tel_id: tel_id,
