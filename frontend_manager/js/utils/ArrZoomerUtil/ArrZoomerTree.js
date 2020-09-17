@@ -61,7 +61,7 @@ window.ArrZoomerTree = function(opt_in_top) {
     $.each([ 0, 1 ], function(nState_, nState) {
         if (nState === 0) {
             tel_avgs.push({
-                r: svg_dims.w / 4,
+                r: svg_dims.w / 5.5,
                 x: svg_dims.w / 2,
                 y: svg_dims.h / 2,
             })
@@ -81,10 +81,12 @@ window.ArrZoomerTree = function(opt_in_top) {
             })
         }
     })
+    let text_font_sizes = [ 25, 15 ]
 
     let node_r = 15
-    let tree_frac = 0.72
-    let hierarchy_frac_h = has_title ? 0.95 : 1
+    let n_ches_data_cols = 8
+    let tree_frac = 0.7
+    let hierarchy_frac_h = has_title ? 0.9 : 1
     
     svg_dims.w_diff = svg_dims.w * 0.025
     svg_dims.h_diff = has_title ? tel_avgs[1].h : tel_avgs[1].h * 0.8
@@ -104,14 +106,15 @@ window.ArrZoomerTree = function(opt_in_top) {
     let ches_w = hierarchy_w * (1 - tree_frac) - tree_ches_diff / 2
     ches_w += svg_dims.w_diff / 2
 
-    let title_shift = [ -svg_dims.w_diff, 0 ]
+    let ches_title_shift = [ -svg_dims.w_diff, 0 ]
 
     let tree_gs = ele_base.svgs.tree
     tree_gs.g = ele_base.svgs.g_svg.append('g')
     tree_gs.g_outer = tree_gs.g.append('g')
 
     let unique_clip_id = 'clip' + my_unique_id
-  
+    let tag_tree_nodes = 'tel_hierarchy_nodes'
+
     tree_gs.g_outer.append('defs')
         .append('clipPath')
         .attr('id', unique_clip_id)
@@ -157,15 +160,15 @@ window.ArrZoomerTree = function(opt_in_top) {
         com.s10.g_ches_title = com.s10.g_hierarchy.append('g')
         
         com.s10.g_tree.attr('transform',
-            'translate(' + (svg_dims.w_diff / 2) + ',' + trans_y + ')'
+            'translate(' + (svg_dims.w_diff / 2) + ',' + (trans_y + svg_dims.w_diff) + ')'
         )
         com.s10.g_ches.attr('transform',
             'translate(' + (svg_dims.w_diff / 2 + tree_ches_diff + tree_w)
             + ',' + (trans_y + (tree_h - ches_h)) + ')'
         )
         com.s10.g_ches_title.attr('transform',
-            'translate(' + (svg_dims.w_diff / 2 + tree_ches_diff + tree_w + title_shift[0])
-            + ',' + (trans_y + title_shift[1]) + ')'
+            'translate(' + (svg_dims.w_diff / 2 + tree_ches_diff + tree_w + ches_title_shift[0])
+            + ',' + (trans_y + ches_title_shift[1]) + ')'
         )
     }
 
@@ -848,12 +851,12 @@ window.ArrZoomerTree = function(opt_in_top) {
                     id: title_tag + porp_now,
                     text: prop_titles[porp_now],
                     prop: porp_now,
-                    h: state === 0 ? 30 : 16,
+                    h: text_font_sizes[state],
                     xy: state === 0 ? xy : [ 0, 0 ],
                     x: state === 0 ? tel_avgs[state].x - xy[0] : pos[porp_now].x,
                     y: state === 0 ? tel_avgs[state].y - xy[1] : pos[porp_now].y,
                     strk_w: state === 1 ? 0.5 : 0.2,
-                    fWgt: state === 0 ? 'bold' : 'normal',
+                    font_wgt: state === 0 ? 'bold' : 'normal',
                     opac: opac,
                     anch: anch,
                 })
@@ -914,7 +917,7 @@ window.ArrZoomerTree = function(opt_in_top) {
             })
             .style('stroke-opacity', 1)
             .style('font-weight', function(d) {
-                return d.fWgt
+                return d.font_wgt
             })
             .attr('transform', function(d) {
                 return 'translate(' + d.x + ',' + d.y + ')'
@@ -1054,7 +1057,6 @@ window.ArrZoomerTree = function(opt_in_top) {
         // console.log('tel_hierarchy',opt_in);
 
         let tag_state = 'state_10'
-        let tag_nodes = tag_state + '_circ'
         let tag_text = tag_state + '_text'
         let tag_vor = tag_state + '_vor'
         let tag_links = tag_state + '_path'
@@ -1201,14 +1203,14 @@ window.ArrZoomerTree = function(opt_in_top) {
         // circles
         // ------------------------------------------------------------------
         let circs = com.s10.g_tree
-            .selectAll('circle.' + tag_nodes)
+            .selectAll('circle.' + tag_tree_nodes)
             .data(desc, get_ele_id)
 
         circs
             .enter()
             .append('circle')
-            .attr('class', tag_nodes)
-            // .attr("id", function(d) { return my_unique_id+tag_nodes+d.data.id; })
+            .attr('class', tag_tree_nodes)
+            // .attr("id", function(d) { return my_unique_id+tag_tree_nodes+d.data.id; })
             .attr('r', 0)
             .attr('transform', function(d) {
                 return 'translate(' + d.y + ',' + d.x + ')'
@@ -1267,12 +1269,16 @@ window.ArrZoomerTree = function(opt_in_top) {
                 return font_size(d) + 'px'
             })
             .style('text-anchor', txt_anch)
-            .style('stroke', '#383B42')
             .attr('pointer-events', 'none')
             .attr('vector-effect', 'non-scaling-stroke')
             .attr('opacity', 0)
+            .style('fill', '#383B42')
+            // .style('stroke-width', 0.3)
+            .style('stroke', '#383B42')
+            // .style('stroke-width', 0)
+            // .style('stroke', '#F2F2F2')
             .merge(text)
-            .style('stroke-width', click_in ? 1 : 0.2)
+            .style('stroke-width', click_in ? 1 : 0.4)
             .style('font-size', function(d) {
                 return font_size(d) + 'px'
             })
@@ -1452,6 +1458,20 @@ window.ArrZoomerTree = function(opt_in_top) {
         // the highlight function
         // ------------------------------------------------------------------
         function focus_ele(data_now, is_on) {
+            locker.add('svg_quick_focus_tree_vor')
+
+            let delay = times.hover_focus_delay / 2
+            setTimeout(function() {
+                if (locker.n_active('svg_quick_focus_tree_vor') === 1) {
+                    focus_ele_once(data_now, is_on)
+                }
+                locker.remove('svg_quick_focus_tree_vor')
+            }, delay)
+
+            return
+        }
+
+        function focus_ele_once(data_now, is_on) {
             let id_now = data_now.data.id
 
             if (is_on) {
@@ -1460,7 +1480,7 @@ window.ArrZoomerTree = function(opt_in_top) {
                 }
 
                 com.s10.g_tree
-                    .selectAll('circle.' + tag_nodes)
+                    .selectAll('circle.' + tag_tree_nodes)
                     .transition('highlight')
                     .duration(times.anim / 2)
                     .attr('r', function(d) {
@@ -1483,6 +1503,13 @@ window.ArrZoomerTree = function(opt_in_top) {
                     .style('font-weight', function(d) {
                         return (d.data.id === id_now ? 'bold' : 'normal')
                     })
+                    // .style('stroke-width', function(d) {
+                    //     return (d.data.id === id_now ? 1 : 0)
+                    // })
+                    .style('opacity', function(d) {
+                        return (d.data.id === id_now ? 1 : 0.5)
+                    })
+
             }
             else {
                 if (!may_update()) {
@@ -1497,7 +1524,7 @@ window.ArrZoomerTree = function(opt_in_top) {
 
             function reset_r() {
                 com.s10.g_tree
-                    .selectAll('circle.' + tag_nodes)
+                    .selectAll('circle.' + tag_tree_nodes)
                     .transition('highlight')
                     .duration(times.anim / 2)
                     .attr('r', function(d) {
@@ -1513,6 +1540,8 @@ window.ArrZoomerTree = function(opt_in_top) {
                         return font_size(d) + 'px'
                     })
                     .style('font-weight', 'normal')
+                    // .style('stroke-width', 0)
+                    .style('opacity', 1)
             
                 return
             }
@@ -1527,10 +1556,8 @@ window.ArrZoomerTree = function(opt_in_top) {
             ches_h: ches_h,
         })
 
-        if (!is_open) {
-            set_hierarchy_ches_data({
-            })
-        }
+        set_hierarchy_ches_data({
+        })
 
         locker.remove({
             id: 'update_tel_hierarchy_tree',
@@ -1610,7 +1637,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         let tel_id = opt_in.tel_id
         let parent_name = opt_in.parent_name
         let prop_data = is_def(opt_in.prop_data) ? opt_in.prop_data : []
-        let n_cols = is_def(opt_in.n_cols) ? opt_in.n_cols : 6
+        let n_cols = is_def(opt_in.n_cols) ? opt_in.n_cols : n_ches_data_cols
 
         let n_eles = prop_data.length
         let n_rows = Math.ceil(n_eles / n_cols)
@@ -1943,7 +1970,7 @@ window.ArrZoomerTree = function(opt_in_top) {
         locker.add('update_tel_hierarchy')
 
         com.s10.g_tree
-            .selectAll('circle')
+            .selectAll('circle.' + tag_tree_nodes)
             .each(function(d) {
                 if (d.data.id === health_tag) {
                     d.data.val = data_in[health_tag]

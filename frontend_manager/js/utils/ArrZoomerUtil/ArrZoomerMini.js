@@ -124,10 +124,10 @@ window.ArrZoomerMini = function(opt_in_top) {
     // let tel_id_types = null
     let health_tag = ele_base.health_tag
 
-    let miniMapCol = {
+    let mini_map_col = {
+        blue: [ '#64B5F6' ],
+        purple: [ '#9575CD' ],
     }
-    miniMapCol.b = [ '#64B5F6' ]
-    miniMapCol.p = [ '#9575CD' ]
 
     // ------------------------------------------------------------------
     //
@@ -144,8 +144,8 @@ window.ArrZoomerMini = function(opt_in_top) {
             .attr('width', svg_dims.w)
             .attr('height', svg_dims.h)
             .style('fill', 'transparent' )
-            .style('stroke', '#F2F2F2' )
-            .style('stroke-width', is_lens ? 2 : 0)
+            .style('stroke', is_lens ? mini_map_col.blue : '#F2F2F2' )
+            .style('stroke-width', is_lens ? 15 : 0)
             .attr('pointer-events', 'none')
             .attr('opacity', 1)
 
@@ -634,9 +634,9 @@ window.ArrZoomerMini = function(opt_in_top) {
             .attr('y', y)
             .attr('width', w)
             .attr('height', h)
-            .attr('stroke', d3.rgb(miniMapCol.b).darker(0.5))
+            .attr('stroke', d3.rgb(mini_map_col.blue).darker(0.5))
             .attr('stroke-width', '1')
-            .attr('fill', miniMapCol.b) // .attr("fill", "red")
+            .attr('fill', mini_map_col.blue) // .attr("fill", "red")
             .attr('vector-effect', 'non-scaling-stroke')
             .merge(rect)
             .transition('in_out')

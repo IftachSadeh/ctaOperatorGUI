@@ -119,15 +119,15 @@ let main_arr_zoomer = function(opt_in) {
             // dblclick_zoom_in_out: false,
         },
         ches: {
-            n_cols: is_south ? 18 : 8,
-            aspect_ratio: is_south ? 0.25 : 0.2,
+            n_cols: is_south ? 14 : 8,
+            aspect_ratio: is_south ? 0.3 : 0.2,
             font_rect_scale: is_south ? 0.7 : 0.6,
         },
         mini: {
             // static_zoom: false,
         },
         tree: {
-            // aspect_ratio: 6/5,
+            aspect_ratio: 0.82,
             has_title: true,
         },
         lens: {
@@ -156,29 +156,45 @@ let main_arr_zoomer = function(opt_in) {
     // symmetric arrangement for elements
     let base_ele_width = arr_zoomer_ele_opts.base_ele_width
     
+    let pad_top = 5
     let mini_trans_x = 5
-    let mini_scale = 1
+    // let mini_scale = 1
+    let mini_scale = is_south ? 1 : 0.8
     let mini_h = mini_scale * base_ele_width
     
-    let ches_trans_x = mini_scale * base_ele_width + mini_trans_x
+    let mini_pad = is_south ? mini_h * 0.05 : mini_h * 0.2
+    // mini_pad = 0
+    mini_trans_x += 0.5 * mini_pad
+    
+    let ches_trans_x = 0.5 * mini_pad + mini_scale * base_ele_width + mini_trans_x
     let ches_scale = (svg_dims.w - ches_trans_x - mini_trans_x) / base_ele_width
     let ches_h = ches_scale * base_ele_width * arr_zoomer_ele_opts.ches.aspect_ratio
-    
+
+
     let mini_trans_y = (mini_h < ches_h) * (0.5 * Math.abs(mini_h - ches_h))
     let ches_trans_y = (mini_h > ches_h) * (0.5 * Math.abs(mini_h - ches_h))
     
     let lens_scale = 0.18
-    let lens_trans_x = mini_trans_x + 5
-    let lens_trans_y = mini_trans_y + 5
+    let lens_trans_x = Math.max(mini_pad / 3, 5)
+    let lens_trans_y = Math.max(mini_pad / 3, 5)
     
-    let main_scale = 2.5
+    // let main_scale = 2.5
+    let main_scale = 2.25
     let main_trans_y = Math.max(mini_h, ches_h)
     
+    // let tree_scale = main_scale
+    let tree_scale = main_scale / arr_zoomer_ele_opts.tree.aspect_ratio
     let tree_trans_x = main_scale * base_ele_width
     
     let more_trans_y = main_trans_y + main_scale * base_ele_width
     let more_scale = 5
     let more_h = more_scale * base_ele_width * arr_zoomer_ele_opts.more.aspect_ratio
+
+    ches_trans_y += pad_top
+    mini_trans_y += pad_top
+    lens_trans_y += pad_top
+    main_trans_y += 2 * pad_top
+    more_trans_y += 2 * pad_top
 
     arr_zoomer_ele_opts.trans = {
         main: (
@@ -187,7 +203,7 @@ let main_arr_zoomer = function(opt_in) {
         ),
         tree: (
             'translate(' + tree_trans_x + ',' + main_trans_y
-            + ')scale(' + main_scale + ')'
+            + ')scale(' + tree_scale + ')'
         ),
         ches: (
             'translate(' + ches_trans_x + ',' + ches_trans_y
@@ -445,7 +461,7 @@ let main_arr_zoomer = function(opt_in) {
             })
             return
         }
-        auto_trans_test()
+        // auto_trans_test()
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
 
