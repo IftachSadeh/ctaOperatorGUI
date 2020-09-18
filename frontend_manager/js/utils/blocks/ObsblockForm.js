@@ -3312,16 +3312,6 @@ window.ObsblockForm = function(opt_in) {
             .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
         com.telescope.g = g
         box.y = 0
-        // g.append('text')
-        //   .text('Telescopes')
-        //   .attr('x', box.w * 0.01)
-        //   .attr('y', box.y + box.h)
-        //   .style('font-weight', 'bold')
-        //   .attr('text-anchor', 'start')
-        //   .style('font-size', title_size + 'px')
-        //   .style('pointer-events', 'none')
-        //   .attr('fill', colorPalette.dark.text)
-        //   .attr('stroke', 'none')
         box.y -= 2 + title_size
         g.append('line')
             .attr('x1', 0)
@@ -3332,28 +3322,7 @@ window.ObsblockForm = function(opt_in) {
             .attr('stroke-width', 0.2)
 
         box.y -= 1
-        // g.append('rect')
-        //   .attr('id', 'headerStrip')
-        //   .attr('x', 0)
-        //   .attr('y', box.y)
-        //   .attr('width', box.w)
-        //   .attr('height', headerSize)
-        //   .attr('fill', colorPalette.dark.stroke)
-        // let label = [
-        //   {x: box.w * 0.5, y: box.y + headerSize * 0.5 + txt_size * 0.3, text: 'Minimal < Current < Maximal', anchor: 'middle'}
-        // ]
-        // for (let i = 0; i < label.length; i++) {
-        //   g.append('text')
-        //     .text(label[i].text)
-        //     .style('fill', colorPalette.medium.background)
-        //     .style('font-weight', 'bold')
-        //     .style('font-size', txt_size + 'px')
-        //     .attr('text-anchor', label[i].anchor)
-        //     .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
-        // }
 
-        // box.y += 21
-        // box.h -= 21
         let xx = box.w * 0.11
         let ww = box.w * 0.86
         box.h -= title_size * 1.5
@@ -3375,22 +3344,6 @@ window.ObsblockForm = function(opt_in) {
             w: ww * 0.54,
             h: box.h,
         }
-
-        // let tels = {
-        //   large: [],
-        //   medium: [],
-        //   small: []
-        // }
-        // for (let i = 0; i < data.tel_ids.length; i++) {
-        //   let id = data.tel_ids[i]
-        //   if (id[0] === 'S') {
-        //     tels.small.push(getTelescopeById(id))
-        //   } else if (id[0] === 'M') {
-        //     tels.medium.push(getTelescopeById(id))
-        //   } else if (id[0] === 'L') {
-        //     tels.large.push(getTelescopeById(id))
-        //   }
-        // }
 
         let gt = g.append('g')
             .attr('id', 'telsDisplayer')
@@ -3882,6 +3835,7 @@ window.ObsblockForm = function(opt_in) {
                 health: com.data.tels.find(x => x.id === com.data.block.telescopes.small.ids[i]).val,
             })
         }
+        console.log(tels, com.data.block)
         com.telescopeRunningBlock.update_data({
             data: {
                 raw: {

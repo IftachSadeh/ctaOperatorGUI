@@ -665,7 +665,7 @@ window.TelescopeDisplayer = function(opt_in) {
             rect.each(function(d, i) {
                 let g = d3.select(this)
                 let health = is_def(d.health) ? d.health : d.val
-                
+
                 g.transition()
                     .duration(times.anim)
                     .attr('transform', function(d) {
@@ -1633,34 +1633,6 @@ window.TelescopeDisplayer = function(opt_in) {
         }
     }
     this.changeDisplayer = changeDisplayer
-
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    // function telescopesMouseOver (data) {
-    //   let totTelescopes = com.telescopeQueue.telescopes.run.g.selectAll('g.' + com.main.tag + 'telescopes')
-    //   if (com.telescopeQueue.telescopes.cancel.g) totTelescopes.merge(com.telescopeQueue.telescopes.cancel.g.selectAll('g.' + com.main.tag + 'telescopes'))
-    //
-    //   totTelescopes.each(function (d) {
-    //     if (d.data.metadata.n_sched === data.data.metadata.n_sched && d.data.metadata.n_obs !== data.data.metadata.n_obs) {
-    //       d3.select(this).select('rect.back').attr('stroke-width', 6)
-    //         .style('stroke-opacity', 1)
-    //         .attr('stroke-dasharray', [4, 2])
-    //     }
-    //   })
-    // }
-    // function telescopesMouseOut (data) {
-    //   let totTelescopes = com.telescopeQueue.telescopes.run.g.selectAll('g.' + com.main.tag + 'telescopes')
-    //   if (com.telescopeQueue.telescopes.cancel.g) totTelescopes.merge(com.telescopeQueue.telescopes.cancel.g.selectAll('g.' + com.main.tag + 'telescopes'))
-    //
-    //   totTelescopes.each(function (d) {
-    //     if (d.data.metadata.n_sched === data.data.metadata.n_sched && d.data.metadata.n_obs !== data.data.metadata.n_obs) {
-    //       d3.select(this).select('rect.back').attr('stroke-width', 1)
-    //         .style('stroke-opacity', 0.4)
-    //         .attr('stroke-dasharray', [])
-    //     }
-    //   })
-    // }
 
     function overTelescope(id) {
         com.input.over.telescope = id

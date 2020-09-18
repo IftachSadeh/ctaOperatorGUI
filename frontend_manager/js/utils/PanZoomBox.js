@@ -1,9 +1,14 @@
 /* global d3 */
 /* global get_d3_node_box */
-
+/* global load_script */
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
+load_script({
+    source: 'utils_panZoomBox',
+    script: '/js/utils/common_d3.js',
+})
+
 window.PanZoomBox = function() {
     let reserved
 
@@ -162,15 +167,12 @@ window.PanZoomBox = function() {
         interaction_drag()
         interaction_wheel()
         interaction_dbclick()
-        // init_shortcut()
-
-        update_focus()
     }
     this.init = init
 
     function interaction_dbclick() {
-        reserved.main.g.on('dblclick', function() {
-            d3.event.preventDefault()
+        reserved.main.g.on('dblclick', function(event) {
+            event.preventDefault()
             set_content_rel({
                 zoom: {
                     kx: 1,
@@ -193,8 +195,8 @@ window.PanZoomBox = function() {
         }
         let wheel_function_bib = {
             zoom: {
-                end: function() {
-                    var direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+                end: function(event) {
+                    var direction = event.wheelDelta < 0 ? 'down' : 'up'
                     let new_zoom = {
                         kx: reserved.focus.relative.zoom.kx
                         * (direction === 'down'
@@ -220,8 +222,8 @@ window.PanZoomBox = function() {
                 },
             },
             scroll_y: {
-                end: function() {
-                    var direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+                end: function(event) {
+                    var direction = event.wheelDelta < 0 ? 'down' : 'up'
                     let new_y = reserved.focus.relative.translate.y
                     + (direction === 'down'
                         ? wheel_var.coef_trans
@@ -243,19 +245,19 @@ window.PanZoomBox = function() {
             },
         }
 
-        reserved.main.g.on('wheel', function() {
+        reserved.main.g.on('wheel', function(event) {
             for (var key in reserved.interaction.wheel) {
-                if (d3.event[key]) {
+                if (event[key]) {
                     wheel_var.key = key
-                    wheel_function_bib[reserved.interaction.wheel[key].type].end()
-                    reserved.interaction.wheel[key].end()
+                    wheel_function_bib[reserved.interaction.wheel[key].type].end(event)
+                    reserved.interaction.wheel[key].end(event)
                     return
                 }
             }
             key = 'default'
             wheel_var.key = key
-            wheel_function_bib[reserved.interaction.wheel[key].type].end()
-            reserved.interaction.wheel[key].end()
+            wheel_function_bib[reserved.interaction.wheel[key].type].end(event)
+            reserved.interaction.wheel[key].end(event)
         })
     }
     function interaction_drag() {
@@ -266,9 +268,9 @@ window.PanZoomBox = function() {
         }
         let drag_function_bib = {
             zoom_rect: {
-                start: function() {
-                    drag_var.x = d3.event.x
-                    drag_var.y = d3.event.y
+                start: function(event) {
+                    drag_var.x = event.x
+                    drag_var.y = event.y
                     reserved.main.g.append('rect')
                         .attr('id', 'zoom_rect')
                         .attr('x', drag_var.x)
@@ -280,31 +282,31 @@ window.PanZoomBox = function() {
                         .attr('stroke-width', 2)
                         .attr('stroke-dasharray', [ 8, 2 ])
                 },
-                drag: function() {
+                drag: function(event) {
                     reserved.main.g.select('rect#zoom_rect')
-                        .attr('x', d3.event.x > drag_var.x
+                        .attr('x', event.x > drag_var.x
                             ? drag_var.x
-                            : d3.event.x)
-                        .attr('y', d3.event.y > drag_var.y
+                            : event.x)
+                        .attr('y', event.y > drag_var.y
                             ? drag_var.y
-                            : d3.event.y)
-                        .attr('width', Math.abs(d3.event.x - drag_var.x))
-                        .attr('height', Math.abs(d3.event.y - drag_var.y))
+                            : event.y)
+                        .attr('width', Math.abs(event.x - drag_var.x))
+                        .attr('height', Math.abs(event.y - drag_var.y))
                 },
-                end: function() {
+                end: function(event) {
                     reserved.main.g.select('rect#zoom_rect')
                         .remove()
                     let vertical_values = {
-                        y: (d3.event.y > drag_var.y
+                        y: (event.y > drag_var.y
                             ? drag_var.y - reserved.main.box.y
-                            : d3.event.y - reserved.main.box.y) / reserved.main.box.h,
-                        ky: Math.abs(d3.event.y - drag_var.y) / reserved.main.box.h,
+                            : event.y - reserved.main.box.y) / reserved.main.box.h,
+                        ky: Math.abs(event.y - drag_var.y) / reserved.main.box.h,
                     }
                     let horizontal_values = {
-                        x: (d3.event.x > drag_var.x
+                        x: (event.x > drag_var.x
                             ? drag_var.x - reserved.main.box.x
-                            : d3.event.x - reserved.main.box.x) / reserved.main.box.w,
-                        kx: Math.abs(d3.event.x - drag_var.x) / reserved.main.box.w,
+                            : event.x - reserved.main.box.x) / reserved.main.box.w,
+                        kx: Math.abs(event.x - drag_var.x) / reserved.main.box.w,
                     }
 
                     // console.log(reserved.focus.relative.zoom)
@@ -329,23 +331,23 @@ window.PanZoomBox = function() {
                 },
             },
             drag_trans: {
-                start: function(){
-                    drag_var.x = d3.event.x
-                    drag_var.y = d3.event.y
+                start: function(event){
+                    drag_var.x = event.x
+                    drag_var.y = event.y
                 },
-                drag: function() {
+                drag: function(event) {
                     set_content_abs({
                         trans: {
                             x: reserved.focus.absolute.translate.x
-                            + (d3.event.x - drag_var.x),
+                            + (event.x - drag_var.x),
                             y: reserved.focus.absolute.translate.y
-                            + (d3.event.y - drag_var.y),
+                            + (event.y - drag_var.y),
                         },
                     })
-                    drag_var.x = d3.event.x
-                    drag_var.y = d3.event.y
+                    drag_var.x = event.x
+                    drag_var.y = event.y
                 },
-                end: function() {
+                end: function(event) {
                     drag_var.x = 0
                     drag_var.y = 0
                 },
@@ -361,9 +363,9 @@ window.PanZoomBox = function() {
             })
 
         let interactions = d3.drag()
-            .on('start', function() {
+            .on('start', function(event) {
                 for (var key in reserved.interaction.drag) {
-                    if (d3.event.sourceEvent[key]) {
+                    if (event.sourceEvent[key]) {
                         drag_var.key = key
                         drag_function_bib[reserved.interaction.drag[key].type].start()
                         reserved.interaction.drag[key].start()
@@ -375,12 +377,12 @@ window.PanZoomBox = function() {
                 drag_function_bib[reserved.interaction.drag[key].type].start()
                 reserved.interaction.drag[key].start()
             })
-            .on('drag', function() {
+            .on('drag', function(event) {
                 drag_function_bib[reserved.interaction.drag[drag_var.key].type].drag()
                 reserved.interaction.drag[drag_var.key].drag()
 
             })
-            .on('end', function() {
+            .on('end', function(event) {
                 drag_function_bib[reserved.interaction.drag[drag_var.key].type].end()
                 reserved.interaction.drag[drag_var.key].end()
 
@@ -391,7 +393,6 @@ window.PanZoomBox = function() {
     }
 
     function update_focus() {
-        // console.log('absolute', reserved.focus.absolute)
         reserved.content
             .transition()
             .duration(100)
@@ -463,6 +464,12 @@ window.PanZoomBox = function() {
             reserved.focus.dimension = {
                 w: content_box.width,
                 h: content_box.height,
+            }
+            if (content_box.width === 0) {
+                reserved.focus.dimension.w = old_dim.w
+            }
+            if (content_box.height === 0) {
+                reserved.focus.dimension.h = old_dim.h
             }
             if (old_dim.w === content_box.width
               && old_dim.h === content_box.height) {

@@ -1574,6 +1574,7 @@ let main_sched_blocksInspector = function(opt_in) {
             .style('opacity', 0.8)
             .on('end', function() {
                 let cleanQueue = clean_blocks()
+                console.log(cleanQueue)
                 push_new_sched_evt({
                     new_schedule: cleanQueue,
                 })

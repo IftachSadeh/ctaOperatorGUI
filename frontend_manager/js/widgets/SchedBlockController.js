@@ -476,10 +476,10 @@ let main_sched_blockController = function(opt_in) {
             return
         }
 
-        sock.set_icon_badge({
-            data: data_in,
-            icon_divs: icon_divs,
-        })
+        // sock.set_icon_badge({
+        //     data: data_in,
+        //     icon_divs: icon_divs,
+        // })
 
         let svg_div_id = sgv_tag.main.id + 'svg'
         let svg_div = sgv_tag.main.widget.get_ele(svg_div_id)
@@ -522,32 +522,6 @@ let main_sched_blockController = function(opt_in) {
 
         svgBrush.init_data()
         svg_events_queue_server.init_data()
-        // svgWarningArea.init_data({
-        //   tag: 'pushPull',
-        //   g: svg.g.append('g'),
-        //   box: box.pushPull,
-        //   attr: {
-        //     text: {
-        //       size: 9
-        //     },
-        //     icon: {
-        //       size: 20
-        //     }
-        //   },
-        //   pull: {
-        //     g: undefined,
-        //     box: {x: 0, y: 0, w: 0.5, h: 1},
-        //     child: {}
-        //   },
-        //   push: {
-        //     g: undefined,
-        //     box: {x: 0.5, y: 0, w: 0.5, h: 1},
-        //     child: {}
-        //   },
-        //   debug: {
-        //     enabled: false
-        //   }
-        // })
         svgTargets.init_data()
         svgTelsConflict.init_data()
         svgRight_info.init_data()

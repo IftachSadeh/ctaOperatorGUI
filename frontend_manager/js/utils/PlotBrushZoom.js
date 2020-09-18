@@ -60,13 +60,13 @@ window.PlotBrushZoom = function() {
                     text: {
                         visible: true,
                         size: 11,
-                        stroke: colorPalette.medium.stroke,
-                        fill: colorPalette.medium.stroke,
+                        stroke: color_theme.medium.stroke,
+                        fill: color_theme.medium.stroke,
                     },
                     path: {
                         visible: true,
-                        stroke: colorPalette.medium.stroke,
-                        fill: colorPalette.medium.stroke,
+                        stroke: color_theme.medium.stroke,
+                        fill: color_theme.medium.stroke,
                     },
                     axis: {
                         visible: true,

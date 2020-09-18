@@ -959,43 +959,6 @@ window.BlockDisplayer = function(opt_in) {
             }
             return blocks
         }
-        // function groupByTime (blocks) {
-        //   let groups = []
-        //   for (var i = 0; i < blocks.length; i++) {
-        //     let newGroup = [blocks[i]]
-        //     for (var j = 0; j < blocks.length; j++) {
-        //       if (i !== j && is_same_time_begin_after(blocks[i].x, blocks[i].x + blocks[i].w, blocks[j].x, blocks[j].x + blocks[j].w)) newGroup.push(blocks[j])
-        //     }
-        //     groups.push(newGroup)
-        //   }
-        //   return groups
-        // }
-        //
-        // function is_same_time_begin_after (s1, e1, s2, e2) {
-        //   if (s1 > s2 && s1 < e2) return true
-        //   return false
-        // }
-        //
-        // function isGeneratingTelsConflict (group) {
-        //   function useSameTels (tel1, tel2) {
-        //     for (var i = 0; i < tel1.length; i++) {
-        //       for (var j = 0; j < tel2.length; j++) {
-        //         if (tel1[i] === tel2[j]) {
-        //           return true
-        //         }
-        //       }
-        //     }
-        //     return false
-        //   }
-        //   for (let i = 0; i < length; i++) {
-        //     for (let j = 0; j < length; j++) {
-        //       if (i !== j && useSameTels(group[i].data.tel_ids, group[j].data.tel_ids)) {
-        //         return true
-        //       }
-        //     }
-        //   }
-        //   return false
-        // }
 
         function update() {
             if (com.blockQueue.axis.enabled) {
@@ -1188,58 +1151,6 @@ window.BlockDisplayer = function(opt_in) {
             })
         }
 
-        // function addExtraBar (date) {
-        //   let data = []
-        //   if (date === null) {
-        //     let rectNow = com.main.g
-        //       .selectAll('rect.' + com.main.tag + 'extra')
-        //       .data(data)
-        //     rectNow.exit().remove()
-        //   } else {
-        //     data = [date]
-        //     let rectNow = com.main.g
-        //       .selectAll('rect.' + com.main.tag + 'extra')
-        //       .data(data)
-        //       .attr('transform', 'translate(' + com.blockQueue.axis.box.x + ',' + 0 + ')')
-        //
-        //     rectNow
-        //       .enter()
-        //       .append('rect')
-        //       .attr('class', com.main.tag + 'extra')
-        //       .style('opacity', 1)
-        //       .attr('x', function (d, i) {
-        //         if (d > com.blockQueue.axis.scale.domain()[1]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[1])
-        //         else if (d < com.blockQueue.axis.scale.domain()[0]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[0])
-        //         return com.blockQueue.axis.scale(d)
-        //       })
-        //       .attr('y', function (d, i) {
-        //         return com.main.box.y - 1 * com.main.box.marg
-        //       })
-        //       .attr('width', 0)
-        //       .attr('height', function (d, i) {
-        //         return com.main.box.h + 1 * com.main.box.marg
-        //       })
-        //       .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
-        //       .attr('fill', cols_yellows[0])
-        //       .attr('fill-opacity', 0.3)
-        //       .style('stroke-opacity', 0.15)
-        //       .attr('stroke-width', 3)
-        //       .style('pointer-events', 'none')
-        //       .attr('vector-effect', 'non-scaling-stroke')
-        //       .merge(rectNow)
-        //       .transition('in_out')
-        //       .duration(50)
-        //       .attr('x', function (d, i) {
-        //         if (d > com.blockQueue.axis.scale.domain()[1]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[1])
-        //         else if (d < com.blockQueue.axis.scale.domain()[0]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[0])
-        //         return com.blockQueue.axis.scale(d)
-        //       })
-        //       // .attr("y", function(d,i) { return d.y; })
-        //       .attr('width', function (d, i) {
-        //         return com.main.box.marg
-        //       })
-        //   }
-        // }
         function setTimeRect() {
             let rectNowData = []
 
@@ -1513,6 +1424,7 @@ window.BlockDisplayer = function(opt_in) {
                     }
                     return 'translate(' + translate.x + ',' + translate.y + ')'
                 })
+            enterAllScheds.exit().remove()
         }
         function setBlockRect(blocks, box) {
             let blocksTemplate = {
@@ -2390,58 +2302,6 @@ window.BlockDisplayer = function(opt_in) {
         }
         this.get_block_rows = get_block_rows
 
-        // function addExtraBar (date) {
-        //   let data = []
-        //   if (date === null) {
-        //     let rectNow = com.main.g
-        //       .selectAll('rect.' + com.main.tag + 'extra')
-        //       .data(data)
-        //     rectNow.exit().remove()
-        //   } else {
-        //     data = [date]
-        //     let rectNow = com.main.g
-        //       .selectAll('rect.' + com.main.tag + 'extra')
-        //       .data(data)
-        //       .attr('transform', 'translate(' + com.blockQueue2.axis.box.x + ',' + 0 + ')')
-        //
-        //     rectNow
-        //       .enter()
-        //       .append('rect')
-        //       .attr('class', com.main.tag + 'extra')
-        //       .style('opacity', 1)
-        //       .attr('x', function (d, i) {
-        //         if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
-        //         else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
-        //         return com.blockQueue2.axis.scale(d)
-        //       })
-        //       .attr('y', function (d, i) {
-        //         return com.main.box.y - 1 * com.main.box.marg
-        //       })
-        //       .attr('width', 0)
-        //       .attr('height', function (d, i) {
-        //         return com.main.box.h + 1 * com.main.box.marg
-        //       })
-        //       .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
-        //       .attr('fill', cols_yellows[0])
-        //       .attr('fill-opacity', 0.3)
-        //       .style('stroke-opacity', 0.15)
-        //       .attr('stroke-width', 3)
-        //       .style('pointer-events', 'none')
-        //       .attr('vector-effect', 'non-scaling-stroke')
-        //       .merge(rectNow)
-        //       .transition('in_out')
-        //       .duration(50)
-        //       .attr('x', function (d, i) {
-        //         if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
-        //         else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
-        //         return com.blockQueue2.axis.scale(d)
-        //       })
-        //       // .attr("y", function(d,i) { return d.y; })
-        //       .attr('width', function (d, i) {
-        //         return com.main.box.marg
-        //       })
-        //   }
-        // }
         function setTimeRect() {
             if (!com.blockQueue2.timeBars.enabled) {
                 return
@@ -2773,7 +2633,7 @@ window.BlockDisplayer = function(opt_in) {
                     }
                     return 'translate(' + translate.x + ',' + translate.y + ')'
                 })
-
+            enterTrack.exit().remove()
             let allScheds = com.main.scroll.scrollG
                 .selectAll('g.allScheds')
                 .data(scheds, function(d) {
@@ -2792,17 +2652,6 @@ window.BlockDisplayer = function(opt_in) {
                 })
             enterAllScheds.each(function(d, i) {
                 if (com.blockTrackShrink.sched_blocks.label.enabled) {
-                    // d3.select(this).append('line')
-                    //   .attr('id', 'aesthetic')
-                    //   .attr('x1', timescale(d.startT))
-                    //   .attr('y1', height * 0.45)
-                    //   .attr('x2', timescale(d.endT))
-                    //   .attr('y2', height * 0.45)
-                    //   .attr('fill', 'transparent')
-                    //   .attr('fill-opacity', 1)
-                    //   .attr('stroke', color_theme.dark.stroke)
-                    //   .attr('stroke-width', height * 0.05)
-                    //   .attr('stroke-dasharray', [])
                     d3.select(this).append('text')
                         .attr('id', 'schedId')
                         .text('S' + d.name)
@@ -2905,6 +2754,7 @@ window.BlockDisplayer = function(opt_in) {
                             return 'translate(' + translate.x + ',' + translate.y + ')'
                         })
                 })
+            allScheds.exit().remove()
         }
         function setBlockRect(blocks, box) {
             let timescale = d3.scaleLinear()
@@ -3414,70 +3264,6 @@ window.BlockDisplayer = function(opt_in) {
     }
     this.filterData = filterData
 
-    // function clickcancel () {
-    //   var dispatcher = d3.dispatch('click', 'dblclick');
-    //   function cc (selection) {
-    //     var down
-    //     var tolerance = 5
-    //     var last
-    //     var wait = null
-    //     var args
-    //     function dist (a, b) {
-    //       return Math.sqrt(Math.pow(a[0] - b[0], 2), Math.pow(a[1] - b[1], 2))
-    //     }
-    //     selection.on('mousedown', function () {
-    //       console.log('mousedown');
-    //       down = d3.mouse(document.body)
-    //       last = +new Date()
-    //       args = arguments
-    //     })
-    //     selection.on('mouseup', function () {
-    //       console.log('mouseup');
-    //       if (dist(down, d3.mouse(document.body)) > tolerance) {
-    //         return
-    //       } else {
-    //         if (wait) {
-    //           window.clearTimeout(wait)
-    //           wait = null
-    //           dispatcher.apply('dblclick', this, args)
-    //         } else {
-    //           wait = window.setTimeout((function () {
-    //             return function () {
-    //               dispatcher.apply('click', this, args)
-    //               wait = null
-    //             }
-    //           })(), 300)
-    //         }
-    //       }
-    //     })
-    //   }
-    //   var d3rebind = function (target, source) {
-    //     var i = 1
-    //     var n = arguments.length
-    //     var method
-    //     while (++i < n) target[method = arguments[i]] = d3_rebind(target, source, source[method])
-    //     return target
-    //   }
-    //
-    //   // Method is assumed to be a standard D3 getter-setter:
-    //   // If passed with no arguments, gets the value.
-    //   // If passed with arguments, sets the value and returns the target.
-    //   function d3_rebind (target, source, method) {
-    //     return function () {
-    //       var value = method.apply(source, arguments)
-    //       return value === source ? target : value
-    //     }
-    //   }
-    //   return d3rebind(cc, dispatcher, 'on')
-    // }
-    // .call(cc)
-    // var cc = clickcancel()
-    // cc.on('click', function (d, index) {
-    //   console.log('click')
-    // })
-    // cc.on('dblclick', function (d, index) {
-    //   console.log('dbclick')
-    // })
 
     function createBlocksGroup() {
         let all_obs_blocks = [].concat(com.data.filtered.done)
@@ -3751,34 +3537,6 @@ window.BlockDisplayer = function(opt_in) {
         }
     }
     this.highlightBlocks = highlightBlocks
-
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    // function blocksMouseOver (data) {
-    //   let totBlocks = com.blockQueue.blocks.run.g.selectAll('g.' + com.main.tag + 'blocks')
-    //   if (com.blockQueue.blocks.cancel.g) totBlocks.merge(com.blockQueue.blocks.cancel.g.selectAll('g.' + com.main.tag + 'blocks'))
-    //
-    //   totBlocks.each(function (d) {
-    //     if (d.data.metadata.n_sched === data.data.metadata.n_sched && d.data.metadata.n_obs !== data.data.metadata.n_obs) {
-    //       d3.select(this).select('rect.back').attr('stroke-width', 6)
-    //         .style('stroke-opacity', 1)
-    //         .attr('stroke-dasharray', [4, 2])
-    //     }
-    //   })
-    // }
-    // function blocksMouseOut (data) {
-    //   let totBlocks = com.blockQueue.blocks.run.g.selectAll('g.' + com.main.tag + 'blocks')
-    //   if (com.blockQueue.blocks.cancel.g) totBlocks.merge(com.blockQueue.blocks.cancel.g.selectAll('g.' + com.main.tag + 'blocks'))
-    //
-    //   totBlocks.each(function (d) {
-    //     if (d.data.metadata.n_sched === data.data.metadata.n_sched && d.data.metadata.n_obs !== data.data.metadata.n_obs) {
-    //       d3.select(this).select('rect.back').attr('stroke-width', 1)
-    //         .style('stroke-opacity', 0.4)
-    //         .attr('stroke-dasharray', [])
-    //     }
-    //   })
-    // }
 
     function over_sched_blocks(id) {
         com.input.over.sched_blocks = id

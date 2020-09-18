@@ -8,6 +8,10 @@
 
 window.load_script({
     source: 'utils_scrollBox',
+    script: '/js/utils/PlotBrushZoom.js',
+})
+window.load_script({
+    source: 'utils_scrollBox',
     script: '/js/utils/PanZoomBox.js',
 })
 

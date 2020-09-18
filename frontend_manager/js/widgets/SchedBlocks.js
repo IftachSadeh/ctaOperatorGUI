@@ -1548,6 +1548,7 @@ function main_sched_blocks(opt_in) {
                 },
                 events: {
                     block: {
+                        dbclick: (d) => {},
                         click: (d) => {
                             // console.log(d)
                         },
@@ -1935,6 +1936,7 @@ function main_sched_blocks(opt_in) {
                 },
                 events: {
                     block: {
+                        dbclick: (d) => {},
                         click: (d) => {
                             // console.log(d)
                         },
