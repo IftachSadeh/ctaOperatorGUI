@@ -64,10 +64,7 @@ window.load_script({
     source: main_script_tag,
     script: '/js/utils/PanelManager.js',
 })
-window.load_script({
-    source: main_script_tag,
-    script: '/js/utils_buttonPanel.js',
-})
+
 window.load_script({
     source: main_script_tag,
     script: '/js/utils/events/ClockEvents.js',
@@ -1627,42 +1624,19 @@ let main_comment_sched = function(opt_in) {
 
                 reserved.log_info.scroll.scrollBox = new ScrollBox()
                 reserved.log_info.scroll.scrollBox.init({
-                    tag: 'log_infoScrollBox',
-                    g_box: reserved.log_info.scroll.scrollBoxG,
-                    box_data: {
-                        x: box.x,
-                        y: box.y,
-                        w: box.w,
-                        h: box.h,
-                        marg: 0,
-                    },
-                    use_relative_coords: true,
-                    locker: new Locker(),
-                    lockers: [ widget_id + 'update_data' ],
-                    lock_zoom: {
-                        all: 'log_infoBox' + 'zoom',
-                        during: 'log_infoBox' + 'zoom_during',
-                        end: 'log_infoBox' + 'zoom_end',
-                    },
-                    run_loop: new RunLoop({
+                    main: {
                         tag: 'log_infoScrollBox',
-                    }),
-                    can_scroll: true,
-                    scrollVertical: true,
-                    scroll_horizontal: false,
-                    scroll_height: 0,
-                    scroll_width: 0,
-                    background: 'transparent',
-                    scroll_rec_h: {
-                        h: 0,
-                    },
-                    scroll_recs: {
-                        w: 0,
+                        g: reserved.log_info.scroll.scrollBoxG,
+                        box: {
+                            x: box.x,
+                            y: box.y,
+                            w: box.w,
+                            h: box.h,
+                            marg: 0,
+                        },
                     },
                 })
-                reserved.log_info.scroll.scrollG = reserved.log_info.scroll.scrollBox.get(
-                    'inner_g'
-                )
+                reserved.log_info.scroll.scrollG = reserved.log_info.scroll.scrollBox.get_content()
             }
 
             // reserved.log_info.g.append('rect')
@@ -1782,10 +1756,7 @@ let main_comment_sched = function(opt_in) {
                 .style('opacity', 0)
                 .remove()
 
-            reserved.log_info.scroll.scrollBox.reset_vertical_scroller({
-                can_scroll: true,
-                scroll_height: log.info.length * reserved.log_info.box.h * 0.31,
-            })
+            reserved.log_info.scroll.scrollBox.updated_content()
         }
 
         function initLogFields() {
@@ -2433,42 +2404,19 @@ let main_comment_sched = function(opt_in) {
 
                     reserved.logHistory.filtering.scroll.scrollBox = new ScrollBox()
                     reserved.logHistory.filtering.scroll.scrollBox.init({
-                        tag: 'inputHistoryFilteringScrollBox',
-                        g_box: reserved.logHistory.filtering.scroll.scrollBoxG,
-                        box_data: {
-                            x: historyBox.x,
-                            y: historyBox.y,
-                            w: historyBox.w,
-                            h: historyBox.h,
-                            marg: 0,
-                        },
-                        use_relative_coords: true,
-                        locker: new Locker(),
-                        lockers: [ widget_id + 'update_data' ],
-                        lock_zoom: {
-                            all: 'ScrollFiltering_box' + 'zoom',
-                            during: 'ScrollFiltering_box' + 'zoom_during',
-                            end: 'ScrollFiltering_box' + 'zoom_end',
-                        },
-                        run_loop: new RunLoop({
+                        main: {
                             tag: 'inputHistoryFilteringScrollBox',
-                        }),
-                        can_scroll: true,
-                        scrollVertical: true,
-                        scroll_horizontal: false,
-                        scroll_height: ob.h * reserved.logHistory.filtering.filters.length,
-                        scroll_width: 0,
-                        background: 'transparent',
-                        scroll_rec_h: {
-                            h: 1,
-                        },
-                        scroll_recs: {
-                            w: 1,
+                            g: reserved.logHistory.filtering.scroll.scrollBoxG,
+                            box: {
+                                x: historyBox.x,
+                                y: historyBox.y,
+                                w: historyBox.w,
+                                h: historyBox.h,
+                                marg: 0,
+                            },
                         },
                     })
-                    reserved.logHistory.filtering.scroll.scrollG = reserved.logHistory.filtering.scroll.scrollBox.get(
-                        'inner_g'
-                    )
+                    reserved.logHistory.filtering.scroll.scrollG = reserved.logHistory.filtering.scroll.scrollBox.get_content()
                 }
                 initScrollBox()
                 updateFilters()
@@ -2498,42 +2446,19 @@ let main_comment_sched = function(opt_in) {
 
                     reserved.logHistory.list.scroll.scrollBox = new ScrollBox()
                     reserved.logHistory.list.scroll.scrollBox.init({
-                        tag: 'inputHistoryScrollBox',
-                        g_box: reserved.logHistory.list.scroll.scrollBoxG,
-                        box_data: {
-                            x: historyBox.x,
-                            y: historyBox.y,
-                            w: historyBox.w,
-                            h: historyBox.h,
-                            marg: 0,
-                        },
-                        use_relative_coords: true,
-                        locker: new Locker(),
-                        lockers: [ widget_id + 'update_data' ],
-                        lock_zoom: {
-                            all: 'ScrollBox' + 'zoom',
-                            during: 'ScrollBox' + 'zoom_during',
-                            end: 'ScrollBox' + 'zoom_end',
-                        },
-                        run_loop: new RunLoop({
+                        main: {
                             tag: 'inputHistoryScrollBox',
-                        }),
-                        can_scroll: true,
-                        scrollVertical: true,
-                        scroll_horizontal: false,
-                        scroll_height: 0.1 + historyBox.h,
-                        scroll_width: 0,
-                        background: 'transparent',
-                        scroll_rec_h: {
-                            h: 2,
-                        },
-                        scroll_recs: {
-                            w: 2,
+                            g: reserved.logHistory.list.scroll.scrollBoxG,
+                            box: {
+                                x: historyBox.x,
+                                y: historyBox.y,
+                                w: historyBox.w,
+                                h: historyBox.h,
+                                marg: 0,
+                            },
                         },
                     })
-                    reserved.logHistory.list.scroll.scrollG = reserved.logHistory.list.scroll.scrollBox.get(
-                        'inner_g'
-                    )
+                    reserved.logHistory.list.scroll.scrollG = reserved.logHistory.list.scroll.scrollBox.get_content()
                 }
                 initScrollBox()
                 function wrap(self, width) {
@@ -2710,10 +2635,7 @@ let main_comment_sched = function(opt_in) {
                 //   .style('opacity', 0)
                 //   .remove()
 
-                reserved.logHistory.list.scroll.scrollBox.reset_vertical_scroller({
-                    can_scroll: true,
-                    scroll_height: fl.length * ob.h,
-                })
+                reserved.logHistory.list.scroll.scrollBox.updated_content()
             }
             function updateLogList() {
                 function wrap(self, width) {
@@ -2859,10 +2781,7 @@ let main_comment_sched = function(opt_in) {
                     .style('opacity', 0)
                     .remove()
 
-                reserved.logHistory.list.scroll.scrollBox.reset_vertical_scroller({
-                    can_scroll: true,
-                    scroll_height: fl.length * ob.h,
-                })
+                reserved.logHistory.list.scroll.scrollBox.updated_content()
             }
 
             reserved.logHistory.g.attr(
