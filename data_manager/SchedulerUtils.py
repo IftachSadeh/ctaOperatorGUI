@@ -61,7 +61,7 @@ def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_ob
         all_tel_ids = [x for x in all_tel_ids if x not in rnd_tels]
         pnt['tel_ids'] = rnd_tels
 
-        return pointings
+    return pointings
 
 
 # ------------------------------------------------------------------
