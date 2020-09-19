@@ -72,14 +72,11 @@ setup_view.view102 = function() {
         has_icon: true,
     })
 
-    console.log('bring back WeatherMonitoring...')
-    if (false) {
-        sock.add_widget({
-            name_tag: 'WeatherMonitoring',
-            table_title: 'Weather Monitoring',
-            has_icon: true,
-        })
-    }
+    sock.add_widget({
+        name_tag: 'WeatherMonitoring',
+        table_title: 'Weather Monitoring',
+        has_icon: true,
+    })
 
     sock.add_widget({
         name_tag: 'EmptyExample',

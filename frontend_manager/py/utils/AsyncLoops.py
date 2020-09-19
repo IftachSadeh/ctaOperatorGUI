@@ -121,22 +121,6 @@ class AsyncLoops():
         return name
 
     # ------------------------------------------------------------------
-    def validate_loop_group(self, group):
-        """loop groups must have a "local" scope, in order to
-           avoid blocking by different servers, where
-           self.locker.locks.acquire('loop_state') includes self.serv_id
-        """
-
-        # if not any(n in group for n in [self.serv_id, self.sess_id]):
-        if not any(n in group for n in [self.serv_id]):
-            self.log.warn([
-                ['r', '- server old / name not in group name ?!?'],
-                ['p', self.serv_id, ''],
-                ['o', group],
-            ])
-        return
-
-    # ------------------------------------------------------------------
     def setup_loops(self):
         """define the default set of asy_funcs to run in the background
         """
@@ -273,8 +257,6 @@ class AsyncLoops():
                         'unsupported option for set_loop_state',
                         (state, loop_info, group)
                     )
-
-                self.validate_loop_group(loop_info['group'])
 
                 # validate that this group/id loop has not already been registered
                 has_loop = self.redis.h_exists(

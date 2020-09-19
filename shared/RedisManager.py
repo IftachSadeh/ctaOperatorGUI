@@ -681,6 +681,21 @@ class RedisPipeManager(RedisBase):
         return out
 
     # ------------------------------------------------------------------
+    def h_get_all(self, name=None):
+
+        try:
+            if name is None:
+                raise Exception('redis.h_get_all(): name is None', name)
+
+            data = self.pipe.hgetall(name)
+
+        except Exception as e:
+            self.log.error([['r', 'redis.h_get_all(): '], ['o', name]])
+            raise e
+
+        return data
+
+    # ------------------------------------------------------------------
     def execute(self):
         try:
             data = self.pipe.execute()

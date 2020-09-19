@@ -282,7 +282,7 @@ class Housekeeping():
         return
 
     # ------------------------------------------------------------------
-    async def cleanup_sess_widget(self, widget_ids):
+    async def cleanup_sess_widget(self, widget_ids, grp_ids=None):
         """clean up a list of input widget ids
         """
 
@@ -290,8 +290,15 @@ class Housekeeping():
             widget_ids = [widget_ids]
         if len(widget_ids) == 0:
             return
+        if grp_ids is not None:
+            if not isinstance(grp_ids, (list, set)):
+                grp_ids = [grp_ids]
 
-        self.log.info([['c', ' - cleanup-widget_ids '], ['p', widget_ids]])
+        self.log.info([
+            ['c', ' - cleanup-widget_ids '],
+            ['p', widget_ids],
+            ['y', '', grp_ids if grp_ids is not None else ''],
+        ])
 
         all_user_ids = self.redis.s_get('ws;all_user_ids')
 
@@ -319,24 +326,24 @@ class Housekeeping():
             self.redis.delete('ws;sess_widget_loops;' + widget_id)
 
         # synchronisation groups
-        async with self.locker.locks.acquire('sync'):
-            sync_groups = self.redis.h_get(
-                name='ws;sync_groups', key=self.user_id, default_val=[]
+        pipe = self.redis.get_pipe()
+        for widget_id in widget_ids:
+            user_sync_groups = self.redis.h_get_all(
+                name='ws;user_sync_groups;' + self.user_id, default_val=dict()
             )
+            check_grp_ids = list(user_sync_groups.keys())
+            if grp_ids is not None:
+                check_grp_ids += grp_ids
 
-            for widget_id in widget_ids:
-                for sync_group in sync_groups:
-                    for sync_states in sync_group['sync_states']:
-                        rm_elements = []
-                        for sync_info in sync_states:
-                            if sync_info[0] == widget_id:
-                                rm_elements.append(sync_info)
-                        for rm_element in rm_elements:
-                            sync_states.remove(rm_element)
+            for grp_id_now in set(check_grp_ids):
+                pipe.h_del(
+                    name='ws;user_sync_group_widgets;' + self.user_id + ';' + grp_id_now,
+                    key=widget_id,
+                )
+        pipe.execute()
 
-            self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
-
-        await self.update_sync_group()
+        # # if a PanelSync widget is instantiated, update it
+        # await self.publish_sync_groups_update()
 
         return
 
@@ -392,8 +399,15 @@ class Housekeeping():
 
             self.redis.s_rem(name='ws;all_user_ids', data=user_id)
 
-            async with self.locker.locks.acquire('sync'):
-                self.redis.h_del(name='ws;sync_groups', key=user_id)
+            user_sync_groups = self.redis.h_get_all(
+                name='ws;user_sync_groups;' + user_id, default_val=dict()
+            )
+            for grp_id in user_sync_groups.keys():
+                self.redis.delete(
+                    name='ws;user_sync_group_widgets;' + user_id + ';' + grp_id,
+                )
+
+            self.redis.delete(name='ws;user_sync_groups;' + user_id)
 
             # cleanup widgets
             widget_types = self.redis.h_get(

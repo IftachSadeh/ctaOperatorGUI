@@ -57,7 +57,12 @@ class WidgetManager():
         has_widget_id = (widget_id in widget_inits)
         if not has_widget_id:
             if data_in['data']['method_name'] == 'setup':
-                async with self.locker.locks.acquire('sess'):
+                if self.debug_sync_group:
+                    # force ordered loading so that the debugging messages are not
+                    # intermixed (but nominally, there is no need for a lock!)
+                    async with self.locker.locks.acquire('sess'):
+                        await self.setup_widget(data_in)
+                else:
                     await self.setup_widget(data_in)
             else:
                 # send the client a kill event, to prevent further attempts at connection
@@ -97,14 +102,22 @@ class WidgetManager():
         """importing the class for the widget and registring the id
         """
 
-        debug_sync_groups = self.base_config.debug_opts['dev'] and self.debug_sync_group
-
         data = data_in['data']
         widget_id = data['widget_id']
         widget_type = data['widget_type']
 
+        # a minimal lock on the user, to make sure we derive unique values for n_icon
+        async with self.locker.locks.acquire('user'):
+            user_widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.user_id)
+            if widget_id not in user_widget_ids:
+                self.redis.r_push(
+                    name='ws;user_widget_ids;' + self.user_id, data=widget_id
+                )
+
         def gen_icon_id():
-            # generate a random icon id
+            """generate a random icon id
+            """
+
             icon_id = (
                 self.icon_prefix
                 + get_rnd(n_digits=10, out_type=str, is_unique_seed=True)
@@ -131,8 +144,6 @@ class WidgetManager():
 
             # if it is a synced panel, derive the icon number as
             # the next one after all existing panels
-            user_widget_ids = self.redis.l_get('ws;user_widget_ids;' + self.user_id)
-
             widget_info = self.redis.h_m_get(
                 name='ws;widget_info',
                 keys=user_widget_ids,
@@ -141,52 +152,12 @@ class WidgetManager():
             )
             n_icons = [x['n_icon'] for x in widget_info if x is not None]
 
-            # print('user_widget_ids',user_widget_ids)
-            # print('widget_info',widget_info)
-            # print()
-
             n_icon = self.allowed_widget_types['synced'].index(widget_type)
             if len(user_widget_ids) > 0:
                 while n_icon in n_icons:
                     n_icon += len(self.allowed_widget_types['synced'])
 
             return n_icon
-
-        def filter_groups(sync_groups):
-            """filter sync groups for unique content
-            """
-
-            # filter out empty groups
-            sync_groups = [
-                s_grp for s_grp in sync_groups
-                if (sum(len(s_state) for s_state in s_grp['sync_states']) > 0)
-            ]
-
-            # filter out duplicate groups
-            unique_groups, grp_titles = dict(), dict()
-            for sync_group in sync_groups:
-                grp_id = sync_group['id']
-                grp_titles[grp_id] = sync_group['title']
-                if grp_id not in unique_groups:
-                    unique_groups[grp_id] = copy.deepcopy(sync_group['sync_states'])
-                else:
-                    for n_state in range(len(sync_group['sync_states'])):
-                        widget_ids = [s[0] for s in unique_groups[grp_id][n_state]]
-                        sync_state = sync_group['sync_states'][n_state]
-                        for (widget_id, icon_id) in sync_state:
-                            if widget_id not in widget_ids:
-                                unique_groups[grp_id][n_state] += [[widget_id, icon_id]]
-
-            sync_groups = []
-            for (grp_id, sync_states) in unique_groups.items():
-                sync_groups += [{
-                    'id': grp_id,
-                    'title': grp_titles[grp_id],
-                    'sync_states': sync_states,
-                }]
-            # print('unique_groups\n', unique_groups)
-
-            return sync_groups
 
         # sync group initialization
         updated_recovery_info = False
@@ -195,124 +166,98 @@ class WidgetManager():
         # get or create the sync group and the corresponding n_icon
         can_sync = self.check_panel_sync(widget_type=widget_type)
 
-        async with self.locker.locks.acquire('sync'):
-            if can_sync:
-                sync_groups = self.redis.h_get(
-                    name='ws;sync_groups', key=self.user_id, default_val=[]
-                )
+        pipe = self.redis.get_pipe()
+        # async with self.locker.locks.acquire('sync'):
+        if can_sync:
+            recovery_info = self.redis.h_get(
+                'ws;recovery_info',
+                key=widget_id,
+                default_val=None,
+            )
 
-                recovery_info = self.redis.h_get(
-                    'ws;recovery_info',
+            if self.debug_sync_group:
+                self.log.info([['b', '+' * 80]])
+                self.log.info([
+                    ['b', ' recovery_info', widget_id, '\n', ' ' * 23, recovery_info],
+                ])
+
+            # if recovery info is not available, create a default setup
+            if recovery_info is None:
+                updated_recovery_info = True
+                n_sync_type = 0
+                reco_info = [{
+                    'id': self.sync_group_id_prefix + str(n_sync_type),
+                    'n_icon': gen_n_icon(),
+                    'icon_id': gen_icon_id(),
+                    'title': self.sync_group_title_prefix + str(n_sync_type),
+                    'n_sync_type': n_sync_type,
+                }]
+            else:
+                reco_info = recovery_info['sync_groups']
+
+            for reco_group in reco_info:
+                # get the recovery information
+                grp_id = reco_group['id']
+                n_icon = reco_group['n_icon']
+                icon_id = reco_group['icon_id']
+                grp_title = reco_group['title']
+                n_sync_type = reco_group['n_sync_type']
+
+                pipe.h_set(
+                    name='ws;user_sync_groups;' + self.user_id,
+                    key=grp_id,
+                    data={
+                        'title': grp_title,
+                    }
+                )
+                pipe.h_set(
+                    name='ws;user_sync_group_widgets;' + self.user_id + ';' + grp_id,
                     key=widget_id,
-                    default_val=None,
+                    data={
+                        'icon_id': icon_id,
+                        'n_sync_type': n_sync_type,
+                    },
                 )
 
-                if debug_sync_groups:
-                    self.log.info([['b', '+' * 80]])
-                    self.log.info([
-                        ['b', ' recovery_info', widget_id, '\n', ' ' * 23, recovery_info],
-                    ])
+                if self.debug_sync_group:
+                    pipe.execute()
+                    _user_sync_groups = self.redis.h_get_all(
+                        name='ws;user_sync_groups;' + self.user_id, default_val=dict()
+                    )
+                    for _grp_id in _user_sync_groups.keys():
+                        self.log.info([['g', '   ----> ', _grp_id]])
+                        _user_sync_group_widgets = self.redis.h_get_all(
+                            name='ws;user_sync_group_widgets;' + self.user_id + ';'
+                            + _grp_id,
+                            default_val=dict(),
+                        )
+                        _widget_ids = [[], [], []]
+                        for (_widget_id,
+                             _widget_data) in _user_sync_group_widgets.items():
+                            _widget_ids[_widget_data['n_sync_type']] += [_widget_id]
+
+                        for _n_widget in range(len(_widget_ids)):
+                            self.log.info([['y', '     --> ', _n_widget],
+                                           ['c', ' ', _widget_ids[_n_widget]]], )
                     self.log.info([['b', '+' * 100, '\n']])
 
-                # if recovery info is not available, create a default setup
-                if recovery_info is None:
-                    updated_recovery_info = True
-                    n_sync_type = 0
-                    reco_info = [{
-                        'id': self.sync_group_id_prefix + str(n_sync_type),
-                        'n_icon': gen_n_icon(),
-                        'icon_id': gen_icon_id(),
-                        'title': self.sync_group_title_prefix + str(n_sync_type),
-                        'n_sync_type': n_sync_type,
-                    }]
-                else:
-                    reco_info = recovery_info['sync_groups']
+        # bookkeeping and future reference of the class we just loaded
+        widget_now = dict()
+        widget_now['n_icon'] = n_icon
+        widget_now['user_id'] = self.user_id
+        widget_now['sess_id'] = self.sess_id
+        widget_now['widget_type'] = widget_type
+        widget_now['widget_state'] = dict()
+        widget_now['util_ids'] = []
 
-                for reco_group in reco_info:
-                    # get the recovery information
-                    grp_id = reco_group['id']
-                    n_icon = reco_group['n_icon']
-                    icon_id = reco_group['icon_id']
-                    grp_title = reco_group['title']
-                    n_sync_type = reco_group['n_sync_type']
+        # register the new widget
+        pipe.h_set(name='ws;widget_info', key=widget_id, data=widget_now)
+        pipe.r_push(name='ws;sess_widget_ids;' + self.sess_id, data=widget_id)
 
-                    if debug_sync_groups:
-                        self.log.info([['c', ' ', reco_group]])
+        pipe.execute()
 
-                    # go over all groups and check if the recovered group id
-                    # has already been defined
-                    has_grp_id = False
-                    for sync_group in sync_groups:
-                        if sync_group['id'] == grp_id:
-                            has_grp_id = True
-
-                            if debug_sync_groups:
-                                self.log.info([['g', '  000 --> ', sync_group['id']]])
-                                for s in sync_group['sync_states']:
-                                    self.log.info([['g', '      ----> ', s]])
-                                self.log.info([['g', '']])
-
-                            # add the reco info to the existing sync group
-                            sync_states = sync_group['sync_states']
-                            for n_type in range(len(sync_states)):
-                                sync_states[n_type] = [
-                                    s for s in sync_states[n_type] if s[0] != widget_id
-                                ]
-
-                            sync_states[n_sync_type] += [[widget_id, icon_id]]
-                            break
-
-                    if debug_sync_groups and has_grp_id:
-                        self.log.info([['y', '  111 --> ', sync_group['id']]])
-                        for s in sync_states:
-                            self.log.info([['y', '      ----> ', s]])
-
-                    # if the reco group has not been previously
-                    # defined, create a new one
-                    if not has_grp_id:
-                        sync_group = dict()
-                        sync_group['id'] = grp_id
-                        sync_group['title'] = grp_title
-                        sync_group['sync_states'] = [[], [], []]
-
-                        sync_group['sync_states'][n_sync_type] += [[widget_id, icon_id]]
-
-                        sync_groups += [sync_group]
-
-                        if debug_sync_groups:
-                            self.log.info([['p', '  222 --> ', sync_group['id']]])
-
-                # filter out empty or duplicate groups
-                sync_groups = filter_groups(sync_groups=sync_groups)
-
-                self.redis.h_set(
-                    name='ws;sync_groups',
-                    key=self.user_id,
-                    data=sync_groups,
-                )
-
-                if debug_sync_groups:
-                    self.log.info([['c', '']])
-                    self.log.info([['c', ' ------ sync_groups\n', sync_groups, '\n\n']])
-
-            # bookkeeping and future reference of the class we just loaded
-            widget_now = dict()
-            widget_now['n_icon'] = n_icon
-            # widget_now['n_icon'] = n_icon if n_icon is not None else gen_n_icon()
-            widget_now['user_id'] = self.user_id
-            widget_now['sess_id'] = self.sess_id
-            widget_now['widget_type'] = widget_type
-            widget_now['widget_state'] = dict()
-            widget_now['util_ids'] = []
-            # print('--------', widget_id, ' -- ', n_icon )
-
-            # register the new widget
-            self.redis.h_set(name='ws;widget_info', key=widget_id, data=widget_now)
-            self.redis.r_push(name='ws;user_widget_ids;' + self.user_id, data=widget_id)
-            self.redis.r_push(name='ws;sess_widget_ids;' + self.sess_id, data=widget_id)
-
-            if updated_recovery_info:
-                await self.update_widget_recovery_info()
+        if updated_recovery_info:
+            await self.update_widget_recovery_info()
 
         # the following is equivalent e.g., to:
         #   from dynamicLoadWidget import dynWidg_0
@@ -333,20 +278,20 @@ class WidgetManager():
 
     # ------------------------------------------------------------------
     async def update_widget_recovery_info(self):
-        sync_groups = self.redis.h_get(
-            name='ws;sync_groups', key=self.user_id, default_val=[]
-        )
-
-        # # for debugging
-        # reco_info = self.redis.delete(
-        #     name='ws;recovery_info',
-        # )
 
         widget_ids = []
-        for sync_group in sync_groups:
-            for sync_state in sync_group['sync_states']:
-                for (widget_id, _) in sync_state:
-                    widget_ids += [widget_id]
+
+        user_sync_groups = self.redis.h_get_all(
+            name='ws;user_sync_groups;' + self.user_id, default_val=dict()
+        )
+        user_sync_group_widgets = dict()
+        for grp_id in user_sync_groups.keys():
+            user_sync_group_widgets[grp_id] = self.redis.h_get_all(
+                name='ws;user_sync_group_widgets;' + self.user_id + ';' + grp_id,
+                default_val=dict(),
+            )
+            for (widget_id, widget_data) in user_sync_group_widgets[grp_id].items():
+                widget_ids += [widget_id]
 
         _widget_info = self.redis.h_m_get(
             name='ws;widget_info', keys=widget_ids, default_val=[]
@@ -369,36 +314,36 @@ class WidgetManager():
 
         valid_grp_ids = dict()
         valid_widget_ids = set()
-        for sync_group in sync_groups:
-            grp_id = sync_group['id']
-            grp_title = sync_group['title']
-            sync_states = sync_group['sync_states']
 
-            for n_sync_type in range(len(sync_states)):
-                for (widget_id, icon_id) in sync_states[n_sync_type]:
-                    if widget_id not in widget_info:
-                        continue
-                    n_icon = widget_info[widget_id]['n_icon']
+        for (grp_id, grp_data) in user_sync_groups.items():
+            grp_title = grp_data['title']
 
-                    valid_widget_ids.add(widget_id)
-                    if widget_id not in valid_grp_ids:
-                        valid_grp_ids[widget_id] = set()
-                    valid_grp_ids[widget_id].add(grp_id)
+            for (widget_id, widget_data) in user_sync_group_widgets[grp_id].items():
+                icon_id = widget_data['icon_id']
+                n_sync_type = widget_data['n_sync_type']
 
-                    if 'sync_groups' not in reco_info[widget_id]:
-                        reco_info[widget_id]['sync_groups'] = []
+                if widget_id not in widget_info:
+                    continue
+                n_icon = widget_info[widget_id]['n_icon']
 
-                    reco_info[widget_id]['sync_groups'] = [
-                        s for s in reco_info[widget_id]['sync_groups']
-                        if s['id'] != grp_id
-                    ]
-                    reco_info[widget_id]['sync_groups'] += [{
-                        'id': grp_id,
-                        'title': grp_title,
-                        'n_icon': n_icon,
-                        'icon_id': icon_id,
-                        'n_sync_type': n_sync_type,
-                    }]
+                valid_widget_ids.add(widget_id)
+                if widget_id not in valid_grp_ids:
+                    valid_grp_ids[widget_id] = set()
+                valid_grp_ids[widget_id].add(grp_id)
+
+                if 'sync_groups' not in reco_info[widget_id]:
+                    reco_info[widget_id]['sync_groups'] = []
+
+                reco_info[widget_id]['sync_groups'] = [
+                    s for s in reco_info[widget_id]['sync_groups'] if s['id'] != grp_id
+                ]
+                reco_info[widget_id]['sync_groups'] += [{
+                    'id': grp_id,
+                    'title': grp_title,
+                    'n_icon': n_icon,
+                    'icon_id': icon_id,
+                    'n_sync_type': n_sync_type,
+                }]
 
         for widget_id in valid_widget_ids:
             reco_info[widget_id]['sync_groups'] = [
@@ -415,29 +360,27 @@ class WidgetManager():
             )
         pipe.execute()
 
-        # await self.update_sync_group()
-
         return
 
-    # ------------------------------------------------------------------
-    async def update_sync_group(self):
-        """update all PanelSync widgets of the new sync groups
-        """
+    # # ------------------------------------------------------------------
+    # async def publish_sync_groups_update(self):
+    #     """update all PanelSync widgets of the new sync groups
+    #     """
 
-        async with self.locker.locks.acquire('serv'):
-            widget_inits = await self.get_server_attr(name='widget_inits')
+    #     async with self.locker.locks.acquire('serv'):
+    #         widget_inits = await self.get_server_attr(name='widget_inits')
 
-        widget_ids = []
-        widget_info = self.redis.h_get_all(name='ws;widget_info', default_val={})
+    #     widget_ids = []
+    #     widget_info = self.redis.h_get_all(name='ws;widget_info', default_val={})
 
-        for (widget_id, widget_now) in widget_info.items():
-            if widget_now['widget_type'] == 'PanelSync':
-                try:
-                    await getattr(widget_inits[widget_id], 'update_sync_groups')()
-                except Exception:
-                    pass
+    #     for (widget_id, widget_now) in widget_info.items():
+    #         if widget_now['widget_type'] == 'PanelSync':
+    #             try:
+    #                 await getattr(widget_inits[widget_id], 'update_sync_groups')()
+    #             except Exception:
+    #                 pass
 
-        return
+    #     return
 
     # ------------------------------------------------------------------
     async def get_lazy_widget_info(self, sess_id, widget_id, can_kill_sess=True):
@@ -605,8 +548,6 @@ class WidgetManager():
             - general widget type heartbeat cleanup if list of widget_ids of a given type is empty
             since now we have all loops tied to the server/user, even if no widgets are alive...
 
-            - sync_groups --> 
-                - not persistified after server restart for recovered sees 
         '''
         # =============================================================
         # =============================================================

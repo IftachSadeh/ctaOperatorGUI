@@ -77,7 +77,7 @@ class SessionManager():
         # ------------------------------------------------------------------
         # for development, its conveniet to reload if the server was restarted, but
         # for deployment, the same session can simply be restored
-        if self.base_config.debug_opts['dev'] and self.can_restore_existing_sess:
+        if self.base_config.debug_opts['dev'] and not self.can_restore_existing_sess:
             if is_existing_sess:
                 self.sess_id = data['metadata']['sess_id']
 
@@ -210,12 +210,6 @@ class SessionManager():
                     name='ws;user_sess_ids;' + self.user_id, data=self.sess_id
                 )
 
-            # synchronisation groups for users (cleaned up as part of
-            # cleanup_server(), when no more sessions remain alive for this user)
-            async with self.locker.locks.acquire('sync'):
-                if not self.redis.h_exists(name='ws;sync_groups', key=self.user_id):
-                    self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=[])
-
             async with self.locker.locks.acquire('serv'):
                 server_sess_ids = self.redis.s_get('ws;server_sess_ids;' + self.serv_id)
                 if self.sess_id not in server_sess_ids:
@@ -310,8 +304,6 @@ class SessionManager():
             return
         if 'widget_id' not in data:
             return
-        # if not self.redis.h_exists(name='ws;active_widget', key=self.user_id):
-        #     return
 
         # only the active widget should nominally be able to publish sync events
         active_widget = self.redis.h_get(
@@ -322,34 +314,37 @@ class SessionManager():
         if (active_widget != data['widget_id']) and not force_sync:
             return
 
-        # go through all widgets in sync groups for this user and collect ids for
-        # targets of the sync event
-        async with self.locker.locks.acquire('sync'):
-            sync_groups = self.redis.h_get(
-                name='ws;sync_groups', key=self.user_id, default_val=[]
+        sync_target_ids = set()
+        user_sync_groups = self.redis.h_get_all(
+            name='ws;user_sync_groups;' + self.user_id, default_val=dict()
+        )
+        for (grp_id, grp_data) in user_sync_groups.items():
+            user_sync_group_widgets = self.redis.h_get_all(
+                name='ws;user_sync_group_widgets;' + self.user_id + ';' + grp_id,
+                default_val=dict(),
             )
 
-        sync_ids = []
-        for sync_group in sync_groups:
-            states_0 = [s[0] for s in sync_group['sync_states'][0]]
-            states_1 = [s[0] for s in sync_group['sync_states'][1]]
-            states_2 = [s[0] for s in sync_group['sync_states'][2]]
+            is_send_grp = False
+            for (widget_id, widget_data) in user_sync_group_widgets.items():
+                n_sync_type = widget_data['n_sync_type']
 
-            get_states = states_0 + states_2
-            do_send = (data['widget_id'] in states_0 or data['widget_id'] in states_1)
-            if do_send:
-                for id_now in get_states:
-                    add_id = (id_now != data['widget_id'] and id_now not in sync_ids)
-                    if add_id:
-                        sync_ids.append(id_now)
+                if widget_id == data['widget_id'] and n_sync_type in [0, 1]:
+                    is_send_grp = True
 
-        # self.redis.h_set(name='ws;sync_groups', key=self.user_id, data=sync_groups)
+            if not is_send_grp:
+                continue
+
+            for (widget_id, widget_data) in user_sync_group_widgets.items():
+                n_sync_type = widget_data['n_sync_type']
+
+                if widget_id != data['widget_id'] and n_sync_type in [0, 2]:
+                    sync_target_ids.add(widget_id)
 
         data_send = {
             'widget_id': data['widget_id'],
             'type': data['type'],
             'data': data['data'],
-            'sync_widget_ids': sync_ids,
+            'sync_widget_ids': list(sync_target_ids),
         }
 
         # publish through a loop (defined as part of setup_loops()), in order

@@ -46,6 +46,9 @@ class WebsocketBase():
         # debug the setup / restoration of sync groups
         self.debug_sync_group = False
         # self.debug_sync_group = True
+        self.debug_sync_group = (
+            self.debug_sync_group and self.base_config.debug_opts['dev']
+        )
 
         # validate all session widgets on every few seconds
         self.validate_widget_time_sec = 0
@@ -143,7 +146,6 @@ class WebsocketBase():
             'serv': lambda: 'serv;' + str(self.serv_id),
             'user': lambda: 'serv;' + str(self.serv_id) + ';user;' + str(self.user_id),
             'sess': lambda: 'serv;' + str(self.serv_id) + ';sess;' + str(self.sess_id),
-            'sync': lambda: 'sync;' + ';user;' + str(self.user_id),
         }
 
         self.get_widget_lock_name = (

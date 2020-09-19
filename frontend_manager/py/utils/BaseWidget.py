@@ -19,6 +19,7 @@ class BaseWidget():
         # the shared basic configuration class
         self.base_config = self.sm.base_config
         self.sess_id = self.sm.sess_id
+        self.user_id = self.sm.user_id
 
         # the id of this instance
         self.widget_id = widget_id
@@ -71,7 +72,7 @@ class BaseWidget():
         self.log = LogParser(
             base_config=self.base_config,
             title=(
-                str(self.sm.user_id) + '/' + str(self.sm.sess_id) + '/' + __name__ + '/'
+                str(self.user_id) + '/' + str(self.sm.sess_id) + '/' + __name__ + '/'
                 + self.widget_id
             ),
         )
@@ -86,7 +87,7 @@ class BaseWidget():
         util_id = data['util_id']
         util_type = data['util_type']
 
-        self.log.info([
+        self.log.debug([
             ['b', ' - util_setup: '],
             ['y', util_type],
             ['b', ' with '],
