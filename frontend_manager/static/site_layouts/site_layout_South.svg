@@ -1,0 +1,448 @@
+<svg id="svg847" width="100" height="100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g id="layer2">
+        <path id="path7780" d="m51.19391 85.73229c-0.023069-24.48122-0.047464-48.96244-0.068439-73.44366" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7786" d="m41.65004 68.45264h16.70207c2.022799-5.24856 4.241872-10.4593 6.142775-15.73135-0.08933-2.432315 0.21918-4.939936-0.119986-7.324961-2.007597-5.052363-4.015193-10.10473-6.022789-15.15709h-16.70207c-2.022249 5.25009-4.242892 10.46238-6.141912 15.73595 0.09801 2.430874-0.196441 4.936533 0.14773 7.3205 1.99806 5.052316 3.996121 10.10463 5.994182 15.15695z" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7788" d="m72.70258 78.64714c-4.763309-1.092907-9.464112-2.52261-14.35419-2.93244-4.160923-0.383181-8.553722-0.09663-12.73249-0.223052-4.766034 0.669299-9.454202 0.719497-14.07322 2.177085l-4.238041 1.097907" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7790" d="m76.02566 70.98094c-5.721633-1.2454-11.44326-2.4908-17.1649-3.7362" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7792" d="m23.97929 70.98864l17.1638-3.7413" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7794" d="m79.74326 63.76984c-6.051388-1.142033-12.10278-2.284067-18.15416-3.4261" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7796" d="m20.25958 63.77854c6.051064-1.143767 12.10213-2.287533 18.15319-3.4313" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7798" d="m16.01647 56.68074c5.564209-0.79091 11.09033-1.946183 16.72796-2.034677 1.122542-0.06391 2.245083-0.127815 3.367625-0.191723" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7800" d="m83.98431 56.67064c-5.263725-0.809406-10.52275-1.660595-15.8509-1.897558l-4.245336-0.322842" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7802" d="m78.91952 49.34594c-3.313524 0.556306-6.583403 1.573719-9.976268 1.2918h-12.69206" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7804" d="m21.07911 49.35434c3.313683 0.555445 6.583856 1.571284 9.976633 1.2898h12.69206" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7806" d="m47.3175 41.20854c-1.144431 2.018414-2.566547 3.959122-3.537254 6.026151 0.07562 1.520272-0.147421 3.124121 0.10425 4.595126 1.144334 1.884474 2.288669 3.768949 3.433004 5.653423h5.367152c1.143851-2.018348 2.565379-3.959021 3.535553-6.025951-0.07559-1.52029 0.147365-3.124087-0.10421-4.59515l-3.431343-5.653599h-5.367152z" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7810" d="m36.08541 44.22664c-4.986315-0.320051-9.993673-0.444246-14.91048-1.411303-1.719581-0.264765-3.439161-0.529531-5.158742-0.794297 1.582208-3.371992 2.607561-7.051513 4.980495-9.98682 0.989977-1.43856 1.979953-2.87712 2.96993-4.31568 4.845532 1.287326 9.690699 2.576329 14.66126 3.288163l2.504283 0.442737" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7812" d="m38.40601 38.35134-13.00954-2.3212c-0.18714-1.564585-1.944597-0.876057-3.037385-1.141207l-3.184206-0.211693" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7814" d="m79.74326 34.92204c-4.989136 1.160202-9.963649 2.398061-15.06361 2.969728l-3.090273 0.456372" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7816" d="m83.98431 42.02104c-5.198318 0.792057-10.38919 1.650774-15.65131 1.871766-1.47377 0.109912-2.947539 0.219823-4.421308 0.329734" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7818" d="m76.02566 27.71084c-4.845154 1.288748-9.689942 2.579172-14.6603 3.292438-0.834719 0.147821-1.669437 0.295641-2.504156 0.443462" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7820" d="m72.65733 20.04474c-4.125845 1.039187-8.197247 2.35639-12.46218 2.685298-2.304905 0.384328-5.986339 0.659428-8.993019 0.724316-2.767111 0.05972-5.971792-0.379124-8.297517-0.308914l-7.878038-1.094832-7.693863-1.999368" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7822" d="m61.30123 12.71984c-3.435535 0.728293-6.72418 1.578064-10.16257 2.171217l-12.452-2.167817" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7842" d="m38.70818 85.97544c4.225521-0.898132 8.270186-2.030157 12.49157-2.763022l10.10149 2.759722" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7884" d="m49.40221 54.12294h1.19757l2.494312-3.8379v-0.6532l-2.494312-3.8379h-1.19757l-2.49415 3.8378v0.6533z" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7886" d="m24.9644 35.12464c0.465551-1.153321-2.003458-3.578716-2.405014-1.552646-0.249815 1.260455 0.157696 2.656631-1.110089 3.284348-1.446928 0.624426-2.284381-0.961206-2.274445-2.174806" style="fill:none;stroke-width:.2;stroke:#000"/>
+    </g>
+    <g id="g563" transform="translate(0 -1022.52)">
+        <text id="text169" x="50.304195" y="1071.5698" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan167" x="50.304195" y="1071.5698" style="stroke-width:.0081021">M1</tspan>
+        </text>
+        <text id="text173" x="51.669441" y="1072.5662" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan171" x="51.669441" y="1072.5662" style="stroke-width:.0081021">L1</tspan>
+        </text>
+        <text id="text177" x="49.631268" y="1069.6023" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan175" x="49.631268" y="1069.6023" style="stroke-width:.0081021">L2</tspan>
+        </text>
+        <text id="text181" x="47.444534" y="1072.6625" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan179" x="47.444534" y="1072.6625" style="stroke-width:.0081021">L3</tspan>
+        </text>
+        <text id="text185" x="49.678349" y="1075.7197" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan183" x="49.678349" y="1075.7197" style="stroke-width:.0081021">L4</tspan>
+        </text>
+        <text id="text189" x="54.66383" y="1070.7755" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan187" x="54.66383" y="1070.7755" style="stroke-width:.0081021">M2</tspan>
+        </text>
+        <text id="text193" x="60.908932" y="1072.4517" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan191" x="60.908932" y="1072.4517" style="stroke-width:.0081021">M3</tspan>
+        </text>
+        <text id="text197" x="45.6269" y="1073.2455" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan195" x="45.6269" y="1073.2455" style="stroke-width:.0081021">M4</tspan>
+        </text>
+        <text id="text201" x="38.254116" y="1072.437" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan199" x="38.254116" y="1072.437" style="stroke-width:.0081021">M5</tspan>
+        </text>
+        <text id="text205" x="43.665668" y="1067.6897" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan203" x="43.665668" y="1067.6897" style="stroke-width:.0081021">M6</tspan>
+        </text>
+        <text id="text209" x="45.841721" y="1067.6897" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan207" x="45.841721" y="1067.6897" style="stroke-width:.0081021">M7</tspan>
+        </text>
+        <text id="text213" x="56.987251" y="1068.6047" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan211" x="56.987251" y="1068.6047" style="stroke-width:.0081021">M9</tspan>
+        </text>
+        <text id="text217" x="53.246155" y="1067.7081" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan215" x="53.246155" y="1067.7081" style="stroke-width:.0081021">M8</tspan>
+        </text>
+        <text id="text221" x="41.977997" y="1075.6379" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan219" x="41.977997" y="1075.6379" style="stroke-width:.0081021">M10</tspan>
+        </text>
+        <text id="text225" x="45.864868" y="1075.6915" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan223" x="45.864868" y="1075.6915" style="stroke-width:.0081021">M11</tspan>
+        </text>
+        <text id="text229" x="56.843243" y="1075.5906" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan227" x="56.843243" y="1075.5906" style="stroke-width:.0081021">M13</tspan>
+        </text>
+        <text id="text233" x="53.232712" y="1076.2794" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan231" x="53.232712" y="1076.2794" style="stroke-width:.0081021">M12</tspan>
+        </text>
+        <text id="text237" x="35.455772" y="1064.5126" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan235" x="35.455772" y="1064.5126" style="stroke-width:.0081021">M14</tspan>
+        </text>
+        <text id="text241" x="44.271141" y="1063.6301" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan239" x="44.271141" y="1063.6301" style="stroke-width:.0081021">M15</tspan>
+        </text>
+        <text id="text245" x="47.827686" y="1063.1414" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan243" x="47.827686" y="1063.1414" style="stroke-width:.0081021">M16</tspan>
+        </text>
+        <text id="text249" x="63.303165" y="1064.4495" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan247" x="63.303165" y="1064.4495" style="stroke-width:.0081021">M18</tspan>
+        </text>
+        <text id="text253" x="54.457127" y="1063.6769" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan251" x="54.457127" y="1063.6769" style="stroke-width:.0081021">M17</tspan>
+        </text>
+        <text id="text257" x="36.734974" y="1081.0491" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan255" x="36.734974" y="1081.0491" style="stroke-width:.0081021">M19</tspan>
+        </text>
+        <text id="text261" x="44.271141" y="1080.4237" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan259" x="44.271141" y="1080.4237" style="stroke-width:.0081021">M20</tspan>
+        </text>
+        <text id="text265" x="47.910564" y="1081.0411" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan263" x="47.910564" y="1081.0411" style="stroke-width:.0081021">M21</tspan>
+        </text>
+        <text id="text269" x="63.334812" y="1079.6823" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan267" x="63.334812" y="1079.6823" style="stroke-width:.0081021">M23</tspan>
+        </text>
+        <text id="text273" x="54.979919" y="1080.5029" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan271" x="54.979919" y="1080.5029" style="stroke-width:.0081021">M22</tspan>
+        </text>
+        <text id="text277" x="47.698715" y="1054.2667" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan275" x="47.698715" y="1054.2667" style="stroke-width:.0081021">M24</tspan>
+        </text>
+        <text id="text281" x="47.826683" y="1089.9236" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan279" x="47.826683" y="1089.9236" style="stroke-width:.0081021">M25</tspan>
+        </text>
+        <text id="text285" x="45.516335" y="1065.7949" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan283" x="45.516335" y="1065.7949" style="stroke-width:.0081021">S1</tspan>
+        </text>
+        <text id="text289" x="53.719894" y="1065.3474" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan287" x="53.719894" y="1065.3474" style="stroke-width:.0081021">S2</tspan>
+        </text>
+        <text id="text293" x="44.066814" y="1079.1058" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan291" x="44.066814" y="1079.1058" style="stroke-width:.0081021">S3</tspan>
+        </text>
+        <text id="text297" x="53.767574" y="1079.0107" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan295" x="53.767574" y="1079.0107" style="stroke-width:.0081021">S4</tspan>
+        </text>
+        <text id="text301" x="37.605911" y="1067.0217" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan299" x="37.605911" y="1067.0217" style="stroke-width:.0081021">S5</tspan>
+        </text>
+        <text id="text305" x="61.720718" y="1067.0217" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan303" x="61.720718" y="1067.0217" style="stroke-width:.0081021">S6</tspan>
+        </text>
+        <text id="text309" x="37.470016" y="1077.1666" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan307" x="37.470016" y="1077.1666" style="stroke-width:.0081021">S7</tspan>
+        </text>
+        <text id="text313" x="61.791348" y="1077.1494" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan311" x="61.791348" y="1077.1494" style="stroke-width:.0081021">S8</tspan>
+        </text>
+        <text id="text317" x="32.944832" y="1072.437" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan315" x="32.944832" y="1072.437" style="stroke-width:.0081021">S9</tspan>
+        </text>
+        <text id="text321" x="66.411469" y="1072.437" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan319" x="66.411469" y="1072.437" style="stroke-width:.0081021">S10</tspan>
+        </text>
+        <text id="text325" x="37.406719" y="1059.3085" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan323" x="37.406719" y="1059.3085" style="stroke-width:.0081021">S11</tspan>
+        </text>
+        <text id="text329" x="61.307503" y="1059.191" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan327" x="61.307503" y="1059.191" style="stroke-width:.0081021">S12</tspan>
+        </text>
+        <text id="text333" x="37.344212" y="1084.8994" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan331" x="37.344212" y="1084.8994" style="stroke-width:.0081021">S13</tspan>
+        </text>
+        <text id="text337" x="61.340935" y="1084.9012" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan335" x="61.340935" y="1084.9012" style="stroke-width:.0081021">S14</tspan>
+        </text>
+        <text id="text341" x="44.891071" y="1056.8766" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan339" x="44.891071" y="1056.8766" style="stroke-width:.0081021">S15</tspan>
+        </text>
+        <text id="text345" x="53.962811" y="1056.8766" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan343" x="53.962811" y="1056.8766" style="stroke-width:.0081021">S16</tspan>
+        </text>
+        <text id="text349" x="44.954758" y="1087.312" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan347" x="44.954758" y="1087.312" style="stroke-width:.0081021">S17</tspan>
+        </text>
+        <text id="text353" x="53.875774" y="1087.312" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan351" x="53.875774" y="1087.312" style="stroke-width:.0081021">S18</tspan>
+        </text>
+        <text id="text357" x="26.245169" y="1072.437" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan355" x="26.245169" y="1072.437" style="stroke-width:.0081021">S19</tspan>
+        </text>
+        <text id="text361" x="72.715317" y="1072.437" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan359" x="72.715317" y="1072.437" style="stroke-width:.0081021">S20</tspan>
+        </text>
+        <text id="text365" x="40.53936" y="1052.6545" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan363" x="40.53936" y="1052.6545" style="stroke-width:.0081021">S21</tspan>
+        </text>
+        <text id="text369" x="60.404922" y="1053.127" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan367" x="60.404922" y="1053.127" style="stroke-width:.0081021">S22</tspan>
+        </text>
+        <text id="text373" x="40.576347" y="1091.5847" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan371" x="40.576347" y="1091.5847" style="stroke-width:.0081021">S23</tspan>
+        </text>
+        <text id="text377" x="60.267651" y="1091.0616" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan375" x="60.267651" y="1091.0616" style="stroke-width:.0081021">S24</tspan>
+        </text>
+        <text id="text381" x="29.879047" y="1058.6606" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan379" x="29.879047" y="1058.6606" style="stroke-width:.0081021">S25</tspan>
+        </text>
+        <text id="text385" x="68.914497" y="1058.4282" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan383" x="68.914497" y="1058.4282" style="stroke-width:.0081021">S26</tspan>
+        </text>
+        <text id="text389" x="29.992191" y="1085.528" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan387" x="29.992191" y="1085.528" style="stroke-width:.0081021">S27</tspan>
+        </text>
+        <text id="text393" x="68.884827" y="1085.528" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan391" x="68.884827" y="1085.528" style="stroke-width:.0081021">S28</tspan>
+        </text>
+        <text id="text397" x="48.263248" y="1046.9607" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan395" x="48.263248" y="1046.9607" style="stroke-width:.0081021">S29</tspan>
+        </text>
+        <text id="text401" x="48.231998" y="1097.2278" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan399" x="48.231998" y="1097.2278" style="stroke-width:.0081021">S30</tspan>
+        </text>
+        <text id="text405" x="23.997509" y="1065.0734" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan403" x="23.997509" y="1065.0734" style="stroke-width:.0081021">S31</tspan>
+        </text>
+        <text id="text409" x="74.826286" y="1064.9626" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan407" x="74.826286" y="1064.9626" style="stroke-width:.0081021">S32</tspan>
+        </text>
+        <text id="text413" x="23.998699" y="1079.1382" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan411" x="23.998699" y="1079.1382" style="stroke-width:.0081021">S33</tspan>
+        </text>
+        <text id="text417" x="74.928162" y="1079.076" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan415" x="74.928162" y="1079.076" style="stroke-width:.0081021">S34</tspan>
+        </text>
+        <text id="text421" x="19.422081" y="1072.4752" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan419" x="19.422081" y="1072.4752" style="stroke-width:.0081021">S35</tspan>
+        </text>
+        <text id="text425" x="78.897713" y="1072.9264" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan423" x="78.897713" y="1072.9264" style="stroke-width:.0081021">S36</tspan>
+        </text>
+        <text id="text429" x="33.052235" y="1051.6981" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan427" x="33.052235" y="1051.6981" style="stroke-width:.0081021">S37</tspan>
+        </text>
+        <text id="text433" x="65.796692" y="1051.9998" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan431" x="65.796692" y="1051.9998" style="stroke-width:.0081021">S38</tspan>
+        </text>
+        <text id="text437" x="33.17448" y="1092.4901" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan435" x="33.17448" y="1092.4901" style="stroke-width:.0081021">S39</tspan>
+        </text>
+        <text id="text441" x="65.817657" y="1092.1885" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan439" x="65.817657" y="1092.1885" style="stroke-width:.0081021">S40</tspan>
+        </text>
+        <text id="text445" x="43.615818" y="1044.7681" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan443" x="43.615818" y="1044.7681" style="stroke-width:.0081021">S41</tspan>
+        </text>
+        <text id="text449" x="55.289486" y="1044.7681" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan447" x="55.289486" y="1044.7681" style="stroke-width:.0081021">S42</tspan>
+        </text>
+        <text id="text453" x="43.437397" y="1099.4208" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan451" x="43.437397" y="1099.4208" style="stroke-width:.0081021">S43</tspan>
+        </text>
+        <text id="text457" x="55.328255" y="1099.4208" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan455" x="55.328255" y="1099.4208" style="stroke-width:.0081021">S44</tspan>
+        </text>
+        <text id="text461" x="36.128704" y="1043.7728" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan459" x="36.128704" y="1043.7728" style="stroke-width:.0081021">S45</tspan>
+        </text>
+        <text id="text465" x="62.771061" y="1043.7728" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan463" x="62.771061" y="1043.7728" style="stroke-width:.0081021">S46</tspan>
+        </text>
+        <text id="text469" x="36.069359" y="1100.4158" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan467" x="36.069359" y="1100.4158" style="stroke-width:.0081021">S47</tspan>
+        </text>
+        <text id="text473" x="62.760586" y="1100.4158" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan471" x="62.760586" y="1100.4158" style="stroke-width:.0081021">S48</tspan>
+        </text>
+        <text id="text477" x="20.172356" y="1056.922" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan475" x="20.172356" y="1056.922" style="stroke-width:.0081021">S49</tspan>
+        </text>
+        <text id="text481" x="79.195808" y="1056.7986" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan479" x="79.195808" y="1056.7986" style="stroke-width:.0081021">S50</tspan>
+        </text>
+        <text id="text485" x="19.828175" y="1087.3429" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan483" x="19.828175" y="1087.3429" style="stroke-width:.0081021">S51</tspan>
+        </text>
+        <text id="text489" x="79.159416" y="1087.2681" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan487" x="79.159416" y="1087.2681" style="stroke-width:.0081021">S52</tspan>
+        </text>
+        <text id="text493" x="23.435347" y="1049.7073" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan491" x="23.435347" y="1049.7073" style="stroke-width:.0081021">S53</tspan>
+        </text>
+        <text id="text497" x="75.501404" y="1049.7317" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan495" x="75.501404" y="1049.7317" style="stroke-width:.0081021">S54</tspan>
+        </text>
+        <text id="text501" x="23.420315" y="1094.536" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan499" x="23.420315" y="1094.536" style="stroke-width:.0081021">S55</tspan>
+        </text>
+        <text id="text505" x="75.445229" y="1094.6041" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan503" x="75.445229" y="1094.6041" style="stroke-width:.0081021">S56</tspan>
+        </text>
+        <text id="text509" x="48.418133" y="1038.8538" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan507" x="48.418133" y="1038.8538" style="stroke-width:.0081021">S57</tspan>
+        </text>
+        <text id="text513" x="48.576572" y="1105.335" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan511" x="48.576572" y="1105.335" style="stroke-width:.0081021">S58</tspan>
+        </text>
+        <text id="text517" x="14.998961" y="1063.9298" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan515" x="14.998961" y="1063.9298" style="stroke-width:.0081021">S59</tspan>
+        </text>
+        <text id="text521" x="83.459496" y="1063.9875" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan519" x="83.459496" y="1063.9875" style="stroke-width:.0081021">S60</tspan>
+        </text>
+        <text id="text525" x="15.560134" y="1080.1794" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan523" x="15.560134" y="1080.1794" style="stroke-width:.0081021">S61</tspan>
+        </text>
+        <text id="text529" x="83.388878" y="1080.1654" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan527" x="83.388878" y="1080.1654" style="stroke-width:.0081021">S62</tspan>
+        </text>
+        <text id="text533" x="26.785179" y="1042.0835" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan531" x="26.785179" y="1042.0835" style="stroke-width:.0081021">S63</tspan>
+        </text>
+        <text id="text537" x="72.052071" y="1042.03" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan535" x="72.052071" y="1042.03" style="stroke-width:.0081021">S64</tspan>
+        </text>
+        <text id="text541" x="26.852432" y="1102.1875" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan539" x="26.852432" y="1102.1875" style="stroke-width:.0081021">S65</tspan>
+        </text>
+        <text id="text545" x="71.994514" y="1102.1949" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan543" x="71.994514" y="1102.1949" style="stroke-width:.0081021">S66</tspan>
+        </text>
+        <text id="text549" x="38.209217" y="1034.6173" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan547" x="38.209217" y="1034.6173" style="stroke-width:.0081021">S67</tspan>
+        </text>
+        <text id="text553" x="60.674736" y="1034.7025" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan551" x="60.674736" y="1034.7025" style="stroke-width:.0081021">S68</tspan>
+        </text>
+        <text id="text557" x="38.072731" y="1109.4673" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan555" x="38.072731" y="1109.4673" style="stroke-width:.0081021">S69</tspan>
+        </text>
+        <text id="text561" x="60.674736" y="1109.462" style="fill:#000000;font-family:Arial;font-size:.4593888px;line-height:125%;stroke-width:.0081021">
+            <tspan id="tspan559" x="60.674736" y="1109.462" style="stroke-width:.0081021">S70</tspan>
+        </text>
+    </g>
+    <g id="g769" transform="translate(0 -1022.52)">
+        <path id="path573" d="m27.86757 1071.865a0.02335712 0.02335712 0 1 0 -0.04671 0 0.02335712 0.02335712 0 1 0 0.04671 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path575" d="m25.64764 1065.104a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path577" d="m16.06902 1064.54a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path579" d="m21.13392 1071.865a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path581" d="m27.89528 1071.865a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path583" d="m34.133 1071.865a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path585" d="m40.09205 1071.865a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path587" d="m48.05994 1072.477a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path589" d="m52.04082 1072.477a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path591" d="m50.05038 1075.54a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path593" d="m50.05038 1069.415a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path595" d="m50.05038 1071.865a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path597" d="m52.36539 1067.373a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path599" d="m57.35373 1067.143a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path601" d="m63.05862 1066.818a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path603" d="m74.45312 1065.104a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path605" d="m84.0317 1064.54a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path607" d="m79.79054 1057.442a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path609" d="m70.66515 1058.535a0.05105908 0.05105908 0 1 0 -0.102086 0 0.05105908 0.05105908 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path611" d="m62.41252 1059.873a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path613" d="m63.83642 1062.954a0.05105908 0.05105908 0 1 0 -0.102086 0 0.05105908 0.05105908 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path615" d="m55.02952 1062.204a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path617" d="m54.91621 1065.572a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path619" d="m50.05038 1062.421a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path621" d="m45.07119 1062.204a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path623" d="m36.2643 1062.954a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path625" d="m37.0421 1066.818a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path627" d="m45.42031 1071.865a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path629" d="m42.74699 1076.587a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path631" d="m16.06902 1079.153a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path633" d="m25.64764 1078.626a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path635" d="m36.2643 1080.779a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path637" d="m45.07119 1081.514a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path639" d="m50.05038 1081.309a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path641" d="m55.02952 1081.526a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path643" d="m45.1845 1078.158a0.05105941 0.05105941 0 1 0 -0.102086 0 0.05105941 0.05105941 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path645" d="m37.0421 1076.911a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path647" d="m20.31018 1086.288a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path649" d="m29.43557 1085.195a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path651" d="m37.68824 1083.856a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path653" d="m46.68193 1087.008a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path655" d="m40.29416 1090.792a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path657" d="m32.62026 1092.152a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path659" d="m24.0277 1093.499a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path661" d="m27.39615 1101.164a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path663" d="m35.59061 1099.912a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path665" d="m38.75083 1108.489a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path667" d="m50.05038 1105.549a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path669" d="m61.34992 1108.489a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path671" d="m72.70461 1101.164a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path673" d="m57.023 1098.916a0.05105908 0.05105908 0 1 0 -0.102086 0 0.05105908 0.05105908 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path675" d="m50.05038 1096.975a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path677" d="m43.07771 1098.916a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path679" d="m50.05038 1089.693a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path681" d="m53.41878 1087.008a0.05105908 0.05105908 0 1 0 -0.102086 0 0.05105908 0.05105908 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path683" d="m59.80656 1090.792a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path685" d="m67.48046 1092.152a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path687" d="m76.07301 1093.499a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path689" d="m79.79054 1086.288a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path691" d="m70.66515 1085.195a0.05105908 0.05105908 0 1 0 -0.102086 0 0.05105908 0.05105908 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path693" d="m84.0317 1079.19a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path695" d="m74.45312 1078.626a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path697" d="m63.83642 1080.779a0.05105908 0.05105908 0 1 0 -0.102086 0 0.05105908 0.05105908 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path699" d="m63.05862 1076.911a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path701" d="m57.35373 1076.587a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path703" d="m54.91621 1078.158a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path705" d="m54.68044 1071.865a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path707" d="m60.00866 1071.865a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path709" d="m65.96772 1071.865a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path711" d="m78.9668 1071.865a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path713" d="m72.20544 1071.865a0.05105908 0.05105908 0 1 0 -0.102086 0 0.05105908 0.05105908 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path715" d="m47.73532 1076.357a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path717" d="m52.36539 1076.357a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path719" d="m76.07301 1050.23a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path721" d="m67.48046 1051.578a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path723" d="m59.79124 1052.937a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path725" d="m50.05038 1054.037a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path727" d="m46.68193 1056.722a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path729" d="m53.41878 1056.722a0.05105908 0.05105908 0 1 0 -0.102086 0 0.05105908 0.05105908 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path731" d="m40.29416 1052.937a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path733" d="m32.62026 1051.578a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path735" d="m20.31042 1057.442a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path737" d="m37.68824 1059.873a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path739" d="m29.43557 1058.535a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path741" d="m24.0277 1050.23a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path743" d="m35.59061 1043.818a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path745" d="m27.39615 1042.566a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path747" d="m43.07771 1044.813a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path749" d="m50.05038 1046.755a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path751" d="m57.023 1044.813a0.05105908 0.05105908 0 1 0 -0.102086 0 0.05105908 0.05105908 0 1 0 0.102086 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path753" d="m50.05038 1038.181a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path755" d="m38.75083 1035.241a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path757" d="m61.34992 1035.241a0.0510635 0.0510635 0 1 0 -0.102127 0 0.0510635 0.0510635 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path759" d="m64.51011 1043.818a0.05105908 0.05105908 0 1 0 -0.102087 0 0.05105908 0.05105908 0 1 0 0.102087 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path761" d="m72.70461 1042.566a0.05106346 0.05106346 0 1 0 -0.102126 0 0.05106346 0.05106346 0 1 0 0.102126 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path763" d="m47.73532 1067.373a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path765" d="m42.74699 1067.143a0.051064 0.051064 0 1 0 -0.102128 0 0.051064 0.051064 0 1 0 0.102128 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+        <path id="path767" d="m62.41252 1083.856a0.05106375 0.05106375 0 1 0 -0.102127 0 0.05106375 0.05106375 0 1 0 0.102127 0z" style="stroke-linecap:round;stroke-width:.1;stroke:#000"/>
+    </g>
+    <g id="layer1">
+        <path id="path7429" d="m80.72761 7.981439c-5.172679 6.722089-2.705595 17.87624-3.116099 23.29148s-0.443418 6.207484-1.579298 9.097301" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7431" d="m75.28873 6.974339c-3.583938 6.159626-0.530253 17.66408-3.261718 23.14404-2.731464 5.47996 1.399946 5.362819-0.06399 11.50306-1.463932 6.140238-3.374162 15.00641-8.537172 21.10794-5.120317 6.051076-3.741244 14.92715-1.366664 22.02889 0.486989 1.612972 1.019209 3.211729 1.538702 4.814384" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7433" d="m68.2187 6.974339c1.725533 4.936392 4.003974 10.1717 1.272776 15.36466s-4.66601 11.09646-3.857464 17.68777-5.381766 13.04126-7.818273 18.70052-3.622469 10.94252-2.935311 16.13568 0.08561 9.851437-2.005961 14.29762" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7435" d="m48.02696 91.25524c1.02013-5.193123 1.169107-10.99406-2.027749-15.67259-2.395344-3.505532-4.561234-9.503706-0.797059-12.70899 3.927824-3.344638 7.41634-0.08783 8.592133-5.379392 1.175793-5.291557 5.435772-16.40244 7.472962-21.06396s4.394646-9.650874 2.877174-14.1185-1.070075-8.628206 0.842339-12.49726" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7437" d="m45.01104 87.68304c-1.540122-4.979481-1.550111-9.649244-3.883802-14.54206-2.781205-5.83107-0.122674-12.87643 0.973959-18.32253 1.096634-5.446099 8.127881 1.213792 9.879954-4.950946s8.596047-17.85908 9.529516-24.40792-0.125769-12.14145-1.491803-14.68524c-1.366035-2.543796-1.323102-2.783205-1.323102-2.783205" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7439" d="m37.09165 81.92734c-5.966319-1.639476-1.453922 13.70431-0.261147 6.554151 0.189959-1.13872 0.434198-2.126217 0.52631-3.283782" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7441" d="m18.08615 78.88993c-0.498027-1.796148 0.760846-3.661515-3.392007-3.926843-4.152852-0.265328 6.602294 15.50482 3.392007 3.926843z" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7443" d="m10.21164 74.36424c-2.123033-6.665026 5.213194-4.206817 7.293482-0.887098 2.080289 3.319718 3.636742-4.411212 4.696184 0.05434 1.059441 4.46555 5.465781 12.54226 7.982081 16.56446" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7445" d="m23.85661 63.77994c-0.985139 1.460324 0.359752 15.87281 3.720745 13.57096 3.360992-2.301851-2.340851-6.973775-1.311503-8.912502s0.639281-3.001483 0.153258-3.595953c-0.486024-0.594471-1.57736-2.522824-2.5625-1.0625z" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7447" d="m9.448768 63.78644c4.587087-0.82959 11.57173-0.09321 13.25906-5.664889 1.170226-4.63482 0.633213-9.90202 4.152476-13.79315 3.653045-4.039051 10.44073-1.862876 11.06632 3.704933 1.071366 9.535383-0.996272 18.88259-0.577051 28.30647 0.364996 4.037805 3.537958 7.600362 2.675262 11.73364" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7449" d="m33.68119 70.01987c-1.890891-5.704737 4.890555-11.6856 3.074996-17.48638-1.802732-5.759796-11.80126-2.27499-10.72721 3.650958-0.135817 3.233126 4.226304 7.217198 3.621452 11.76294-1.117746 8.400386 6.259359 8.796065 4.030761 2.07248z" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7451" d="m56.23322 9.257524c1.010358 4.893106 4.710157 10.14039 1.812553 15.06918-2.906802 5.735031-6.031759 13.01581-12.74234 14.52079-6.87405 1.541642-12.18209-7.160904-10.82666-13.5195 1.183573-4.593331 4.990491-7.98113 3.711566-10.61488s-0.710339-3.934661-0.870226-4.218145" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7453" d="m44.35142 8.846639c1.922117 5.205709-6.042 8.798095-3.374598 13.96743 0.621012 1.374808 1.655651 3.101116 2.889479 4.441728 1.233828 1.340611 2.666844 2.295526 4.084608 2.127548 2.835528-0.335956 5.610048-5.163482 5.19383-8.359332-0.374117-4.066566-2.487542-6.668216-5.111104-9.222178" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7455" d="m33.48991 9.042839c3.558093 4.386405 0.764671 10.29444-1.682588 14.49273-2.901783 5.800716 0.401625 13.53444 6.619756 15.94789 3.489294 1.354303 7.609897 7.326918 11.4267 3.582918 2.937188-4.28912 4.249764-9.573094 7.793659-13.47952" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7457" d="m11.67361 18.66509c0.07693 1.8508-1.066214 3.250654-0.09371 5.036711 0.972502 1.786057 3.275858 4.39734 4.087638 3.226566s0.672969-5.538951 0.145837-7.197231c-0.364972-1.012518-0.519721-2.361243-1.95737-4.13176s-2.259322 1.214914-2.182393 3.065714z" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7461" d="m10.31056 6.468639c4.167699-3.28769 13.33311 4.22439 13.28789 9.418858s0.29723 8.160033-0.100981 12.83717c-0.555582 6.525592-6.042763 12.6423-12.68927 15.13958" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7463" d="m9.451304 47.90624c9.797251-1.088715 15.7476-11.23582 16.18415-20.36616 0.550006-4.949479 0.961741-11.48182 0.266051-16.39814-0.533816-3.772382-5.406131-3.278392-7.498489-6.127055" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7465" d="m27.94895 25.60937c1.86434 5.960327-2.881752 12.1676-4.917928 17.51309s-2.123549 8.304393-5.03864 9.026884-7.197311 1.279857-8.541149 1.0054" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7467" d="m72.41127 91.49374c0.498773-7.2382 0.236054-16.12433-3.458192-21.58389s1.498038-9.506155 4.150538-13.26725c5.599867-8.405027 11.35913-20.54653 9.555568-28.71129s-1.654084-8.728879-1.445165-12.1941c0.208919-3.465219 2.089576-7.426987 2.601179-8.558679" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7469" d="m78.60464 89.99264c-0.282861-5.704853 4.830952-11.2493 2.378941-16.67429-2.105259-4.657812-0.931988-8.571742 3.10701-12.49279s3.468131-9.637743 5.059169-16.44013c1.591039-6.802385-2.790842-17.41258-3.468396-21.73166s-0.105715-4.683862-0.103203-6.1484" style="fill:none;stroke-width:.2;stroke:#000"/>
+        <path id="path7733" d="m11.71584 12.28206c5.957708-4.796122 8.358223 5.325872 8.428253 11.71331s-2.485476 16.41005-8.353337 9.938397c-3.532759-5.366854-3.591093-12.62595-3.824212-19.11803 0.0538892-2.886388 1.375256-5.970582 4.006247-6.503452" style="fill:none;stroke-width:.2;stroke:#000"/>
+    </g>
+</svg>

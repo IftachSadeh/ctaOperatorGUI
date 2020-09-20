@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# dist/
 downloads/
 eggs/
 .eggs/
@@ -18,7 +18,7 @@ lib/
 lib64/
 parts/
 sdist/
-var/
+# var/
 wheels/
 *.egg-info/
 .installed.cfg
